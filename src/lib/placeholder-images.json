@@ -1,3 +1,16 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "studio-neon",
+      "description": "Cyberpunk Neon Music Studio",
+      "imageUrl": "https://picsum.photos/seed/beathero-studio/600/800",
+      "imageHint": "neon studio"
+    },
+    {
+      "id": "mpc-classic",
+      "description": "Vintage MPC Drum Sampler",
+      "imageUrl": "https://picsum.photos/seed/beathero-mpc/600/800",
+      "imageHint": "drum machine"
+    }
+  ]
 }
