@@ -1,17 +1,18 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useCollection } from '@/firebase';
-import { collection, query } from 'firebase/firestore';
-import { useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, doc, writeBatch } from 'firebase/firestore';
 import { Card } from '@/components/ui/card';
-import { Music, Play, Radio } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Music, Play, Radio, Loader2, Database } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 
 export default function HomePage() {
   const db = useFirestore();
+  const [isSeeding, setIsSeeding] = useState(false);
   
   const studiosQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -19,6 +20,79 @@ export default function HomePage() {
   }, [db]);
 
   const { data: studios, isLoading } = useCollection<Studio>(studiosQuery);
+
+  const seedDatabase = async () => {
+    if (!db) return;
+    setIsSeeding(true);
+    try {
+      const batch = writeBatch(db);
+      
+      const studioId = "leo-beats-studio";
+      const projectId = "cyber-drift";
+      
+      // 1. Studio
+      const studioRef = doc(db, 'studios', studioId);
+      batch.set(studioRef, {
+        id: studioId,
+        name: "Leo Beats Studio",
+        description: "Dein Hub für futuristische Drum-Produktionen.",
+        coverColor: "#993DEB"
+      });
+
+      // 2. Project
+      const projectRef = doc(db, 'projects', projectId);
+      batch.set(projectRef, {
+        id: projectId,
+        studioId: studioId,
+        name: "Cyber Drift",
+        bpm: 120,
+        backingTrackUrl: "https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg"
+      });
+
+      // 3. Levels
+      const levels = [
+        { id: "lvl-1", name: "Basic Kick", diff: 1 },
+        { id: "lvl-2", name: "Clap & Kick", diff: 2 },
+        { id: "lvl-3", name: "Hihat Groove", diff: 3 },
+        { id: "lvl-4", name: "Full Beat", diff: 4 },
+      ];
+
+      for (const l of levels) {
+        const levelRef = doc(db, 'levels', l.id);
+        batch.set(levelRef, {
+          id: l.id,
+          projectId: projectId,
+          difficulty: l.diff,
+          name: l.name
+        });
+
+        // 4. Sounds for Level 4 (as Example)
+        if (l.id === "lvl-4") {
+          const sounds = [
+            { id: "s1", type: "kick", steps: [0, 4, 8, 12], url: "https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg" },
+            { id: "s2", type: "clap", steps: [4, 12], url: "https://actions.google.com/sounds/v1/doors/door_knock_3.ogg" },
+            { id: "s3", type: "hihat", steps: [0, 2, 4, 6, 8, 10, 12, 14], url: "https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg" },
+          ];
+          for (const s of sounds) {
+            const soundRef = doc(db, 'levels', l.id, 'sounds', s.id);
+            batch.set(soundRef, {
+              id: s.id,
+              levelId: l.id,
+              type: s.type,
+              sampleUrl: s.url,
+              triggerSteps: s.steps
+            });
+          }
+        }
+      }
+
+      await batch.commit();
+    } catch (e) {
+      console.error("Seeding failed", e);
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#1F1A23] text-white">
@@ -30,7 +104,19 @@ export default function HomePage() {
       </header>
 
       <main className="p-8">
-        <h2 className="text-4xl font-bold mb-8">Wähle dein <span className="text-[#993DEB]">Studio</span></h2>
+        <div className="flex justify-between items-end mb-8">
+          <h2 className="text-4xl font-bold">Wähle dein <span className="text-[#993DEB]">Studio</span></h2>
+          {studios && studios.length === 0 && !isLoading && (
+            <Button 
+              onClick={seedDatabase} 
+              disabled={isSeeding}
+              className="bg-[#3838FA] hover:bg-[#3838FA]/80 flex gap-2"
+            >
+              {isSeeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+              Demo-Daten erstellen
+            </Button>
+          )}
+        </div>
         
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -59,9 +145,10 @@ export default function HomePage() {
                 </Card>
               </Link>
             ))}
-            {studios?.length === 0 && (
-              <div className="col-span-full py-20 text-center opacity-40">
-                Keine Studios gefunden.
+            {studios?.length === 0 && !isSeeding && (
+              <div className="col-span-full py-20 text-center flex flex-col items-center gap-4 border-2 border-dashed border-white/5 rounded-2xl">
+                <p className="opacity-40 italic">Keine Studios gefunden.</p>
+                <p className="text-sm opacity-60 max-w-xs">Klicke oben auf "Demo-Daten erstellen", um direkt loszulegen!</p>
               </div>
             )}
           </div>

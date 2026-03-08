@@ -1,4 +1,13 @@
-// This route is deprecated in favor of /play/[studioId]/[projectId]/[levelId]
-export default function RemovedPage() {
+
+"use client";
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function RedirectPage() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/');
+  }, [router]);
   return null;
 }
