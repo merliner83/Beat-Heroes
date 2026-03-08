@@ -35,7 +35,10 @@ export class AudioEngine {
       if (!url || this.buffers.has(url)) return;
       try {
         const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
+        if (!response.ok) {
+          console.warn(`AudioEngine: HTTP ${response.status} for ${url}. Skipping.`);
+          return;
+        }
         const arrayBuffer = await response.arrayBuffer();
         
         // Use the promise-based version of decodeAudioData
@@ -43,7 +46,7 @@ export class AudioEngine {
         this.buffers.set(url, audioBuffer);
         console.log(`AudioEngine: Successfully loaded ${url}`);
       } catch (e) {
-        console.error(`AudioEngine: Failed to load or decode ${url}`, e);
+        console.warn(`AudioEngine: Failed to load or decode ${url}. This sound might be unavailable.`, e);
       }
     });
 
@@ -57,7 +60,6 @@ export class AudioEngine {
       return;
     }
     
-    // Ensure context is running (can be suspended by browser)
     if (this.context.state !== 'running') {
       this.context.resume();
     }

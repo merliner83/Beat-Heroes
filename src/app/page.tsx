@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -7,7 +8,7 @@ import { collection, query, doc, writeBatch } from 'firebase/firestore';
 import { signInAnonymously } from 'firebase/auth';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Music, Play, Radio, Loader2, Database, Sparkles } from 'lucide-react';
+import { Music, Play, Radio, Loader2, Sparkles } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 
 export default function HomePage() {
@@ -27,7 +28,6 @@ export default function HomePage() {
     if (!db || !auth) return;
     setIsSeeding(true);
     try {
-      // 0. Ensure user is signed in
       let currentUserId = user?.uid;
       if (!currentUserId) {
         const credential = await signInAnonymously(auth);
@@ -56,7 +56,7 @@ export default function HomePage() {
         studioId: studioId,
         name: "Cyber Drift",
         bpm: 120,
-        backingTrackUrl: "https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg"
+        backingTrackUrl: "https://storage.googleapis.com/codeskulptor-demos/riceracer_assets/music/start_menu.mp3"
       });
 
       // 3. Levels
@@ -76,11 +76,10 @@ export default function HomePage() {
           name: l.name
         });
 
-        // 4. Sounds for Level 4 (as Example)
         const sounds = [
-          { id: `${l.id}-s1`, type: "kick", steps: [0, 4, 8, 12], url: "https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg" },
-          { id: `${l.id}-s2`, type: "clap", steps: [4, 12], url: "https://actions.google.com/sounds/v1/doors/door_knock_3.ogg" },
-          { id: `${l.id}-s3`, type: "hihat", steps: [0, 2, 4, 6, 8, 10, 12, 14], url: "https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg" },
+          { id: `${l.id}-s1`, type: "kick", steps: [0, 4, 8, 12], url: "https://storage.googleapis.com/codeskulptor-assets/Collision8-Bit.ogg" },
+          { id: `${l.id}-s2`, type: "clap", steps: [4, 12], url: "https://storage.googleapis.com/codeskulptor-assets/jump.ogg" },
+          { id: `${l.id}-s3`, type: "hihat", steps: [0, 2, 4, 6, 8, 10, 12, 14], url: "https://storage.googleapis.com/codeskulptor-assets/Collision7-Bit.ogg" },
         ];
         
         for (const s of sounds) {
@@ -108,7 +107,7 @@ export default function HomePage() {
       <header className="px-8 py-6 flex justify-between items-center border-b border-white/5">
         <div className="flex items-center gap-2">
           <Radio className="text-[#993DEB]" />
-          <h1 className="text-2xl font-bold tracking-tighter uppercase italic">BeatHero</h1>
+          <h1 className="text-2xl font-bold tracking-tighter uppercase italic text-[#993DEB]">BeatHero</h1>
         </div>
       </header>
 
