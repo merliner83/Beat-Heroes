@@ -1,5 +1,4 @@
-
-export type SoundType = 'kick' | 'clap' | 'hihat' | 'perc';
+export type SoundType = 'kick' | 'clap' | 'percs' | 'misc';
 
 export interface Studio {
   id: string;

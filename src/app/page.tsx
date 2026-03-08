@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from 'react';
@@ -13,8 +12,7 @@ import { Studio } from '@/lib/game/types';
 
 /**
  * HomePage displays the available music studios.
- * If the database is empty, it provides a "Demo-Daten erstellen" button
- * to seed the database with stable initial assets.
+ * Seeding updated for KICK, CLAP, PERCS, MISC.
  */
 export default function HomePage() {
   const db = useFirestore();
@@ -44,9 +42,7 @@ export default function HomePage() {
       const studioId = "leo-beats-studio";
       const projectId = "cyber-drift";
       
-      // 1. Studio
-      const studioRef = doc(db, 'studios', studioId);
-      batch.set(studioRef, {
+      batch.set(doc(db, 'studios', studioId), {
         id: studioId,
         name: "Leo Beats Studio",
         description: "Dein Hub für futuristische Drum-Produktionen.",
@@ -54,9 +50,7 @@ export default function HomePage() {
         ownerUserId: currentUserId
       });
 
-      // 2. Project
-      const projectRef = doc(db, 'projects', projectId);
-      batch.set(projectRef, {
+      batch.set(doc(db, 'projects', projectId), {
         id: projectId,
         studioId: studioId,
         name: "Cyber Drift",
@@ -64,35 +58,33 @@ export default function HomePage() {
         backingTrackUrl: "https://storage.googleapis.com/codeskulptor-demos/riceracer_assets/music/start_menu.mp3"
       });
 
-      // 3. Levels
-      const levels = [
-        { id: "lvl-1", name: "Basic Kick", diff: 1 },
-        { id: "lvl-2", name: "Clap & Kick", diff: 2 },
-        { id: "lvl-3", name: "Hihat Groove", diff: 3 },
-        { id: "lvl-4", name: "Full Beat", diff: 4 },
+      const levelsData = [
+        { id: "lvl-1", name: "Only KICK", diff: 1 },
+        { id: "lvl-2", name: "Only CLAP", diff: 2 },
+        { id: "lvl-3", name: "Only PERCS", diff: 3 },
+        { id: "lvl-4", name: "Full Beat (MISC focus)", diff: 4 },
       ];
 
-      for (const l of levels) {
-        const levelRef = doc(db, 'levels', l.id);
-        batch.set(levelRef, {
+      for (const l of levelsData) {
+        batch.set(doc(db, 'levels', l.id), {
           id: l.id,
           projectId: projectId,
           difficulty: l.diff,
           name: l.name
         });
 
-        // Use stable and CORS-friendly audio assets
+        // Map sound types with stable URLs
         const sounds = [
-          { id: `${l.id}-s1`, type: "kick", steps: [0, 4, 8, 12], url: "https://storage.googleapis.com/codeskulptor-assets/Collision8-Bit.ogg" },
-          { id: `${l.id}-s2`, type: "clap", steps: [4, 12], url: "https://storage.googleapis.com/codeskulptor-assets/jump.ogg" },
-          { id: `${l.id}-s3`, type: "hihat", steps: [0, 2, 4, 6, 8, 10, 12, 14], url: "https://storage.googleapis.com/codeskulptor-assets/Collision7-Bit.ogg" },
-          { id: `${l.id}-s4`, type: "perc", steps: [2, 6, 10, 14], url: "https://storage.googleapis.com/codeskulptor-assets/jump.ogg" },
+          { type: "kick", steps: [0, 4, 8, 12], url: "https://storage.googleapis.com/codeskulptor-assets/Collision8-Bit.ogg" },
+          { type: "clap", steps: [4, 12], url: "https://storage.googleapis.com/codeskulptor-assets/jump.ogg" },
+          { type: "percs", steps: [0, 2, 4, 6, 8, 10, 12, 14], url: "https://storage.googleapis.com/codeskulptor-assets/Collision7-Bit.ogg" },
+          { type: "misc", steps: [7, 15], url: "https://storage.googleapis.com/codeskulptor-demos/pyman_assets/extralife.ogg" },
         ];
         
         for (const s of sounds) {
-          const soundRef = doc(db, 'levels', l.id, 'sounds', s.id);
-          batch.set(soundRef, {
-            id: s.id,
+          const soundId = `${l.id}-${s.type}`;
+          batch.set(doc(db, 'levels', l.id, 'sounds', soundId), {
+            id: soundId,
             levelId: l.id,
             type: s.type,
             sampleUrl: s.url,
@@ -102,7 +94,6 @@ export default function HomePage() {
       }
 
       await batch.commit();
-      console.log("Database successfully seeded.");
     } catch (e) {
       console.error("Seeding failed", e);
     } finally {

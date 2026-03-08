@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "Studio": {
@@ -45,7 +44,7 @@
       "properties": {
         "id": { "type": "string" },
         "levelId": { "type": "string" },
-        "type": { "type": "string", "enum": ["kick", "clap", "hihat", "perc"] },
+        "type": { "type": "string", "enum": ["kick", "clap", "percs", "misc"] },
         "sampleUrl": { "type": "string", "format": "uri" },
         "triggerSteps": { 
           "type": "array", 
