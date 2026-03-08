@@ -37,7 +37,7 @@ export class AudioEngine {
    * This must be called inside a user interaction (like a click).
    */
   async resume(): Promise<void> {
-    if (this.context && this.context.state === 'suspended') {
+    if (this.context && (this.context.state === 'suspended' || this.context.state === 'interrupted')) {
       try {
         await this.context.resume();
         console.log('AudioEngine: Context resumed. State:', this.context.state);
@@ -49,7 +49,6 @@ export class AudioEngine {
 
   /**
    * Preloads a list of audio URLs. Decodes them into AudioBuffers for instant playback.
-   * Handles individual fetch errors gracefully to prevent engine crashes.
    */
   async preloadAudio(urls: string[]): Promise<void> {
     if (!this.context) return;
@@ -67,16 +66,15 @@ export class AudioEngine {
         }
         const arrayBuffer = await response.arrayBuffer();
         
-        // Wrap decoding in try-catch to catch EncodingErrors (e.g. invalid formats)
         try {
           const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
           this.buffers.set(url, audioBuffer);
           console.log(`AudioEngine: Successfully loaded ${url}`);
         } catch (decodeError) {
-          console.warn(`AudioEngine: Failed to decode ${url}. This might be an unsupported format or corrupted file. Skipping.`, decodeError);
+          console.warn(`AudioEngine: Failed to decode ${url}.`, decodeError);
         }
       } catch (e) {
-        console.warn(`AudioEngine: Failed to load ${url}. Possible CORS issue or network error. Skipping.`, e);
+        console.warn(`AudioEngine: Failed to load ${url}. Possible CORS issue.`, e);
       }
     });
 
@@ -92,7 +90,7 @@ export class AudioEngine {
     
     const buffer = this.buffers.get(url);
     if (!buffer) {
-      console.warn(`AudioEngine: No buffer found for ${url}. Make sure it is preloaded.`);
+      console.warn(`AudioEngine: No buffer found for ${url}.`);
       return;
     }
 

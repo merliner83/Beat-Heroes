@@ -8,7 +8,7 @@ import { SamplerPad } from './SamplerPad';
 import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Play, RotateCcw, Trophy, Sparkles, Home, Loader2 } from 'lucide-react';
+import { Play, RotateCcw, Trophy, Sparkles, Home, Loader2, Music2 } from 'lucide-react';
 import Link from 'next/link';
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -79,7 +79,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       const secondsPerStep = secondsPerBeat / 4; // 16th notes
       const currentStep = time / secondsPerStep;
       
-      const tolerance = 0.35; // slightly higher tolerance for better feel
+      const tolerance = 0.35;
       const isHit = sound.triggerSteps.some(step => Math.abs(currentStep % 16 - step) <= tolerance);
 
       setScore(prev => {
@@ -164,7 +164,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         {!isPlaying && !isFinished && (
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
             <Card className="p-10 bg-[#1F1A23] border-[#993DEB] border text-center max-w-sm">
-              <Sparkles className="w-12 h-12 text-[#993DEB] mx-auto mb-4" />
+              <Music2 className="w-12 h-12 text-[#993DEB] mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">Ready to Drop?</h2>
               <p className="text-sm opacity-70 mb-8">Lock in the patterns. Use keys A, S, D, F to play live.</p>
               <Button 
