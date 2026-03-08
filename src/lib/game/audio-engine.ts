@@ -45,6 +45,7 @@ export class AudioEngine {
 
   /**
    * Preloads a list of audio URLs. Decodes them into AudioBuffers for instant playback.
+   * Now handles individual fetch errors gracefully to prevent engine crashes.
    */
   async preloadAudio(urls: string[]): Promise<void> {
     if (!this.context) return;
@@ -57,7 +58,8 @@ export class AudioEngine {
         console.log(`AudioEngine: Loading ${url}...`);
         const response = await fetch(url);
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status} for ${url}`);
+          console.warn(`AudioEngine: HTTP ${response.status} for ${url}. Skipping.`);
+          return;
         }
         const arrayBuffer = await response.arrayBuffer();
         
@@ -66,7 +68,8 @@ export class AudioEngine {
         this.buffers.set(url, audioBuffer);
         console.log(`AudioEngine: Successfully loaded ${url}`);
       } catch (e) {
-        console.error(`AudioEngine: Failed to load/decode ${url}`, e);
+        // Specifically catch "Failed to fetch" errors (CORS, network, etc.)
+        console.warn(`AudioEngine: Failed to load/decode ${url}. This might be a CORS issue.`, e);
       }
     });
 
@@ -82,7 +85,7 @@ export class AudioEngine {
     
     const buffer = this.buffers.get(url);
     if (!buffer) {
-      console.warn(`AudioEngine: No buffer found for ${url}. Make sure it's preloaded.`);
+      console.warn(`AudioEngine: No buffer found for ${url}. Make sure it is preloaded.`);
       return;
     }
 

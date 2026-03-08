@@ -74,7 +74,7 @@ export default function StudioPage() {
                   </div>
                 </Card>
 
-                {/* Inline Levels for selected Project */}
+                {/* Inline Levels for selected Project (No separate heading as requested) */}
                 {selectedProjectId === project.id && (
                   <div className="pl-6 pr-2 py-2 animate-in slide-in-from-top-4 duration-300">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">

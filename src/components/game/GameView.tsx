@@ -65,7 +65,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const handlePadPress = (type: SoundType) => {
     if (!isPlaying || !audioEngine) return;
     
-    // Resume context if needed
+    // Always attempt to resume context if needed
     audioEngine.resume();
 
     const sound = sounds.find(s => s.type === type);
@@ -101,7 +101,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
-          // End session after 60 seconds (or track end - for demo we keep 60s)
+          // End session after 60 seconds (demo length)
           if (t >= 60) {
             setIsPlaying(false);
             setIsFinished(true);
