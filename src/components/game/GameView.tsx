@@ -44,7 +44,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     
     setIsLoadingAudio(true);
     try {
-      // Resume context inside user interaction
+      // Resume context inside user interaction (CRITICAL for browser audio)
       await audioEngine.resume();
       
       const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
@@ -65,7 +65,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const handlePadPress = (type: SoundType) => {
     if (!isPlaying || !audioEngine) return;
     
-    // Always attempt to resume context if needed
+    // Always attempt to resume context if needed during interaction
     audioEngine.resume();
 
     const sound = sounds.find(s => s.type === type);

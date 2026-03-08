@@ -38,8 +38,12 @@ export class AudioEngine {
    */
   async resume(): Promise<void> {
     if (this.context && this.context.state === 'suspended') {
-      await this.context.resume();
-      console.log('AudioEngine: Context resumed. State:', this.context.state);
+      try {
+        await this.context.resume();
+        console.log('AudioEngine: Context resumed. State:', this.context.state);
+      } catch (e) {
+        console.error('AudioEngine: Failed to resume context', e);
+      }
     }
   }
 
