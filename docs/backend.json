@@ -1,375 +1,80 @@
+
 {
   "entities": {
-    "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
-      "type": "object",
-      "description": "Represents a player's profile and basic information in the BeatHero game.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the User entity. (Primary Key)"
-        },
-        "displayName": {
-          "type": "string",
-          "description": "The public name chosen by the user."
-        },
-        "email": {
-          "type": "string",
-          "description": "The user's email address.",
-          "format": "email"
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the user account was created.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "displayName",
-        "email",
-        "createdAt"
-      ]
-    },
     "Studio": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Studio",
       "type": "object",
-      "description": "Represents a collection of levels and songs, akin to a music production studio or genre collection.",
+      "description": "Ein Musik-Studio, das mehrere Projekte enthält.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Studio entity. (Primary Key)"
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the studio."
-        },
-        "ownerUserId": {
-          "type": "string",
-          "description": "Reference to the User who owns this studio. (Relationship: User 1:N Studio)"
-        },
-        "description": {
-          "type": "string",
-          "description": "A brief description of the studio's theme or content."
-        },
-        "coverColor": {
-          "type": "string",
-          "description": "A hexadecimal color code used for the studio's cover or theme."
-        }
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "coverColor": { "type": "string" }
       },
-      "required": [
-        "id",
-        "name",
-        "ownerUserId",
-        "description",
-        "coverColor"
-      ]
+      "required": ["id", "name"]
+    },
+    "Project": {
+      "title": "Project",
+      "type": "object",
+      "description": "Ein Musikprojekt (Song) innerhalb eines Studios.",
+      "properties": {
+        "id": { "type": "string" },
+        "studioId": { "type": "string" },
+        "name": { "type": "string" },
+        "bpm": { "type": "number" },
+        "backingTrackUrl": { "type": "string", "format": "uri" }
+      },
+      "required": ["id", "studioId", "name", "bpm", "backingTrackUrl"]
     },
     "Level": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Level",
       "type": "object",
-      "description": "Defines a specific game level within a studio, linking to a song and specifying difficulty.",
+      "description": "Ein Schwierigkeitsgrad innerhalb eines Projekts.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Level entity. (Primary Key)"
-        },
-        "studioId": {
-          "type": "string",
-          "description": "Reference to the Studio this level belongs to. (Relationship: Studio 1:N Level)"
-        },
-        "songId": {
-          "type": "string",
-          "description": "Reference to the Song played in this level. (Relationship: Song 1:N Level)"
-        },
-        "difficulty": {
-          "type": "string",
-          "description": "The difficulty setting for this level (e.g., 'easy', 'medium', 'hard')."
-        },
-        "order": {
-          "type": "number",
-          "description": "The display order of the level within its studio."
-        },
-        "unlockRequirement": {
-          "type": "string",
-          "description": "Criteria required to unlock this level (e.g., 'level_complete:abc')."
-        }
+        "id": { "type": "string" },
+        "projectId": { "type": "string" },
+        "difficulty": { "type": "number", "description": "1 bis 4" },
+        "name": { "type": "string" }
       },
-      "required": [
-        "id",
-        "studioId",
-        "songId",
-        "difficulty",
-        "order",
-        "unlockRequirement"
-      ]
+      "required": ["id", "projectId", "difficulty"]
     },
-    "Song": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Song",
+    "Sound": {
+      "title": "Sound",
       "type": "object",
-      "description": "Contains metadata for a music track used in the game, including its structure and audio references.",
+      "description": "Ein Instrument-Trigger-Muster innerhalb eines Levels.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Song entity. (Primary Key)"
-        },
-        "title": {
-          "type": "string",
-          "description": "The title of the song."
-        },
-        "bpm": {
-          "type": "number",
-          "description": "Beats per minute of the song."
-        },
-        "timeSignature": {
-          "type": "string",
-          "description": "The time signature of the song (e.g., '4/4')."
-        },
-        "resolution": {
-          "type": "number",
-          "description": "The musical resolution for note events (e.g., 16 for 16th notes, 32 for 32nd notes)."
-        },
-        "durationSeconds": {
-          "type": "number",
-          "description": "The total duration of the song in seconds."
-        },
-        "backingTrackUrl": {
-          "type": "string",
-          "description": "Firebase Storage URL for the main backing track audio file.",
-          "format": "uri"
-        },
-        "arrangement": {
-          "type": "array",
-          "description": "An array of objects, each defining a segment of the song's arrangement including stem names and their start/end steps."
+        "id": { "type": "string" },
+        "levelId": { "type": "string" },
+        "type": { "type": "string", "enum": ["kick", "clap", "hihat", "perc"] },
+        "sampleUrl": { "type": "string", "format": "uri" },
+        "triggerSteps": { 
+          "type": "array", 
+          "items": { "type": "number" },
+          "description": "16tel-Schritte, an denen dieser Sound gespielt werden soll."
         }
       },
-      "required": [
-        "id",
-        "title",
-        "bpm",
-        "timeSignature",
-        "resolution",
-        "durationSeconds",
-        "backingTrackUrl",
-        "arrangement"
-      ]
-    },
-    "Stem": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Stem",
-      "type": "object",
-      "description": "Represents an individual musical component (e.g., kick, snare) of a song, including its audio and rhythm pattern.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Stem entity. (Primary Key)"
-        },
-        "songId": {
-          "type": "string",
-          "description": "Reference to the Song this stem belongs to. (Relationship: Song 1:N Stem)"
-        },
-        "type": {
-          "type": "string",
-          "description": "The type of instrument or sound this stem represents (e.g., 'kick', 'snare', 'vocal')."
-        },
-        "audioUrl": {
-          "type": "string",
-          "description": "Firebase Storage URL for the stem's audio file.",
-          "format": "uri"
-        },
-        "difficulty": {
-          "type": "string",
-          "description": "The intended difficulty level for this stem's pattern (e.g., 'easy', 'medium', 'advanced')."
-        },
-        "pattern": {
-          "type": "array",
-          "description": "An array of numbers representing the musical step events for this stem's rhythm pattern.",
-          "items": {
-            "type": "number"
-          }
-        },
-        "sections": {
-          "type": "array",
-          "description": "An array of strings categorizing different sections within the stem's pattern (e.g., ['intro', 'verse', 'drop']).",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "songId",
-        "type",
-        "audioUrl",
-        "difficulty",
-        "pattern",
-        "sections"
-      ]
-    },
-    "Score": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Score",
-      "type": "object",
-      "description": "Records a player's performance on a specific game level, including hits, misses, and accuracy.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Score entity. (Primary Key)"
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the User who achieved this score. (Relationship: User 1:N Score)"
-        },
-        "levelId": {
-          "type": "string",
-          "description": "Reference to the Level on which the score was achieved. (Relationship: Level 1:N Score)"
-        },
-        "hits": {
-          "type": "number",
-          "description": "The total number of successful note hits."
-        },
-        "misses": {
-          "type": "number",
-          "description": "The total number of missed notes."
-        },
-        "accuracy": {
-          "type": "number",
-          "description": "The overall accuracy percentage (0-100) for the gameplay."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the score was recorded.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "levelId",
-        "hits",
-        "misses",
-        "accuracy",
-        "createdAt"
-      ]
+      "required": ["id", "levelId", "type", "sampleUrl", "triggerSteps"]
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "anonymous"
-    ]
+    "providers": ["anonymous"]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores individual user profiles. Access is restricted to the authenticated user matching the {userId} in the path.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user, corresponding to Firebase Authentication UID."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/studios/{studioId}",
-        "definition": {
-          "entityName": "Studio",
-          "schema": {
-            "$ref": "#/backend/entities/Studio"
-          },
-          "description": "Contains metadata for each music studio. Publicly readable by all, but write access is restricted to the user specified in the 'ownerUserId' field.",
-          "params": [
-            {
-              "name": "studioId",
-              "description": "The unique identifier for a Studio."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/studios/{studioId}/levels/{levelId}",
-        "definition": {
-          "entityName": "Level",
-          "schema": {
-            "$ref": "#/backend/entities/Level"
-          },
-          "description": "Defines game levels within a specific studio. Documents include denormalized 'studioOwnerUserId' for authorization independence, allowing write access only to the owner of the parent studio. Publicly readable.",
-          "params": [
-            {
-              "name": "studioId",
-              "description": "The unique identifier of the parent Studio."
-            },
-            {
-              "name": "levelId",
-              "description": "The unique identifier for a Level within the Studio."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/songs/{songId}",
-        "definition": {
-          "entityName": "Song",
-          "schema": {
-            "$ref": "#/backend/entities/Song"
-          },
-          "description": "Stores metadata and arrangement details for individual songs. Publicly readable by all. Write operations are restricted to admin roles via Cloud Functions for data integrity.",
-          "params": [
-            {
-              "name": "songId",
-              "description": "The unique identifier for a Song."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/songs/{songId}/stems/{stemId}",
-        "definition": {
-          "entityName": "Stem",
-          "schema": {
-            "$ref": "#/backend/entities/Stem"
-          },
-          "description": "Represents individual musical components (stems) belonging to a specific song. Publicly readable by all. Write operations are restricted to admin roles via Cloud Functions for data integrity.",
-          "params": [
-            {
-              "name": "songId",
-              "description": "The unique identifier of the parent Song."
-            },
-            {
-              "name": "stemId",
-              "description": "The unique identifier for a Stem within the Song."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/scores/{scoreId}",
-        "definition": {
-          "entityName": "Score",
-          "schema": {
-            "$ref": "#/backend/entities/Score"
-          },
-          "description": "Records player performance for game levels. Publicly readable for leaderboard displays. Creation is restricted to the authenticated user matching the 'userId' field in the document. Updates and deletions are forbidden.",
-          "params": [
-            {
-              "name": "scoreId",
-              "description": "The unique identifier for a recorded Score."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "This Firestore structure for BeatHero prioritizes security, scalability, and debuggability by adhering to the core design principles. \n\n**Authorization Independence via Denormalization:**\n- For the `/studios/{studioId}/levels/{levelId}` subcollection, write access is dependent on the `ownerUserId` of the parent `Studio` document. To eliminate `get()` calls in security rules and enable atomic operations, the `studioOwnerUserId` field is explicitly denormalized and stored within each `Level` document. This allows level write rules to directly check `request.auth.uid == resource.data.studioOwnerUserId` without needing to fetch the parent `Studio` document.\n- For `/studios/{studioId}` documents, the `ownerUserId` is already a field within the document, making authorization for owner-based writes independent.\n- For `/scores/{scoreId}` documents, the `userId` field is present within the document, allowing direct authorization checks for creation.\n- `/users/{userId}` documents are inherently authorization independent as the `userId` is part of the document path.\n- `/songs/{songId}` and `/songs/{songId}/stems/{stemId}` collections have read-for-all access and admin-only write access (managed via Cloud Functions), thus their authorization is simple and independent.\n\n**Structural Segregation (Homogeneous Security Posture):**\n- Each collection or subcollection is designed to have a consistent security posture:\n    - `/users/{userId}`: Private to the authenticated user.\n    - `/studios/{studioId}`: Publicly readable, writable only by the owner.\n    - `/studios/{studioId}/levels/{levelId}`: Publicly readable, writable only by the studio owner.\n    - `/songs/{songId}`: Publicly readable, admin-only writable.\n    - `/songs/{songId}/stems/{stemId}`: Publicly readable, admin-only writable.\n    - `/scores/{scoreId}`: Publicly readable, creatable only by the user who owns the score.\nThis segregation simplifies security rules significantly as there's no need for complex conditional logic to distinguish between different types of data within the same collection.\n\n**QAPs (Rules are not Filters):**\n- The structure fully supports efficient `list` operations without relying on security rules to act as filters.\n    - `/users/{userId}`: `list` operations are implicitly filtered by the path parameter `{userId}`. \n    - `/studios`, `/studios/{studioId}/levels`, `/songs`, `/songs/{songId}/stems`: All are publicly readable, so `list` operations will return all documents without filtering. This allows efficient global display of content.\n    - `/scores`: Designed for leaderboards. The 'Read for all' rule combined with client-side queries (`query.where('levelId', '==', ...).orderBy('accuracy', 'desc')`) enables efficient leaderboard retrieval for any level without security rules needing to filter results.\n\n**Access Modeling:**\n- **Private Data:** `/users/{userId}` follows path-based ownership for private user profiles.\n- **Hierarchical Paths:** `/studios/{studioId}/levels/{levelId}` and `/songs/{songId}/stems/{stemId}` continue the hierarchical pattern for nested data, providing clear relationships.\n- **Collaborative/Shared Data (Owner-based):** `/studios/{studioId}` uses an explicit `ownerUserId` field to manage ownership for globally readable but owner-writable content.\n- **Global Roles (DBAC):** Admin operations for `songs` and `stems` are delegated to Cloud Functions using Firebase Authentication custom claims, avoiding complex role-based authorization directly in Firestore rules.\n\nThis design ensures security rules remain concise, easy to debug, and performant, minimizing the risk of unintended data exposure or access issues."
+    "/studios/{studioId}": {
+      "schema": "#/backend/entities/Studio",
+      "description": "Öffentliche Studios."
+    },
+    "/projects/{projectId}": {
+      "schema": "#/backend/entities/Project",
+      "description": "Unabhängige Projekte."
+    },
+    "/levels/{levelId}": {
+      "schema": "#/backend/entities/Level",
+      "description": "Unabhängige Levels."
+    },
+    "/levels/{levelId}/sounds/{soundId}": {
+      "schema": "#/backend/entities/Sound",
+      "description": "Sounds eines Levels."
+    }
   }
 }

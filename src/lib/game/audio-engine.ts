@@ -1,6 +1,5 @@
-"use client";
 
-import { Stem } from "./types";
+"use client";
 
 export class AudioEngine {
   private context: AudioContext | null = null;
@@ -19,41 +18,40 @@ export class AudioEngine {
     if (!this.context) return;
 
     const loadTasks = urls.map(async (url) => {
-      if (this.buffers.has(url)) return;
-      const response = await fetch(url);
-      const arrayBuffer = await response.arrayBuffer();
-      const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
-      this.buffers.set(url, audioBuffer);
+      if (this.buffers.has(url) || !url) return;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Fetch failed for ${url}`);
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
+        this.buffers.set(url, audioBuffer);
+      } catch (e) {
+        console.warn(`AudioEngine: Failed to load ${url}`, e);
+      }
     });
 
     await Promise.all(loadTasks);
     this.isLoaded = true;
   }
 
-  start(backingUrl: string, stems: Stem[]): void {
-    if (!this.context || !this.isLoaded) return;
-    
-    this.stop();
-    this.startTime = this.context.currentTime + 0.1;
-
-    // Start Backing Track
-    this.playBuffer(backingUrl, true);
-
-    // Prepare stems but they start silent or locked? 
-    // Prompt says: "Successfully completed stem patterns lock, activating the next stem."
-    // For this prototype, we'll play all stems and just control their volume?
-    // Actually, let's just trigger them based on patterns.
-  }
-
-  private playBuffer(url: string, loop: boolean = false): void {
+  playOneShot(url: string): void {
     if (!this.context || !this.buffers.has(url)) return;
-
     const source = this.context.createBufferSource();
     source.buffer = this.buffers.get(url)!;
-    source.loop = loop;
     source.connect(this.context.destination);
-    source.start(this.startTime);
-    this.sources.set(url, source);
+    source.start(0);
+  }
+
+  startBackingTrack(url: string): void {
+    if (!this.context || !this.buffers.has(url)) return;
+    this.stop();
+    this.startTime = this.context.currentTime;
+    const source = this.context.createBufferSource();
+    source.buffer = this.buffers.get(url)!;
+    source.loop = true;
+    source.connect(this.context.destination);
+    source.start(0);
+    this.sources.set('backing', source);
   }
 
   stop(): void {
@@ -66,10 +64,6 @@ export class AudioEngine {
   getCurrentTime(): number {
     if (!this.context) return 0;
     return this.context.currentTime - this.startTime;
-  }
-
-  getContextTime(): number {
-    return this.context?.currentTime || 0;
   }
 }
 

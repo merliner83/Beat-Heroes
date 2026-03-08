@@ -1,41 +1,38 @@
-export type StemType = 'kick' | 'snare' | 'perc' | 'hihat' | 'vocal';
 
-export interface Stem {
+export type SoundType = 'kick' | 'clap' | 'hihat' | 'perc';
+
+export interface Studio {
   id: string;
-  type: StemType;
-  audioUrl: string;
-  difficulty: 'easy' | 'medium' | 'advanced';
-  pattern: number[]; // musical steps (e.g., 0, 4, 8, 12)
+  name: string;
+  description: string;
+  coverColor: string;
 }
 
-export interface Song {
+export interface Project {
   id: string;
-  title: string;
+  studioId: string;
+  name: string;
   bpm: number;
-  timeSignature: string;
-  resolution: number; // 16 or 32
-  durationSeconds: number;
   backingTrackUrl: string;
-  stems: Stem[];
 }
 
 export interface Level {
   id: string;
-  songId: string;
-  difficulty: string;
-  order: number;
+  projectId: string;
+  difficulty: number;
+  name: string;
+}
+
+export interface Sound {
+  id: string;
+  levelId: string;
+  type: SoundType;
+  sampleUrl: string;
+  triggerSteps: number[];
 }
 
 export interface GameScore {
   hits: number;
   misses: number;
   accuracy: number;
-}
-
-export interface Studio {
-  id: string;
-  name: string;
-  ownerUserId: string;
-  description: string;
-  coverColor: string;
 }
