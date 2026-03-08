@@ -67,12 +67,16 @@ export class AudioEngine {
         }
         const arrayBuffer = await response.arrayBuffer();
         
-        // Promise-based decodeAudioData
-        const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
-        this.buffers.set(url, audioBuffer);
-        console.log(`AudioEngine: Successfully loaded ${url}`);
+        // Wrap decoding in try-catch to catch EncodingErrors (e.g. invalid formats)
+        try {
+          const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
+          this.buffers.set(url, audioBuffer);
+          console.log(`AudioEngine: Successfully loaded ${url}`);
+        } catch (decodeError) {
+          console.warn(`AudioEngine: Failed to decode ${url}. This might be an unsupported format or corrupted file. Skipping.`, decodeError);
+        }
       } catch (e) {
-        console.warn(`AudioEngine: Failed to load/decode ${url}.`, e);
+        console.warn(`AudioEngine: Failed to load ${url}. Possible CORS issue or network error. Skipping.`, e);
       }
     });
 
