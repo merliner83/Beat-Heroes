@@ -45,7 +45,7 @@ export class AudioEngine {
 
   /**
    * Preloads a list of audio URLs. Decodes them into AudioBuffers for instant playback.
-   * Now handles individual fetch errors gracefully to prevent engine crashes.
+   * Handles individual fetch errors gracefully to prevent engine crashes.
    */
   async preloadAudio(urls: string[]): Promise<void> {
     if (!this.context) return;
@@ -68,8 +68,7 @@ export class AudioEngine {
         this.buffers.set(url, audioBuffer);
         console.log(`AudioEngine: Successfully loaded ${url}`);
       } catch (e) {
-        // Specifically catch "Failed to fetch" errors (CORS, network, etc.)
-        console.warn(`AudioEngine: Failed to load/decode ${url}. This might be a CORS issue.`, e);
+        console.warn(`AudioEngine: Failed to load/decode ${url}.`, e);
       }
     });
 

@@ -14,7 +14,7 @@ import { Studio } from '@/lib/game/types';
 /**
  * HomePage displays the available music studios.
  * If the database is empty, it provides a "Demo-Daten erstellen" button
- * to seed the database with initial studios, projects, and levels.
+ * to seed the database with stable initial assets.
  */
 export default function HomePage() {
   const db = useFirestore();
@@ -29,10 +29,6 @@ export default function HomePage() {
 
   const { data: studios, isLoading } = useCollection<Studio>(studiosQuery);
 
-  /**
-   * Seeds the Firestore database with demo content.
-   * This includes a Studio, a Project, and 4 difficulty Levels with sounds.
-   */
   const seedDatabase = async () => {
     if (!db || !auth) return;
     setIsSeeding(true);
@@ -85,7 +81,7 @@ export default function HomePage() {
           name: l.name
         });
 
-        // Use stable and CORS-friendly audio assets from codeskulptor
+        // Use stable and CORS-friendly audio assets
         const sounds = [
           { id: `${l.id}-s1`, type: "kick", steps: [0, 4, 8, 12], url: "https://storage.googleapis.com/codeskulptor-assets/Collision8-Bit.ogg" },
           { id: `${l.id}-s2`, type: "clap", steps: [4, 12], url: "https://storage.googleapis.com/codeskulptor-assets/jump.ogg" },
