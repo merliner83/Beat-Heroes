@@ -2,33 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * BeatHero Security Rules
-     *
-     * CORE PHILOSOPHY:
-     * This ruleset enforces a strict ownership-based model for private data and content 
-     * creation, while maintaining public visibility for game assets and social elements 
-     * like studios and leaderboards. It is designed for rapid prototyping, ensuring 
-     * secure authorization without enforcing strict data schemas.
-     *
-     * DATA STRUCTURE:
-     * - /users/{userId}: Private user profiles accessible only by the owner.
-     * - /studios/{studioId}: Publicly viewable music collections, writable only by owners.
-     * - /songs/{songId}: Publicly viewable game assets, client writes are forbidden (Admin only).
-     * - /scores/{scoreId}: Publicly viewable performance records, creatable only by the player.
-     *
-     * KEY SECURITY DECISIONS:
-     * - Denormalization for Authorization: Critical fields like 'studioOwnerUserId' are 
-     *   stored on Level documents to allow for fast, O(1) authorization checks without 
-     *   calling get() on parent documents.
-     * - Immutable Relational Fields: Fields that define ownership (e.g., userId, ownerUserId) 
-     *   are made immutable on update to prevent users from transferring ownership of data.
-     * - Existence Verification: All update and delete operations explicitly verify that 
-     *   the target document exists before evaluating logic.
-     */
-
-    // --- GLOBAL HELPER FUNCTIONS ---
-
+    // --- HELPER FUNCTIONS ---
     function isSignedIn() {
       return request.auth != null;
     }
@@ -37,101 +11,35 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Used for Create: ensures the incoming data matches the authorized user.
-    function isSettingOwner(field) {
-      return request.resource.data[field] == request.auth.uid;
-    }
-
-    // Used for Update/Delete: ensures document exists and user owns it.
-    function isExistingOwner(field) {
-      return resource != null && isSignedIn() && resource.data[field] == request.auth.uid;
-    }
-
-    // Enforces immutability for critical relational/ownership fields.
-    function isImmutable(field) {
-      return request.resource.data[field] == resource.data[field];
-    }
-
     // --- COLLECTION MATCHES ---
 
-    /**
-     * @description Rules for User profiles. Users can only see and manage their own profile.
-     * @path /users/{userId}
-     * @allow (get, create) User with UID "abc" accessing /users/abc
-     * @deny (list) User "abc" attempting to list all users.
-     * @principle Restricts access to a user's own data tree and enforces path-to-ID consistency.
-     */
+    // User Profile
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isOwner(userId) && resource != null && isImmutable('id');
-      allow delete: if isOwner(userId) && resource != null;
+      allow read, write: if isOwner(userId);
     }
 
-    /**
-     * @description Rules for Studios. Publicly readable, but only the owner can manage the studio.
-     * @path /studios/{studioId}
-     * @allow (get, list) Any user viewing a studio.
-     * @deny (update) User "abc" trying to update a studio owned by "xyz".
-     * @principle Public Read with Owner-Only Writes based on 'ownerUserId' field.
-     */
+    // Studios: Öffentlich lesbar, Erstellung/Bearbeitung für angemeldete Nutzer
     match /studios/{studioId} {
-      allow get, list: if true;
-      allow create: if isSettingOwner('ownerUserId');
-      allow update: if isExistingOwner('ownerUserId') && isImmutable('ownerUserId');
-      allow delete: if isExistingOwner('ownerUserId');
-
-      /**
-       * @description Rules for Levels within a Studio. Inherits owner authorization via denormalization.
-       * @path /studios/{studioId}/levels/{levelId}
-       * @allow (create) Owner of the parent studio creating a level.
-       * @deny (delete) Unauthorized user trying to delete a level.
-       * @principle Uses denormalized 'studioOwnerUserId' for efficient hierarchical write authorization.
-       */
-      match /levels/{levelId} {
-        allow get, list: if true;
-        allow create: if isSettingOwner('studioOwnerUserId');
-        allow update: if isExistingOwner('studioOwnerUserId') && isImmutable('studioOwnerUserId');
-        allow delete: if isExistingOwner('studioOwnerUserId');
-      }
+      allow read: if true;
+      allow create, update: if isSignedIn();
+      allow delete: if isSignedIn() && (resource.data.ownerUserId == request.auth.uid);
     }
 
-    /**
-     * @description Rules for Songs. Publicly readable game content.
-     * @path /songs/{songId}
-     * @allow (get, list) All users reading song metadata.
-     * @deny (create, update, delete) Any client-side write attempt.
-     * @principle Read-only for clients; writes are reserved for Admin/System roles.
-     */
-    match /songs/{songId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-
-      /**
-       * @description Rules for Song Stems. Publicly readable audio components.
-       * @path /songs/{songId}/stems/{stemId}
-       * @allow (get, list) All users fetching stem audio URLs.
-       * @deny (update) Any client-side modification.
-       * @principle Read-only for clients; maintenance via Cloud Functions/Admin.
-       */
-      match /stems/{stemId} {
-        allow get, list: if true;
-        allow create, update, delete: if false;
-      }
+    // Projekte: Öffentlich lesbar, Erstellung für angemeldete Nutzer
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if isSignedIn();
     }
 
-    /**
-     * @description Rules for Scores. Publicly readable for leaderboards, but creators cannot edit scores.
-     * @path /scores/{scoreId}
-     * @allow (create) User "abc" saving their own score.
-     * @deny (update, delete) A user attempting to modify or delete a score record.
-     * @principle Immutable record-keeping; public listing for competitive social features.
-     */
-    match /scores/{scoreId} {
-      allow get, list: if true;
-      allow create: if isSettingOwner('userId');
-      allow update, delete: if false;
+    // Levels & Sounds: Öffentlich lesbar, Erstellung für angemeldete Nutzer
+    match /levels/{levelId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+
+      match /sounds/{soundId} {
+        allow read: if true;
+        allow write: if isSignedIn();
+      }
     }
   }
 }

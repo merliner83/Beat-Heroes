@@ -1,17 +1,19 @@
-
 "use client";
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser, useAuth } from '@/firebase';
 import { collection, query, doc, writeBatch } from 'firebase/firestore';
+import { signInAnonymously } from 'firebase/auth';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Music, Play, Radio, Loader2, Database } from 'lucide-react';
+import { Music, Play, Radio, Loader2, Database, Sparkles } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 
 export default function HomePage() {
   const db = useFirestore();
+  const auth = useAuth();
+  const { user } = useUser();
   const [isSeeding, setIsSeeding] = useState(false);
   
   const studiosQuery = useMemoFirebase(() => {
@@ -22,9 +24,16 @@ export default function HomePage() {
   const { data: studios, isLoading } = useCollection<Studio>(studiosQuery);
 
   const seedDatabase = async () => {
-    if (!db) return;
+    if (!db || !auth) return;
     setIsSeeding(true);
     try {
+      // 0. Ensure user is signed in
+      let currentUserId = user?.uid;
+      if (!currentUserId) {
+        const credential = await signInAnonymously(auth);
+        currentUserId = credential.user.uid;
+      }
+
       const batch = writeBatch(db);
       
       const studioId = "leo-beats-studio";
@@ -36,7 +45,8 @@ export default function HomePage() {
         id: studioId,
         name: "Leo Beats Studio",
         description: "Dein Hub für futuristische Drum-Produktionen.",
-        coverColor: "#993DEB"
+        coverColor: "#993DEB",
+        ownerUserId: currentUserId
       });
 
       // 2. Project
@@ -67,22 +77,21 @@ export default function HomePage() {
         });
 
         // 4. Sounds for Level 4 (as Example)
-        if (l.id === "lvl-4") {
-          const sounds = [
-            { id: "s1", type: "kick", steps: [0, 4, 8, 12], url: "https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg" },
-            { id: "s2", type: "clap", steps: [4, 12], url: "https://actions.google.com/sounds/v1/doors/door_knock_3.ogg" },
-            { id: "s3", type: "hihat", steps: [0, 2, 4, 6, 8, 10, 12, 14], url: "https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg" },
-          ];
-          for (const s of sounds) {
-            const soundRef = doc(db, 'levels', l.id, 'sounds', s.id);
-            batch.set(soundRef, {
-              id: s.id,
-              levelId: l.id,
-              type: s.type,
-              sampleUrl: s.url,
-              triggerSteps: s.steps
-            });
-          }
+        const sounds = [
+          { id: `${l.id}-s1`, type: "kick", steps: [0, 4, 8, 12], url: "https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg" },
+          { id: `${l.id}-s2`, type: "clap", steps: [4, 12], url: "https://actions.google.com/sounds/v1/doors/door_knock_3.ogg" },
+          { id: `${l.id}-s3`, type: "hihat", steps: [0, 2, 4, 6, 8, 10, 12, 14], url: "https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg" },
+        ];
+        
+        for (const s of sounds) {
+          const soundRef = doc(db, 'levels', l.id, 'sounds', s.id);
+          batch.set(soundRef, {
+            id: s.id,
+            levelId: l.id,
+            type: s.type,
+            sampleUrl: s.url,
+            triggerSteps: s.steps
+          });
         }
       }
 
@@ -112,7 +121,7 @@ export default function HomePage() {
               disabled={isSeeding}
               className="bg-[#3838FA] hover:bg-[#3838FA]/80 flex gap-2"
             >
-              {isSeeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+              {isSeeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
               Demo-Daten erstellen
             </Button>
           )}
