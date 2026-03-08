@@ -14,11 +14,17 @@ export class AudioEngine {
     }
   }
 
+  async resume(): Promise<void> {
+    if (this.context && this.context.state === 'suspended') {
+      await this.context.resume();
+    }
+  }
+
   async preloadAudio(urls: string[]): Promise<void> {
     if (!this.context) return;
 
     const loadTasks = urls.map(async (url) => {
-      if (this.buffers.has(url) || !url) return;
+      if (!url || this.buffers.has(url)) return;
       try {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Fetch failed for ${url}`);
@@ -36,6 +42,12 @@ export class AudioEngine {
 
   playOneShot(url: string): void {
     if (!this.context || !this.buffers.has(url)) return;
+    
+    // Ensure context is running
+    if (this.context.state === 'suspended') {
+      this.context.resume();
+    }
+
     const source = this.context.createBufferSource();
     source.buffer = this.buffers.get(url)!;
     source.connect(this.context.destination);
@@ -44,8 +56,10 @@ export class AudioEngine {
 
   startBackingTrack(url: string): void {
     if (!this.context || !this.buffers.has(url)) return;
+    
     this.stop();
     this.startTime = this.context.currentTime;
+    
     const source = this.context.createBufferSource();
     source.buffer = this.buffers.get(url)!;
     source.loop = true;

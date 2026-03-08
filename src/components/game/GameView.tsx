@@ -40,9 +40,14 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
 
   const startMission = async () => {
     if (!audioEngine) return;
+    
+    // Resume context inside user interaction
+    await audioEngine.resume();
+    
     const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
     await audioEngine.preloadAudio(urls);
     audioEngine.startBackingTrack(project.backingTrackUrl);
+    
     setIsPlaying(true);
     setIsFinished(false);
     setScore({ hits: 0, misses: 0, accuracy: 100 });
@@ -51,9 +56,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const handlePadPress = (type: SoundType) => {
     if (!isPlaying || !audioEngine) return;
     
-    // Play sound immediately (Live Trigger)
     const sound = sounds.find(s => s.type === type);
     if (sound) {
+      // Play sound immediately (Live Trigger)
       audioEngine.playOneShot(sound.sampleUrl);
       
       // Calculate hit detection based on 16th notes
@@ -84,7 +89,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
-          // Auto-finish after 32 bars or so? Or manual. Let's say 60s for now.
+          // End session after 60 seconds (or track end)
           if (t >= 60) {
             setIsPlaying(false);
             setIsFinished(true);
@@ -117,7 +122,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       </div>
 
       <div className="relative flex-1 bg-black/40 rounded-2xl border border-white/5 overflow-hidden flex flex-col">
-        {/* Note Lanes (Simplified for production feel) */}
+        {/* Note Lanes */}
         <div className="flex-1 flex px-4">
           {sounds.map((sound) => (
             <NoteLane
