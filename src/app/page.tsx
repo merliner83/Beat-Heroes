@@ -11,6 +11,11 @@ import { Button } from '@/components/ui/button';
 import { Music, Play, Radio, Loader2, Sparkles } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 
+/**
+ * HomePage displays the available music studios.
+ * If the database is empty, it provides a "Demo-Daten erstellen" button
+ * to seed the database with initial studios, projects, and levels.
+ */
 export default function HomePage() {
   const db = useFirestore();
   const auth = useAuth();
@@ -24,6 +29,10 @@ export default function HomePage() {
 
   const { data: studios, isLoading } = useCollection<Studio>(studiosQuery);
 
+  /**
+   * Seeds the Firestore database with demo content.
+   * This includes a Studio, a Project, and 4 difficulty Levels with sounds.
+   */
   const seedDatabase = async () => {
     if (!db || !auth) return;
     setIsSeeding(true);
@@ -76,10 +85,12 @@ export default function HomePage() {
           name: l.name
         });
 
+        // Use stable and CORS-friendly audio assets from codeskulptor
         const sounds = [
           { id: `${l.id}-s1`, type: "kick", steps: [0, 4, 8, 12], url: "https://storage.googleapis.com/codeskulptor-assets/Collision8-Bit.ogg" },
           { id: `${l.id}-s2`, type: "clap", steps: [4, 12], url: "https://storage.googleapis.com/codeskulptor-assets/jump.ogg" },
           { id: `${l.id}-s3`, type: "hihat", steps: [0, 2, 4, 6, 8, 10, 12, 14], url: "https://storage.googleapis.com/codeskulptor-assets/Collision7-Bit.ogg" },
+          { id: `${l.id}-s4`, type: "perc", steps: [2, 6, 10, 14], url: "https://storage.googleapis.com/codeskulptor-assets/jump.ogg" },
         ];
         
         for (const s of sounds) {
@@ -95,6 +106,7 @@ export default function HomePage() {
       }
 
       await batch.commit();
+      console.log("Database successfully seeded.");
     } catch (e) {
       console.error("Seeding failed", e);
     } finally {
