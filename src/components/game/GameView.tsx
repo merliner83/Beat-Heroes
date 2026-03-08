@@ -8,7 +8,7 @@ import { SamplerPad } from './SamplerPad';
 import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Play, RotateCcw, Trophy, Sparkles, Home } from 'lucide-react';
+import { Play, RotateCcw, Trophy, Sparkles, Home, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -33,6 +33,7 @@ interface GameViewProps {
 
 export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
@@ -41,21 +42,32 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const startMission = async () => {
     if (!audioEngine) return;
     
-    // Resume context inside user interaction
-    await audioEngine.resume();
-    
-    const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
-    await audioEngine.preloadAudio(urls);
-    audioEngine.startBackingTrack(project.backingTrackUrl);
-    
-    setIsPlaying(true);
-    setIsFinished(false);
-    setScore({ hits: 0, misses: 0, accuracy: 100 });
+    setIsLoadingAudio(true);
+    try {
+      // Resume context inside user interaction
+      await audioEngine.resume();
+      
+      const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
+      await audioEngine.preloadAudio(urls);
+      
+      audioEngine.startBackingTrack(project.backingTrackUrl);
+      
+      setIsPlaying(true);
+      setIsFinished(false);
+      setScore({ hits: 0, misses: 0, accuracy: 100 });
+    } catch (e) {
+      console.error("Failed to start mission", e);
+    } finally {
+      setIsLoadingAudio(false);
+    }
   };
 
   const handlePadPress = (type: SoundType) => {
     if (!isPlaying || !audioEngine) return;
     
+    // Resume context if needed
+    audioEngine.resume();
+
     const sound = sounds.find(s => s.type === type);
     if (sound) {
       // Play sound immediately (Live Trigger)
@@ -67,7 +79,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       const secondsPerStep = secondsPerBeat / 4; // 16th notes
       const currentStep = time / secondsPerStep;
       
-      const tolerance = 0.3; // tolerance in steps
+      const tolerance = 0.35; // slightly higher tolerance for better feel
       const isHit = sound.triggerSteps.some(step => Math.abs(currentStep % 16 - step) <= tolerance);
 
       setScore(prev => {
@@ -89,7 +101,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
-          // End session after 60 seconds (or track end)
+          // End session after 60 seconds (or track end - for demo we keep 60s)
           if (t >= 60) {
             setIsPlaying(false);
             setIsFinished(true);
@@ -155,8 +167,20 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               <Sparkles className="w-12 h-12 text-[#993DEB] mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">Ready to Drop?</h2>
               <p className="text-sm opacity-70 mb-8">Lock in the patterns. Use keys A, S, D, F to play live.</p>
-              <Button onClick={startMission} className="w-full h-14 text-lg bg-[#993DEB] hover:bg-[#802ECC]">
-                <Play className="mr-2" /> Start Mission
+              <Button 
+                onClick={startMission} 
+                disabled={isLoadingAudio}
+                className="w-full h-14 text-lg bg-[#993DEB] hover:bg-[#802ECC]"
+              >
+                {isLoadingAudio ? (
+                  <>
+                    <Loader2 className="mr-2 animate-spin" /> Loading Sounds...
+                  </>
+                ) : (
+                  <>
+                    <Play className="mr-2" /> Start Mission
+                  </>
+                )}
               </Button>
             </Card>
           </div>
