@@ -73,12 +73,11 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       const isResumed = await audioEngine.resume();
       if (!isResumed) throw new Error("AudioContext failed to resume");
 
-      if (!backingTrackReady) {
-        // Try one last time to preload if not ready
-        await audioEngine.preloadAudio([project.backingTrackUrl]);
+      if (backingTrackReady) {
+        await audioEngine.startBackingTrack(project.backingTrackUrl);
+      } else {
+        console.warn("Starting mission without backing track (CORS or Load Error)");
       }
-      
-      await audioEngine.startBackingTrack(project.backingTrackUrl);
       
       setIsPlaying(true);
       setIsFinished(false);
@@ -265,7 +264,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                   </>
                 ) : (
                   <>
-                    <Play className="mr-2" /> Start Mission
+                    <Play className="mr-2" /> {backingTrackFailed ? "Start Anyway" : "Start Mission"}
                   </>
                 )}
               </Button>

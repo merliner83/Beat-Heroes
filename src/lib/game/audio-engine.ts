@@ -84,7 +84,7 @@ export class AudioEngine {
       
       this.loadingStatus.set(url, 'loading');
       try {
-        // Absolute minimal fetch to avoid CORS preflight issues
+        // Simplified fetch to avoid CORS preflight issues where possible
         const response = await fetch(url);
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
