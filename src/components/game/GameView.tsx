@@ -55,9 +55,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     setIsLoadingAudio(true);
     
     try {
-      const running = await audioEngine.resume();
-      if (!running) {
-        console.warn("Audio Context could not be started.");
+      const isReady = await audioEngine.resume();
+      if (!isReady) {
+        throw new Error("Audio Context could not be started.");
       }
 
       const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
@@ -74,39 +74,40 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     }
   };
 
-  const handlePadPress = async (type: SoundType) => {
+  const handlePadPress = (type: SoundType) => {
     if (!audioEngine) return;
 
-    // Force resume on interaction
-    audioEngine.resume();
-
+    // Trigger audio immediately (One-Shot)
     const sound = sounds.find(s => s.type === type);
     if (sound) {
-      // PLAY SOUND REGARDLESS OF LEVEL (Feedback)
       audioEngine.playOneShot(sound.sampleUrl);
-      
-      // LOGIC FOR SCORING (Only if playable in current level)
-      if (isPlaying) {
-        const isPlayable = checkIsPlayable(type, level.difficulty);
-        if (isPlayable) {
-          const time = audioEngine.getCurrentTime();
-          const secondsPerBeat = 60 / project.bpm;
-          const secondsPerStep = secondsPerBeat / 4;
-          const currentStep = time / secondsPerStep;
-          const tolerance = 0.35;
-          const isHit = sound.triggerSteps.some(step => Math.abs(currentStep % 16 - step) <= tolerance);
+    }
 
-          setScore(prev => {
-            const nextHits = isHit ? prev.hits + 1 : prev.hits;
-            const nextMisses = isHit ? prev.misses : prev.misses + 1;
-            const total = nextHits + nextMisses;
-            return {
-              hits: nextHits,
-              misses: nextMisses,
-              accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
-            };
-          });
-        }
+    // Logic for scoring (Only if playable in current level and game is running)
+    if (isPlaying) {
+      const isPlayable = checkIsPlayable(type, level.difficulty);
+      if (isPlayable && sound) {
+        const time = audioEngine.getCurrentTime();
+        const secondsPerBeat = 60 / project.bpm;
+        const secondsPerStep = secondsPerBeat / 4;
+        const currentStep = time / secondsPerStep;
+        const tolerance = 0.35;
+        
+        const isHit = sound.triggerSteps.some(step => {
+          const relativeStep = currentStep % 16;
+          return Math.abs(relativeStep - step) <= tolerance;
+        });
+
+        setScore(prev => {
+          const nextHits = isHit ? prev.hits + 1 : prev.hits;
+          const nextMisses = isHit ? prev.misses : prev.misses + 1;
+          const total = nextHits + nextMisses;
+          return {
+            hits: nextHits,
+            misses: nextMisses,
+            accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
+          };
+        });
       }
     }
   };
@@ -115,7 +116,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     if (difficulty === 1) return type === 'kick';
     if (difficulty === 2) return type === 'clap';
     if (difficulty === 3) return type === 'percs';
-    return true; 
+    return true; // Difficulty 4: All playable
   };
 
   useEffect(() => {
@@ -124,6 +125,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
+          // Auto stop after 60 seconds or end of track
           if (t >= 60) {
             setIsPlaying(false);
             setIsFinished(true);
@@ -204,7 +206,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
             <Card className="p-10 bg-[#1F1A23] border-[#993DEB] border text-center max-w-sm">
               <Music2 className="w-12 h-12 text-[#993DEB] mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">Ready?</h2>
-              <p className="text-sm opacity-70 mb-8">Click below to start the mission and unlock audio.</p>
+              <p className="text-sm opacity-70 mb-8">Click start to unlock your audio and begin the mission.</p>
               <Button 
                 onClick={startMission} 
                 disabled={isLoadingAudio}
@@ -212,7 +214,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               >
                 {isLoadingAudio ? (
                   <>
-                    <Loader2 className="mr-2 animate-spin" /> Loading...
+                    <Loader2 className="mr-2 animate-spin" /> Loading Audio...
                   </>
                 ) : (
                   <>

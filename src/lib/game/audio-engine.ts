@@ -8,12 +8,12 @@
 export class AudioEngine {
   private context: AudioContext | null = null;
   private buffers: Map<string, AudioBuffer> = new Map();
-  private sources: Map<string, AudioBufferSourceNode> = new Map();
+  private sources: Set<AudioBufferSourceNode> = new Set();
   private masterGain: GainNode | null = null;
   private startTime: number = 0;
 
   constructor() {
-    console.log('AudioEngine: Initialized (Waiting for user interaction)');
+    console.log('AudioEngine: Instance created. Waiting for user interaction to initialize context.');
   }
 
   /**
@@ -26,13 +26,10 @@ export class AudioEngine {
     if (!this.context) {
       try {
         const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
-        if (!AudioContextClass) return false;
-        
         this.context = new AudioContextClass();
         this.masterGain = this.context.createGain();
         this.masterGain.connect(this.context.destination);
-        this.masterGain.gain.value = 1.0;
-        console.log('AudioEngine: Context created. SampleRate:', this.context.sampleRate);
+        console.log('AudioEngine: Context initialized. SampleRate:', this.context.sampleRate);
       } catch (e) {
         console.error('AudioEngine: Failed to create AudioContext', e);
         return false;
@@ -41,24 +38,31 @@ export class AudioEngine {
 
     if (this.context.state === 'suspended') {
       await this.context.resume();
-      console.log('AudioEngine: Context resumed.');
+      console.log('AudioEngine: Context resumed from suspended state.');
     }
 
-    // Unlock audio with a silent buffer (critical for iOS/Safari)
-    const silentBuffer = this.context.createBuffer(1, 1, 22050);
-    const silentSource = this.context.createBufferSource();
-    silentSource.buffer = silentBuffer;
-    silentSource.connect(this.context.destination);
-    silentSource.start(0);
+    // Play a silent/short beep to "unlock" audio on mobile/Safari
+    this.playUnlockSound();
 
     return this.context.state === 'running';
   }
 
+  private playUnlockSound() {
+    if (!this.context || !this.masterGain) return;
+    const osc = this.context.createOscillator();
+    const g = this.context.createGain();
+    osc.connect(g);
+    g.connect(this.masterGain);
+    g.gain.setValueAtTime(0.001, this.context.currentTime);
+    osc.start();
+    osc.stop(this.context.currentTime + 0.01);
+  }
+
   getAudioStatus() {
-    if (!this.context) return { state: 'Init...', sampleRate: '-' };
+    if (!this.context) return { state: 'uninitialized', sampleRate: '-' };
     return {
       state: this.context.state,
-      sampleRate: `${Math.round(this.context.sampleRate / 100) / 10} kHz`
+      sampleRate: `${this.context.sampleRate / 1000}kHz`
     };
   }
 
@@ -71,34 +75,31 @@ export class AudioEngine {
     await Promise.all(uniqueUrls.map(async (url) => {
       if (this.buffers.has(url)) return;
       try {
-        console.log(`AudioEngine: Loading ${url}...`);
-        const response = await fetch(url, { mode: 'cors' });
+        console.log(`AudioEngine: Fetching ${url}...`);
+        const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const arrayBuffer = await response.arrayBuffer();
         const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
         this.buffers.set(url, audioBuffer);
-        console.log(`AudioEngine: Successfully loaded ${url}`);
+        console.log(`AudioEngine: Loaded & Decoded ${url} (${audioBuffer.duration.toFixed(2)}s)`);
       } catch (e) {
-        console.warn(`AudioEngine: Could not load ${url}. Skipping.`, e);
+        console.error(`AudioEngine: Error loading ${url}`, e);
       }
     }));
   }
 
   playOneShot(url: string) {
     if (!this.context || !this.masterGain) {
-      this.resume();
+      this.resume().then(() => {
+        if (this.buffers.has(url)) this.playOneShot(url);
+      });
       return;
-    }
-    
-    // Safety check: Context might suspend if unused
-    if (this.context.state !== 'running') {
-      this.context.resume();
     }
 
     const buffer = this.buffers.get(url);
     if (!buffer) {
-      console.warn('AudioEngine: No buffer found for', url);
+      console.warn('AudioEngine: Buffer not ready for', url);
       return;
     }
 
@@ -107,8 +108,14 @@ export class AudioEngine {
       source.buffer = buffer;
       source.connect(this.masterGain);
       source.start(0);
+      
+      // Cleanup
+      source.onended = () => {
+        this.sources.delete(source);
+      };
+      this.sources.add(source);
     } catch (e) {
-      console.error('AudioEngine: Playback failed', e);
+      console.error('AudioEngine: One-shot playback failed', e);
     }
   }
 
@@ -126,7 +133,7 @@ export class AudioEngine {
       source.loop = true;
       source.connect(this.masterGain);
       source.start(0);
-      this.sources.set('backing', source);
+      this.sources.add(source);
     } catch (e) {
       console.error('AudioEngine: Backing track failed', e);
     }
