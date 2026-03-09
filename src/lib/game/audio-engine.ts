@@ -24,7 +24,7 @@ export class AudioEngine {
     if (!this.context) {
       try {
         const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
-        // Fix sample rate to 44.1 kHz for consistent playback across devices
+        // Fix sample rate to 44.1 kHz as requested for consistent playback
         this.context = new AudioContextClass({ sampleRate: 44100 });
         this.masterGain = this.context.createGain();
         this.masterGain.connect(this.context.destination);
@@ -86,7 +86,7 @@ export class AudioEngine {
       
       this.loadingStatus.set(url, 'loading');
       try {
-        // Fetch audio file. Note: External URLs require valid CORS headers.
+        // Simplified fetch to avoid CORS preflight issues where possible
         const response = await fetch(url);
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -98,7 +98,7 @@ export class AudioEngine {
         this.loadingStatus.set(url, 'ready');
         console.log(`AudioEngine: Successfully loaded ${url}`);
       } catch (e) {
-        console.warn(`AudioEngine: FAILED to load ${url}. This is often a CORS issue or invalid file format.`, e);
+        console.warn(`AudioEngine: FAILED to load ${url}. This is often a CORS issue.`, e);
         this.loadingStatus.set(url, 'failed');
       }
     }));
@@ -113,10 +113,6 @@ export class AudioEngine {
     const buffer = this.buffers.get(url);
     if (!buffer) {
       console.warn('AudioEngine: No buffer available for', url);
-      // Trigger background load if not already attempted
-      if (this.loadingStatus.get(url) !== 'loading' && this.loadingStatus.get(url) !== 'ready') {
-        this.preloadAudio([url]);
-      }
       return;
     }
 
