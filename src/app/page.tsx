@@ -11,9 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Music, Play, Radio, Loader2, Sparkles } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 
-/**
- * HomePage displays the available music studios and handles demo data seeding.
- */
 export default function HomePage() {
   const db = useFirestore();
   const auth = useAuth();
@@ -38,14 +35,13 @@ export default function HomePage() {
       }
 
       const batch = writeBatch(db);
-      
       const studioId = "leo-beats-studio";
       const projectId = "cyber-drift";
       
       batch.set(doc(db, 'studios', studioId), {
         id: studioId,
         name: "Leo Beats Studio",
-        description: "Dein Hub für futuristische Drum-Produktionen.",
+        description: "Lerne die Grundlagen der Beat-Produktion.",
         coverColor: "#993DEB",
         ownerUserId: currentUserId
       });
@@ -59,10 +55,10 @@ export default function HomePage() {
       });
 
       const levelsData = [
-        { id: "lvl-1", name: "Only KICK", diff: 1 },
-        { id: "lvl-2", name: "Only CLAP", diff: 2 },
-        { id: "lvl-3", name: "Only PERCS", diff: 3 },
-        { id: "lvl-4", name: "Full Beat (MISC focus)", diff: 4 },
+        { id: "lvl-1", name: "Level 1: KICK Only", diff: 1 },
+        { id: "lvl-2", name: "Level 2: CLAP Only", diff: 2 },
+        { id: "lvl-3", name: "Level 3: PERCS Only", diff: 3 },
+        { id: "lvl-4", name: "Level 4: Full Mix", diff: 4 },
       ];
 
       for (const l of levelsData) {
@@ -73,7 +69,6 @@ export default function HomePage() {
           name: l.name
         });
 
-        // Use stable, high-availability URLs for the pads
         const sounds = [
           { type: "kick", steps: [0, 4, 8, 12], url: "https://storage.googleapis.com/codeskulptor-assets/Collision8-Bit.ogg" },
           { type: "clap", steps: [4, 12], url: "https://storage.googleapis.com/codeskulptor-assets/jump.ogg" },
@@ -94,7 +89,7 @@ export default function HomePage() {
       }
 
       await batch.commit();
-      window.location.reload(); // Refresh to see changes
+      window.location.reload();
     } catch (e) {
       console.error("Seeding failed", e);
     } finally {
@@ -114,16 +109,14 @@ export default function HomePage() {
       <main className="p-8">
         <div className="flex justify-between items-end mb-8">
           <h2 className="text-4xl font-bold">Wähle dein <span className="text-[#993DEB]">Studio</span></h2>
-          {(!studios || studios.length === 0) && !isLoading && (
-            <Button 
-              onClick={seedDatabase} 
-              disabled={isSeeding}
-              className="bg-[#3838FA] hover:bg-[#3838FA]/80 flex gap-2"
-            >
-              {isSeeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              Demo-Daten erstellen
-            </Button>
-          )}
+          <Button 
+            onClick={seedDatabase} 
+            disabled={isSeeding}
+            className="bg-[#3838FA] hover:bg-[#3838FA]/80 flex gap-2"
+          >
+            {isSeeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            Demo-Daten erstellen
+          </Button>
         </div>
         
         {isLoading ? (
@@ -153,12 +146,6 @@ export default function HomePage() {
                 </Card>
               </Link>
             ))}
-            {studios?.length === 0 && !isSeeding && (
-              <div className="col-span-full py-20 text-center flex flex-col items-center gap-4 border-2 border-dashed border-white/5 rounded-2xl">
-                <p className="opacity-40 italic">Keine Studios gefunden.</p>
-                <p className="text-sm opacity-60 max-w-xs">Klicke oben auf "Demo-Daten erstellen", um direkt loszulegen!</p>
-              </div>
-            )}
           </div>
         )}
       </main>

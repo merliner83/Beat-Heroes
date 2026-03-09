@@ -41,10 +41,12 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
 
   const startMission = async () => {
     if (!audioEngine) return;
-    
     setIsLoadingAudio(true);
+    
     try {
-      await audioEngine.resume();
+      const unlocked = await audioEngine.resume();
+      if (!unlocked) console.warn("AudioContext could not be unlocked.");
+
       const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
       await audioEngine.preloadAudio(urls);
       await audioEngine.startBackingTrack(project.backingTrackUrl);
@@ -53,54 +55,47 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       setIsFinished(false);
       setScore({ hits: 0, misses: 0, accuracy: 100 });
     } catch (e) {
-      console.error("Failed to start mission", e);
+      console.error("Game startup failed", e);
     } finally {
       setIsLoadingAudio(false);
     }
   };
 
   const handlePadPress = async (type: SoundType) => {
-    if (!isPlaying || !audioEngine) return;
-    
-    // Check if playable in this level
     const isPlayable = checkIsPlayable(type, level.difficulty);
-    if (!isPlayable) return;
+    if (!isPlayable || !audioEngine) return;
 
     const sound = sounds.find(s => s.type === type);
     if (sound) {
-      // Play sound via engine
       audioEngine.playOneShot(sound.sampleUrl);
       
-      const time = audioEngine.getCurrentTime();
-      const secondsPerBeat = 60 / project.bpm;
-      const secondsPerStep = secondsPerBeat / 4;
-      const currentStep = time / secondsPerStep;
-      
-      const tolerance = 0.35;
-      const isHit = sound.triggerSteps.some(step => Math.abs(currentStep % 16 - step) <= tolerance);
+      if (isPlaying) {
+        const time = audioEngine.getCurrentTime();
+        const secondsPerBeat = 60 / project.bpm;
+        const secondsPerStep = secondsPerBeat / 4;
+        const currentStep = time / secondsPerStep;
+        const tolerance = 0.35;
+        const isHit = sound.triggerSteps.some(step => Math.abs(currentStep % 16 - step) <= tolerance);
 
-      setScore(prev => {
-        const nextHits = isHit ? prev.hits + 1 : prev.hits;
-        const nextMisses = isHit ? prev.misses : prev.misses + 1;
-        const total = nextHits + nextMisses;
-        return {
-          hits: nextHits,
-          misses: nextMisses,
-          accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
-        };
-      });
-    } else {
-      console.warn(`Sound for type ${type} not found in this level.`);
+        setScore(prev => {
+          const nextHits = isHit ? prev.hits + 1 : prev.hits;
+          const nextMisses = isHit ? prev.misses : prev.misses + 1;
+          const total = nextHits + nextMisses;
+          return {
+            hits: nextHits,
+            misses: nextMisses,
+            accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
+          };
+        });
+      }
     }
   };
 
-  // Level Logic for Pad availability
   const checkIsPlayable = (type: SoundType, difficulty: number) => {
     if (difficulty === 1) return type === 'kick';
     if (difficulty === 2) return type === 'clap';
     if (difficulty === 3) return type === 'percs';
-    if (difficulty === 4) return true; // All playable for MISC/Full Beat level
-    return true;
+    return true; 
   };
 
   useEffect(() => {
@@ -175,8 +170,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
             <Card className="p-10 bg-[#1F1A23] border-[#993DEB] border text-center max-w-sm">
               <Music2 className="w-12 h-12 text-[#993DEB] mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Bereit?</h2>
-              <p className="text-sm opacity-70 mb-8">Triff die Noten im Rhythmus. Nutze A, S, D, F.</p>
+              <h2 className="text-2xl font-bold mb-2">Sound Check?</h2>
+              <p className="text-sm opacity-70 mb-8">Klicke unten, um das Studio zu laden und den Sound freizuschalten.</p>
               <Button 
                 onClick={startMission} 
                 disabled={isLoadingAudio}
@@ -184,7 +179,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               >
                 {isLoadingAudio ? (
                   <>
-                    <Loader2 className="mr-2 animate-spin" /> Lade Sounds...
+                    <Loader2 className="mr-2 animate-spin" /> Lade Samples...
                   </>
                 ) : (
                   <>
@@ -202,7 +197,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
               <h2 className="text-4xl font-bold">Session Beendet</h2>
               <p className="text-[#3838FA] font-bold text-xl">{score.accuracy}% Präzision</p>
-              
               <div className="flex gap-4">
                 <Button onClick={startMission} variant="outline" className="flex-1 h-12 border-white/20">
                   <RotateCcw className="mr-2 h-4 w-4" /> Noch mal
@@ -216,16 +210,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
             </div>
           </div>
         )}
-      </div>
-
-      <div className="mt-4 flex justify-between items-center px-2 text-[10px] font-bold uppercase tracking-widest opacity-40">
-        <div className="flex gap-4">
-           <span>Kick: A</span>
-           <span>Clap: S</span>
-           <span>Percs: D</span>
-           <span>Misc: F</span>
-        </div>
-        <span>{Math.floor(currentTime)}s</span>
       </div>
     </div>
   );
