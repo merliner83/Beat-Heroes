@@ -62,6 +62,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
 
       const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
       await audioEngine.preloadAudio(urls);
+      
+      // Even if some samples failed, try to start
       await audioEngine.startBackingTrack(project.backingTrackUrl);
       
       setIsPlaying(true);

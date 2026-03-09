@@ -37,8 +37,12 @@ export class AudioEngine {
     }
 
     if (this.context.state === 'suspended') {
-      await this.context.resume();
-      console.log('AudioEngine: Context resumed from suspended state.');
+      try {
+        await this.context.resume();
+        console.log('AudioEngine: Context resumed successfully.');
+      } catch (e) {
+        console.error('AudioEngine: Context resume failed', e);
+      }
     }
 
     // Play a silent/short beep to "unlock" audio on mobile/Safari
@@ -49,20 +53,24 @@ export class AudioEngine {
 
   private playUnlockSound() {
     if (!this.context || !this.masterGain) return;
-    const osc = this.context.createOscillator();
-    const g = this.context.createGain();
-    osc.connect(g);
-    g.connect(this.masterGain);
-    g.gain.setValueAtTime(0.001, this.context.currentTime);
-    osc.start();
-    osc.stop(this.context.currentTime + 0.01);
+    try {
+      const osc = this.context.createOscillator();
+      const g = this.context.createGain();
+      osc.connect(g);
+      g.connect(this.masterGain);
+      g.gain.setValueAtTime(0.001, this.context.currentTime);
+      osc.start();
+      osc.stop(this.context.currentTime + 0.01);
+    } catch (e) {
+      // Ignore unlock sound errors
+    }
   }
 
   getAudioStatus() {
     if (!this.context) return { state: 'uninitialized', sampleRate: '-' };
     return {
       state: this.context.state,
-      sampleRate: `${this.context.sampleRate / 1000}kHz`
+      sampleRate: `${(this.context.sampleRate / 1000).toFixed(1)}kHz`
     };
   }
 
@@ -76,21 +84,36 @@ export class AudioEngine {
       if (this.buffers.has(url)) return;
       try {
         console.log(`AudioEngine: Fetching ${url}...`);
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        // Using a controller to timeout long-hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const response = await fetch(url, { 
+          signal: controller.signal,
+          mode: 'cors', // Explicitly request CORS
+          credentials: 'omit'
+        });
+        
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} for ${url}`);
+        }
         
         const arrayBuffer = await response.arrayBuffer();
         const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
         this.buffers.set(url, audioBuffer);
         console.log(`AudioEngine: Loaded & Decoded ${url} (${audioBuffer.duration.toFixed(2)}s)`);
-      } catch (e) {
-        console.error(`AudioEngine: Error loading ${url}`, e);
+      } catch (e: any) {
+        // Log individual failures but don't stop the whole preload
+        console.warn(`AudioEngine: Individual sample failed to load: ${url}`, e.message || e);
       }
     }));
   }
 
   playOneShot(url: string) {
     if (!this.context || !this.masterGain) {
+      // Try to resume on any pad press as a safety measure
       this.resume().then(() => {
         if (this.buffers.has(url)) this.playOneShot(url);
       });
@@ -120,11 +143,19 @@ export class AudioEngine {
   }
 
   async startBackingTrack(url: string) {
-    await this.resume();
+    const isReady = await this.resume();
+    if (!isReady) {
+      console.error('AudioEngine: Cannot start backing track - Context not running');
+      return;
+    }
+
     this.stop();
 
     const buffer = this.buffers.get(url);
-    if (!buffer || !this.context || !this.masterGain) return;
+    if (!buffer || !this.context || !this.masterGain) {
+      console.warn('AudioEngine: Backing track buffer not found or engine not ready');
+      return;
+    }
 
     this.startTime = this.context.currentTime;
     try {
@@ -135,7 +166,7 @@ export class AudioEngine {
       source.start(0);
       this.sources.add(source);
     } catch (e) {
-      console.error('AudioEngine: Backing track failed', e);
+      console.error('AudioEngine: Backing track playback failed', e);
     }
   }
 
