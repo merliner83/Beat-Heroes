@@ -69,7 +69,7 @@ export default function HomePage() {
           name: l.name
         });
 
-        // Using high-reliability, CORS-friendly samples from CodeSkulptor/Google
+        // Using high-reliability assets from CodeSkulptor/Google with known open CORS
         const sounds = [
           { type: "kick", steps: [0, 4, 8, 12], url: "https://storage.googleapis.com/codeskulptor-assets/Collision8-Bit.ogg" },
           { type: "clap", steps: [4, 12], url: "https://storage.googleapis.com/codeskulptor-assets/jump.ogg" },

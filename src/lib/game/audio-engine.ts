@@ -34,7 +34,11 @@ export class AudioEngine {
     }
 
     if (this.context.state === 'suspended') {
-      await this.context.resume();
+      try {
+        await this.context.resume();
+      } catch (e) {
+        console.error('AudioEngine: Failed to resume context', e);
+      }
     }
 
     // Play a silent click to unlock audio on mobile/Safari
@@ -50,9 +54,9 @@ export class AudioEngine {
       const g = this.context.createGain();
       osc.connect(g);
       g.connect(this.masterGain);
-      g.gain.setValueAtTime(0.01, this.context.currentTime);
+      g.gain.setValueAtTime(0.001, this.context.currentTime);
       osc.start();
-      osc.stop(this.context.currentTime + 0.05);
+      osc.stop(this.context.currentTime + 0.01);
     } catch (e) {}
   }
 
@@ -76,11 +80,12 @@ export class AudioEngine {
     
     await Promise.all(uniqueUrls.map(async (url) => {
       if (this.buffers.has(url)) return;
+      if (this.loadingStatus.get(url) === 'loading') return;
       
       this.loadingStatus.set(url, 'loading');
       try {
-        // Simplified fetch to avoid CORS preflight issues where possible
-        const response = await fetch(url, { mode: 'cors' });
+        // Simple fetch without explicit mode: 'cors' often works better for public assets
+        const response = await fetch(url);
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
@@ -89,9 +94,9 @@ export class AudioEngine {
         
         this.buffers.set(url, audioBuffer);
         this.loadingStatus.set(url, 'ready');
-        console.log(`AudioEngine: Loaded ${url}`);
+        console.log(`AudioEngine: Successfully loaded ${url}`);
       } catch (e) {
-        console.error(`AudioEngine: FAILED to load ${url}`, e);
+        console.warn(`AudioEngine: FAILED to load ${url}. This is often a CORS issue.`, e);
         this.loadingStatus.set(url, 'failed');
       }
     }));
@@ -105,9 +110,9 @@ export class AudioEngine {
 
     const buffer = this.buffers.get(url);
     if (!buffer) {
-      console.warn('AudioEngine: Buffer not loaded for', url);
-      // Try to load it on the fly if it failed or was skipped
-      if (this.loadingStatus.get(url) !== 'loading') {
+      console.warn('AudioEngine: No buffer available for', url);
+      // Trigger background load if not already attempted
+      if (this.loadingStatus.get(url) !== 'loading' && this.loadingStatus.get(url) !== 'ready') {
         this.preloadAudio([url]);
       }
       return;
@@ -135,7 +140,10 @@ export class AudioEngine {
     this.stop();
 
     const buffer = this.buffers.get(url);
-    if (!buffer || !this.context || !this.masterGain) return;
+    if (!buffer || !this.context || !this.masterGain) {
+      console.error('AudioEngine: Backing track buffer not ready');
+      return;
+    }
 
     this.startTime = this.context.currentTime;
     try {
@@ -145,8 +153,9 @@ export class AudioEngine {
       source.connect(this.masterGain);
       source.start(0);
       this.sources.add(source);
+      console.log('AudioEngine: Backing track started');
     } catch (e) {
-      console.error('AudioEngine: Backing track failed', e);
+      console.error('AudioEngine: Backing track failed to start', e);
     }
   }
 
