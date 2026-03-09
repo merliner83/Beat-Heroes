@@ -3,7 +3,7 @@
 
 /**
  * AudioEngine handles the loading, decoding, and playback of audio samples
- * using the Web Audio API. It is optimized for low-latency rhythm games.
+ * using the Web Audio API. Optimized for low-latency rhythm games.
  */
 export class AudioEngine {
   private context: AudioContext | null = null;
@@ -60,7 +60,7 @@ export class AudioEngine {
     if (!this.context) return { state: 'Nicht initialisiert', sampleRate: '-' };
     return {
       state: this.context.state,
-      sampleRate: `${this.context.sampleRate / 1000} kHz`,
+      sampleRate: `${Math.round(this.context.sampleRate / 100) / 10} kHz`,
       destination: 'System Default'
     };
   }
@@ -69,7 +69,10 @@ export class AudioEngine {
    * Preloads multiple audio files and decodes them into buffers.
    */
   async preloadAudio(urls: string[]): Promise<void> {
-    await this.resume();
+    if (!this.context) {
+      await this.resume();
+    }
+    
     if (!this.context) return;
 
     const uniqueUrls = Array.from(new Set(urls.filter(u => !!u)));
@@ -94,9 +97,11 @@ export class AudioEngine {
    * Plays a preloaded sound as a one-shot effect.
    */
   playOneShot(url: string) {
-    if (!this.context || !this.masterGain) return;
+    if (!this.context || !this.masterGain) {
+      this.resume();
+      return;
+    }
     
-    // Always try to resume context on interaction
     if (this.context.state !== 'running') {
       this.context.resume();
     }
