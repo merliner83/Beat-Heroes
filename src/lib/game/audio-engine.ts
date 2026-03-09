@@ -11,15 +11,12 @@ export class AudioEngine {
   private sources: Set<AudioBufferSourceNode> = new Set();
   private masterGain: GainNode | null = null;
   private startTime: number = 0;
+  private loadingStatus: Map<string, 'loading' | 'ready' | 'failed'> = new Map();
 
   constructor() {
-    console.log('AudioEngine: Instance created. Waiting for user interaction to initialize context.');
+    console.log('AudioEngine: Instance created.');
   }
 
-  /**
-   * Initializes or resumes the AudioContext.
-   * MUST be triggered by a user gesture.
-   */
   async resume(): Promise<boolean> {
     if (typeof window === "undefined") return false;
 
@@ -29,7 +26,7 @@ export class AudioEngine {
         this.context = new AudioContextClass();
         this.masterGain = this.context.createGain();
         this.masterGain.connect(this.context.destination);
-        console.log('AudioEngine: Context initialized. SampleRate:', this.context.sampleRate);
+        console.log('AudioEngine: Context initialized. Status:', this.context.state);
       } catch (e) {
         console.error('AudioEngine: Failed to create AudioContext', e);
         return false;
@@ -37,15 +34,10 @@ export class AudioEngine {
     }
 
     if (this.context.state === 'suspended') {
-      try {
-        await this.context.resume();
-        console.log('AudioEngine: Context resumed successfully.');
-      } catch (e) {
-        console.error('AudioEngine: Context resume failed', e);
-      }
+      await this.context.resume();
     }
 
-    // Play a silent/short beep to "unlock" audio on mobile/Safari
+    // Play a silent click to unlock audio on mobile/Safari
     this.playUnlockSound();
 
     return this.context.state === 'running';
@@ -58,12 +50,10 @@ export class AudioEngine {
       const g = this.context.createGain();
       osc.connect(g);
       g.connect(this.masterGain);
-      g.gain.setValueAtTime(0.001, this.context.currentTime);
+      g.gain.setValueAtTime(0.01, this.context.currentTime);
       osc.start();
-      osc.stop(this.context.currentTime + 0.01);
-    } catch (e) {
-      // Ignore unlock sound errors
-    }
+      osc.stop(this.context.currentTime + 0.05);
+    } catch (e) {}
   }
 
   getAudioStatus() {
@@ -74,6 +64,10 @@ export class AudioEngine {
     };
   }
 
+  getLoadStatus(url: string) {
+    return this.loadingStatus.get(url) || 'idle';
+  }
+
   async preloadAudio(urls: string[]): Promise<void> {
     if (!this.context) await this.resume();
     if (!this.context) return;
@@ -82,80 +76,66 @@ export class AudioEngine {
     
     await Promise.all(uniqueUrls.map(async (url) => {
       if (this.buffers.has(url)) return;
+      
+      this.loadingStatus.set(url, 'loading');
       try {
-        console.log(`AudioEngine: Fetching ${url}...`);
-        // Using a controller to timeout long-hanging requests
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-        const response = await fetch(url, { 
-          signal: controller.signal,
-          mode: 'cors', // Explicitly request CORS
-          credentials: 'omit'
-        });
+        // Simplified fetch to avoid CORS preflight issues where possible
+        const response = await fetch(url, { mode: 'cors' });
         
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status} for ${url}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const arrayBuffer = await response.arrayBuffer();
         const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
+        
         this.buffers.set(url, audioBuffer);
-        console.log(`AudioEngine: Loaded & Decoded ${url} (${audioBuffer.duration.toFixed(2)}s)`);
-      } catch (e: any) {
-        // Log individual failures but don't stop the whole preload
-        console.warn(`AudioEngine: Individual sample failed to load: ${url}`, e.message || e);
+        this.loadingStatus.set(url, 'ready');
+        console.log(`AudioEngine: Loaded ${url}`);
+      } catch (e) {
+        console.error(`AudioEngine: FAILED to load ${url}`, e);
+        this.loadingStatus.set(url, 'failed');
       }
     }));
   }
 
   playOneShot(url: string) {
-    if (!this.context || !this.masterGain) {
-      // Try to resume on any pad press as a safety measure
-      this.resume().then(() => {
-        if (this.buffers.has(url)) this.playOneShot(url);
-      });
+    if (!this.context) {
+      this.resume();
       return;
     }
 
     const buffer = this.buffers.get(url);
     if (!buffer) {
-      console.warn('AudioEngine: Buffer not ready for', url);
+      console.warn('AudioEngine: Buffer not loaded for', url);
+      // Try to load it on the fly if it failed or was skipped
+      if (this.loadingStatus.get(url) !== 'loading') {
+        this.preloadAudio([url]);
+      }
       return;
     }
 
     try {
+      if (this.context.state === 'suspended') this.context.resume();
+      
       const source = this.context.createBufferSource();
       source.buffer = buffer;
-      source.connect(this.masterGain);
+      source.connect(this.masterGain!);
       source.start(0);
       
-      // Cleanup
       source.onended = () => {
         this.sources.delete(source);
       };
       this.sources.add(source);
     } catch (e) {
-      console.error('AudioEngine: One-shot playback failed', e);
+      console.error('AudioEngine: Playback failed', e);
     }
   }
 
   async startBackingTrack(url: string) {
-    const isReady = await this.resume();
-    if (!isReady) {
-      console.error('AudioEngine: Cannot start backing track - Context not running');
-      return;
-    }
-
+    await this.resume();
     this.stop();
 
     const buffer = this.buffers.get(url);
-    if (!buffer || !this.context || !this.masterGain) {
-      console.warn('AudioEngine: Backing track buffer not found or engine not ready');
-      return;
-    }
+    if (!buffer || !this.context || !this.masterGain) return;
 
     this.startTime = this.context.currentTime;
     try {
@@ -166,7 +146,7 @@ export class AudioEngine {
       source.start(0);
       this.sources.add(source);
     } catch (e) {
-      console.error('AudioEngine: Backing track playback failed', e);
+      console.error('AudioEngine: Backing track failed', e);
     }
   }
 

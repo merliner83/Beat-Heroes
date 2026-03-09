@@ -9,7 +9,7 @@ import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Play, RotateCcw, Trophy, Home, Loader2, Music2, Activity } from 'lucide-react';
+import { Play, RotateCcw, Trophy, Home, Loader2, Music2, Activity, CheckCircle2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -42,28 +42,28 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const frameRef = useRef<number>(null);
 
   useEffect(() => {
+    // Background preload
+    if (audioEngine) {
+      const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
+      audioEngine.preloadAudio(urls);
+    }
+
     const interval = setInterval(() => {
       if (audioEngine) {
         setAudioStatus(audioEngine.getAudioStatus());
       }
     }, 500);
     return () => clearInterval(interval);
-  }, []);
+  }, [project, sounds]);
 
   const startMission = async () => {
     if (!audioEngine) return;
     setIsLoadingAudio(true);
     
     try {
-      const isReady = await audioEngine.resume();
-      if (!isReady) {
-        throw new Error("Audio Context could not be started.");
-      }
-
+      await audioEngine.resume();
       const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
       await audioEngine.preloadAudio(urls);
-      
-      // Even if some samples failed, try to start
       await audioEngine.startBackingTrack(project.backingTrackUrl);
       
       setIsPlaying(true);
@@ -79,13 +79,13 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const handlePadPress = (type: SoundType) => {
     if (!audioEngine) return;
 
-    // Trigger audio immediately (One-Shot)
+    // Trigger audio immediately (One-Shot) - works regardless of level or mission state
     const sound = sounds.find(s => s.type === type);
     if (sound) {
       audioEngine.playOneShot(sound.sampleUrl);
     }
 
-    // Logic for scoring (Only if playable in current level and game is running)
+    // Logic for scoring
     if (isPlaying) {
       const isPlayable = checkIsPlayable(type, level.difficulty);
       if (isPlayable && sound) {
@@ -118,7 +118,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     if (difficulty === 1) return type === 'kick';
     if (difficulty === 2) return type === 'clap';
     if (difficulty === 3) return type === 'percs';
-    return true; // Difficulty 4: All playable
+    return true; 
   };
 
   useEffect(() => {
@@ -127,7 +127,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
-          // Auto stop after 60 seconds or end of track
           if (t >= 60) {
             setIsPlaying(false);
             setIsFinished(true);
@@ -158,7 +157,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
             <div className="flex gap-2">
               <Badge variant="outline" className="text-[10px] uppercase border-white/10 opacity-70 flex gap-1">
                 <Activity className="w-3 h-3" />
-                Audio: {audioStatus?.state || 'Init'}
+                Audio: <span className={audioStatus?.state === 'running' ? 'text-green-400 ml-1' : 'text-yellow-400 ml-1'}>{audioStatus?.state || 'Init'}</span>
               </Badge>
               <Badge variant="outline" className="text-[10px] uppercase border-white/10 opacity-70">
                 SR: {audioStatus?.sampleRate || '-'}
@@ -190,17 +189,31 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           })}
         </div>
 
-        <div className="p-8 bg-black/20 border-t border-white/5 flex justify-center gap-4">
-          {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => (
-            <SamplerPad
-              key={type}
-              label={type}
-              shortcut={SHORTCUTS[type]}
-              onPress={() => handlePadPress(type)}
-              color={PAD_COLORS[type]}
-              isInactive={!checkIsPlayable(type, level.difficulty)}
-            />
-          ))}
+        <div className="p-8 bg-black/20 border-t border-white/5 flex flex-col gap-4">
+          <div className="flex justify-center gap-4">
+            {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => {
+              const sound = sounds.find(s => s.type === type);
+              const loadStatus = audioEngine?.getLoadStatus(sound?.sampleUrl || '');
+              
+              return (
+                <div key={type} className="flex flex-col items-center gap-2 w-full max-w-[140px]">
+                  <SamplerPad
+                    label={type}
+                    shortcut={SHORTCUTS[type]}
+                    onPress={() => handlePadPress(type)}
+                    color={PAD_COLORS[type]}
+                    isInactive={!checkIsPlayable(type, level.difficulty)}
+                  />
+                  <div className="flex items-center gap-1 text-[10px] uppercase font-bold opacity-60">
+                    {loadStatus === 'ready' && <CheckCircle2 className="w-3 h-3 text-green-400" />}
+                    {loadStatus === 'failed' && <XCircle className="w-3 h-3 text-red-400" />}
+                    {loadStatus === 'loading' && <Loader2 className="w-3 h-3 animate-spin" />}
+                    <span>{loadStatus === 'ready' ? 'Ready' : loadStatus === 'failed' ? 'Error' : loadStatus}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {!isPlaying && !isFinished && (
@@ -216,7 +229,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               >
                 {isLoadingAudio ? (
                   <>
-                    <Loader2 className="mr-2 animate-spin" /> Loading Audio...
+                    <Loader2 className="mr-2 animate-spin" /> Preparing Audio...
                   </>
                 ) : (
                   <>
