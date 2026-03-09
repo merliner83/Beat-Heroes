@@ -9,7 +9,7 @@ import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Play, RotateCcw, Trophy, Home, Loader2, Music2, Activity, CheckCircle2, XCircle } from 'lucide-react';
+import { Play, RotateCcw, Trophy, Home, Loader2, Music2, Activity, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -39,31 +39,45 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
   const [audioStatus, setAudioStatus] = useState<any>(null);
+  const [loadStates, setLoadStates] = useState<Record<string, string>>({});
   const frameRef = useRef<number>(null);
 
+  // Poll for audio engine status and loading states
   useEffect(() => {
-    // Background preload
+    const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
     if (audioEngine) {
-      const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
       audioEngine.preloadAudio(urls);
     }
 
     const interval = setInterval(() => {
       if (audioEngine) {
         setAudioStatus(audioEngine.getAudioStatus());
+        const newStates: Record<string, string> = {};
+        urls.forEach(url => {
+          newStates[url] = audioEngine.getLoadStatus(url);
+        });
+        setLoadStates(newStates);
       }
     }, 500);
     return () => clearInterval(interval);
   }, [project, sounds]);
+
+  const backingTrackReady = loadStates[project.backingTrackUrl] === 'ready';
+  const backingTrackFailed = loadStates[project.backingTrackUrl] === 'failed';
 
   const startMission = async () => {
     if (!audioEngine) return;
     setIsLoadingAudio(true);
     
     try {
-      await audioEngine.resume();
-      const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
-      await audioEngine.preloadAudio(urls);
+      const isResumed = await audioEngine.resume();
+      if (!isResumed) throw new Error("AudioContext failed to resume");
+
+      if (!backingTrackReady) {
+        // Try one last time to preload if not ready
+        await audioEngine.preloadAudio([project.backingTrackUrl]);
+      }
+      
       await audioEngine.startBackingTrack(project.backingTrackUrl);
       
       setIsPlaying(true);
@@ -193,7 +207,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           <div className="flex justify-center gap-4">
             {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => {
               const sound = sounds.find(s => s.type === type);
-              const loadStatus = audioEngine?.getLoadStatus(sound?.sampleUrl || '');
+              const status = loadStates[sound?.sampleUrl || ''];
               
               return (
                 <div key={type} className="flex flex-col items-center gap-2 w-full max-w-[140px]">
@@ -205,10 +219,10 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                     isInactive={!checkIsPlayable(type, level.difficulty)}
                   />
                   <div className="flex items-center gap-1 text-[10px] uppercase font-bold opacity-60">
-                    {loadStatus === 'ready' && <CheckCircle2 className="w-3 h-3 text-green-400" />}
-                    {loadStatus === 'failed' && <XCircle className="w-3 h-3 text-red-400" />}
-                    {loadStatus === 'loading' && <Loader2 className="w-3 h-3 animate-spin" />}
-                    <span>{loadStatus === 'ready' ? 'Ready' : loadStatus === 'failed' ? 'Error' : loadStatus}</span>
+                    {status === 'ready' && <CheckCircle2 className="w-3 h-3 text-green-400" />}
+                    {status === 'failed' && <XCircle className="w-3 h-3 text-red-400" />}
+                    {status === 'loading' && <Loader2 className="w-3 h-3 animate-spin" />}
+                    <span>{status === 'ready' ? 'Ready' : status === 'failed' ? 'Error' : (status || 'Idle')}</span>
                   </div>
                 </div>
               );
@@ -221,15 +235,33 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
             <Card className="p-10 bg-[#1F1A23] border-[#993DEB] border text-center max-w-sm">
               <Music2 className="w-12 h-12 text-[#993DEB] mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">Ready?</h2>
-              <p className="text-sm opacity-70 mb-8">Click start to unlock your audio and begin the mission.</p>
+              
+              <div className="flex flex-col gap-2 mb-8">
+                <p className="text-sm opacity-70">Unlock audio to begin the mission.</p>
+                <div className="flex items-center justify-center gap-2 py-2 px-4 bg-white/5 rounded-lg border border-white/10">
+                  <span className="text-[10px] uppercase opacity-50">Backing Track:</span>
+                  {backingTrackReady ? (
+                    <span className="text-[10px] text-green-400 font-bold uppercase">Ready</span>
+                  ) : backingTrackFailed ? (
+                    <span className="text-[10px] text-red-400 font-bold uppercase flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> Error
+                    </span>
+                  ) : (
+                    <span className="text-[10px] opacity-50 flex items-center gap-1 animate-pulse">
+                      <Loader2 className="w-3 h-3 animate-spin" /> Loading...
+                    </span>
+                  )}
+                </div>
+              </div>
+
               <Button 
                 onClick={startMission} 
-                disabled={isLoadingAudio}
+                disabled={isLoadingAudio || (!backingTrackReady && !backingTrackFailed)}
                 className="w-full h-14 text-lg bg-[#993DEB] hover:bg-[#802ECC]"
               >
                 {isLoadingAudio ? (
                   <>
-                    <Loader2 className="mr-2 animate-spin" /> Preparing Audio...
+                    <Loader2 className="mr-2 animate-spin" /> Preparing...
                   </>
                 ) : (
                   <>
@@ -237,6 +269,11 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                   </>
                 )}
               </Button>
+              {backingTrackFailed && (
+                <p className="mt-4 text-[10px] text-red-400 opacity-80 italic">
+                  Note: Backing track failed to load (CORS). You can still play the pads!
+                </p>
+              )}
             </Card>
           </div>
         )}

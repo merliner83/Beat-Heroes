@@ -84,7 +84,7 @@ export class AudioEngine {
       
       this.loadingStatus.set(url, 'loading');
       try {
-        // Simple fetch without explicit mode: 'cors' often works better for public assets
+        // Absolute minimal fetch to avoid CORS preflight issues
         const response = await fetch(url);
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -96,7 +96,7 @@ export class AudioEngine {
         this.loadingStatus.set(url, 'ready');
         console.log(`AudioEngine: Successfully loaded ${url}`);
       } catch (e) {
-        console.warn(`AudioEngine: FAILED to load ${url}. This is often a CORS issue.`, e);
+        console.warn(`AudioEngine: FAILED to load ${url}. This is often a CORS issue or invalid file format.`, e);
         this.loadingStatus.set(url, 'failed');
       }
     }));
@@ -141,7 +141,7 @@ export class AudioEngine {
 
     const buffer = this.buffers.get(url);
     if (!buffer || !this.context || !this.masterGain) {
-      console.error('AudioEngine: Backing track buffer not ready');
+      console.error('AudioEngine: Backing track buffer not ready for URL:', url);
       return;
     }
 
