@@ -44,11 +44,18 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     setIsLoadingAudio(true);
     
     try {
+      // 1. Critical user-interaction step to unlock audio
       const unlocked = await audioEngine.resume();
-      if (!unlocked) console.warn("AudioContext could not be unlocked.");
+      if (!unlocked) {
+        alert("Audio konnte nicht aktiviert werden. Bitte klicke erneut.");
+        return;
+      }
 
+      // 2. Preload all necessary audio files
       const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
       await audioEngine.preloadAudio(urls);
+      
+      // 3. Start backing track
       await audioEngine.startBackingTrack(project.backingTrackUrl);
       
       setIsPlaying(true);
@@ -64,6 +71,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const handlePadPress = async (type: SoundType) => {
     const isPlayable = checkIsPlayable(type, level.difficulty);
     if (!isPlayable || !audioEngine) return;
+
+    // Optional: Auto-resume on every interaction to keep it alive
+    audioEngine.resume();
 
     const sound = sounds.find(s => s.type === type);
     if (sound) {
