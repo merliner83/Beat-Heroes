@@ -8,7 +8,8 @@ import { SamplerPad } from './SamplerPad';
 import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Play, RotateCcw, Trophy, Home, Loader2, Music2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Play, RotateCcw, Trophy, Home, Loader2, Music2, Activity } from 'lucide-react';
 import Link from 'next/link';
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -37,25 +38,32 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const [currentTime, setCurrentTime] = useState(0);
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
+  const [audioStatus, setAudioStatus] = useState<any>(null);
   const frameRef = useRef<number>(null);
+
+  // Update audio status every second for debugging
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (audioEngine) {
+        setAudioStatus(audioEngine.getAudioStatus());
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const startMission = async () => {
     if (!audioEngine) return;
     setIsLoadingAudio(true);
     
     try {
-      // 1. Critical user-interaction step to unlock audio
       const unlocked = await audioEngine.resume();
       if (!unlocked) {
         alert("Audio konnte nicht aktiviert werden. Bitte klicke erneut.");
         return;
       }
 
-      // 2. Preload all necessary audio files
       const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
       await audioEngine.preloadAudio(urls);
-      
-      // 3. Start backing track
       await audioEngine.startBackingTrack(project.backingTrackUrl);
       
       setIsPlaying(true);
@@ -72,7 +80,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     const isPlayable = checkIsPlayable(type, level.difficulty);
     if (!isPlayable || !audioEngine) return;
 
-    // Optional: Auto-resume on every interaction to keep it alive
+    // Explicitly resume on every pad press to satisfy browser interaction policies
     audioEngine.resume();
 
     const sound = sounds.find(s => s.type === type);
@@ -139,9 +147,22 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
             <p className="text-sm opacity-60 font-medium">{project.name} - {level.name}</p>
           </div>
         </Link>
-        <div className="text-right">
-          <p className="text-xs uppercase opacity-40">Genauigkeit</p>
-          <p className="text-2xl font-bold text-[#3838FA]">{score.accuracy}%</p>
+        <div className="flex items-center gap-6">
+          <div className="hidden md:flex flex-col items-end gap-1">
+            <div className="flex gap-2">
+              <Badge variant="outline" className="text-[10px] uppercase border-white/10 opacity-50 flex gap-1">
+                <Activity className="w-3 h-3" />
+                Audio: {audioStatus?.state || 'Init...'}
+              </Badge>
+              <Badge variant="outline" className="text-[10px] uppercase border-white/10 opacity-50">
+                SR: {audioStatus?.sampleRate || '-'}
+              </Badge>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-xs uppercase opacity-40">Genauigkeit</p>
+            <p className="text-2xl font-bold text-[#3838FA]">{score.accuracy}%</p>
+          </div>
         </div>
       </div>
 

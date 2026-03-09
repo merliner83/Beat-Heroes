@@ -13,26 +13,26 @@ export class AudioEngine {
   private startTime: number = 0;
 
   constructor() {
-    console.log('AudioEngine: Ready. Context will be initialized on user interaction.');
+    console.log('AudioEngine: Initialized (Waiting for user interaction)');
   }
 
   /**
    * Initializes or resumes the AudioContext.
-   * MUST be triggered by a user gesture (e.g., button click).
+   * MUST be triggered by a user gesture.
    */
   async resume(): Promise<boolean> {
+    if (typeof window === "undefined") return false;
+
     if (!this.context) {
       try {
         const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
-        if (!AudioContextClass) {
-          console.error('AudioEngine: Web Audio API is not supported in this browser.');
-          return false;
-        }
+        if (!AudioContextClass) return false;
+        
         this.context = new AudioContextClass();
         this.masterGain = this.context.createGain();
         this.masterGain.connect(this.context.destination);
         this.masterGain.gain.value = 1.0;
-        console.log('AudioEngine: AudioContext created.');
+        console.log('AudioEngine: Context created with sample rate:', this.context.sampleRate);
       } catch (e) {
         console.error('AudioEngine: Failed to create AudioContext', e);
         return false;
@@ -43,7 +43,7 @@ export class AudioEngine {
       await this.context.resume();
     }
 
-    // Play a tiny silent buffer to "unlock" audio on mobile devices/Safari
+    // "Unlock" audio on mobile devices/Safari with a silent buffer
     const silentBuffer = this.context.createBuffer(1, 1, 22050);
     const silentSource = this.context.createBufferSource();
     silentSource.buffer = silentBuffer;
@@ -54,10 +54,22 @@ export class AudioEngine {
   }
 
   /**
+   * Gets debug info about the current audio state.
+   */
+  getAudioStatus() {
+    if (!this.context) return { state: 'Nicht initialisiert', sampleRate: '-' };
+    return {
+      state: this.context.state,
+      sampleRate: `${this.context.sampleRate / 1000} kHz`,
+      destination: 'System Default'
+    };
+  }
+
+  /**
    * Preloads multiple audio files and decodes them into buffers.
    */
   async preloadAudio(urls: string[]): Promise<void> {
-    await this.resume(); // Ensure context exists
+    await this.resume();
     if (!this.context) return;
 
     const uniqueUrls = Array.from(new Set(urls.filter(u => !!u)));
@@ -65,17 +77,15 @@ export class AudioEngine {
     await Promise.all(uniqueUrls.map(async (url) => {
       if (this.buffers.has(url)) return;
       try {
-        console.log(`AudioEngine: Fetching ${url}...`);
-        // Using 'cors' mode is critical for external storage links
         const response = await fetch(url, { mode: 'cors' });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const arrayBuffer = await response.arrayBuffer();
         const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
         this.buffers.set(url, audioBuffer);
-        console.log(`AudioEngine: Decoded ${url}`);
+        console.log(`AudioEngine: Loaded ${url}`);
       } catch (e) {
-        console.warn(`AudioEngine: Error loading/decoding ${url}:`, e);
+        console.warn(`AudioEngine: Error loading ${url}:`, e);
       }
     }));
   }
@@ -84,16 +94,15 @@ export class AudioEngine {
    * Plays a preloaded sound as a one-shot effect.
    */
   playOneShot(url: string) {
-    if (!this.context || !this.masterGain) {
-      console.warn('AudioEngine: Context not initialized. Call resume() on user interaction first.');
-      return;
+    if (!this.context || !this.masterGain) return;
+    
+    // Always try to resume context on interaction
+    if (this.context.state !== 'running') {
+      this.context.resume();
     }
 
     const buffer = this.buffers.get(url);
-    if (!buffer) {
-      console.warn(`AudioEngine: Buffer missing for ${url}. Did it load correctly?`);
-      return;
-    }
+    if (!buffer) return;
 
     try {
       const source = this.context.createBufferSource();
@@ -101,39 +110,30 @@ export class AudioEngine {
       source.connect(this.masterGain);
       source.start(0);
     } catch (e) {
-      console.error('AudioEngine: One-shot playback failed', e);
+      console.error('AudioEngine: Playback failed', e);
     }
   }
 
-  /**
-   * Starts a looping backing track.
-   */
   async startBackingTrack(url: string) {
     await this.resume();
     this.stop();
 
     const buffer = this.buffers.get(url);
-    if (!buffer) {
-      console.warn(`AudioEngine: Backing track buffer not found for ${url}`);
-      return;
-    }
+    if (!buffer || !this.context || !this.masterGain) return;
 
-    this.startTime = this.context!.currentTime;
+    this.startTime = this.context.currentTime;
     try {
-      const source = this.context!.createBufferSource();
+      const source = this.context.createBufferSource();
       source.buffer = buffer;
       source.loop = true;
-      source.connect(this.masterGain!);
+      source.connect(this.masterGain);
       source.start(0);
       this.sources.set('backing', source);
     } catch (e) {
-      console.error('AudioEngine: Failed to start backing track', e);
+      console.error('AudioEngine: Backing track failed', e);
     }
   }
 
-  /**
-   * Stops all active sounds.
-   */
   stop() {
     this.sources.forEach(s => {
       try { s.stop(); } catch(e) {}
@@ -141,9 +141,6 @@ export class AudioEngine {
     this.sources.clear();
   }
 
-  /**
-   * Gets the current playback time in seconds.
-   */
   getCurrentTime(): number {
     return this.context ? this.context.currentTime - this.startTime : 0;
   }
