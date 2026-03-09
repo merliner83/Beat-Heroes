@@ -4,6 +4,7 @@
 /**
  * AudioEngine handles the loading, decoding, and playback of audio samples
  * using the Web Audio API. Optimized for low-latency rhythm games.
+ * Configured to use a fixed sample rate of 44.1 kHz.
  */
 export class AudioEngine {
   private context: AudioContext | null = null;
@@ -23,10 +24,11 @@ export class AudioEngine {
     if (!this.context) {
       try {
         const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
-        this.context = new AudioContextClass();
+        // Fix sample rate to 44.1 kHz for consistent playback across devices
+        this.context = new AudioContextClass({ sampleRate: 44100 });
         this.masterGain = this.context.createGain();
         this.masterGain.connect(this.context.destination);
-        console.log('AudioEngine: Context initialized. Status:', this.context.state);
+        console.log('AudioEngine: Context initialized at 44.1kHz. Status:', this.context.state);
       } catch (e) {
         console.error('AudioEngine: Failed to create AudioContext', e);
         return false;
@@ -84,7 +86,7 @@ export class AudioEngine {
       
       this.loadingStatus.set(url, 'loading');
       try {
-        // Simplified fetch to avoid CORS preflight issues where possible
+        // Fetch audio file. Note: External URLs require valid CORS headers.
         const response = await fetch(url);
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
