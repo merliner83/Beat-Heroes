@@ -41,13 +41,12 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const [audioStatus, setAudioStatus] = useState<any>(null);
   const frameRef = useRef<number>(null);
 
-  // Update audio status every second for debugging
   useEffect(() => {
     const interval = setInterval(() => {
       if (audioEngine) {
         setAudioStatus(audioEngine.getAudioStatus());
       }
-    }, 1000);
+    }, 500);
     return () => clearInterval(interval);
   }, []);
 
@@ -56,10 +55,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     setIsLoadingAudio(true);
     
     try {
-      const unlocked = await audioEngine.resume();
-      if (!unlocked) {
-        alert("Audio konnte nicht aktiviert werden. Bitte klicke erneut.");
-        return;
+      const running = await audioEngine.resume();
+      if (!running) {
+        console.warn("Audio Context could not be started.");
       }
 
       const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
@@ -77,34 +75,38 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   };
 
   const handlePadPress = async (type: SoundType) => {
-    const isPlayable = checkIsPlayable(type, level.difficulty);
-    if (!isPlayable || !audioEngine) return;
+    if (!audioEngine) return;
 
-    // Explicitly resume on every pad press to satisfy browser interaction policies
+    // Force resume on interaction
     audioEngine.resume();
 
     const sound = sounds.find(s => s.type === type);
     if (sound) {
+      // PLAY SOUND REGARDLESS OF LEVEL (Feedback)
       audioEngine.playOneShot(sound.sampleUrl);
       
+      // LOGIC FOR SCORING (Only if playable in current level)
       if (isPlaying) {
-        const time = audioEngine.getCurrentTime();
-        const secondsPerBeat = 60 / project.bpm;
-        const secondsPerStep = secondsPerBeat / 4;
-        const currentStep = time / secondsPerStep;
-        const tolerance = 0.35;
-        const isHit = sound.triggerSteps.some(step => Math.abs(currentStep % 16 - step) <= tolerance);
+        const isPlayable = checkIsPlayable(type, level.difficulty);
+        if (isPlayable) {
+          const time = audioEngine.getCurrentTime();
+          const secondsPerBeat = 60 / project.bpm;
+          const secondsPerStep = secondsPerBeat / 4;
+          const currentStep = time / secondsPerStep;
+          const tolerance = 0.35;
+          const isHit = sound.triggerSteps.some(step => Math.abs(currentStep % 16 - step) <= tolerance);
 
-        setScore(prev => {
-          const nextHits = isHit ? prev.hits + 1 : prev.hits;
-          const nextMisses = isHit ? prev.misses : prev.misses + 1;
-          const total = nextHits + nextMisses;
-          return {
-            hits: nextHits,
-            misses: nextMisses,
-            accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
-          };
-        });
+          setScore(prev => {
+            const nextHits = isHit ? prev.hits + 1 : prev.hits;
+            const nextMisses = isHit ? prev.misses : prev.misses + 1;
+            const total = nextHits + nextMisses;
+            return {
+              hits: nextHits,
+              misses: nextMisses,
+              accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
+            };
+          });
+        }
       }
     }
   };
@@ -147,21 +149,21 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
             <p className="text-sm opacity-60 font-medium">{project.name} - {level.name}</p>
           </div>
         </Link>
-        <div className="flex items-center gap-6">
-          <div className="hidden md:flex flex-col items-end gap-1">
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col items-end gap-1">
             <div className="flex gap-2">
-              <Badge variant="outline" className="text-[10px] uppercase border-white/10 opacity-50 flex gap-1">
+              <Badge variant="outline" className="text-[10px] uppercase border-white/10 opacity-70 flex gap-1">
                 <Activity className="w-3 h-3" />
-                Audio: {audioStatus?.state || 'Init...'}
+                Audio: {audioStatus?.state || 'Init'}
               </Badge>
-              <Badge variant="outline" className="text-[10px] uppercase border-white/10 opacity-50">
+              <Badge variant="outline" className="text-[10px] uppercase border-white/10 opacity-70">
                 SR: {audioStatus?.sampleRate || '-'}
               </Badge>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-xs uppercase opacity-40">Genauigkeit</p>
-            <p className="text-2xl font-bold text-[#3838FA]">{score.accuracy}%</p>
+          <div className="text-right border-l border-white/10 pl-4">
+            <p className="text-[10px] uppercase opacity-40">Accuracy</p>
+            <p className="text-xl font-bold text-[#3838FA]">{score.accuracy}%</p>
           </div>
         </div>
       </div>
@@ -192,7 +194,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               shortcut={SHORTCUTS[type]}
               onPress={() => handlePadPress(type)}
               color={PAD_COLORS[type]}
-              disabled={!checkIsPlayable(type, level.difficulty)}
+              isInactive={!checkIsPlayable(type, level.difficulty)}
             />
           ))}
         </div>
@@ -201,8 +203,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
             <Card className="p-10 bg-[#1F1A23] border-[#993DEB] border text-center max-w-sm">
               <Music2 className="w-12 h-12 text-[#993DEB] mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Sound Check?</h2>
-              <p className="text-sm opacity-70 mb-8">Klicke unten, um das Studio zu laden und den Sound freizuschalten.</p>
+              <h2 className="text-2xl font-bold mb-2">Ready?</h2>
+              <p className="text-sm opacity-70 mb-8">Click below to start the mission and unlock audio.</p>
               <Button 
                 onClick={startMission} 
                 disabled={isLoadingAudio}
@@ -210,11 +212,11 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               >
                 {isLoadingAudio ? (
                   <>
-                    <Loader2 className="mr-2 animate-spin" /> Lade Samples...
+                    <Loader2 className="mr-2 animate-spin" /> Loading...
                   </>
                 ) : (
                   <>
-                    <Play className="mr-2" /> Mission Starten
+                    <Play className="mr-2" /> Start Mission
                   </>
                 )}
               </Button>
@@ -226,11 +228,11 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           <div className="absolute inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-8 z-50">
             <div className="max-w-md w-full text-center space-y-6">
               <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-              <h2 className="text-4xl font-bold">Session Beendet</h2>
-              <p className="text-[#3838FA] font-bold text-xl">{score.accuracy}% Präzision</p>
+              <h2 className="text-4xl font-bold">Session Complete</h2>
+              <p className="text-[#3838FA] font-bold text-xl">{score.accuracy}% Accuracy</p>
               <div className="flex gap-4">
                 <Button onClick={startMission} variant="outline" className="flex-1 h-12 border-white/20">
-                  <RotateCcw className="mr-2 h-4 w-4" /> Noch mal
+                  <RotateCcw className="mr-2 h-4 w-4" /> Retry
                 </Button>
                 <Link href="/" className="flex-1">
                   <Button className="w-full h-12 bg-[#993DEB] hover:bg-[#802ECC]">

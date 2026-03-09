@@ -32,7 +32,7 @@ export class AudioEngine {
         this.masterGain = this.context.createGain();
         this.masterGain.connect(this.context.destination);
         this.masterGain.gain.value = 1.0;
-        console.log('AudioEngine: Context created with sample rate:', this.context.sampleRate);
+        console.log('AudioEngine: Context created. SampleRate:', this.context.sampleRate);
       } catch (e) {
         console.error('AudioEngine: Failed to create AudioContext', e);
         return false;
@@ -41,9 +41,10 @@ export class AudioEngine {
 
     if (this.context.state === 'suspended') {
       await this.context.resume();
+      console.log('AudioEngine: Context resumed.');
     }
 
-    // "Unlock" audio on mobile devices/Safari with a silent buffer
+    // Unlock audio with a silent buffer (critical for iOS/Safari)
     const silentBuffer = this.context.createBuffer(1, 1, 22050);
     const silentSource = this.context.createBufferSource();
     silentSource.buffer = silentBuffer;
@@ -53,26 +54,16 @@ export class AudioEngine {
     return this.context.state === 'running';
   }
 
-  /**
-   * Gets debug info about the current audio state.
-   */
   getAudioStatus() {
-    if (!this.context) return { state: 'Nicht initialisiert', sampleRate: '-' };
+    if (!this.context) return { state: 'Init...', sampleRate: '-' };
     return {
       state: this.context.state,
-      sampleRate: `${Math.round(this.context.sampleRate / 100) / 10} kHz`,
-      destination: 'System Default'
+      sampleRate: `${Math.round(this.context.sampleRate / 100) / 10} kHz`
     };
   }
 
-  /**
-   * Preloads multiple audio files and decodes them into buffers.
-   */
   async preloadAudio(urls: string[]): Promise<void> {
-    if (!this.context) {
-      await this.resume();
-    }
-    
+    if (!this.context) await this.resume();
     if (!this.context) return;
 
     const uniqueUrls = Array.from(new Set(urls.filter(u => !!u)));
@@ -80,34 +71,36 @@ export class AudioEngine {
     await Promise.all(uniqueUrls.map(async (url) => {
       if (this.buffers.has(url)) return;
       try {
+        console.log(`AudioEngine: Loading ${url}...`);
         const response = await fetch(url, { mode: 'cors' });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const arrayBuffer = await response.arrayBuffer();
         const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
         this.buffers.set(url, audioBuffer);
-        console.log(`AudioEngine: Loaded ${url}`);
+        console.log(`AudioEngine: Successfully loaded ${url}`);
       } catch (e) {
-        console.warn(`AudioEngine: Error loading ${url}:`, e);
+        console.warn(`AudioEngine: Could not load ${url}. Skipping.`, e);
       }
     }));
   }
 
-  /**
-   * Plays a preloaded sound as a one-shot effect.
-   */
   playOneShot(url: string) {
     if (!this.context || !this.masterGain) {
       this.resume();
       return;
     }
     
+    // Safety check: Context might suspend if unused
     if (this.context.state !== 'running') {
       this.context.resume();
     }
 
     const buffer = this.buffers.get(url);
-    if (!buffer) return;
+    if (!buffer) {
+      console.warn('AudioEngine: No buffer found for', url);
+      return;
+    }
 
     try {
       const source = this.context.createBufferSource();

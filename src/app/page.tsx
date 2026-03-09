@@ -55,10 +55,10 @@ export default function HomePage() {
       });
 
       const levelsData = [
-        { id: "lvl-1", name: "Level 1: KICK Only", diff: 1 },
-        { id: "lvl-2", name: "Level 2: CLAP Only", diff: 2 },
-        { id: "lvl-3", name: "Level 3: PERCS Only", diff: 3 },
-        { id: "lvl-4", name: "Level 4: MISC Only", diff: 4 },
+        { id: "lvl-1", name: "Level 1: KICK Focus", diff: 1 },
+        { id: "lvl-2", name: "Level 2: CLAP Focus", diff: 2 },
+        { id: "lvl-3", name: "Level 3: PERCS Focus", diff: 3 },
+        { id: "lvl-4", name: "Level 4: FULL Beat", diff: 4 },
       ];
 
       for (const l of levelsData) {
@@ -69,7 +69,7 @@ export default function HomePage() {
           name: l.name
         });
 
-        // Using reliable, CORS-friendly samples from CodeSkulptor
+        // Using reliable, CORS-friendly samples from CodeSkulptor/Google
         const sounds = [
           { type: "kick", steps: [0, 4, 8, 12], url: "https://storage.googleapis.com/codeskulptor-assets/Collision8-Bit.ogg" },
           { type: "clap", steps: [4, 12], url: "https://storage.googleapis.com/codeskulptor-assets/jump.ogg" },
