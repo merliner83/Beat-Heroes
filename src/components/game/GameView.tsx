@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -46,7 +47,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       await audioEngine.resume();
       const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
       await audioEngine.preloadAudio(urls);
-      audioEngine.startBackingTrack(project.backingTrackUrl);
+      await audioEngine.startBackingTrack(project.backingTrackUrl);
       
       setIsPlaying(true);
       setIsFinished(false);
@@ -58,16 +59,16 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     }
   };
 
-  const handlePadPress = (type: SoundType) => {
+  const handlePadPress = async (type: SoundType) => {
     if (!isPlaying || !audioEngine) return;
     
     // Check if playable in this level
     const isPlayable = checkIsPlayable(type, level.difficulty);
     if (!isPlayable) return;
 
-    audioEngine.resume();
     const sound = sounds.find(s => s.type === type);
     if (sound) {
+      // Play sound via engine
       audioEngine.playOneShot(sound.sampleUrl);
       
       const time = audioEngine.getCurrentTime();
@@ -88,6 +89,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
         };
       });
+    } else {
+      console.warn(`Sound for type ${type} not found in this level.`);
     }
   };
 
@@ -96,7 +99,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     if (difficulty === 1) return type === 'kick';
     if (difficulty === 2) return type === 'clap';
     if (difficulty === 3) return type === 'percs';
-    if (difficulty === 4) return true; // All playable for MISC/Pro level
+    if (difficulty === 4) return true; // All playable for MISC/Full Beat level
     return true;
   };
 
@@ -125,10 +128,12 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   return (
     <div className="flex flex-col h-screen bg-[#1F1A23] text-white p-4 max-w-5xl mx-auto overflow-hidden">
       <div className="flex justify-between items-center mb-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tighter text-[#993DEB] uppercase italic">BeatHero</h1>
-          <p className="text-sm opacity-60 font-medium">{project.name} - {level.name}</p>
-        </div>
+        <Link href={`/studio/${project.studioId}`}>
+          <div className="cursor-pointer">
+            <h1 className="text-3xl font-bold tracking-tighter text-[#993DEB] uppercase italic">BeatHero</h1>
+            <p className="text-sm opacity-60 font-medium">{project.name} - {level.name}</p>
+          </div>
+        </Link>
         <div className="text-right">
           <p className="text-xs uppercase opacity-40">Genauigkeit</p>
           <p className="text-2xl font-bold text-[#3838FA]">{score.accuracy}%</p>

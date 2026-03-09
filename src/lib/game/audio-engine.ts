@@ -74,7 +74,7 @@ export class AudioEngine {
           console.warn(`AudioEngine: Failed to decode ${url}.`, decodeError);
         }
       } catch (e) {
-        console.warn(`AudioEngine: Failed to load ${url}. Possible CORS issue.`, e);
+        console.warn(`AudioEngine: Failed to fetch ${url}. This is likely a CORS issue with Storage.`, e);
       }
     });
 
@@ -85,12 +85,15 @@ export class AudioEngine {
   /**
    * Plays a sample once (One-Shot).
    */
-  playOneShot(url: string): void {
+  async playOneShot(url: string): Promise<void> {
     if (!this.context || !this.masterGain) return;
     
+    // Always try to resume context on user trigger to bypass browser blocks
+    await this.resume();
+
     const buffer = this.buffers.get(url);
     if (!buffer) {
-      console.warn(`AudioEngine: No buffer found for ${url}.`);
+      console.warn(`AudioEngine: No buffer found for ${url}. Make sure it was preloaded.`);
       return;
     }
 
@@ -107,8 +110,10 @@ export class AudioEngine {
   /**
    * Starts the backing track as a loop.
    */
-  startBackingTrack(url: string): void {
+  async startBackingTrack(url: string): Promise<void> {
     if (!this.context || !this.masterGain) return;
+    
+    await this.resume();
     
     const buffer = this.buffers.get(url);
     if (!buffer) {

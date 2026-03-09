@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -11,8 +12,7 @@ import { Music, Play, Radio, Loader2, Sparkles } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 
 /**
- * HomePage displays the available music studios.
- * Seeding updated for KICK, CLAP, PERCS, MISC.
+ * HomePage displays the available music studios and handles demo data seeding.
  */
 export default function HomePage() {
   const db = useFirestore();
@@ -73,7 +73,7 @@ export default function HomePage() {
           name: l.name
         });
 
-        // Map sound types with stable URLs
+        // Use stable, high-availability URLs for the pads
         const sounds = [
           { type: "kick", steps: [0, 4, 8, 12], url: "https://storage.googleapis.com/codeskulptor-assets/Collision8-Bit.ogg" },
           { type: "clap", steps: [4, 12], url: "https://storage.googleapis.com/codeskulptor-assets/jump.ogg" },
@@ -94,6 +94,7 @@ export default function HomePage() {
       }
 
       await batch.commit();
+      window.location.reload(); // Refresh to see changes
     } catch (e) {
       console.error("Seeding failed", e);
     } finally {
@@ -113,7 +114,7 @@ export default function HomePage() {
       <main className="p-8">
         <div className="flex justify-between items-end mb-8">
           <h2 className="text-4xl font-bold">Wähle dein <span className="text-[#993DEB]">Studio</span></h2>
-          {studios && studios.length === 0 && !isLoading && (
+          {(!studios || studios.length === 0) && !isLoading && (
             <Button 
               onClick={seedDatabase} 
               disabled={isSeeding}

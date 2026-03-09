@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -40,7 +41,7 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
         isPressed 
           ? "scale-95 brightness-125" 
           : "scale-100 hover:brightness-110 active:scale-95",
-        disabled && "opacity-20 cursor-not-allowed filter grayscale"
+        disabled && "opacity-10 cursor-not-allowed filter grayscale"
       )}
       style={{
         borderColor: disabled ? '#333' : color,
