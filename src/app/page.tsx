@@ -173,7 +173,6 @@ export default function HomePage() {
                   key={district.id}
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Toggle-Logik: Klick auf aktiven Distrikt setzt auf 'all' zurück
                     setSelectedDistrict(selectedDistrict === district.id ? 'all' : district.id);
                   }}
                   className={cn(
@@ -186,11 +185,11 @@ export default function HomePage() {
                     "w-3 h-3 rounded-full border border-white transition-all",
                     isSelected 
                       ? "bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] scale-125" 
-                      : "bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]"
+                      : "bg-white shadow-[0_0_15px_rgba(255,255,255,0.9)]"
                   )} />
                   <div className={cn(
                     "bg-black/90 backdrop-blur-md border border-white/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap rounded transition-colors",
-                    isSelected ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white/80"
+                    isSelected ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white"
                   )}>
                     {district.name}
                   </div>
