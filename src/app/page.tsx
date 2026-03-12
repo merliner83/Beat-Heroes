@@ -32,7 +32,7 @@ export default function HomePage() {
   const { user } = useUser();
   const { toast } = useToast();
   
-  // Standardmäßig sind beide Distrikte aktiv
+  // Beide Distrikte sind standardmäßig aktiv
   const [activeDistricts, setActiveDistricts] = useState<string[]>(['bantiger', 'oberemmental']);
   
   // Automatischer Login für Street Cred Tracking
@@ -116,9 +116,9 @@ export default function HomePage() {
 
         <div className="gemini-border gemini-glow p-4 text-right pointer-events-auto">
           <div className="text-white font-bold text-xl leading-none tracking-tighter">
-            {streetCred.toLocaleString()} SC
+            {streetCred.toLocaleString()} <span className="text-[#FFEA00] italic ml-1 font-black">SC</span>
           </div>
-          <div className="text-[10px] uppercase opacity-40 mt-1">Street Credibilities</div>
+          <div className="text-[10px] uppercase opacity-40 mt-1 font-bold tracking-widest">Street Credibilities</div>
         </div>
       </header>
 

@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, updateDoc, increment } from 'firebase/firestore';
+import { doc, updateDoc, increment, setDoc } from 'firebase/firestore';
 
 const PAD_COLORS: Record<SoundType, string> = {
   kick: '#993DEB',
@@ -336,7 +336,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                   <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-none">Mission Accomplished</h2>
                   <p className="text-[#00E676] font-black text-3xl italic tracking-tighter">{score.accuracy}% Accuracy</p>
                   <div className="bg-white/5 rounded-2xl p-4 border border-white/10 inline-block">
-                    <p className="text-[#FFEA00] font-black text-xl tracking-widest uppercase">+{DIFFICULTY_REWARDS[level.difficulty]} Street Cred</p>
+                    <p className="text-[#FFEA00] font-black text-xl tracking-widest uppercase">
+                      +{DIFFICULTY_REWARDS[level.difficulty]} <span className="italic">SC</span>
+                    </p>
                   </div>
                   <p className="text-white/40 text-sm font-medium mt-4">Exceptional rhythm! You've secured the sector data.</p>
                 </>
