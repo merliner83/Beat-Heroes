@@ -38,6 +38,9 @@ export default function HomePage() {
       const studioId = "leo-beats-studio";
       const projectId = "cyber-drift";
       
+      // Public URL for the Firebase Storage file requested by the user
+      const backingTrackUrl = "https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/backingTracks%2Fsampling%20125bpm%20260303.mp3?alt=media";
+
       batch.set(doc(db, 'studios', studioId), {
         id: studioId,
         name: "Leo Beats Studio",
@@ -49,9 +52,9 @@ export default function HomePage() {
       batch.set(doc(db, 'projects', projectId), {
         id: projectId,
         studioId: studioId,
-        name: "Cyber Drift",
-        bpm: 120,
-        backingTrackUrl: "https://storage.googleapis.com/codeskulptor-demos/riceracer_assets/music/start_menu.mp3"
+        name: "Sampling 125 BPM",
+        bpm: 125,
+        backingTrackUrl: backingTrackUrl
       });
 
       const levelsData = [
@@ -69,7 +72,6 @@ export default function HomePage() {
           name: l.name
         });
 
-        // Using high-reliability assets from CodeSkulptor/Google with known open CORS
         const sounds = [
           { type: "kick", steps: [0, 4, 8, 12], url: "https://storage.googleapis.com/codeskulptor-assets/Collision8-Bit.ogg" },
           { type: "clap", steps: [4, 12], url: "https://storage.googleapis.com/codeskulptor-assets/jump.ogg" },
