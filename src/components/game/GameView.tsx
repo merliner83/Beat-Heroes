@@ -136,6 +136,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
+          // Mission endet nach 60 Sekunden Musik
           if (t >= 60) {
             setIsPlaying(false);
             setIsFinished(true);
@@ -180,7 +181,13 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       </div>
 
       <div className="relative flex-1 bg-black/40 rounded-2xl border border-white/5 overflow-hidden flex flex-col">
-        <div className="flex-1 flex px-4">
+        {/* Die Schlag-Linie (Judgment Line) */}
+        <div 
+          className="absolute left-0 right-0 h-px bg-[#993DEB] opacity-50 z-10"
+          style={{ top: '500px', boxShadow: '0 0 10px #993DEB' }}
+        />
+
+        <div className="flex-1 flex px-4 relative">
           {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => {
             const sound = sounds.find(s => s.type === type);
             const isPlayable = checkIsPlayable(type, level.difficulty);
@@ -234,18 +241,18 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               <h2 className="text-2xl font-bold mb-2">Ready?</h2>
               
               <div className="flex flex-col gap-2 mb-8">
-                <p className="text-sm opacity-70">Unlock audio to begin the mission.</p>
+                <p className="text-sm opacity-70">Schalte das Audio frei, um die Mission zu starten.</p>
                 <div className="flex items-center justify-center gap-2 py-2 px-4 bg-white/5 rounded-lg border border-white/10">
-                  <span className="text-[10px] uppercase opacity-50">Backing Track:</span>
+                  <span className="text-[10px] uppercase opacity-50">Musik:</span>
                   {backingTrackReady ? (
-                    <span className="text-[10px] text-green-400 font-bold uppercase">Ready</span>
+                    <span className="text-[10px] text-green-400 font-bold uppercase">Bereit</span>
                   ) : backingTrackFailed ? (
                     <span className="text-[10px] text-destructive font-bold uppercase flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> Blocked
+                      <AlertCircle className="w-3 h-3" /> Blockiert (CORS)
                     </span>
                   ) : (
                     <span className="text-[10px] opacity-50 flex items-center gap-1 animate-pulse">
-                      <Loader2 className="w-3 h-3 animate-spin" /> Loading...
+                      <Loader2 className="w-3 h-3 animate-spin" /> Lädt...
                     </span>
                   )}
                 </div>
@@ -258,11 +265,11 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               >
                 {isLoadingAudio ? (
                   <>
-                    <Loader2 className="mr-2 animate-spin" /> Preparing...
+                    <Loader2 className="mr-2 animate-spin" /> Bereite vor...
                   </>
                 ) : (
                   <>
-                    <Play className="mr-2" /> {backingTrackFailed ? "Start Mission (No Music)" : "Start Mission"}
+                    <Play className="mr-2" /> {backingTrackFailed ? "Trotzdem starten" : "Mission starten"}
                   </>
                 )}
               </Button>
@@ -274,11 +281,11 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           <div className="absolute inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-8 z-50">
             <div className="max-w-md w-full text-center space-y-6">
               <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-              <h2 className="text-4xl font-bold">Session Complete</h2>
-              <p className="text-[#3838FA] font-bold text-xl">{score.accuracy}% Accuracy</p>
+              <h2 className="text-4xl font-bold">Session beendet</h2>
+              <p className="text-[#3838FA] font-bold text-xl">{score.accuracy}% Genauigkeit</p>
               <div className="flex gap-4">
                 <Button onClick={startMission} variant="outline" className="flex-1 h-12 border-white/20">
-                  <RotateCcw className="mr-2 h-4 w-4" /> Retry
+                  <RotateCcw className="mr-2 h-4 w-4" /> Erneut versuchen
                 </Button>
                 <Link href="/" className="flex-1">
                   <Button className="w-full h-12 bg-[#993DEB] hover:bg-[#802ECC]">
