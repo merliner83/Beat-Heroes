@@ -143,19 +143,27 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       setIsFinished(false);
       setHasAwardedPoints(false);
       
-      // Start Count-in
+      const secondsPerBeat = 60 / project.bpm;
+      const countInDuration = 4 * secondsPerBeat;
+      
+      // Start visualization loop immediately with negative offset
+      // This allows notes to start falling before the backing track begins
+      audioEngine.setStartTime(audioEngine.getContextTime() + countInDuration);
+      setIsPlaying(true); 
+
+      // Start Count-in audio
       if (metronomeReady) {
         await audioEngine.playCountIn(project.bpm, (beat) => {
-          setCountIn(5 - beat); // Displays 4, 3, 2, 1
+          setCountIn(5 - beat); 
         });
         setCountIn(null);
       }
       
       if (backingTrackReady) {
-        await audioEngine.startBackingTrack(project.backingTrackUrl);
+        // Start backing track preserving the startTime established by count-in
+        await audioEngine.startBackingTrack(project.backingTrackUrl, true);
       }
       
-      setIsPlaying(true);
     } catch (e) {
       toast({
         variant: "destructive",
@@ -163,6 +171,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         description: "Das Audiosystem konnte nicht gestartet werden.",
       });
       setCountIn(null);
+      setIsPlaying(false);
     } finally {
       setIsLoadingAudio(false);
     }
@@ -184,6 +193,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
+          // Auto-stop when track finishes (roughly 60s for now or buffer duration)
           if (t >= 60) {
             setIsPlaying(false);
             setIsFinished(true);
@@ -207,14 +217,12 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       const userRef = doc(db, 'users', user.uid);
       const progressRef = doc(db, 'users', user.uid, 'progress', level.id);
       
-      // Update Street Cred
       updateDoc(userRef, {
         streetCred: increment(reward)
       }).catch(() => {
         setDoc(userRef, { streetCred: reward }, { merge: true });
       });
 
-      // Save Level Progress
       setDoc(progressRef, {
         levelId: level.id,
         accuracy: score.accuracy,
@@ -239,7 +247,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               <p className="text-[10px] opacity-40 font-black uppercase tracking-[0.3em] mt-1">{project.name} • {level.name}</p>
             </div>
           </Link>
-          {isPlaying && (
+          {(isPlaying || countIn !== null) && (
             <Button 
               variant="ghost" 
               size="sm" 
@@ -327,7 +335,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           </div>
         </div>
 
-        {/* Start Overlay */}
+        {/* Start Overlay - Only visible if not playing and not counting in */}
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50">
             <Card className="p-12 bg-black border-none gemini-border gemini-glow text-center max-w-sm">
@@ -367,10 +375,10 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           </div>
         )}
 
-        {/* Count-in Overlay */}
+        {/* Count-in Overlay - Semi-transparent to show falling notes */}
         {countIn !== null && (
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-300">
-            <div className="text-[12rem] font-black italic tracking-tighter text-white animate-in zoom-in-50 duration-200">
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center z-50 pointer-events-none">
+            <div className="text-[12rem] font-black italic tracking-tighter text-white/80 animate-in zoom-in-50 duration-200 drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]">
               {countIn}
             </div>
           </div>
