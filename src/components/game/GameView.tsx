@@ -110,7 +110,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       const secondsPerBeat = 60 / project.bpm;
       const secondsPerStep = secondsPerBeat / 4;
       const currentStep = time / secondsPerStep;
-      const tolerance = 0.35;
+      
+      // Feinjustierte Toleranz für das Trefferfenster
+      const tolerance = 0.3;
       
       const isHit = sound.triggerSteps.some(step => {
         const relativeStep = currentStep % 16;
