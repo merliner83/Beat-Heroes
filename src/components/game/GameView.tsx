@@ -384,9 +384,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                 <Button onClick={startLevel} variant="outline" className="flex-1 h-14 border-white/20 bg-white/5 hover:bg-white/10 rounded-2xl font-black uppercase italic tracking-tighter">
                   <RotateCcw className="mr-2 h-5 w-5" /> Retry
                 </Button>
-                <Link href="/" className="flex-1">
+                <Link href={`/studio/${project.studioId}`} className="flex-1">
                   <Button className="w-full h-14 bg-white text-black hover:bg-white/90 rounded-2xl font-black uppercase italic tracking-tighter">
-                    <Home className="mr-2 h-5 w-5" /> HQ
+                    <Home className="mr-2 h-5 w-5" /> Studio
                   </Button>
                 </Link>
               </div>

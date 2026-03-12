@@ -62,7 +62,7 @@ export default function StudioPage() {
     <div className="min-h-screen bg-[#050505] text-white p-8 font-body">
       <div className="max-w-4xl mx-auto">
         <Link href="/" className="inline-flex items-center gap-2 text-sm opacity-50 hover:opacity-100 mb-8 transition-opacity uppercase font-bold tracking-widest text-white">
-          <ArrowLeft className="w-4 h-4" /> Back to HQ
+          <ArrowLeft className="w-4 h-4" /> Back to Map
         </Link>
 
         {studio && (
@@ -114,7 +114,7 @@ export default function StudioPage() {
                         <LayoutGrid className={cn("w-8 h-8 transition-all", isSelected ? "text-[#FFEA00] scale-110" : "opacity-20")} />
                       </div>
 
-                      {/* Project Progress Bar - Jetzt immer sichtbar und berechnet */}
+                      {/* Project Progress Bar */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-end">
                           <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Project Progress</span>
