@@ -9,7 +9,8 @@ import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Play, RotateCcw, Trophy, Home, Loader2, Music2, Activity, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Play, RotateCcw, Trophy, Home, Loader2, Music2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -38,9 +39,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const [currentTime, setCurrentTime] = useState(0);
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
-  const [audioStatus, setAudioStatus] = useState<any>(null);
   const [loadStates, setLoadStates] = useState<Record<string, string>>({});
   const frameRef = useRef<number>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
@@ -50,7 +51,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
 
     const interval = setInterval(() => {
       if (audioEngine) {
-        setAudioStatus(audioEngine.getAudioStatus());
         const newStates: Record<string, string> = {};
         urls.forEach(url => {
           newStates[url] = audioEngine.getLoadStatus(url);
@@ -89,6 +89,11 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       setIsPlaying(true);
     } catch (e) {
       console.error("Game startup failed", e);
+      toast({
+        variant: "destructive",
+        title: "Audio Fehler",
+        description: "Das Audiosystem konnte nicht gestartet werden.",
+      });
     } finally {
       setIsLoadingAudio(false);
     }
@@ -111,7 +116,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       const secondsPerStep = secondsPerBeat / 4;
       const currentStep = time / secondsPerStep;
       
-      // Feinjustierte Toleranz für das Trefferfenster
       const tolerance = 0.3;
       
       const isHit = sound.triggerSteps.some(step => {
@@ -138,7 +142,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
-          // Mission endet nach 60 Sekunden Musik
           if (t >= 60) {
             setIsPlaying(false);
             setIsFinished(true);
@@ -164,17 +167,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           </div>
         </Link>
         <div className="flex items-center gap-4">
-          <div className="flex flex-col items-end gap-1">
-            <div className="flex gap-2">
-              <Badge variant="outline" className="text-[10px] uppercase border-white/10 opacity-70 flex gap-1">
-                <Activity className="w-3 h-3" />
-                Audio: <span className={audioStatus?.state === 'running' ? 'text-green-400 ml-1 font-bold' : 'text-yellow-400 ml-1'}>{audioStatus?.state || 'Init'}</span>
-              </Badge>
-              <Badge variant="outline" className="text-[10px] uppercase border-white/10 opacity-70 font-bold">
-                SR: {audioStatus?.sampleRate || '-'}
-              </Badge>
-            </div>
-          </div>
           <div className="text-right border-l border-white/10 pl-4">
             <p className="text-[10px] uppercase opacity-40">Accuracy</p>
             <p className="text-xl font-bold text-[#3838FA]">{score.accuracy}%</p>
@@ -183,7 +175,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       </div>
 
       <div className="relative flex-1 bg-black/40 rounded-2xl border border-white/5 overflow-hidden flex flex-col">
-        {/* Die Schlag-Linie (Judgment Line) */}
         <div 
           className="absolute left-0 right-0 h-px bg-[#993DEB] opacity-50 z-10"
           style={{ top: '500px', boxShadow: '0 0 10px #993DEB' }}
@@ -240,7 +231,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
             <Card className="p-10 bg-[#1F1A23] border-[#993DEB] border text-center max-w-sm">
               <Music2 className="w-12 h-12 text-[#993DEB] mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Ready?</h2>
+              <h2 className="text-2xl font-bold mb-2">Bereit?</h2>
               
               <div className="flex flex-col gap-2 mb-8">
                 <p className="text-sm opacity-70">Schalte das Audio frei, um die Mission zu starten.</p>
