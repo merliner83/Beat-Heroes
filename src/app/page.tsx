@@ -164,7 +164,8 @@ export default function HomePage() {
 
             {/* Interactive District GPS Points */}
             {DISTRICTS.filter(d => d.id !== 'all').map((district) => {
-              const isActive = selectedDistrict === 'all' || selectedDistrict === district.id;
+              const isFocused = selectedDistrict === district.id;
+              const isFilteredOut = selectedDistrict !== 'all' && !isFocused;
               
               return (
                 <div
@@ -175,19 +176,19 @@ export default function HomePage() {
                   }}
                   className={cn(
                     "absolute flex flex-col items-center gap-1 transition-all group cursor-pointer",
-                    isActive ? "opacity-100" : "opacity-20 grayscale"
+                    isFilteredOut ? "opacity-20 grayscale" : "opacity-100"
                   )}
                   style={{ left: `${district.x}%`, top: `${district.y}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   <div className={cn(
                     "w-3 h-3 rounded-full border border-white transition-all",
-                    selectedDistrict === district.id 
+                    isFocused 
                       ? "bg-[#FF3D00] shadow-[0_0_15px_#FF3D00] scale-125" 
-                      : "bg-white/40"
+                      : "bg-white/80 shadow-[0_0_8px_rgba(255,255,255,0.3)]"
                   )} />
                   <div className={cn(
-                    "bg-black/90 backdrop-blur-md border border-white/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap rounded",
-                    selectedDistrict === district.id ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white/60"
+                    "bg-black/90 backdrop-blur-md border border-white/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap rounded transition-colors",
+                    isFocused ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white/80"
                   )}>
                     {district.name}
                   </div>
