@@ -56,13 +56,13 @@ export default function StudioPage() {
                 <div 
                   onClick={() => setSelectedProjectId(selectedProjectId === project.id ? null : project.id)}
                   className={cn(
-                    "cursor-pointer transition-all relative group gemini-border",
-                    selectedProjectId === project.id && "active gemini-glow"
+                    "cursor-pointer relative group gemini-border",
+                    selectedProjectId === project.id && "gemini-glow"
                   )}
                 >
                   <Card className={cn(
-                    "p-8 border-none bg-card transition-all",
-                    selectedProjectId === project.id ? "bg-black/20" : "bg-card"
+                    "p-8 border-none bg-transparent transition-all",
+                    selectedProjectId === project.id ? "bg-black/20" : ""
                   )}>
                     <div className="flex justify-between items-center text-white relative z-10">
                       <div>
