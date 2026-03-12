@@ -1,32 +1,49 @@
+
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
-import { Home, MapPin, Target, Settings, Radio } from 'lucide-react';
+import { Home, MapPin, Target, Settings, Radio, Layers } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
-// Optimierte Koordinaten für Liberty Beats City (GTA Style)
+// Koordinaten für Liberty Beats City
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'yoan-beats': { x: 20, y: 35 },
-  'nintu-music': { x: 75, y: 40 },
-  'dave-beats': { x: 45, y: 75 },
-  'noxxos': { x: 65, y: 20 }
+  'yoan-beats': { x: 25, y: 35 },
+  'nintu-music': { x: 35, y: 55 },
+  'dave-beats': { x: 15, y: 65 },
+  'noxxos': { x: 75, y: 30 }
 };
+
+const DISTRICTS = [
+  { id: 'all', name: 'All Districts' },
+  { id: 'bantiger', name: 'Bantiger District' },
+  { id: 'oberemmental', name: 'Oberemmental District' }
+];
 
 export default function HomePage() {
   const db = useFirestore();
   const { toast } = useToast();
+  const [selectedDistrict, setSelectedDistrict] = useState('all');
   
   const studiosQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'studios'));
   }, [db]);
 
-  const { data: studios, isLoading } = useCollection<Studio>(studiosQuery);
+  const { data: allStudios, isLoading } = useCollection<Studio>(studiosQuery);
+
+  // Filterung der Studios basierend auf dem ausgewählten Distrikt
+  const filteredStudios = allStudios?.filter(studio => {
+    if (selectedDistrict === 'all') return true;
+    if (selectedDistrict === 'bantiger') return studio.district === 'Bantiger District';
+    if (selectedDistrict === 'oberemmental') return studio.district === 'Oberemmental District';
+    return true;
+  });
 
   const setupStudios = async () => {
     if (!db) return;
@@ -44,7 +61,7 @@ export default function HomePage() {
       }
       toast({
         title: "Studios synchronisiert",
-        description: "Die Standorte wurden auf der Karte markiert.",
+        description: "Die Distrikte wurden auf der Karte markiert.",
       });
     } catch (e) {
       toast({
@@ -93,22 +110,22 @@ export default function HomePage() {
 
         {/* Studio Pins */}
         <div className="absolute inset-0">
-          {studios?.map((studio) => {
-            const pos = STUDIO_COORDS[studio.id] || { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 };
+          {filteredStudios?.map((studio) => {
+            const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
             return (
               <div 
                 key={studio.id}
-                className="absolute transition-transform hover:scale-105 group"
+                className="absolute transition-all duration-500 animate-in fade-in zoom-in group"
                 style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
               >
                 <Link href={`/studio/${studio.id}`}>
-                  <div className="relative flex flex-col items-center">
+                  <div className="relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
                     {/* Pulsing Target Ring */}
-                    <div className="absolute inset-0 w-16 h-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#993DEB] animate-ping opacity-20" />
+                    <div className="absolute inset-0 w-20 h-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#993DEB] animate-ping opacity-20" />
                     
                     {/* Studio Icon/Marker (HOUSE) */}
                     <div 
-                      className="w-16 h-16 rounded-xl bg-black border-4 border-white flex items-center justify-center shadow-2xl relative z-10 transition-colors group-hover:bg-[#993DEB]"
+                      className="w-16 h-16 rounded-xl bg-black border-4 border-white flex items-center justify-center shadow-2xl relative z-10 transition-all group-hover:bg-[#993DEB] group-hover:scale-110"
                       style={{ boxShadow: `0 0 30px ${studio.coverColor}66` }}
                     >
                       <Home className="w-8 h-8 text-white" />
@@ -140,17 +157,41 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Mini-Map / District Info Overlay */}
-        <div className="absolute bottom-10 left-10 w-64 aspect-square bg-black/90 border-4 border-white shadow-[10px_10px_0px_0px_rgba(0,0,0,0.5)] p-4 hidden md:block">
-          <div className="h-full w-full border-2 border-white/20 relative flex items-center justify-center">
-            <div className="text-center">
-              <MapPin className="w-8 h-8 text-[#993DEB] mx-auto mb-2" />
-              <div className="text-[10px] font-black uppercase tracking-widest leading-tight">
-                Liberty Beats City<br/>Digital Map v1.0
+        {/* Mini-Map / District Selection Overlay */}
+        <div className="absolute bottom-10 left-10 w-72 bg-black/90 border-4 border-white shadow-[10px_10px_0px_0px_rgba(0,0,0,0.5)] p-4 hidden md:block z-50">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3 border-b-2 border-white/20 pb-3">
+              <Layers className="w-6 h-6 text-[#993DEB]" />
+              <div className="text-[12px] font-black uppercase tracking-widest leading-tight">
+                District Selection<br/>
+                <span className="text-[#993DEB] opacity-100">Area Filter active</span>
               </div>
             </div>
-            <div className="absolute top-4 left-6 w-2 h-2 bg-white rounded-full animate-pulse" />
-            <div className="absolute bottom-8 right-12 w-2 h-2 bg-[#993DEB] rounded-full animate-pulse" />
+
+            <div className="space-y-2">
+              {DISTRICTS.map((district) => (
+                <button
+                  key={district.id}
+                  onClick={() => setSelectedDistrict(district.id)}
+                  className={cn(
+                    "w-full text-left px-4 py-3 transition-all flex items-center justify-between group",
+                    selectedDistrict === district.id
+                      ? "bg-[#993DEB] text-white"
+                      : "bg-white/5 hover:bg-white/10 text-white/60"
+                  )}
+                >
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">{district.name}</span>
+                  {selectedDistrict === district.id && <MapPin className="w-3 h-3 animate-pulse" />}
+                </button>
+              ))}
+            </div>
+
+            <div className="h-24 w-full border-2 border-white/10 relative flex items-center justify-center overflow-hidden bg-[#111]">
+               <div className="absolute inset-0 opacity-10">
+                  <svg width="100%" height="100%"><rect width="100%" height="100%" fill="url(#grid)" /></svg>
+               </div>
+               <div className="text-[8px] font-black uppercase tracking-tighter text-white/20">Liberty Map v4.0</div>
+            </div>
           </div>
         </div>
       </main>
