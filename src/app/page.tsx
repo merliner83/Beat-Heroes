@@ -6,17 +6,17 @@ import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
 import { Card } from '@/components/ui/card';
-import { Music, Play, Radio, Settings, MapPin, Target } from 'lucide-react';
+import { Music, Play, Radio, Settings, MapPin, Target, Home } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-// Stilisierte Koordinaten für die Karte
+// Optimierte Koordinaten für bessere Verteilung (GTA Style)
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'yoan-beats': { x: 25, y: 35 },
-  'nintu-music': { x: 65, y: 25 },
-  'dave-beats': { x: 50, y: 65 }
+  'yoan-beats': { x: 15, y: 25 },
+  'nintu-music': { x: 80, y: 35 },
+  'dave-beats': { x: 40, y: 75 }
 };
 
 export default function HomePage() {
@@ -105,22 +105,22 @@ export default function HomePage() {
                 <Link href={`/studio/${studio.id}`}>
                   <div className="relative flex flex-col items-center">
                     {/* Pulsing Target Ring */}
-                    <div className="absolute inset-0 w-12 h-12 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#993DEB] animate-ping opacity-20" />
+                    <div className="absolute inset-0 w-16 h-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#993DEB] animate-ping opacity-20" />
                     
-                    {/* Studio Icon/Marker */}
+                    {/* Studio Icon/Marker (HOUSE) */}
                     <div 
-                      className="w-10 h-10 rounded-full bg-black border-4 border-white flex items-center justify-center shadow-2xl relative z-10 transition-colors group-hover:bg-[#993DEB]"
-                      style={{ boxShadow: `0 0 20px ${studio.coverColor}44` }}
+                      className="w-16 h-16 rounded-xl bg-black border-4 border-white flex items-center justify-center shadow-2xl relative z-10 transition-colors group-hover:bg-[#993DEB]"
+                      style={{ boxShadow: `0 0 30px ${studio.coverColor}66` }}
                     >
-                      <Music className="w-5 h-5 text-white" />
+                      <Home className="w-8 h-8 text-white" />
                     </div>
 
-                    {/* Popover Label */}
-                    <div className="mt-4 bg-black border-2 border-white px-4 py-2 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all">
-                      <h3 className="text-sm font-black uppercase italic tracking-tighter whitespace-nowrap">{studio.name}</h3>
-                      <div className="flex items-center gap-1 mt-1">
+                    {/* Permanent Label (Readable Name) */}
+                    <div className="mt-3 bg-black/90 border-2 border-white px-4 py-2 shadow-[4px_4px_0px_0px_white] transition-transform group-hover:-translate-y-1">
+                      <h3 className="text-lg font-black uppercase italic tracking-tighter whitespace-nowrap">{studio.name}</h3>
+                      <div className="flex items-center gap-1 mt-0.5">
                         <Target className="w-3 h-3 text-[#993DEB]" />
-                        <span className="text-[10px] font-bold opacity-50 uppercase">Mission Available</span>
+                        <span className="text-[9px] font-bold opacity-70 uppercase tracking-widest">Active Studio</span>
                       </div>
                     </div>
                   </div>
