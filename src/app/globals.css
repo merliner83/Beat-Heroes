@@ -35,7 +35,7 @@
   }
 }
 
-/* Gemini-Style Gradient Border - Modern Mask Composite Implementation */
+/* Gemini-Style Gradient Border */
 .gemini-border {
   position: relative;
   z-index: 0;
@@ -57,6 +57,43 @@
           mask-composite: exclude;
   pointer-events: none;
   z-index: -1;
+  opacity: 0.6;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Hover Effect: Simple and Professional */
+.gemini-border:hover::before {
+  opacity: 1;
+}
+
+/* Subtle Version for Levels */
+.gemini-border-subtle {
+  position: relative;
+  z-index: 0;
+  border-radius: var(--radius);
+}
+
+.gemini-border-subtle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #993DEB, #FF3D00, #FFEA00, #FFFF00, #993DEB);
+  background-size: 200% 100%;
+  -webkit-mask: 
+     linear-gradient(#fff 0 0) content-box, 
+     linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.2; /* Much finer opacity */
+  transition: opacity 0.3s ease;
+}
+
+.gemini-border-subtle:hover::before {
+  opacity: 0.5; /* Subtle highlight on hover */
 }
 
 .gemini-glow {
@@ -76,9 +113,4 @@
 @keyframes flash {
   0% { opacity: 1; transform: scale(1.2); }
   100% { opacity: 0; transform: scale(1); }
-}
-
-@keyframes border-flow {
-  0% { background-position: 200% 0%; }
-  100% { background-position: 0% 0%; }
 }

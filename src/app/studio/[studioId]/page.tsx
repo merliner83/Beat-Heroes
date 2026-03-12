@@ -82,7 +82,7 @@ export default function StudioPage() {
                             key={level.id}
                             onClick={() => router.push(`/play/${studioId}/${project.id}/${level.id}`)}
                             variant="ghost"
-                            className="h-28 bg-black/40 gemini-border border-none text-lg font-black flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl relative overflow-visible"
+                            className="h-28 bg-black/40 gemini-border-subtle border-none text-lg font-black flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl relative overflow-visible"
                           >
                             <span className="text-[10px] opacity-40 font-black uppercase tracking-[0.2em] text-white relative z-10">Level {level.difficulty}</span>
                             <div className="flex items-center gap-1 uppercase italic text-white group-hover:text-[#FFEA00] relative z-10">
