@@ -108,7 +108,7 @@ export default function HomePage() {
             <Radio className="w-8 h-8 text-[#FFEA00]" />
             <div>
               <h1 className="text-4xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
-              <p className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-50">Select Destination</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-50 text-white">Select Destination</p>
             </div>
           </div>
         </div>
@@ -117,7 +117,7 @@ export default function HomePage() {
           <div className="text-white font-bold text-xl leading-none tracking-tighter">
             {streetCred.toLocaleString()} <span className="text-[#FFEA00] italic ml-1 font-black">SC</span>
           </div>
-          <div className="text-[10px] uppercase opacity-40 mt-1 font-bold tracking-widest">Street Credibilities</div>
+          <div className="text-[10px] uppercase opacity-40 mt-1 font-bold tracking-widest text-white">Street Credibilities</div>
         </div>
       </header>
 
@@ -177,8 +177,8 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* GPS Mini-Map Graphic */}
-        <div className="absolute bottom-10 left-10 w-72 gemini-border gemini-glow p-2 z-50">
+        {/* GPS Mini-Map Graphic - Zentriert unten */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-72 gemini-border gemini-glow p-2 z-50">
           <div className="h-44 w-full rounded-lg relative overflow-hidden bg-[#111]">
             <div className="absolute inset-0 opacity-10 pointer-events-none">
               <svg width="100%" height="100%">
@@ -244,7 +244,7 @@ export default function HomePage() {
           variant="ghost" 
           size="sm" 
           onClick={setupStudios}
-          className="text-[10px] uppercase tracking-tighter gap-2"
+          className="text-[10px] uppercase tracking-tighter gap-2 text-white"
         >
           <Settings className="w-3 h-3" />
           Map Setup
