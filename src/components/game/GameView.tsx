@@ -72,13 +72,16 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       const isResumed = await audioEngine.resume();
       if (!isResumed) throw new Error("AudioContext failed to resume");
 
+      // Reset score and state
+      setScore({ hits: 0, misses: 0, accuracy: 100 });
+      setIsFinished(false);
+      
+      // Start music before setting isPlaying to ensure startTime is fresh
       if (backingTrackReady) {
         await audioEngine.startBackingTrack(project.backingTrackUrl);
       }
       
       setIsPlaying(true);
-      setIsFinished(false);
-      setScore({ hits: 0, misses: 0, accuracy: 100 });
     } catch (e) {
       console.error("Game startup failed", e);
     } finally {
@@ -135,6 +138,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
+          // End level after 60 seconds of playback
           if (t >= 60) {
             setIsPlaying(false);
             setIsFinished(true);
@@ -147,7 +151,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     }
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
-      audioEngine?.stop();
+      // We don't call audioEngine?.stop() here to allow pads to ring out on simple re-renders,
+      // but the unmount logic is handled by the parent route if needed.
     };
   }, [isPlaying]);
 

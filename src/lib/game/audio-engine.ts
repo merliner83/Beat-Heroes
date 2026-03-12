@@ -3,19 +3,20 @@
 
 /**
  * AudioEngine handles loading, decoding, and playback.
- * Optimized with a Server-Side Proxy to bypass CORS issues.
- * Fixed sample rate: 44.1 kHz. No synth fallback.
+ * Optimized for CD Quality (44.1kHz).
+ * Uses a dedicated slot for backing tracks to prevent premature stopping.
  */
 export class AudioEngine {
   private context: AudioContext | null = null;
   private buffers: Map<string, AudioBuffer> = new Map();
   private sources: Set<AudioBufferSourceNode> = new Set();
+  private backingSource: AudioBufferSourceNode | null = null;
   private masterGain: GainNode | null = null;
   private startTime: number = 0;
   private loadingStatus: Map<string, 'loading' | 'ready' | 'failed'> = new Map();
 
   constructor() {
-    console.log('AudioEngine: CD Quality (44.1kHz) Engine initialized.');
+    console.log('AudioEngine: CD Quality (44.1kHz) Engine active.');
   }
 
   async resume(): Promise<boolean> {
@@ -64,7 +65,6 @@ export class AudioEngine {
       
       this.loadingStatus.set(url, 'loading');
       try {
-        // Use the internal Proxy to bypass external CORS restrictions
         const proxyUrl = `/api/proxy-audio?url=${encodeURIComponent(url)}`;
         const response = await fetch(proxyUrl);
         
@@ -76,7 +76,7 @@ export class AudioEngine {
         this.buffers.set(url, audioBuffer);
         this.loadingStatus.set(url, 'ready');
       } catch (e) {
-        console.warn(`AudioEngine: Proxy load failed for ${url}. Sample will not play.`, e);
+        console.warn(`AudioEngine: Proxy load failed for ${url}.`, e);
         this.loadingStatus.set(url, 'failed');
       }
     }));
@@ -86,10 +86,7 @@ export class AudioEngine {
     await this.resume();
 
     const buffer = this.buffers.get(url);
-    if (!buffer) {
-      console.warn(`AudioEngine: Buffer not ready for ${url}`);
-      return;
-    }
+    if (!buffer) return;
 
     try {
       const source = this.context!.createBufferSource();
@@ -99,13 +96,13 @@ export class AudioEngine {
       source.onended = () => this.sources.delete(source);
       this.sources.add(source);
     } catch (e) {
-      console.error('AudioEngine: Playback failed', e);
+      console.error('AudioEngine: One-shot playback failed', e);
     }
   }
 
   async startBackingTrack(url: string) {
     await this.resume();
-    this.stop();
+    this.stopBackingTrack();
 
     const buffer = this.buffers.get(url);
     if (!buffer || !this.context || !this.masterGain) {
@@ -113,16 +110,28 @@ export class AudioEngine {
       return;
     }
 
-    this.startTime = this.context.currentTime;
-    const source = this.context.createBufferSource();
-    source.buffer = buffer;
-    source.loop = true;
-    source.connect(this.masterGain);
-    source.start(0);
-    this.sources.add(source);
+    try {
+      this.startTime = this.context.currentTime;
+      const source = this.context.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      source.connect(this.masterGain);
+      source.start(0);
+      this.backingSource = source;
+    } catch (e) {
+      console.error('AudioEngine: Backing track start failed', e);
+    }
+  }
+
+  stopBackingTrack() {
+    if (this.backingSource) {
+      try { this.backingSource.stop(); } catch(e) {}
+      this.backingSource = null;
+    }
   }
 
   stop() {
+    this.stopBackingTrack();
     this.sources.forEach(s => { try { s.stop(); } catch(e) {} });
     this.sources.clear();
   }
