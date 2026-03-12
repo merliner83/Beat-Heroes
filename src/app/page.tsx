@@ -80,15 +80,40 @@ export default function HomePage() {
         name: 'KICK 8 Bar Drive', 
         steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124] 
       },
+      {
+        id: 'kick-slow-intro',
+        name: 'KICK Intro Sparse',
+        steps: [0, 32, 64, 96]
+      },
+      {
+        id: 'kick-buildup-drive',
+        name: 'KICK Buildup Rush',
+        steps: [0, 16, 32, 48, 64, 72, 80, 88, 96, 100, 104, 108, 112, 114, 116, 118, 120, 121, 122, 123, 124, 125, 126, 127]
+      },
       { 
         id: 'clap-8-bars', 
         name: 'CLAP 8 Bar Groove', 
         steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] 
       },
+      {
+        id: 'clap-buildup-fast',
+        name: 'CLAP Accelerating',
+        steps: [16, 48, 80, 96, 104, 112, 116, 120, 122, 124, 125, 126, 127]
+      },
       { 
-        id: 'hats-8-bars', 
-        name: 'HATS 8 Bar Pulse', 
+        id: 'hats-edm-dance', 
+        name: 'HATS EDM Offbeat', 
         steps: [2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 62, 66, 70, 74, 78, 82, 86, 90, 94, 98, 102, 106, 110, 114, 118, 122, 126] 
+      },
+      {
+        id: 'hats-trap-vibe',
+        name: 'HATS Trap Rolls',
+        steps: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 31, 31.5, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 63, 63.5, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 95, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 127].map(Math.floor)
+      },
+      {
+        id: 'misc-afro-clave',
+        name: 'MISC Afro Clave',
+        steps: [0, 3, 6, 10, 12, 16, 19, 22, 26, 28, 32, 35, 38, 42, 44, 48, 51, 54, 58, 60, 64, 67, 70, 74, 76, 80, 83, 86, 90, 92, 96, 99, 102, 106, 108, 112, 115, 118, 122, 124]
       }
     ];
 
@@ -177,7 +202,7 @@ export default function HomePage() {
 
       toast({
         title: "Database Ready",
-        description: "Patterns, Studios, and a Demo Level for Gabriel Beats initialized.",
+        description: "Extended Patterns, Studios, and Demo Level initialized.",
       });
     } catch (e) {
       toast({
