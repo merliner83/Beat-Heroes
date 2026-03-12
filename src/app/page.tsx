@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
-import { Home, Radio, Target, Settings } from 'lucide-react';
+import { Home, Radio, Settings } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -167,6 +167,7 @@ export default function HomePage() {
               const isSelected = selectedDistrict === district.id;
               const isAllActive = selectedDistrict === 'all';
               const isDimmed = !isAllActive && !isSelected;
+              const isActive = !isDimmed;
               
               return (
                 <div
@@ -177,19 +178,19 @@ export default function HomePage() {
                   }}
                   className={cn(
                     "absolute flex flex-col items-center gap-1 transition-all group cursor-pointer",
-                    isDimmed ? "opacity-20 grayscale scale-90" : "opacity-100 scale-100"
+                    isDimmed ? "opacity-30 grayscale scale-90" : "opacity-100 scale-100"
                   )}
                   style={{ left: `${district.x}%`, top: `${district.y}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   <div className={cn(
                     "w-3 h-3 rounded-full border border-white transition-all",
-                    isSelected 
-                      ? "bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] scale-125" 
-                      : "bg-white shadow-[0_0_15px_rgba(255,255,255,0.9)]"
+                    isActive 
+                      ? "bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] scale-110" 
+                      : "bg-white/20"
                   )} />
                   <div className={cn(
                     "bg-black/90 backdrop-blur-md border border-white/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap rounded transition-colors",
-                    isSelected ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white"
+                    isActive ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white/40"
                   )}>
                     {district.name}
                   </div>
