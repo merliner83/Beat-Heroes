@@ -9,11 +9,12 @@ import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
-// Optimierte Koordinaten für bessere Verteilung (GTA Style)
+// Optimierte Koordinaten für Liberty Beats City (GTA Style)
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'yoan-beats': { x: 20, y: 30 },
-  'nintu-music': { x: 75, y: 35 },
-  'dave-beats': { x: 40, y: 70 }
+  'yoan-beats': { x: 20, y: 35 },
+  'nintu-music': { x: 75, y: 40 },
+  'dave-beats': { x: 45, y: 75 },
+  'noxxos': { x: 65, y: 20 }
 };
 
 export default function HomePage() {
@@ -31,9 +32,10 @@ export default function HomePage() {
     if (!db) return;
     
     const newStudios = [
-      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Fresh vibes and urban rhythms.', coverColor: '#FF3D00', district: 'Oberemmental District' },
+      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Fresh vibes and urban rhythms.', coverColor: '#FF3D00', district: 'Bantiger District' },
       { id: 'nintu-music', name: 'Nintu Music', description: 'Deep electronic soul and textures.', coverColor: '#00E676', district: 'Bantiger District' },
-      { id: 'dave-beats', name: 'Dave Beats', description: 'Classic groove and boom bap energy.', coverColor: '#2979FF', district: 'Oberemmental District' }
+      { id: 'dave-beats', name: 'Dave Beats', description: 'Classic groove and boom bap energy.', coverColor: '#2979FF', district: 'Bantiger District' },
+      { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes and dark atmosphere.', coverColor: '#EB3D99', district: 'Oberemmental District' }
     ];
 
     try {
