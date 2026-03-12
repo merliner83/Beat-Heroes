@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -7,7 +8,7 @@ import { collection, query, where, doc } from 'firebase/firestore';
 import { Studio, Project, Level } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, LayoutGrid, ChevronRight } from 'lucide-react';
+import { ArrowLeft, LayoutGrid, ChevronRight, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -43,7 +44,19 @@ export default function StudioPage() {
         {studio && (
           <div className="mb-12">
             <h1 className="text-6xl font-black mb-2 uppercase italic tracking-tighter text-white">{studio.name}</h1>
-            <p className="text-xl opacity-60 font-medium text-white">{studio.description}</p>
+            <p className="text-xl opacity-60 font-medium text-white mb-4">{studio.description}</p>
+            
+            {studio.linkUrl && (
+              <a 
+                href={studio.linkUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-[#FFEA00] hover:text-[#FFEA00]/80 font-black uppercase tracking-widest text-xs transition-colors"
+              >
+                <ExternalLink className="w-3 h-3" />
+                {studio.linkLabel || 'Visit Studio'}
+              </a>
+            )}
           </div>
         )}
 

@@ -1,3 +1,4 @@
+
 export type SoundType = 'kick' | 'clap' | 'percs' | 'misc';
 
 export interface Studio {
@@ -6,6 +7,8 @@ export interface Studio {
   description: string;
   coverColor: string;
   district?: string;
+  linkUrl?: string;
+  linkLabel?: string;
 }
 
 export interface Project {

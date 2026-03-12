@@ -77,10 +77,42 @@ export default function HomePage() {
     if (!db) return;
     
     const newStudios = [
-      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Fresh vibes and urban rhythms.', coverColor: '#FF3D00', district: 'Bantiger District' },
-      { id: 'nintu-music', name: 'Nintu Music', description: 'Deep electronic soul and textures.', coverColor: '#00E676', district: 'Bantiger District' },
-      { id: 'dave-beats', name: 'Dave Beats', description: 'Classic groove and boom bap energy.', coverColor: '#2979FF', district: 'Bantiger District' },
-      { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes and dark atmosphere.', coverColor: '#EB3D99', district: 'Oberemmental District' }
+      { 
+        id: 'gabriel-beats', 
+        name: 'Gabriel Beats', 
+        description: 'Fresh vibes and urban rhythms.', 
+        coverColor: '#FF3D00', 
+        district: 'Bantiger District',
+        linkUrl: 'https://example.com/gabriel',
+        linkLabel: 'Official Portfolio'
+      },
+      { 
+        id: 'nintu-music', 
+        name: 'Nintu Music', 
+        description: 'Deep electronic soul and textures.', 
+        coverColor: '#00E676', 
+        district: 'Bantiger District',
+        linkUrl: 'https://example.com/nintu',
+        linkLabel: 'Listen on Soundcloud'
+      },
+      { 
+        id: 'dave-beats', 
+        name: 'Dave Beats', 
+        description: 'Classic groove and boom bap energy.', 
+        coverColor: '#2979FF', 
+        district: 'Bantiger District',
+        linkUrl: 'https://example.com/dave',
+        linkLabel: 'Beat Shop'
+      },
+      { 
+        id: 'noxxos', 
+        name: 'Noxxos', 
+        description: 'Experimental soundscapes and dark atmosphere.', 
+        coverColor: '#EB3D99', 
+        district: 'Oberemmental District',
+        linkUrl: 'https://example.com/noxxos',
+        linkLabel: 'Follow Lab Updates'
+      }
     ];
 
     try {

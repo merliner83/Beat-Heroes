@@ -10,7 +10,9 @@
         "name": { "type": "string" },
         "description": { "type": "string" },
         "coverColor": { "type": "string" },
-        "district": { "type": "string", "description": "Der Stadtteil/Distrikt, in dem das Studio liegt." }
+        "district": { "type": "string", "description": "Der Stadtteil/Distrikt, in dem das Studio liegt." },
+        "linkUrl": { "type": "string", "format": "uri", "description": "Eine externe Webseite oder Social Media Link." },
+        "linkLabel": { "type": "string", "description": "Der Text, der für den Link angezeigt werden soll." }
       },
       "required": ["id", "name"]
     },
