@@ -15,7 +15,7 @@ import { useAuth } from '@/firebase/provider';
 
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'gabriel-beats': { x: 20, y: 25 },
-  'nintu-music': { x: 45, y: 55 },
+  'nintu-music': { x: 55, y: 55 },
   'dave-beats': { x: 15, y: 70 },
   'noxxos': { x: 75, y: 35 }
 };
@@ -132,15 +132,52 @@ export default function HomePage() {
     ];
 
     try {
+      // 1. Patterns anlegen
       for (const p of patterns) {
         await setDoc(doc(db, 'patterns', p.id), p);
       }
+      // 2. Studios anlegen
       for (const s of newStudios) {
         await setDoc(doc(db, 'studios', s.id), s);
       }
+
+      // 3. Demo Projekt & Level für Gabriel Beats anlegen
+      const demoProjectId = 'gabriel-debut';
+      const demoLevelId = 'gabriel-level-1';
+
+      await setDoc(doc(db, 'projects', demoProjectId), {
+        id: demoProjectId,
+        studioId: 'gabriel-beats',
+        name: 'Neon Horizon',
+        bpm: 124,
+        backingTrackUrl: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
+      });
+
+      await setDoc(doc(db, 'levels', demoLevelId), {
+        id: demoLevelId,
+        projectId: demoProjectId,
+        difficulty: 1,
+        name: 'Foundation'
+      });
+
+      // 4. Sounds für das Level anlegen (Link zu PatternId!)
+      const sounds = [
+        {
+          id: 'kick-main',
+          levelId: demoLevelId,
+          type: 'kick',
+          sampleUrl: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg',
+          patternId: 'kick-8-bars'
+        }
+      ];
+
+      for (const snd of sounds) {
+        await setDoc(doc(db, 'levels', demoLevelId, 'sounds', snd.id), snd);
+      }
+
       toast({
-        title: "Database Initialized",
-        description: "8-bar patterns and studios are ready.",
+        title: "Database Ready",
+        description: "Patterns, Studios, and a Demo Level for Gabriel Beats initialized.",
       });
     } catch (e) {
       toast({
@@ -153,8 +190,8 @@ export default function HomePage() {
 
   return (
     <div className="h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none">
-      <header className="p-6 flex justify-between items-start z-50">
-        <div className="gemini-border gemini-glow p-4">
+      <header className="p-6 flex flex-col items-center z-50">
+        <div className="gemini-border gemini-glow p-4 inline-block mb-4">
           <div className="flex items-center gap-3">
             <Radio className="w-8 h-8 text-[#FFEA00]" />
             <div>
@@ -164,7 +201,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="gemini-border gemini-glow p-4 text-right">
+        <div className="gemini-border gemini-glow p-4 text-center">
           <div className="text-white font-bold text-xl leading-none tracking-tighter">
             {streetCred.toLocaleString()} <span className="text-[#FFEA00] italic ml-1 font-black">SC</span>
           </div>

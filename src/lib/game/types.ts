@@ -37,8 +37,8 @@ export interface Sound {
   levelId: string;
   type: SoundType;
   sampleUrl: string;
-  patternId: string;
-  triggerSteps?: number[]; // Internal cache
+  patternId: string; // Link to the TriggerPattern
+  triggerSteps?: number[]; // Internal UI cache (not stored in DB)
 }
 
 export interface GameScore {
