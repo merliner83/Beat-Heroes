@@ -14,6 +14,9 @@ export class AudioEngine {
   private masterGain: GainNode | null = null;
   private startTime: number = 0;
   private loadingStatus: Map<string, 'loading' | 'ready' | 'failed'> = new Map();
+  
+  // Public metronome tick URL
+  public static readonly METRONOME_URL = 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg';
 
   constructor() {
     console.log('AudioEngine: CD Quality (44.1kHz) Engine active.');
@@ -57,7 +60,9 @@ export class AudioEngine {
     if (!this.context) await this.resume();
     if (!this.context) return;
 
-    const uniqueUrls = Array.from(new Set(urls.filter(u => !!u)));
+    // Add metronome to preload
+    const allUrls = [...urls, AudioEngine.METRONOME_URL];
+    const uniqueUrls = Array.from(new Set(allUrls.filter(u => !!u)));
     
     await Promise.all(uniqueUrls.map(async (url) => {
       if (this.buffers.has(url) || this.loadingStatus.get(url) === 'loading') return;
@@ -97,6 +102,32 @@ export class AudioEngine {
     } catch (e) {
       console.error('AudioEngine: One-shot playback failed', e);
     }
+  }
+
+  /**
+   * Schedules 4 ticks before the actual start.
+   * Returns a promise that resolves when the count-in is finished.
+   */
+  async playCountIn(bpm: number, onTick: (beat: number) => void): Promise<void> {
+    await this.resume();
+    const buffer = this.buffers.get(AudioEngine.METRONOME_URL);
+    if (!buffer || !this.context) return;
+
+    const secondsPerBeat = 60 / bpm;
+    const now = this.context.currentTime;
+
+    for (let i = 0; i < 4; i++) {
+      const scheduleTime = now + (i * secondsPerBeat);
+      const source = this.context.createBufferSource();
+      source.buffer = buffer;
+      source.connect(this.masterGain!);
+      source.start(scheduleTime);
+      
+      // We use a timeout to trigger the UI callback as precise as possible
+      setTimeout(() => onTick(i + 1), i * secondsPerBeat * 1000);
+    }
+
+    return new Promise(resolve => setTimeout(resolve, 4 * secondsPerBeat * 1000));
   }
 
   async startBackingTrack(url: string) {

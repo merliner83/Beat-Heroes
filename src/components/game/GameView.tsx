@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Project, Level, Sound, GameScore, SoundType } from '@/lib/game/types';
-import { audioEngine } from '@/lib/game/audio-engine';
+import { audioEngine, AudioEngine } from '@/lib/game/audio-engine';
 import { SamplerPad } from './SamplerPad';
 import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
@@ -52,6 +52,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const router = useRouter();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const [countIn, setCountIn] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
@@ -61,7 +62,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const { toast } = useToast();
 
   useEffect(() => {
-    const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
+    const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl), AudioEngine.METRONOME_URL];
     if (audioEngine) {
       audioEngine.preloadAudio(urls);
     }
@@ -80,6 +81,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
 
   const backingTrackReady = loadStates[project.backingTrackUrl] === 'ready';
   const backingTrackFailed = loadStates[project.backingTrackUrl] === 'failed';
+  const metronomeReady = loadStates[AudioEngine.METRONOME_URL] === 'ready';
 
   const checkIsPlayable = (type: SoundType, difficulty: number) => {
     if (difficulty === 1) return type === 'kick';
@@ -141,6 +143,14 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       setIsFinished(false);
       setHasAwardedPoints(false);
       
+      // Start Count-in
+      if (metronomeReady) {
+        await audioEngine.playCountIn(project.bpm, (beat) => {
+          setCountIn(5 - beat); // Displays 4, 3, 2, 1
+        });
+        setCountIn(null);
+      }
+      
       if (backingTrackReady) {
         await audioEngine.startBackingTrack(project.backingTrackUrl);
       }
@@ -152,6 +162,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         title: "Audio Fehler",
         description: "Das Audiosystem konnte nicht gestartet werden.",
       });
+      setCountIn(null);
     } finally {
       setIsLoadingAudio(false);
     }
@@ -163,6 +174,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     }
     setIsPlaying(false);
     setIsFinished(false);
+    setCountIn(null);
     router.push(`/studio/${project.studioId}`);
   };
 
@@ -315,7 +327,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           </div>
         </div>
 
-        {!isPlaying && !isFinished && (
+        {/* Start Overlay */}
+        {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50">
             <Card className="p-12 bg-black border-none gemini-border gemini-glow text-center max-w-sm">
               <Music2 className="w-16 h-16 text-[#993DEB] mx-auto mb-6" />
@@ -351,6 +364,15 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                 )}
               </Button>
             </Card>
+          </div>
+        )}
+
+        {/* Count-in Overlay */}
+        {countIn !== null && (
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-300">
+            <div className="text-[12rem] font-black italic tracking-tighter text-white animate-in zoom-in-50 duration-200">
+              {countIn}
+            </div>
           </div>
         )}
 
