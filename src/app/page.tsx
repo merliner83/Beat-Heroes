@@ -20,7 +20,6 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
 };
 
 const DISTRICTS = [
-  { id: 'all', name: 'All Districts', x: 50, y: 50 },
   { id: 'bantiger', name: 'Bantiger District', x: 25, y: 55 },
   { id: 'oberemmental', name: 'Oberemmental District', x: 75, y: 30 }
 ];
@@ -28,7 +27,8 @@ const DISTRICTS = [
 export default function HomePage() {
   const db = useFirestore();
   const { toast } = useToast();
-  const [selectedDistrict, setSelectedDistrict] = useState('all');
+  // Standardmäßig sind beide Distrikte aktiv
+  const [activeDistricts, setActiveDistricts] = useState<string[]>(['bantiger', 'oberemmental']);
   
   const studiosQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -38,11 +38,20 @@ export default function HomePage() {
   const { data: allStudios, isLoading } = useCollection<Studio>(studiosQuery);
 
   const filteredStudios = allStudios?.filter(studio => {
-    if (selectedDistrict === 'all') return true;
-    if (selectedDistrict === 'bantiger') return studio.district === 'Bantiger District';
-    if (selectedDistrict === 'oberemmental') return studio.district === 'Oberemmental District';
-    return true;
+    const studioDistrictId = studio.district === 'Bantiger District' ? 'bantiger' : 
+                             studio.district === 'Oberemmental District' ? 'oberemmental' : null;
+    
+    if (!studioDistrictId) return true;
+    return activeDistricts.includes(studioDistrictId);
   });
+
+  const toggleDistrict = (id: string) => {
+    setActiveDistricts(prev => 
+      prev.includes(id) 
+        ? prev.filter(d => d !== id) 
+        : [...prev, id]
+    );
+  };
 
   const setupStudios = async () => {
     if (!db) return;
@@ -149,10 +158,7 @@ export default function HomePage() {
 
         {/* GPS Mini-Map Graphic */}
         <div className="absolute bottom-10 left-10 w-72 gemini-border gemini-glow p-2 z-50">
-          <div 
-            className="h-44 w-full rounded-lg relative overflow-hidden bg-[#111] cursor-crosshair"
-            onClick={() => setSelectedDistrict('all')}
-          >
+          <div className="h-44 w-full rounded-lg relative overflow-hidden bg-[#111]">
             <div className="absolute inset-0 opacity-10 pointer-events-none">
               <svg width="100%" height="100%">
                 <pattern id="grid-mini" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -163,43 +169,46 @@ export default function HomePage() {
             </div>
 
             {/* Interactive District GPS Points */}
-            {DISTRICTS.filter(d => d.id !== 'all').map((district) => {
-              const isSelected = selectedDistrict === district.id;
-              const isAllActive = selectedDistrict === 'all';
-              const isDimmed = !isAllActive && !isSelected;
-              const isActive = !isDimmed;
+            {DISTRICTS.map((district) => {
+              const isActive = activeDistricts.includes(district.id);
               
               return (
                 <div
                   key={district.id}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedDistrict(selectedDistrict === district.id ? 'all' : district.id);
+                    toggleDistrict(district.id);
                   }}
                   className={cn(
                     "absolute flex flex-col items-center gap-1 transition-all group cursor-pointer",
-                    isDimmed ? "opacity-30 grayscale scale-90" : "opacity-100 scale-100"
+                    !isActive && "opacity-30"
                   )}
                   style={{ left: `${district.x}%`, top: `${district.y}%`, transform: 'translate(-50%, -50%)' }}
                 >
                   <div className={cn(
                     "w-3 h-3 rounded-full border border-white transition-all",
                     isActive 
-                      ? "bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] scale-110" 
-                      : "bg-white/20"
+                      ? "bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] scale-110 animate-pulse" 
+                      : "bg-white/10 border-white/20"
                   )} />
                   <div className={cn(
                     "bg-black/90 backdrop-blur-md border border-white/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap rounded transition-colors",
-                    isActive ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white/40"
+                    isActive ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white/20"
                   )}>
                     {district.name}
+                  </div>
+                  <div className={cn(
+                    "text-[5px] font-black uppercase tracking-widest",
+                    isActive ? "text-green-500" : "text-red-500"
+                  )}>
+                    {isActive ? 'ACTIVE' : 'OFFLINE'}
                   </div>
                 </div>
               );
             })}
 
             <div className="absolute top-2 left-2 text-[6px] font-black uppercase tracking-widest text-white/20">
-              {selectedDistrict === 'all' ? 'SCANNING ALL SECTORS' : 'FOCUSED VIEW ACTIVE'}
+              SECTOR ANALYSIS MODE
             </div>
             <div className="absolute bottom-2 right-2 text-[6px] font-black uppercase tracking-widest text-[#993DEB] animate-pulse">
               GPS ONLINE
