@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -34,15 +35,15 @@ export default function StudioPage() {
   const { data: levels, isLoading: isLoadingLevels } = useCollection<Level>(levelsQuery);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white p-8">
+    <div className="min-h-screen bg-[#050505] text-white p-8 font-body">
       <div className="max-w-4xl mx-auto">
-        <Link href="/" className="inline-flex items-center gap-2 text-sm opacity-50 hover:opacity-100 mb-8 transition-opacity">
-          <ArrowLeft className="w-4 h-4" /> Zurück zur Übersicht
+        <Link href="/" className="inline-flex items-center gap-2 text-sm opacity-50 hover:opacity-100 mb-8 transition-opacity uppercase font-bold tracking-widest">
+          <ArrowLeft className="w-4 h-4" /> Back to Map
         </Link>
 
         {studio && (
           <div className="mb-12">
-            <h1 className="text-6xl font-black mb-2 uppercase italic tracking-tighter" style={{ color: studio.coverColor }}>{studio.name}</h1>
+            <h1 className="text-6xl font-black mb-2 uppercase italic tracking-tighter text-white">{studio.name}</h1>
             <p className="text-xl opacity-60 font-medium">{studio.description}</p>
           </div>
         )}
@@ -56,13 +57,13 @@ export default function StudioPage() {
                 <div 
                   onClick={() => setSelectedProjectId(selectedProjectId === project.id ? null : project.id)}
                   className={cn(
-                    "cursor-pointer transition-all relative group",
-                    selectedProjectId === project.id ? "gemini-border gemini-glow" : ""
+                    "cursor-pointer transition-all relative group gemini-border",
+                    selectedProjectId === project.id ? "gemini-glow" : "opacity-80 hover:opacity-100"
                   )}
                 >
                   <Card className={cn(
                     "p-8 border-none bg-white/5 transition-all",
-                    selectedProjectId === project.id ? "bg-black/40" : "hover:bg-white/10"
+                    selectedProjectId === project.id ? "bg-black/60" : "hover:bg-white/10"
                   )}>
                     <div className="flex justify-between items-center text-white relative z-10">
                       <div>
@@ -97,7 +98,7 @@ export default function StudioPage() {
                       )}
                       {levels?.length === 0 && !isLoadingLevels && (
                         <div className="col-span-full py-12 text-center bg-white/5 rounded-2xl opacity-40 font-bold uppercase tracking-widest text-sm">
-                          No missions available in this sector.
+                          No levels available in this sector.
                         </div>
                       )}
                     </div>

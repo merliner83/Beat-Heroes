@@ -106,9 +106,9 @@ export default function HomePage() {
       <header className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-start pointer-events-none">
         <div className="gemini-border gemini-glow p-4 pointer-events-auto">
           <div className="flex items-center gap-3">
-            <Radio className="w-8 h-8 text-[#993DEB]" />
+            <Radio className="w-8 h-8 text-[#FFEA00]" />
             <div>
-              <h1 className="text-4xl font-black tracking-tighter uppercase italic leading-none">BeatHero</h1>
+              <h1 className="text-4xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
               <p className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-50">Select Destination</p>
             </div>
           </div>
@@ -150,7 +150,7 @@ export default function HomePage() {
               >
                 <Link href={`/studio/${studio.id}`}>
                   <div className="relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
-                    <div className="absolute inset-0 w-24 h-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#993DEB] animate-ping opacity-20" />
+                    <div className="absolute inset-0 w-24 h-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/20 animate-ping opacity-20" />
                     
                     <div 
                       className="w-20 h-20 rounded-2xl bg-black border-2 border-white/20 flex items-center justify-center shadow-2xl relative z-10 transition-all group-hover:scale-110"
@@ -160,7 +160,7 @@ export default function HomePage() {
                     </div>
 
                     <div className="mt-4 bg-black/90 backdrop-blur-md border border-white/20 px-6 py-3 rounded-xl transition-transform group-hover:-translate-y-1">
-                      <h3 className="text-2xl font-black uppercase italic tracking-tighter whitespace-nowrap leading-none">{studio.name}</h3>
+                      <h3 className="text-2xl font-black uppercase italic tracking-tighter whitespace-nowrap leading-none text-white">{studio.name}</h3>
                     </div>
                   </div>
                 </Link>
@@ -171,7 +171,7 @@ export default function HomePage() {
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-40">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-16 h-16 border-4 border-[#993DEB] border-t-transparent rounded-full animate-spin" />
+                <div className="w-16 h-16 border-4 border-[#FFEA00] border-t-transparent rounded-full animate-spin" />
                 <p className="text-xs font-black uppercase tracking-[0.3em]">Downloading Area Data...</p>
               </div>
             </div>
@@ -232,7 +232,7 @@ export default function HomePage() {
             <div className="absolute top-2 left-2 text-[6px] font-black uppercase tracking-widest text-white/20">
               SECTOR ANALYSIS MODE
             </div>
-            <div className="absolute bottom-2 right-2 text-[6px] font-black uppercase tracking-widest text-[#993DEB] animate-pulse">
+            <div className="absolute bottom-2 right-2 text-[6px] font-black uppercase tracking-widest text-[#FFEA00] animate-pulse">
               GPS ONLINE
             </div>
           </div>
