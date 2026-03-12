@@ -37,7 +37,7 @@ export default function StudioPage() {
     <div className="min-h-screen bg-[#050505] text-white p-8 font-body">
       <div className="max-w-4xl mx-auto">
         <Link href="/" className="inline-flex items-center gap-2 text-sm opacity-50 hover:opacity-100 mb-8 transition-opacity uppercase font-bold tracking-widest text-white">
-          <ArrowLeft className="w-4 h-4" /> Back to Map
+          <ArrowLeft className="w-4 h-4" /> Back to HQ
         </Link>
 
         {studio && (
