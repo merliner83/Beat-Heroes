@@ -1,22 +1,19 @@
-
 "use client";
 
 import React from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
-import { Card } from '@/components/ui/card';
-import { Music, Play, Radio, Settings, MapPin, Target, Home } from 'lucide-react';
+import { Home, MapPin, Target, Settings, Radio } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
 // Optimierte Koordinaten für bessere Verteilung (GTA Style)
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'yoan-beats': { x: 15, y: 25 },
-  'nintu-music': { x: 80, y: 35 },
-  'dave-beats': { x: 40, y: 75 }
+  'yoan-beats': { x: 20, y: 30 },
+  'nintu-music': { x: 75, y: 35 },
+  'dave-beats': { x: 40, y: 70 }
 };
 
 export default function HomePage() {
@@ -34,9 +31,9 @@ export default function HomePage() {
     if (!db) return;
     
     const newStudios = [
-      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Fresh vibes and urban rhythms.', coverColor: '#FF3D00' },
-      { id: 'nintu-music', name: 'Nintu Music', description: 'Deep electronic soul and textures.', coverColor: '#00E676' },
-      { id: 'dave-beats', name: 'Dave Beats', description: 'Classic groove and boom bap energy.', coverColor: '#2979FF' }
+      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Fresh vibes and urban rhythms.', coverColor: '#FF3D00', district: 'Oberemmental District' },
+      { id: 'nintu-music', name: 'Nintu Music', description: 'Deep electronic soul and textures.', coverColor: '#00E676', district: 'Bantiger District' },
+      { id: 'dave-beats', name: 'Dave Beats', description: 'Classic groove and boom bap energy.', coverColor: '#2979FF', district: 'Oberemmental District' }
     ];
 
     try {
@@ -99,7 +96,7 @@ export default function HomePage() {
             return (
               <div 
                 key={studio.id}
-                className="absolute transition-transform hover:scale-110 group"
+                className="absolute transition-transform hover:scale-105 group"
                 style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
               >
                 <Link href={`/studio/${studio.id}`}>
@@ -115,12 +112,14 @@ export default function HomePage() {
                       <Home className="w-8 h-8 text-white" />
                     </div>
 
-                    {/* Permanent Label (Readable Name) */}
-                    <div className="mt-3 bg-black/90 border-2 border-white px-4 py-2 shadow-[4px_4px_0px_0px_white] transition-transform group-hover:-translate-y-1">
-                      <h3 className="text-lg font-black uppercase italic tracking-tighter whitespace-nowrap">{studio.name}</h3>
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <Target className="w-3 h-3 text-[#993DEB]" />
-                        <span className="text-[9px] font-bold opacity-70 uppercase tracking-widest">Active Studio</span>
+                    {/* Permanent Label (Readable Name & District) */}
+                    <div className="mt-3 bg-black/95 border-2 border-white px-5 py-2.5 shadow-[6px_6px_0px_0px_white] transition-transform group-hover:-translate-y-1">
+                      <h3 className="text-xl font-black uppercase italic tracking-tighter whitespace-nowrap leading-none">{studio.name}</h3>
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <Target className="w-3.5 h-3.5 text-[#993DEB]" />
+                        <span className="text-[10px] font-black opacity-80 uppercase tracking-[0.15em] text-[#993DEB]">
+                          {studio.district || 'Downtown'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -145,7 +144,7 @@ export default function HomePage() {
             <div className="text-center">
               <MapPin className="w-8 h-8 text-[#993DEB] mx-auto mb-2" />
               <div className="text-[10px] font-black uppercase tracking-widest leading-tight">
-                Downtown<br/>District
+                Liberty Beats City<br/>Digital Map v1.0
               </div>
             </div>
             <div className="absolute top-4 left-6 w-2 h-2 bg-white rounded-full animate-pulse" />

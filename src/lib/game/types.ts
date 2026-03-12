@@ -5,6 +5,7 @@ export interface Studio {
   name: string;
   description: string;
   coverColor: string;
+  district?: string;
 }
 
 export interface Project {
