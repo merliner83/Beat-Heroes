@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -12,6 +13,8 @@ import { Play, RotateCcw, Trophy, Home, Loader2, Music2, CheckCircle2, AlertCirc
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useUser, useFirestore } from '@/firebase';
+import { doc, updateDoc, increment } from 'firebase/firestore';
 
 const PAD_COLORS: Record<SoundType, string> = {
   kick: '#993DEB',
@@ -29,6 +32,13 @@ const SHORTCUTS: Record<SoundType, string> = {
 
 const PASS_THRESHOLD = 90;
 
+const DIFFICULTY_REWARDS: Record<number, number> = {
+  1: 50,
+  2: 100,
+  3: 200,
+  4: 1000,
+};
+
 interface GameViewProps {
   project: Project;
   level: Level;
@@ -36,11 +46,14 @@ interface GameViewProps {
 }
 
 export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) => {
+  const db = useFirestore();
+  const { user } = useUser();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
+  const [hasAwardedPoints, setHasAwardedPoints] = useState(false);
   const [loadStates, setLoadStates] = useState<Record<string, string>>({});
   const frameRef = useRef<number>(null);
   const { toast } = useToast();
@@ -124,6 +137,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
 
       setScore({ hits: 0, misses: 0, accuracy: 100 });
       setIsFinished(false);
+      setHasAwardedPoints(false);
       
       if (backingTrackReady) {
         await audioEngine.startBackingTrack(project.backingTrackUrl);
@@ -163,6 +177,28 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   }, [isPlaying]);
 
   const isPassed = score.accuracy >= PASS_THRESHOLD;
+
+  // Award SC Points on Finish
+  useEffect(() => {
+    if (isFinished && isPassed && !hasAwardedPoints && user && db) {
+      const reward = DIFFICULTY_REWARDS[level.difficulty] || 0;
+      const userRef = doc(db, 'users', user.uid);
+      
+      updateDoc(userRef, {
+        streetCred: increment(reward)
+      }).then(() => {
+        setHasAwardedPoints(true);
+        toast({
+          title: "Street Cred verdient!",
+          description: `Du hast ${reward} SC für diese Mission erhalten.`,
+        });
+      }).catch(() => {
+        // Falls das Dokument noch nicht existiert (erster Score)
+        setDoc(userRef, { streetCred: reward }, { merge: true });
+        setHasAwardedPoints(true);
+      });
+    }
+  }, [isFinished, isPassed, hasAwardedPoints, user, db, level.difficulty, toast]);
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-6 max-w-5xl mx-auto overflow-hidden">
@@ -299,7 +335,10 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                   </div>
                   <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-none">Mission Accomplished</h2>
                   <p className="text-[#00E676] font-black text-3xl italic tracking-tighter">{score.accuracy}% Accuracy</p>
-                  <p className="text-white/40 text-sm font-medium">Exceptional rhythm! You've secured the sector data.</p>
+                  <div className="bg-white/5 rounded-2xl p-4 border border-white/10 inline-block">
+                    <p className="text-[#FFEA00] font-black text-xl tracking-widest uppercase">+{DIFFICULTY_REWARDS[level.difficulty]} Street Cred</p>
+                  </div>
+                  <p className="text-white/40 text-sm font-medium mt-4">Exceptional rhythm! You've secured the sector data.</p>
                 </>
               ) : (
                 <>

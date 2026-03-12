@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Studio": {
@@ -54,6 +55,16 @@
         }
       },
       "required": ["id", "levelId", "type", "sampleUrl", "triggerSteps"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Nutzer-Statistiken und Street Credibilities.",
+      "properties": {
+        "uid": { "type": "string" },
+        "streetCred": { "type": "number", "default": 0 }
+      },
+      "required": ["uid"]
     }
   },
   "auth": {
@@ -75,6 +86,10 @@
     "/levels/{levelId}/sounds/{soundId}": {
       "schema": "#/backend/entities/Sound",
       "description": "Sounds eines Levels."
+    },
+    "/users/{userId}": {
+      "schema": "#/backend/entities/UserProfile",
+      "description": "Nutzer-Profile mit Street Cred."
     }
   }
 }

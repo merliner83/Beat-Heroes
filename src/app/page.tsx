@@ -1,15 +1,17 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
 import { Home, Radio, Settings } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
+import { useAuth } from '@/firebase/provider';
 
 // Koordinaten für Liberty Beats City
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
@@ -26,10 +28,28 @@ const DISTRICTS = [
 
 export default function HomePage() {
   const db = useFirestore();
+  const auth = useAuth();
+  const { user } = useUser();
   const { toast } = useToast();
+  
   // Standardmäßig sind beide Distrikte aktiv
   const [activeDistricts, setActiveDistricts] = useState<string[]>(['bantiger', 'oberemmental']);
   
+  // Automatischer Login für Street Cred Tracking
+  useEffect(() => {
+    if (!user && auth) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [user, auth]);
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user]);
+  
+  const { data: userProfile } = useDoc<any>(userDocRef);
+  const streetCred = userProfile?.streetCred || 0;
+
   const studiosQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'studios'));
@@ -95,8 +115,10 @@ export default function HomePage() {
         </div>
 
         <div className="gemini-border gemini-glow p-4 text-right pointer-events-auto">
-          <div className="text-white font-bold text-xl leading-none tracking-tighter">$ 0,000,000</div>
-          <div className="text-[10px] uppercase opacity-40 mt-1">Liberty Beats City</div>
+          <div className="text-white font-bold text-xl leading-none tracking-tighter">
+            {streetCred.toLocaleString()} SC
+          </div>
+          <div className="text-[10px] uppercase opacity-40 mt-1">Street Credibilities</div>
         </div>
       </header>
 
