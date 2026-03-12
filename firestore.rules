@@ -16,6 +16,11 @@ service cloud.firestore {
     // User Profile
     match /users/{userId} {
       allow read, write: if isOwner(userId);
+      
+      // Allow users to manage their own progress subcollection
+      match /progress/{levelId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     // Studios: Öffentlich lesbar, Erstellung/Bearbeitung für angemeldete Nutzer
