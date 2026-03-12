@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Project, Level, Sound, GameScore, SoundType } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { SamplerPad } from './SamplerPad';
@@ -74,35 +74,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     return true; 
   };
 
-  const startMission = async () => {
-    if (!audioEngine) return;
-    setIsLoadingAudio(true);
-    
-    try {
-      const isResumed = await audioEngine.resume();
-      if (!isResumed) throw new Error("AudioContext failed to resume");
-
-      setScore({ hits: 0, misses: 0, accuracy: 100 });
-      setIsFinished(false);
-      
-      if (backingTrackReady) {
-        await audioEngine.startBackingTrack(project.backingTrackUrl);
-      }
-      
-      setIsPlaying(true);
-    } catch (e) {
-      console.error("Game startup failed", e);
-      toast({
-        variant: "destructive",
-        title: "Audio Fehler",
-        description: "Das Audiosystem konnte nicht gestartet werden.",
-      });
-    } finally {
-      setIsLoadingAudio(false);
-    }
-  };
-
-  const handlePadPress = (type: SoundType) => {
+  const handlePadPress = useCallback((type: SoundType) => {
     if (!audioEngine) return;
 
     const isPlayable = checkIsPlayable(type, level.difficulty);
@@ -143,6 +115,34 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
         };
       });
+    }
+  }, [isPlaying, sounds, level.difficulty, project.bpm]);
+
+  const startMission = async () => {
+    if (!audioEngine) return;
+    setIsLoadingAudio(true);
+    
+    try {
+      const isResumed = await audioEngine.resume();
+      if (!isResumed) throw new Error("AudioContext failed to resume");
+
+      setScore({ hits: 0, misses: 0, accuracy: 100 });
+      setIsFinished(false);
+      
+      if (backingTrackReady) {
+        await audioEngine.startBackingTrack(project.backingTrackUrl);
+      }
+      
+      setIsPlaying(true);
+    } catch (e) {
+      console.error("Game startup failed", e);
+      toast({
+        variant: "destructive",
+        title: "Audio Fehler",
+        description: "Das Audiosystem konnte nicht gestartet werden.",
+      });
+    } finally {
+      setIsLoadingAudio(false);
     }
   };
 

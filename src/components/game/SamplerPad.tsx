@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
 interface SamplerPadProps {
@@ -15,14 +15,14 @@ interface SamplerPadProps {
 export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress, color, isInactive }) => {
   const [isPressed, setIsPressed] = useState(false);
 
-  const handlePress = (e?: React.PointerEvent | KeyboardEvent) => {
+  const handlePress = useCallback((e?: React.PointerEvent | KeyboardEvent) => {
     if (isInactive) return;
     if (e && 'preventDefault' in e) e.preventDefault();
     
     onPress();
     setIsPressed(true);
     setTimeout(() => setIsPressed(false), 80);
-  };
+  }, [onPress, isInactive]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -32,7 +32,7 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [shortcut, isInactive]);
+  }, [shortcut, isInactive, handlePress]);
 
   return (
     <button
