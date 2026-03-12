@@ -24,7 +24,7 @@ export class AudioEngine {
     if (!this.context) {
       try {
         const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
-        // Fix sample rate to 44.1 kHz as requested for consistent playback
+        // Fix sample rate to 44.1 kHz as requested
         this.context = new AudioContextClass({ sampleRate: 44100 });
         this.masterGain = this.context.createGain();
         this.masterGain.connect(this.context.destination);
@@ -62,6 +62,53 @@ export class AudioEngine {
     } catch (e) {}
   }
 
+  /**
+   * Generates a synthesized fallback sound if a sample fails to load.
+   */
+  private playSynthFallback(url: string) {
+    if (!this.context || !this.masterGain) return;
+    
+    const now = this.context.currentTime;
+    const osc = this.context.createOscillator();
+    const env = this.context.createGain();
+    
+    osc.connect(env);
+    env.connect(this.masterGain);
+
+    const type = url.toLowerCase();
+
+    if (type.includes('kick')) {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.exponentialRampToValueAtTime(40, now + 0.1);
+      env.gain.setValueAtTime(1, now);
+      env.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+      osc.start(now);
+      osc.stop(now + 0.2);
+    } else if (type.includes('clap') || type.includes('jump')) {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(800, now);
+      env.gain.setValueAtTime(0.4, now);
+      env.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+      osc.start(now);
+      osc.stop(now + 0.1);
+    } else if (type.includes('perc') || type.includes('collision')) {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(400, now);
+      env.gain.setValueAtTime(0.5, now);
+      env.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } else {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+      env.gain.setValueAtTime(0.3, now);
+      env.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+      osc.start(now);
+      osc.stop(now + 0.1);
+    }
+  }
+
   getAudioStatus() {
     if (!this.context) return { state: 'uninitialized', sampleRate: '-' };
     return {
@@ -86,9 +133,8 @@ export class AudioEngine {
       
       this.loadingStatus.set(url, 'loading');
       try {
-        // Simplified fetch to avoid CORS preflight issues where possible
+        // Simple fetch without additional headers to minimize CORS issues
         const response = await fetch(url);
-        
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const arrayBuffer = await response.arrayBuffer();
@@ -96,30 +142,25 @@ export class AudioEngine {
         
         this.buffers.set(url, audioBuffer);
         this.loadingStatus.set(url, 'ready');
-        console.log(`AudioEngine: Successfully loaded ${url}`);
       } catch (e) {
-        console.warn(`AudioEngine: FAILED to load ${url}. This is often a CORS issue.`, e);
+        console.warn(`AudioEngine: FAILED to load ${url}. Using synth fallback.`, e);
         this.loadingStatus.set(url, 'failed');
       }
     }));
   }
 
-  playOneShot(url: string) {
-    if (!this.context) {
-      this.resume();
-      return;
-    }
+  async playOneShot(url: string) {
+    // Re-ensure context is running on interaction
+    await this.resume();
 
     const buffer = this.buffers.get(url);
     if (!buffer) {
-      console.warn('AudioEngine: No buffer available for', url);
+      this.playSynthFallback(url);
       return;
     }
 
     try {
-      if (this.context.state === 'suspended') this.context.resume();
-      
-      const source = this.context.createBufferSource();
+      const source = this.context!.createBufferSource();
       source.buffer = buffer;
       source.connect(this.masterGain!);
       source.start(0);
@@ -130,6 +171,7 @@ export class AudioEngine {
       this.sources.add(source);
     } catch (e) {
       console.error('AudioEngine: Playback failed', e);
+      this.playSynthFallback(url);
     }
   }
 
@@ -151,7 +193,6 @@ export class AudioEngine {
       source.connect(this.masterGain);
       source.start(0);
       this.sources.add(source);
-      console.log('AudioEngine: Backing track started');
     } catch (e) {
       console.error('AudioEngine: Backing track failed to start', e);
     }

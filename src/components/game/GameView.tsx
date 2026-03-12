@@ -42,7 +42,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const [loadStates, setLoadStates] = useState<Record<string, string>>({});
   const frameRef = useRef<number>(null);
 
-  // Poll for audio engine status and loading states
   useEffect(() => {
     const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl)];
     if (audioEngine) {
@@ -92,13 +91,12 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const handlePadPress = (type: SoundType) => {
     if (!audioEngine) return;
 
-    // Trigger audio immediately (One-Shot) - works regardless of level or mission state
     const sound = sounds.find(s => s.type === type);
     if (sound) {
+      // Trigger audio immediately (includes auto-resume logic)
       audioEngine.playOneShot(sound.sampleUrl);
     }
 
-    // Logic for scoring
     if (isPlaying) {
       const isPlayable = checkIsPlayable(type, level.difficulty);
       if (isPlayable && sound) {
@@ -170,9 +168,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
             <div className="flex gap-2">
               <Badge variant="outline" className="text-[10px] uppercase border-white/10 opacity-70 flex gap-1">
                 <Activity className="w-3 h-3" />
-                Audio: <span className={audioStatus?.state === 'running' ? 'text-green-400 ml-1' : 'text-yellow-400 ml-1'}>{audioStatus?.state || 'Init'}</span>
+                Audio: <span className={audioStatus?.state === 'running' ? 'text-green-400 ml-1 font-bold' : 'text-yellow-400 ml-1'}>{audioStatus?.state || 'Init'}</span>
               </Badge>
-              <Badge variant="outline" className="text-[10px] uppercase border-white/10 opacity-70">
+              <Badge variant="outline" className="text-[10px] uppercase border-white/10 opacity-70 font-bold">
                 SR: {audioStatus?.sampleRate || '-'}
               </Badge>
             </div>
@@ -219,9 +217,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                   />
                   <div className="flex items-center gap-1 text-[10px] uppercase font-bold opacity-60">
                     {status === 'ready' && <CheckCircle2 className="w-3 h-3 text-green-400" />}
-                    {status === 'failed' && <XCircle className="w-3 h-3 text-red-400" />}
+                    {status === 'failed' && <AlertCircle className="w-3 h-3 text-yellow-400" title="Using synth fallback" />}
                     {status === 'loading' && <Loader2 className="w-3 h-3 animate-spin" />}
-                    <span>{status === 'ready' ? 'Ready' : status === 'failed' ? 'Error' : (status || 'Idle')}</span>
+                    <span>{status === 'ready' ? 'Ready' : status === 'failed' ? 'Synth' : (status || 'Idle')}</span>
                   </div>
                 </div>
               );
@@ -242,8 +240,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                   {backingTrackReady ? (
                     <span className="text-[10px] text-green-400 font-bold uppercase">Ready</span>
                   ) : backingTrackFailed ? (
-                    <span className="text-[10px] text-red-400 font-bold uppercase flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> Error
+                    <span className="text-[10px] text-yellow-400 font-bold uppercase flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> Blocked
                     </span>
                   ) : (
                     <span className="text-[10px] opacity-50 flex items-center gap-1 animate-pulse">
@@ -264,13 +262,13 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                   </>
                 ) : (
                   <>
-                    <Play className="mr-2" /> {backingTrackFailed ? "Start Anyway" : "Start Mission"}
+                    <Play className="mr-2" /> {backingTrackFailed ? "Start Mission (No Music)" : "Start Mission"}
                   </>
                 )}
               </Button>
               {backingTrackFailed && (
-                <p className="mt-4 text-[10px] text-red-400 opacity-80 italic">
-                  Note: Backing track failed to load (CORS). You can still play the pads!
+                <p className="mt-4 text-[10px] text-yellow-400 opacity-80 italic">
+                  Note: Music blocked by CORS. Synth-Pads are enabled!
                 </p>
               )}
             </Card>
