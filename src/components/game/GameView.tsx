@@ -62,12 +62,22 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   const frameRef = useRef<number>(null);
   const { toast } = useToast();
 
-  // Map patterns to sounds
+  // Map patterns to sounds based on patternSequence (8 bars)
   const soundsWithPatterns = sounds.map(sound => {
-    const pattern = patterns.find(p => p.id === sound.patternId);
+    const flatSteps: number[] = [];
+    if (sound.patternSequence && patterns) {
+      sound.patternSequence.forEach((patternId, barIndex) => {
+        const pattern = patterns.find(p => p.id === patternId);
+        if (pattern) {
+          pattern.steps.forEach(step => {
+            flatSteps.push(step + barIndex * 16);
+          });
+        }
+      });
+    }
     return {
       ...sound,
-      triggerSteps: pattern ? pattern.steps : (sound.triggerSteps || [])
+      triggerSteps: flatSteps.length > 0 ? flatSteps : (sound.triggerSteps || [])
     };
   });
 
@@ -90,7 +100,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   }, [project, sounds]);
 
   const backingTrackReady = loadStates[project.backingTrackUrl] === 'ready';
-  const backingTrackFailed = loadStates[project.backingTrackUrl] === 'failed';
   const metronomeReady = loadStates[AudioEngine.METRONOME_URL] === 'ready';
 
   const checkIsPlayable = (type: SoundType, difficulty: number) => {

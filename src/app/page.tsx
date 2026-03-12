@@ -13,7 +13,6 @@ import { cn } from '@/lib/utils';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 
-// Optimierte Koordinaten für die Karte zur Vermeidung von Überlappungen
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'gabriel-beats': { x: 20, y: 25 },
   'nintu-music': { x: 45, y: 55 },
@@ -74,66 +73,53 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     
-    // 1. Create Global Patterns (8 bars = 128 steps)
+    // 1. Create Global Patterns (1 bar = 16 steps)
     const patterns = [
-      {
-        id: 'kick-4-4',
-        name: 'KICK 4/4 Basic',
-        steps: Array.from({ length: 32 }, (_, i) => i * 4) // 0, 4, 8, 12... 124
-      },
-      {
-        id: 'clap-2-4',
-        name: 'CLAP on 2 & 4',
-        steps: Array.from({ length: 16 }, (_, i) => (i * 8) + 4) // 4, 12, 20... 124
-      },
-      {
-        id: 'hats-offbeat',
-        name: 'HATS Offbeat',
-        steps: Array.from({ length: 32 }, (_, i) => (i * 4) + 2) // 2, 6, 10... 126
-      },
-      {
-        id: 'perc-syncopated',
-        name: 'PERC Syncopated',
-        steps: [2, 7, 10, 15, 18, 23, 26, 31, 34, 39, 42, 47, 50, 55, 58, 63]
-      }
+      { id: 'kick-1', name: 'KICK on 1', steps: [0] },
+      { id: 'kick-4-4', name: 'KICK 4/4', steps: [0, 4, 8, 12] },
+      { id: 'clap-2-4', name: 'CLAP 2 & 4', steps: [4, 12] },
+      { id: 'hats-8th', name: 'HATS 8th', steps: [0, 2, 4, 6, 8, 10, 12, 14] },
+      { id: 'hats-offbeat', name: 'HATS Offbeat', steps: [2, 6, 10, 14] },
+      { id: 'perc-ghost', name: 'PERC Ghost', steps: [3, 7, 11, 15] },
+      { id: 'silent', name: 'SILENT', steps: [] }
     ];
 
     const newStudios = [
       { 
         id: 'gabriel-beats', 
         name: 'Gabriel Beats', 
-        description: 'Fresh vibes and urban rhythms.', 
+        description: 'Urban grooves and sharp transients.', 
         coverColor: '#FF3D00', 
         district: 'Bantiger District',
         linkUrl: 'https://example.com/gabriel',
-        linkLabel: 'Official Portfolio'
+        linkLabel: 'Portfolio'
       },
       { 
         id: 'nintu-music', 
         name: 'Nintu Music', 
-        description: 'Deep electronic soul and textures.', 
+        description: 'Electronic textures and deep soul.', 
         coverColor: '#00E676', 
         district: 'Bantiger District',
         linkUrl: 'https://example.com/nintu',
-        linkLabel: 'Listen on Soundcloud'
+        linkLabel: 'Soundcloud'
       },
       { 
         id: 'dave-beats', 
         name: 'Dave Beats', 
-        description: 'Classic groove and boom bap energy.', 
+        description: 'The golden era of hip hop rhythm.', 
         coverColor: '#2979FF', 
         district: 'Bantiger District',
         linkUrl: 'https://example.com/dave',
-        linkLabel: 'Beat Shop'
+        linkLabel: 'Beat Store'
       },
       { 
         id: 'noxxos', 
         name: 'Noxxos', 
-        description: 'Experimental soundscapes and dark atmosphere.', 
+        description: 'Experimental rhythms from the outer rim.', 
         coverColor: '#EB3D99', 
         district: 'Oberemmental District',
         linkUrl: 'https://example.com/noxxos',
-        linkLabel: 'Follow Lab Updates'
+        linkLabel: 'Lab Logs'
       }
     ];
 
@@ -145,14 +131,14 @@ export default function HomePage() {
         await setDoc(doc(db, 'studios', s.id), s);
       }
       toast({
-        title: "Datenbank synchronisiert",
-        description: "Studios und globale Patterns wurden angelegt.",
+        title: "Database Initialized",
+        description: "Studios and 1-bar patterns are ready.",
       });
     } catch (e) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not initialize setup data.",
+        description: "Could not initialize data.",
       });
     }
   };

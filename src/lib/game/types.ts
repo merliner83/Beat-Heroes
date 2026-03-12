@@ -37,8 +37,8 @@ export interface Sound {
   levelId: string;
   type: SoundType;
   sampleUrl: string;
-  patternId?: string;
-  triggerSteps?: number[];
+  patternSequence?: string[];
+  triggerSteps?: number[]; // Internal flatten cache
 }
 
 export interface GameScore {
