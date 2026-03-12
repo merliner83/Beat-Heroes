@@ -27,14 +27,14 @@ export default function PlayPage() {
 
   if (!project || !level || !sounds) {
     return (
-      <div className="h-screen bg-[#1F1A23] flex items-center justify-center text-white">
-        <Loader2 className="w-8 h-8 animate-spin text-[#993DEB]" />
+      <div className="h-screen bg-[#050505] flex items-center justify-center text-white">
+        <Loader2 className="w-8 h-8 animate-spin text-[#FFEA00]" />
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-[#1F1A23]">
+    <div className="h-screen bg-[#050505]">
       <GameView project={project} level={level} sounds={sounds} />
     </div>
   );
