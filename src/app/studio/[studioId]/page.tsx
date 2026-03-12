@@ -55,16 +55,13 @@ export default function StudioPage() {
               <div key={project.id} className="space-y-4">
                 <div 
                   onClick={() => setSelectedProjectId(selectedProjectId === project.id ? null : project.id)}
-                  className={cn(
-                    "cursor-pointer relative group gemini-border",
-                    selectedProjectId === project.id && "gemini-glow"
-                  )}
+                  className="cursor-pointer relative gemini-border overflow-visible"
                 >
                   <Card className={cn(
-                    "p-8 border-none bg-transparent transition-all",
+                    "p-8 border-none bg-transparent transition-all relative z-10",
                     selectedProjectId === project.id ? "bg-black/20" : ""
                   )}>
-                    <div className="flex justify-between items-center text-white relative z-10">
+                    <div className="flex justify-between items-center text-white">
                       <div>
                         <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white">{project.name}</h3>
                         <p className="text-sm font-bold tracking-widest uppercase mt-1 text-[#FFEA00]">{project.bpm} BPM</p>
@@ -85,10 +82,10 @@ export default function StudioPage() {
                             key={level.id}
                             onClick={() => router.push(`/play/${studioId}/${project.id}/${level.id}`)}
                             variant="ghost"
-                            className="h-28 bg-black/40 gemini-border border-transparent text-lg font-black flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl"
+                            className="h-28 bg-black/40 gemini-border border-none text-lg font-black flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl relative overflow-visible"
                           >
-                            <span className="text-[10px] opacity-40 font-black uppercase tracking-[0.2em] text-white">Level {level.difficulty}</span>
-                            <div className="flex items-center gap-1 uppercase italic text-white group-hover:text-[#FFEA00]">
+                            <span className="text-[10px] opacity-40 font-black uppercase tracking-[0.2em] text-white relative z-10">Level {level.difficulty}</span>
+                            <div className="flex items-center gap-1 uppercase italic text-white group-hover:text-[#FFEA00] relative z-10">
                               {level.name || 'Untitled'}
                               <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
                             </div>

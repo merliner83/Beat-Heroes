@@ -1,11 +1,10 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
-import { Home, Radio, Settings } from 'lucide-react';
+import { Radio, Home, Settings } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -13,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 
-// Koordinaten für Liberty Beats City
+// Koordinaten für die Karte
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'yoan-beats': { x: 25, y: 35 },
   'nintu-music': { x: 35, y: 55 },
