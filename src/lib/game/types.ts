@@ -29,7 +29,7 @@ export interface Level {
 export interface TriggerPattern {
   id: string;
   name: string;
-  steps: number[];
+  steps: number[]; // 0-127 for 8 bars
 }
 
 export interface Sound {
@@ -37,8 +37,8 @@ export interface Sound {
   levelId: string;
   type: SoundType;
   sampleUrl: string;
-  patternSequence?: string[];
-  triggerSteps?: number[]; // Internal flatten cache
+  patternId: string;
+  triggerSteps?: number[]; // Internal cache
 }
 
 export interface GameScore {

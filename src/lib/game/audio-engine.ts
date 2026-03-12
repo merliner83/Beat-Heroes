@@ -131,7 +131,7 @@ export class AudioEngine {
     return new Promise(resolve => setTimeout(resolve, 4 * secondsPerBeat * 1000));
   }
 
-  async startBackingTrack(url: string, preserveStartTime: boolean = false) {
+  async startBackingTrack(url: string, when: number = 0) {
     await this.resume();
     this.stopBackingTrack();
 
@@ -142,14 +142,11 @@ export class AudioEngine {
     }
 
     try {
-      if (!preserveStartTime) {
-        this.startTime = this.context.currentTime;
-      }
       const source = this.context.createBufferSource();
       source.buffer = buffer;
       source.loop = true;
       source.connect(this.masterGain);
-      source.start(0);
+      source.start(when);
       this.backingSource = source;
     } catch (e) {
       console.error('AudioEngine: Backing track start failed', e);

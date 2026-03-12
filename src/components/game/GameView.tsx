@@ -62,22 +62,12 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   const frameRef = useRef<number>(null);
   const { toast } = useToast();
 
-  // Map patterns to sounds based on patternSequence (8 bars)
+  // Map 8-bar patterns to sounds
   const soundsWithPatterns = sounds.map(sound => {
-    const flatSteps: number[] = [];
-    if (sound.patternSequence && patterns) {
-      sound.patternSequence.forEach((patternId, barIndex) => {
-        const pattern = patterns.find(p => p.id === patternId);
-        if (pattern) {
-          pattern.steps.forEach(step => {
-            flatSteps.push(step + barIndex * 16);
-          });
-        }
-      });
-    }
+    const pattern = patterns.find(p => p.id === sound.patternId);
     return {
       ...sound,
-      triggerSteps: flatSteps.length > 0 ? flatSteps : (sound.triggerSteps || [])
+      triggerSteps: pattern ? pattern.steps : []
     };
   });
 
@@ -122,16 +112,17 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
 
     if (isPlaying && sound) {
       const time = audioEngine.getCurrentTime();
-      const adjustedTime = time - 0.05;
+      // Adjust for visual sync and latency
+      const adjustedTime = time - 0.05; 
       
       const secondsPerBeat = 60 / project.bpm;
       const secondsPerStep = secondsPerBeat / 4;
       const currentStep = adjustedTime / secondsPerStep;
       
-      const tolerance = 0.6;
+      const tolerance = 0.5; // Tighter hit window for 8-bar patterns
       
       const isHit = sound.triggerSteps.some(step => {
-        const relativeStep = currentStep % 128; // 8 Takte à 16 Steps
+        const relativeStep = currentStep % 128; // Strict 8-bar loop
         const diff = Math.abs(relativeStep - step);
         const circularDiff = Math.min(diff, 128 - diff);
         return circularDiff <= tolerance;
@@ -164,8 +155,10 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
       
       const secondsPerBeat = 60 / project.bpm;
       const countInDuration = 4 * secondsPerBeat;
+      const now = audioEngine.getContextTime();
+      const actualStartTime = now + countInDuration;
       
-      audioEngine.setStartTime(audioEngine.getContextTime() + countInDuration);
+      audioEngine.setStartTime(actualStartTime);
       setIsPlaying(true); 
 
       if (metronomeReady) {
@@ -176,7 +169,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
       }
       
       if (backingTrackReady) {
-        await audioEngine.startBackingTrack(project.backingTrackUrl, true);
+        // Precise start scheduled exactly at actualStartTime
+        await audioEngine.startBackingTrack(project.backingTrackUrl, actualStartTime);
       }
       
     } catch (e) {
@@ -208,7 +202,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
-          if (t >= 60) {
+          // Auto-end after 8 bars loop completion (e.g. 32 beats or just duration)
+          // For now we keep 60s as safety buffer
+          if (t >= 120) { 
             setIsPlaying(false);
             setIsFinished(true);
             audioEngine.stop();

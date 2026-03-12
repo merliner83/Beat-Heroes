@@ -44,14 +44,14 @@
     "TriggerPattern": {
       "title": "TriggerPattern",
       "type": "object",
-      "description": "Ein wiederverwendbares rhythmisches Muster über 1 Takt (16 Steps).",
+      "description": "Ein rhythmisches Muster über 8 Takte (128 Steps).",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
         "steps": { 
           "type": "array", 
           "items": { "type": "number" },
-          "description": "Schritte (0-15) für einen einzelnen Takt."
+          "description": "Schritte (0-127) für einen 8-Takt-Loop."
         }
       },
       "required": ["id", "name", "steps"]
@@ -59,19 +59,15 @@
     "Sound": {
       "title": "Sound",
       "type": "object",
-      "description": "Ein Instrument-Trigger innerhalb eines Levels mit einer Abfolge von Patterns.",
+      "description": "Ein Instrument-Trigger innerhalb eines Levels mit einem 8-Takt-Pattern.",
       "properties": {
         "id": { "type": "string" },
         "levelId": { "type": "string" },
         "type": { "type": "string", "enum": ["kick", "clap", "percs", "misc"] },
         "sampleUrl": { "type": "string", "format": "uri" },
-        "patternSequence": { 
-          "type": "array", 
-          "items": { "type": "string" },
-          "description": "Eine Liste von 8 Pattern-IDs für einen 8-Takt-Loop."
-        }
+        "patternId": { "type": "string", "description": "ID des 8-Takt-Patterns." }
       },
-      "required": ["id", "levelId", "type", "sampleUrl"]
+      "required": ["id", "levelId", "type", "sampleUrl", "patternId"]
     },
     "UserProfile": {
       "title": "UserProfile",
@@ -117,7 +113,7 @@
     },
     "/patterns/{patternId}": {
       "schema": "#/backend/entities/TriggerPattern",
-      "description": "Globale Rhythmus-Vorlagen (1 Takt)."
+      "description": "Globale Rhythmus-Vorlagen (8 Takte)."
     },
     "/users/{userId}": {
       "schema": "#/backend/entities/UserProfile",

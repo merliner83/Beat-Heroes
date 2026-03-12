@@ -73,15 +73,23 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     
-    // 1. Create Global Patterns (1 bar = 16 steps)
+    // 8-Bar Patterns (128 steps)
     const patterns = [
-      { id: 'kick-1', name: 'KICK on 1', steps: [0] },
-      { id: 'kick-4-4', name: 'KICK 4/4', steps: [0, 4, 8, 12] },
-      { id: 'clap-2-4', name: 'CLAP 2 & 4', steps: [4, 12] },
-      { id: 'hats-8th', name: 'HATS 8th', steps: [0, 2, 4, 6, 8, 10, 12, 14] },
-      { id: 'hats-offbeat', name: 'HATS Offbeat', steps: [2, 6, 10, 14] },
-      { id: 'perc-ghost', name: 'PERC Ghost', steps: [3, 7, 11, 15] },
-      { id: 'silent', name: 'SILENT', steps: [] }
+      { 
+        id: 'kick-8-bars', 
+        name: 'KICK 8 Bar Drive', 
+        steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124] 
+      },
+      { 
+        id: 'clap-8-bars', 
+        name: 'CLAP 8 Bar Groove', 
+        steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] 
+      },
+      { 
+        id: 'hats-8-bars', 
+        name: 'HATS 8 Bar Pulse', 
+        steps: [2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 62, 66, 70, 74, 78, 82, 86, 90, 94, 98, 102, 106, 110, 114, 118, 122, 126] 
+      }
     ];
 
     const newStudios = [
@@ -132,7 +140,7 @@ export default function HomePage() {
       }
       toast({
         title: "Database Initialized",
-        description: "Studios and 1-bar patterns are ready.",
+        description: "8-bar patterns and studios are ready.",
       });
     } catch (e) {
       toast({
