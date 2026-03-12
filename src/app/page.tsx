@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -12,12 +13,12 @@ import { cn } from '@/lib/utils';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 
-// Koordinaten für die Karte
+// Optimierte Koordinaten für die Karte zur Vermeidung von Überlappungen
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'yoan-beats': { x: 25, y: 35 },
-  'nintu-music': { x: 35, y: 55 },
-  'dave-beats': { x: 15, y: 65 },
-  'noxxos': { x: 75, y: 30 }
+  'gabriel-beats': { x: 20, y: 25 },
+  'nintu-music': { x: 45, y: 55 },
+  'dave-beats': { x: 15, y: 70 },
+  'noxxos': { x: 75, y: 35 }
 };
 
 const DISTRICTS = [
@@ -76,7 +77,7 @@ export default function HomePage() {
     if (!db) return;
     
     const newStudios = [
-      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Fresh vibes and urban rhythms.', coverColor: '#FF3D00', district: 'Bantiger District' },
+      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Fresh vibes and urban rhythms.', coverColor: '#FF3D00', district: 'Bantiger District' },
       { id: 'nintu-music', name: 'Nintu Music', description: 'Deep electronic soul and textures.', coverColor: '#00E676', district: 'Bantiger District' },
       { id: 'dave-beats', name: 'Dave Beats', description: 'Classic groove and boom bap energy.', coverColor: '#2979FF', district: 'Bantiger District' },
       { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes and dark atmosphere.', coverColor: '#EB3D99', district: 'Oberemmental District' }
