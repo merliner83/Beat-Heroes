@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from 'react';
@@ -58,12 +57,12 @@ export default function StudioPage() {
                   onClick={() => setSelectedProjectId(selectedProjectId === project.id ? null : project.id)}
                   className={cn(
                     "cursor-pointer transition-all relative group gemini-border",
-                    selectedProjectId === project.id ? "gemini-glow" : "opacity-80 hover:opacity-100"
+                    selectedProjectId === project.id && "active gemini-glow"
                   )}
                 >
                   <Card className={cn(
                     "p-8 border-none bg-card transition-all",
-                    selectedProjectId === project.id ? "bg-black/40" : "hover:bg-white/5"
+                    selectedProjectId === project.id ? "bg-black/20" : "bg-card"
                   )}>
                     <div className="flex justify-between items-center text-white relative z-10">
                       <div>
@@ -86,7 +85,7 @@ export default function StudioPage() {
                             key={level.id}
                             onClick={() => router.push(`/play/${studioId}/${project.id}/${level.id}`)}
                             variant="ghost"
-                            className="h-28 bg-white/5 hover:bg-white/10 gemini-border border-transparent hover:gemini-glow text-lg font-black flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl"
+                            className="h-28 bg-black/40 gemini-border border-transparent text-lg font-black flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl"
                           >
                             <span className="text-[10px] opacity-40 font-black uppercase tracking-[0.2em] text-white">Level {level.difficulty}</span>
                             <div className="flex items-center gap-1 uppercase italic text-white group-hover:text-[#FFEA00]">

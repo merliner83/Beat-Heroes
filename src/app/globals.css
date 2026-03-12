@@ -35,13 +35,14 @@
   }
 }
 
-/* Gemini-Style Gradient Border Utility - Refined to 1px */
+/* Gemini-Style Gradient Border - Animated & Refined */
 .gemini-border {
   position: relative;
   background: hsl(var(--card));
   background-clip: padding-box;
   border: 1px solid transparent;
   border-radius: var(--radius);
+  transition: all 0.3s ease;
 }
 
 .gemini-border::before {
@@ -51,8 +52,21 @@
   z-index: -1;
   margin: -1px;
   border-radius: inherit;
-  background: linear-gradient(45deg, #993DEB, #FF3D00, #FFEA00, #FFFF00);
-  opacity: 0.8;
+  background: linear-gradient(90deg, #993DEB, #FF3D00, #FFEA00, #FFFF00, #993DEB);
+  background-size: 200% 100%;
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+.gemini-border:hover::before, 
+.gemini-border.active::before {
+  opacity: 1;
+  animation: border-flow 3s linear infinite;
+}
+
+@keyframes border-flow {
+  0% { background-position: 200% 0%; }
+  100% { background-position: 0% 0%; }
 }
 
 .gemini-glow {
