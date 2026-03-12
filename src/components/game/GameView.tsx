@@ -115,15 +115,22 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
 
     if (isPlaying && sound) {
       const time = audioEngine.getCurrentTime();
+      // Synchronisation mit dem visuellen Offset (0.05s) aus NoteLane.tsx
+      const adjustedTime = time - 0.05;
+      
       const secondsPerBeat = 60 / project.bpm;
       const secondsPerStep = secondsPerBeat / 4;
-      const currentStep = time / secondsPerStep;
+      const currentStep = adjustedTime / secondsPerStep;
       
-      const tolerance = 0.3;
+      // Etwas toleranteres Fenster (0.4 Steps ~ 50-80ms je nach BPM)
+      const tolerance = 0.4;
       
       const isHit = sound.triggerSteps.some(step => {
         const relativeStep = currentStep % 16;
-        return Math.abs(relativeStep - step) <= tolerance;
+        const diff = Math.abs(relativeStep - step);
+        // Zirkuläre Differenz für Bar-Übergänge
+        const circularDiff = Math.min(diff, 16 - diff);
+        return circularDiff <= tolerance;
       });
 
       setScore(prev => {
@@ -145,6 +152,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
+          // Level endet nach 60 Sekunden
           if (t >= 60) {
             setIsPlaying(false);
             setIsFinished(true);
