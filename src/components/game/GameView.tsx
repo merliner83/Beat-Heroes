@@ -15,7 +15,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, updateDoc, increment, setDoc } from 'firebase/firestore';
+import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const PAD_COLORS: Record<SoundType, string> = {
   kick: '#993DEB',
@@ -193,21 +193,29 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     if (isFinished && isPassed && !hasAwardedPoints && user && db) {
       const reward = DIFFICULTY_REWARDS[level.difficulty] || 0;
       const userRef = doc(db, 'users', user.uid);
+      const progressRef = doc(db, 'users', user.uid, 'progress', level.id);
       
+      // Update Street Cred
       updateDoc(userRef, {
         streetCred: increment(reward)
-      }).then(() => {
-        setHasAwardedPoints(true);
-        toast({
-          title: "Street Cred verdient!",
-          description: `Du hast ${reward} SC für dieses Level erhalten.`,
-        });
       }).catch(() => {
         setDoc(userRef, { streetCred: reward }, { merge: true });
-        setHasAwardedPoints(true);
+      });
+
+      // Save Level Progress
+      setDoc(progressRef, {
+        levelId: level.id,
+        accuracy: score.accuracy,
+        completedAt: serverTimestamp()
+      }, { merge: true });
+
+      setHasAwardedPoints(true);
+      toast({
+        title: "Level bestanden!",
+        description: `Du hast ${reward} SC verdient. Deine Genauigkeit: ${score.accuracy}%`,
       });
     }
-  }, [isFinished, isPassed, hasAwardedPoints, user, db, level.difficulty, toast]);
+  }, [isFinished, isPassed, hasAwardedPoints, user, db, level, score.accuracy, toast]);
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-6 max-w-5xl mx-auto overflow-hidden">

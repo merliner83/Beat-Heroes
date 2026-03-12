@@ -39,3 +39,10 @@ export interface GameScore {
   misses: number;
   accuracy: number;
 }
+
+export interface LevelProgress {
+  id: string;
+  levelId: string;
+  accuracy: number;
+  completedAt?: any;
+}

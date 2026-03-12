@@ -67,6 +67,17 @@
         "streetCred": { "type": "number", "default": 0 }
       },
       "required": ["uid"]
+    },
+    "LevelProgress": {
+      "title": "LevelProgress",
+      "type": "object",
+      "description": "Trackt den Fortschritt eines Nutzers in einem Level.",
+      "properties": {
+        "levelId": { "type": "string" },
+        "accuracy": { "type": "number" },
+        "completedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["levelId", "accuracy"]
     }
   },
   "auth": {
@@ -92,6 +103,10 @@
     "/users/{userId}": {
       "schema": "#/backend/entities/UserProfile",
       "description": "Nutzer-Profile mit Street Cred."
+    },
+    "/users/{userId}/progress/{levelId}": {
+      "schema": "#/backend/entities/LevelProgress",
+      "description": "Fortschritt des Nutzers pro Level."
     }
   }
 }
