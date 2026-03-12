@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from 'react';
@@ -72,10 +71,10 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white font-body flex flex-col overflow-hidden select-none">
-      {/* GTA Style Header */}
+    <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none">
+      {/* Gemini Style Header */}
       <header className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-start pointer-events-none">
-        <div className="bg-black/80 backdrop-blur-md border-4 border-white p-4 shadow-[8px_8px_0px_0px_rgba(153,61,235,0.5)] pointer-events-auto">
+        <div className="gemini-border gemini-glow p-4 pointer-events-auto">
           <div className="flex items-center gap-3">
             <Radio className="w-8 h-8 text-[#993DEB]" />
             <div>
@@ -85,16 +84,16 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="bg-black/80 backdrop-blur-md border-2 border-white/20 p-4 text-right pointer-events-auto">
-          <div className="text-[#993DEB] font-bold text-xl leading-none tracking-tighter">$ 0,000,000</div>
+        <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-right pointer-events-auto">
+          <div className="text-white font-bold text-xl leading-none tracking-tighter">$ 0,000,000</div>
           <div className="text-[10px] uppercase opacity-40 mt-1">Liberty Beats City</div>
         </div>
       </header>
 
       {/* Map View Container */}
-      <main className="relative flex-1 w-full bg-[#1A1A1A] overflow-hidden">
+      <main className="relative flex-1 w-full bg-[#080808] overflow-hidden">
         {/* Styled City Grid Background */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
@@ -102,8 +101,8 @@ export default function HomePage() {
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
-            <circle cx="30%" cy="40%" r="200" fill="#993DEB" className="blur-[150px] opacity-20" />
-            <circle cx="70%" cy="30%" r="250" fill="#3838FA" className="blur-[180px] opacity-20" />
+            <circle cx="30%" cy="40%" r="300" fill="#993DEB" className="blur-[150px] opacity-10" />
+            <circle cx="70%" cy="30%" r="350" fill="#FF3D00" className="blur-[180px] opacity-10" />
           </svg>
         </div>
 
@@ -122,17 +121,17 @@ export default function HomePage() {
                     <div className="absolute inset-0 w-24 h-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#993DEB] animate-ping opacity-20" />
                     
                     <div 
-                      className="w-20 h-20 rounded-xl bg-black border-4 border-white flex items-center justify-center shadow-2xl relative z-10 transition-all group-hover:bg-[#993DEB] group-hover:scale-110"
-                      style={{ boxShadow: `0 0 30px ${studio.coverColor}66` }}
+                      className="w-20 h-20 rounded-2xl bg-black border-2 border-white/20 flex items-center justify-center shadow-2xl relative z-10 transition-all group-hover:scale-110"
+                      style={{ boxShadow: `0 0 30px ${studio.coverColor}44` }}
                     >
                       <Home className="w-10 h-10 text-white" />
                     </div>
 
-                    <div className="mt-4 bg-black/95 border-2 border-white px-6 py-3 shadow-[8px_8px_0px_0px_white] transition-transform group-hover:-translate-y-1">
+                    <div className="mt-4 bg-black/90 backdrop-blur-md border border-white/20 px-6 py-3 rounded-xl transition-transform group-hover:-translate-y-1">
                       <h3 className="text-2xl font-black uppercase italic tracking-tighter whitespace-nowrap leading-none">{studio.name}</h3>
                       <div className="flex items-center gap-1.5 mt-2">
-                        <Target className="w-4 h-4 text-[#993DEB]" />
-                        <span className="text-[11px] font-black opacity-80 uppercase tracking-[0.15em] text-[#993DEB]">
+                        <Target className="w-4 h-4 text-[#FFEA00]" />
+                        <span className="text-[11px] font-black opacity-80 uppercase tracking-[0.15em] text-[#FFEA00]">
                           {studio.district || 'Downtown'}
                         </span>
                       </div>
@@ -153,10 +152,10 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Simple Interactive Mini-Map GPS Graphic */}
-        <div className="absolute bottom-10 left-10 w-72 bg-black/95 border-4 border-white shadow-[10px_10px_0px_0px_rgba(0,0,0,0.5)] p-2 z-50">
+        {/* Gemini Style Mini-Map GPS Graphic */}
+        <div className="absolute bottom-10 left-10 w-72 gemini-border gemini-glow p-2 z-50">
           <div 
-            className="h-44 w-full border-2 border-white/10 relative overflow-hidden bg-[#111] cursor-crosshair"
+            className="h-44 w-full rounded-lg relative overflow-hidden bg-[#111] cursor-crosshair"
             onClick={() => setSelectedDistrict('all')}
           >
             <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -178,24 +177,23 @@ export default function HomePage() {
                 }}
                 className={cn(
                   "absolute flex flex-col items-center gap-1 transition-all group",
-                  selectedDistrict === district.id ? "z-20 scale-110" : "opacity-40 hover:opacity-100 grayscale hover:grayscale-0"
+                  selectedDistrict === district.id ? "z-20 scale-110" : "opacity-40 hover:opacity-100"
                 )}
                 style={{ left: `${district.x}%`, top: `${district.y}%`, transform: 'translate(-50%, -50%)' }}
               >
                 <div className={cn(
                   "w-3 h-3 rounded-full border-2 border-white transition-all",
-                  selectedDistrict === district.id ? "bg-[#993DEB] shadow-[0_0_15px_#993DEB]" : "bg-white/20"
+                  selectedDistrict === district.id ? "bg-[#FF3D00] shadow-[0_0_15px_#FF3D00]" : "bg-white/20"
                 )} />
                 <div className={cn(
-                  "bg-black/90 border border-white/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap",
-                  selectedDistrict === district.id ? "text-[#993DEB] border-[#993DEB]" : "text-white/60"
+                  "bg-black/90 backdrop-blur-md border border-white/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap rounded",
+                  selectedDistrict === district.id ? "text-[#FFEA00]" : "text-white/60"
                 )}>
                   {district.name}
                 </div>
               </div>
             ))}
 
-            {/* Reset / All Districts indicator */}
             <div className="absolute top-2 left-2 text-[6px] font-black uppercase tracking-widest text-white/20">
               {selectedDistrict === 'all' ? 'SCANNING ALL SECTORS' : 'FOCUSED VIEW ACTIVE'}
             </div>

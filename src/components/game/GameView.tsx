@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -15,10 +14,10 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 const PAD_COLORS: Record<SoundType, string> = {
-  kick: '#FF3D00',
-  clap: '#00E676',
+  kick: '#993DEB',
+  clap: '#FF3D00',
   percs: '#FFEA00',
-  misc: '#2979FF',
+  misc: '#FFFF00',
 };
 
 const SHORTCUTS: Record<SoundType, string> = {
@@ -87,20 +86,17 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
 
     if (isPlaying && sound) {
       const time = audioEngine.getCurrentTime();
-      // Synchronisation mit dem visuellen Offset (0.05s) aus NoteLane.tsx
       const adjustedTime = time - 0.05;
       
       const secondsPerBeat = 60 / project.bpm;
       const secondsPerStep = secondsPerBeat / 4;
       const currentStep = adjustedTime / secondsPerStep;
       
-      // Etwas toleranteres Fenster (0.6 Steps ~ 70-100ms je nach BPM) für Maus-Latenz
       const tolerance = 0.6;
       
       const isHit = sound.triggerSteps.some(step => {
         const relativeStep = currentStep % 16;
         const diff = Math.abs(relativeStep - step);
-        // Zirkuläre Differenz für Bar-Übergänge
         const circularDiff = Math.min(diff, 16 - diff);
         return circularDiff <= tolerance;
       });
@@ -135,7 +131,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       
       setIsPlaying(true);
     } catch (e) {
-      console.error("Game startup failed", e);
       toast({
         variant: "destructive",
         title: "Audio Fehler",
@@ -152,7 +147,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
-          // Level endet nach 60 Sekunden
           if (t >= 60) {
             setIsPlaying(false);
             setIsFinished(true);
@@ -171,30 +165,30 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const isPassed = score.accuracy >= PASS_THRESHOLD;
 
   return (
-    <div className="flex flex-col h-screen bg-[#1F1A23] text-white p-4 max-w-5xl mx-auto overflow-hidden">
-      <div className="flex justify-between items-center mb-4">
+    <div className="flex flex-col h-screen bg-[#050505] text-white p-6 max-w-5xl mx-auto overflow-hidden">
+      <div className="flex justify-between items-center mb-6">
         <Link href={`/studio/${project.studioId}`}>
-          <div className="cursor-pointer">
-            <h1 className="text-3xl font-bold tracking-tighter text-[#993DEB] uppercase italic">BeatHero</h1>
-            <p className="text-sm opacity-60 font-medium">{project.name} - {level.name}</p>
+          <div className="cursor-pointer group">
+            <h1 className="text-4xl font-black tracking-tighter text-white uppercase italic leading-none group-hover:text-[#993DEB] transition-colors">BeatHero</h1>
+            <p className="text-[10px] opacity-40 font-black uppercase tracking-[0.3em] mt-1">{project.name} • {level.name}</p>
           </div>
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-8">
           <div className="flex flex-col items-end">
-            <p className="text-[10px] uppercase opacity-40">Target</p>
-            <p className="text-sm font-bold opacity-60">{PASS_THRESHOLD}%+</p>
+            <p className="text-[10px] uppercase font-black tracking-widest opacity-30">Target</p>
+            <p className="text-sm font-black opacity-60 italic">{PASS_THRESHOLD}%+</p>
           </div>
-          <div className="text-right border-l border-white/10 pl-6">
-            <p className="text-[10px] uppercase opacity-40">Accuracy</p>
-            <div className="flex items-center gap-2">
+          <div className="text-right border-l border-white/10 pl-8">
+            <p className="text-[10px] uppercase font-black tracking-widest opacity-30">Accuracy</p>
+            <div className="flex items-center gap-3">
               <p className={cn(
-                "text-2xl font-bold transition-colors",
+                "text-4xl font-black italic tracking-tighter transition-colors",
                 isPassed ? "text-[#00E676]" : "text-[#FF3D00]"
               )}>
                 {score.accuracy}%
               </p>
               {isPlaying && (
-                <Badge variant={isPassed ? "default" : "destructive"} className="text-[8px] h-4 px-1.5 uppercase font-bold">
+                <Badge variant={isPassed ? "default" : "destructive"} className="text-[10px] h-5 px-2 uppercase font-black italic rounded-full">
                   {isPassed ? "On Track" : "Low"}
                 </Badge>
               )}
@@ -203,13 +197,13 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         </div>
       </div>
 
-      <div className="relative flex-1 bg-black/40 rounded-2xl border border-white/5 overflow-hidden flex flex-col">
+      <div className="relative flex-1 gemini-border gemini-glow overflow-hidden flex flex-col">
         <div 
-          className="absolute left-0 right-0 h-px bg-[#993DEB] opacity-50 z-10"
-          style={{ top: '500px', boxShadow: '0 0 10px #993DEB' }}
+          className="absolute left-0 right-0 h-px bg-white/20 z-10"
+          style={{ top: '500px' }}
         />
 
-        <div className="flex-1 flex px-4 relative">
+        <div className="flex-1 flex px-4 relative bg-black/40">
           {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => {
             const sound = sounds.find(s => s.type === type);
             const isPlayable = checkIsPlayable(type, level.difficulty);
@@ -226,15 +220,15 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           })}
         </div>
 
-        <div className="p-8 bg-black/20 border-t border-white/5 flex flex-col gap-4">
-          <div className="flex justify-center gap-4">
+        <div className="p-8 bg-black/40 border-t border-white/5 flex flex-col gap-4">
+          <div className="flex justify-center gap-6">
             {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => {
               const sound = sounds.find(s => s.type === type);
               const status = loadStates[sound?.sampleUrl || ''];
               const isPlayable = checkIsPlayable(type, level.difficulty);
               
               return (
-                <div key={type} className="flex flex-col items-center gap-2 w-full max-w-[140px]">
+                <div key={type} className="flex flex-col items-center gap-3 w-full max-w-[140px]">
                   <SamplerPad
                     label={type}
                     shortcut={SHORTCUTS[type]}
@@ -243,7 +237,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                     isInactive={!isPlayable}
                   />
                   {isPlayable && (
-                    <div className="flex items-center gap-1 text-[10px] uppercase font-bold opacity-60">
+                    <div className="flex items-center gap-1.5 text-[9px] uppercase font-black tracking-widest opacity-40">
                       {status === 'ready' && <CheckCircle2 className="w-3 h-3 text-green-400" />}
                       {status === 'failed' && <AlertCircle className="w-3 h-3 text-destructive" />}
                       {status === 'loading' && <Loader2 className="w-3 h-3 animate-spin" />}
@@ -257,24 +251,24 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         </div>
 
         {!isPlaying && !isFinished && (
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-            <Card className="p-10 bg-[#1F1A23] border-[#993DEB] border text-center max-w-sm">
-              <Music2 className="w-12 h-12 text-[#993DEB] mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Bereit?</h2>
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50">
+            <Card className="p-12 bg-black border-none gemini-border gemini-glow text-center max-w-sm">
+              <Music2 className="w-16 h-16 text-[#993DEB] mx-auto mb-6" />
+              <h2 className="text-3xl font-black mb-2 uppercase italic tracking-tighter">Ready?</h2>
               
-              <div className="flex flex-col gap-2 mb-8">
-                <p className="text-sm opacity-70">Schalte das Audio frei, um die Mission zu starten.</p>
-                <div className="flex items-center justify-center gap-2 py-2 px-4 bg-white/5 rounded-lg border border-white/10">
-                  <span className="text-[10px] uppercase opacity-50">Musik:</span>
+              <div className="flex flex-col gap-3 mb-10">
+                <p className="text-sm opacity-50 font-medium">Unlock audio to start the mission.</p>
+                <div className="flex items-center justify-center gap-2 py-2.5 px-4 bg-white/5 rounded-2xl border border-white/10">
+                  <span className="text-[10px] uppercase font-black tracking-widest opacity-30">Status:</span>
                   {backingTrackReady ? (
-                    <span className="text-[10px] text-green-400 font-bold uppercase">Bereit</span>
+                    <span className="text-[10px] text-green-400 font-black uppercase tracking-widest">Ready</span>
                   ) : backingTrackFailed ? (
-                    <span className="text-[10px] text-destructive font-bold uppercase flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> Blockiert (CORS)
+                    <span className="text-[10px] text-destructive font-black uppercase tracking-widest flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> Blocked
                     </span>
                   ) : (
-                    <span className="text-[10px] opacity-50 flex items-center gap-1 animate-pulse">
-                      <Loader2 className="w-3 h-3 animate-spin" /> Lädt...
+                    <span className="text-[10px] opacity-30 flex items-center gap-1 animate-pulse font-black uppercase tracking-widest">
+                      <Loader2 className="w-3 h-3 animate-spin" /> Loading
                     </span>
                   )}
                 </div>
@@ -283,16 +277,12 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               <Button 
                 onClick={startMission} 
                 disabled={isLoadingAudio || (!backingTrackReady && !backingTrackFailed)}
-                className="w-full h-14 text-lg bg-[#993DEB] hover:bg-[#802ECC]"
+                className="w-full h-16 text-xl font-black uppercase italic tracking-tighter bg-white text-black hover:bg-white/90 rounded-2xl"
               >
                 {isLoadingAudio ? (
-                  <>
-                    <Loader2 className="mr-2 animate-spin" /> Bereite vor...
-                  </>
+                  <Loader2 className="animate-spin" />
                 ) : (
-                  <>
-                    <Play className="mr-2" /> {backingTrackFailed ? "Trotzdem starten" : "Mission starten"}
-                  </>
+                  "Start Mission"
                 )}
               </Button>
             </Card>
@@ -300,31 +290,33 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         )}
 
         {isFinished && (
-          <div className="absolute inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-8 z-50">
-            <div className="max-w-md w-full text-center space-y-6 animate-in zoom-in-95 duration-300">
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-xl flex items-center justify-center p-8 z-50">
+            <div className="max-w-md w-full text-center space-y-8 animate-in zoom-in-95 duration-500">
               {isPassed ? (
                 <>
-                  <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-4 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]" />
-                  <h2 className="text-4xl font-bold text-white uppercase italic tracking-tighter">Mission Accomplished</h2>
-                  <p className="text-[#00E676] font-bold text-2xl">{score.accuracy}% Genauigkeit</p>
-                  <p className="text-white/60 text-sm">Hervorragendes Rhythmusgefühl! Du hast das Ziel von {PASS_THRESHOLD}% erreicht.</p>
+                  <div className="relative inline-block">
+                    <Trophy className="w-24 h-24 text-[#FFEA00] mx-auto mb-4 drop-shadow-[0_0_20px_rgba(255,234,0,0.5)]" />
+                  </div>
+                  <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-none">Mission Accomplished</h2>
+                  <p className="text-[#00E676] font-black text-3xl italic tracking-tighter">{score.accuracy}% Accuracy</p>
+                  <p className="text-white/40 text-sm font-medium">Exceptional rhythm! You've secured the sector data.</p>
                 </>
               ) : (
                 <>
-                  <XCircle className="w-20 h-20 text-[#FF3D00] mx-auto mb-4 drop-shadow-[0_0_15px_rgba(255,61,0,0.5)]" />
-                  <h2 className="text-4xl font-bold text-white uppercase italic tracking-tighter">Mission Failed</h2>
-                  <p className="text-[#FF3D00] font-bold text-2xl">{score.accuracy}% Genauigkeit</p>
-                  <p className="text-white/60 text-sm">Knapp daneben! Du brauchst mindestens {PASS_THRESHOLD}%, um zum nächsten Level zu gelangen.</p>
+                  <XCircle className="w-24 h-24 text-[#FF3D00] mx-auto mb-4 drop-shadow-[0_0_20px_rgba(255,61,0,0.5)]" />
+                  <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-none">Mission Failed</h2>
+                  <p className="text-[#FF3D00] font-black text-3xl italic tracking-tighter">{score.accuracy}% Accuracy</p>
+                  <p className="text-white/40 text-sm font-medium">Critical failure. Minimum {PASS_THRESHOLD}% required to advance.</p>
                 </>
               )}
               
-              <div className="flex gap-4 pt-6">
-                <Button onClick={startMission} variant="outline" className="flex-1 h-12 border-white/20 bg-white/5 hover:bg-white/10">
-                  <RotateCcw className="mr-2 h-4 w-4" /> {isPassed ? "Verbessern" : "Erneut versuchen"}
+              <div className="flex gap-4 pt-8">
+                <Button onClick={startMission} variant="outline" className="flex-1 h-14 border-white/20 bg-white/5 hover:bg-white/10 rounded-2xl font-black uppercase italic tracking-tighter">
+                  <RotateCcw className="mr-2 h-5 w-5" /> Retry
                 </Button>
                 <Link href="/" className="flex-1">
-                  <Button className="w-full h-12 bg-[#993DEB] hover:bg-[#802ECC]">
-                    <Home className="mr-2 h-4 w-4" /> Home
+                  <Button className="w-full h-14 bg-white text-black hover:bg-white/90 rounded-2xl font-black uppercase italic tracking-tighter">
+                    <Home className="mr-2 h-5 w-5" /> HQ
                   </Button>
                 </Link>
               </div>

@@ -3,26 +3,26 @@
 @tailwind utilities;
 
 :root {
-  --background: 280 15% 10%;
+  --background: 280 15% 4%;
   --foreground: 280 10% 98%;
-  --card: 280 15% 12%;
+  --card: 280 15% 8%;
   --card-foreground: 280 10% 98%;
-  --popover: 280 15% 10%;
+  --popover: 280 15% 6%;
   --popover-foreground: 280 10% 98%;
   --primary: 271 81% 58%;
   --primary-foreground: 0 0% 100%;
   --secondary: 240 96% 60%;
   --secondary-foreground: 0 0% 100%;
-  --muted: 280 15% 18%;
+  --muted: 280 15% 12%;
   --muted-foreground: 280 10% 65%;
   --accent: 240 96% 60%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
-  --border: 280 15% 20%;
-  --input: 280 15% 20%;
+  --border: 280 15% 15%;
+  --input: 280 15% 15%;
   --ring: 271 81% 58%;
-  --radius: 0.75rem;
+  --radius: 1rem;
 }
 
 @layer base {
@@ -31,16 +31,31 @@
   }
   body {
     @apply bg-background text-foreground font-body antialiased;
-    background-image: radial-gradient(circle at 50% 50%, hsla(271, 81%, 58%, 0.05) 0%, transparent 80%);
+    background-image: radial-gradient(circle at 50% 50%, hsla(271, 81%, 58%, 0.03) 0%, transparent 80%);
   }
 }
 
-.neon-glow {
-  box-shadow: 0 0 15px hsla(271, 81%, 58%, 0.5);
+/* Gemini-Style Gradient Border Utility */
+.gemini-border {
+  position: relative;
+  background: hsl(var(--card));
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
 }
 
-.neon-border {
-  border: 1px solid hsla(271, 81%, 58%, 0.5);
+.gemini-border::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  z-index: -1;
+  margin: -2px;
+  border-radius: inherit;
+  background: linear-gradient(to right, #993DEB, #FF3D00, #FFEA00, #FFFF00);
+}
+
+.gemini-glow {
+  box-shadow: 0 0 20px rgba(153, 61, 235, 0.2), 0 0 40px rgba(255, 61, 0, 0.1);
 }
 
 .pad-active {
