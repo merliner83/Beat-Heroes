@@ -6,10 +6,18 @@ import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
 import { Card } from '@/components/ui/card';
-import { Music, Play, Radio, Settings } from 'lucide-react';
+import { Music, Play, Radio, Settings, MapPin, Target } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+
+// Stilisierte Koordinaten für die Karte
+const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
+  'yoan-beats': { x: 25, y: 35 },
+  'nintu-music': { x: 65, y: 25 },
+  'dave-beats': { x: 50, y: 65 }
+};
 
 export default function HomePage() {
   const db = useFirestore();
@@ -36,73 +44,118 @@ export default function HomePage() {
         await setDoc(doc(db, 'studios', s.id), s);
       }
       toast({
-        title: "Studios angelegt",
-        description: "Yoan Beats, Nintu Music und Dave Beats wurden erfolgreich hinzugefügt.",
+        title: "Studios synchronisiert",
+        description: "Die Standorte wurden auf der Karte markiert.",
       });
     } catch (e) {
       toast({
         variant: "destructive",
-        title: "Fehler",
-        description: "Studios konnten nicht angelegt werden.",
+        title: "Error",
+        description: "Could not initialize map data.",
       });
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#1F1A23] text-white font-body flex flex-col">
-      <header className="px-8 py-6 flex justify-between items-center border-b border-white/5">
-        <div className="flex items-center gap-2">
-          <Radio className="text-[#993DEB]" />
-          <h1 className="text-2xl font-bold tracking-tighter uppercase italic text-[#993DEB]">BeatHero</h1>
+    <div className="min-h-screen bg-[#0A0A0A] text-white font-body flex flex-col overflow-hidden select-none">
+      {/* GTA Style Header */}
+      <header className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-start pointer-events-none">
+        <div className="bg-black/80 backdrop-blur-md border-4 border-white p-4 shadow-[8px_8px_0px_0px_rgba(153,61,235,0.5)] pointer-events-auto">
+          <div className="flex items-center gap-3">
+            <Radio className="w-8 h-8 text-[#993DEB]" />
+            <div>
+              <h1 className="text-4xl font-black tracking-tighter uppercase italic leading-none">BeatHero</h1>
+              <p className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-50">Select Destination</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-black/80 backdrop-blur-md border-2 border-white/20 p-4 text-right pointer-events-auto">
+          <div className="text-[#993DEB] font-bold text-xl leading-none tracking-tighter">$ 0,000,000</div>
+          <div className="text-[10px] uppercase opacity-40 mt-1">Liberty Beats City</div>
         </div>
       </header>
 
-      <main className="p-8 max-w-7xl mx-auto flex-1 w-full">
-        <div className="mb-12">
-          <h2 className="text-5xl font-bold mb-2">Select your <span className="text-[#993DEB]">Studio</span></h2>
-          <p className="text-white/50">Pick a production environment to start your mission.</p>
+      {/* Map View Container */}
+      <main className="relative flex-1 w-full bg-[#1A1A1A] overflow-hidden">
+        {/* Styled City Grid Background */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+                <path d="M 100 0 L 0 0 0 100" fill="none" stroke="white" strokeWidth="1"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+            <circle cx="30%" cy="40%" r="200" fill="#993DEB" className="blur-[150px] opacity-20" />
+            <circle cx="70%" cy="30%" r="250" fill="#3838FA" className="blur-[180px] opacity-20" />
+          </svg>
         </div>
-        
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3].map(i => <div key={i} className="h-72 bg-white/5 animate-pulse rounded-2xl" />)}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {studios?.map((studio) => (
-              <Link key={studio.id} href={`/studio/${studio.id}`}>
-                <Card 
-                  className="group relative h-72 overflow-hidden border-none cursor-pointer transition-all hover:scale-[1.02] rounded-2xl"
-                  style={{ backgroundColor: studio.coverColor }}
-                >
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
-                  <div className="absolute inset-0 p-8 flex flex-col justify-between">
-                    <div>
-                      <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-6">
-                        <Music className="w-6 h-6 text-white" />
-                      </div>
-                      <h3 className="text-3xl font-bold mb-2 text-white">{studio.name}</h3>
-                      <p className="text-base text-white/70 line-clamp-2">{studio.description}</p>
+
+        {/* Studio Pins */}
+        <div className="absolute inset-0">
+          {studios?.map((studio) => {
+            const pos = STUDIO_COORDS[studio.id] || { x: Math.random() * 80 + 10, y: Math.random() * 80 + 10 };
+            return (
+              <div 
+                key={studio.id}
+                className="absolute transition-transform hover:scale-110 group"
+                style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+              >
+                <Link href={`/studio/${studio.id}`}>
+                  <div className="relative flex flex-col items-center">
+                    {/* Pulsing Target Ring */}
+                    <div className="absolute inset-0 w-12 h-12 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#993DEB] animate-ping opacity-20" />
+                    
+                    {/* Studio Icon/Marker */}
+                    <div 
+                      className="w-10 h-10 rounded-full bg-black border-4 border-white flex items-center justify-center shadow-2xl relative z-10 transition-colors group-hover:bg-[#993DEB]"
+                      style={{ boxShadow: `0 0 20px ${studio.coverColor}44` }}
+                    >
+                      <Music className="w-5 h-5 text-white" />
                     </div>
-                    <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest bg-black/20 text-white self-start px-4 py-2 rounded-full backdrop-blur-md">
-                      <span>Enter Studio</span>
-                      <Play className="w-3 h-3 fill-current" />
+
+                    {/* Popover Label */}
+                    <div className="mt-4 bg-black border-2 border-white px-4 py-2 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all">
+                      <h3 className="text-sm font-black uppercase italic tracking-tighter whitespace-nowrap">{studio.name}</h3>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Target className="w-3 h-3 text-[#993DEB]" />
+                        <span className="text-[10px] font-bold opacity-50 uppercase">Mission Available</span>
+                      </div>
                     </div>
                   </div>
-                </Card>
-              </Link>
-            ))}
-
-            {studios?.length === 0 && !isLoading && (
-              <div className="col-span-full py-20 text-center border-2 border-dashed border-white/10 rounded-2xl opacity-30">
-                No studios found in your database.
+                </Link>
               </div>
-            )}
+            );
+          })}
+
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-40">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-16 h-16 border-4 border-[#993DEB] border-t-transparent rounded-full animate-spin" />
+                <p className="text-xs font-black uppercase tracking-[0.3em]">Downloading Area Data...</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Mini-Map / District Info Overlay */}
+        <div className="absolute bottom-10 left-10 w-64 aspect-square bg-black/90 border-4 border-white shadow-[10px_10px_0px_0px_rgba(0,0,0,0.5)] p-4 hidden md:block">
+          <div className="h-full w-full border-2 border-white/20 relative flex items-center justify-center">
+            <div className="text-center">
+              <MapPin className="w-8 h-8 text-[#993DEB] mx-auto mb-2" />
+              <div className="text-[10px] font-black uppercase tracking-widest leading-tight">
+                Downtown<br/>District
+              </div>
+            </div>
+            <div className="absolute top-4 left-6 w-2 h-2 bg-white rounded-full animate-pulse" />
+            <div className="absolute bottom-8 right-12 w-2 h-2 bg-[#993DEB] rounded-full animate-pulse" />
           </div>
-        )}
+        </div>
       </main>
 
-      <footer className="p-8 border-t border-white/5 flex justify-center opacity-20 hover:opacity-100 transition-opacity">
+      {/* Hidden Admin Setup in Footer */}
+      <footer className="p-4 border-t border-white/5 flex justify-end opacity-10 hover:opacity-100 transition-opacity absolute bottom-0 right-0">
         <Button 
           variant="ghost" 
           size="sm" 
@@ -110,7 +163,7 @@ export default function HomePage() {
           className="text-[10px] uppercase tracking-tighter gap-2"
         >
           <Settings className="w-3 h-3" />
-          Setup Studios (Admin)
+          Map Setup
         </Button>
       </footer>
     </div>
