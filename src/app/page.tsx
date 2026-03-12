@@ -84,7 +84,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-right pointer-events-auto">
+        <div className="gemini-border gemini-glow p-4 text-right pointer-events-auto">
           <div className="text-white font-bold text-xl leading-none tracking-tighter">$ 0,000,000</div>
           <div className="text-[10px] uppercase opacity-40 mt-1">Liberty Beats City</div>
         </div>
@@ -182,7 +182,7 @@ export default function HomePage() {
                 style={{ left: `${district.x}%`, top: `${district.y}%`, transform: 'translate(-50%, -50%)' }}
               >
                 <div className={cn(
-                  "w-3 h-3 rounded-full border-2 border-white transition-all",
+                  "w-3 h-3 rounded-full border border-white transition-all",
                   selectedDistrict === district.id ? "bg-[#FF3D00] shadow-[0_0_15px_#FF3D00]" : "bg-white/20"
                 )} />
                 <div className={cn(
