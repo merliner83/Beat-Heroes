@@ -26,12 +26,19 @@ export interface Level {
   name: string;
 }
 
+export interface TriggerPattern {
+  id: string;
+  name: string;
+  steps: number[];
+}
+
 export interface Sound {
   id: string;
   levelId: string;
   type: SoundType;
   sampleUrl: string;
-  triggerSteps: number[];
+  patternId?: string;
+  triggerSteps?: number[];
 }
 
 export interface GameScore {

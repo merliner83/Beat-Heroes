@@ -41,22 +41,38 @@
       },
       "required": ["id", "projectId", "difficulty"]
     },
+    "TriggerPattern": {
+      "title": "TriggerPattern",
+      "type": "object",
+      "description": "Ein wiederverwendbares rhythmisches Muster über 8 Takte.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "steps": { 
+          "type": "array", 
+          "items": { "type": "number" },
+          "description": "Schritte (0-127) für einen 8-Takt-Loop."
+        }
+      },
+      "required": ["id", "name", "steps"]
+    },
     "Sound": {
       "title": "Sound",
       "type": "object",
-      "description": "Ein Instrument-Trigger-Muster innerhalb eines Levels.",
+      "description": "Ein Instrument-Trigger innerhalb eines Levels.",
       "properties": {
         "id": { "type": "string" },
         "levelId": { "type": "string" },
         "type": { "type": "string", "enum": ["kick", "clap", "percs", "misc"] },
         "sampleUrl": { "type": "string", "format": "uri" },
+        "patternId": { "type": "string", "description": "Referenz auf ein globales TriggerPattern." },
         "triggerSteps": { 
           "type": "array", 
           "items": { "type": "number" },
-          "description": "16tel-Schritte, an denen dieser Sound gespielt werden soll."
+          "description": "Fallback oder manuelle Schritte, falls kein globales Pattern genutzt wird."
         }
       },
-      "required": ["id", "levelId", "type", "sampleUrl", "triggerSteps"]
+      "required": ["id", "levelId", "type", "sampleUrl"]
     },
     "UserProfile": {
       "title": "UserProfile",
@@ -99,6 +115,10 @@
     "/levels/{levelId}/sounds/{soundId}": {
       "schema": "#/backend/entities/Sound",
       "description": "Sounds eines Levels."
+    },
+    "/patterns/{patternId}": {
+      "schema": "#/backend/entities/TriggerPattern",
+      "description": "Globale Rhythmus-Vorlagen."
     },
     "/users/{userId}": {
       "schema": "#/backend/entities/UserProfile",

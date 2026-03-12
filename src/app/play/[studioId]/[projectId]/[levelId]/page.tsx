@@ -5,7 +5,7 @@ import React from 'react';
 import { useParams } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useDoc, useCollection } from '@/firebase';
 import { doc, collection, query } from 'firebase/firestore';
-import { Project, Level, Sound } from '@/lib/game/types';
+import { Project, Level, Sound, TriggerPattern } from '@/lib/game/types';
 import { GameView } from '@/components/game/GameView';
 import { Loader2 } from 'lucide-react';
 
@@ -25,7 +25,13 @@ export default function PlayPage() {
   }, [db, levelId]);
   const { data: sounds } = useCollection<Sound>(soundsQuery);
 
-  if (!project || !level || !sounds) {
+  const patternsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, 'patterns'));
+  }, [db]);
+  const { data: patterns } = useCollection<TriggerPattern>(patternsQuery);
+
+  if (!project || !level || !sounds || !patterns) {
     return (
       <div className="h-screen bg-[#050505] flex items-center justify-center text-white">
         <Loader2 className="w-8 h-8 animate-spin text-[#FFEA00]" />
@@ -35,7 +41,7 @@ export default function PlayPage() {
 
   return (
     <div className="h-screen bg-[#050505]">
-      <GameView project={project} level={level} sounds={sounds} />
+      <GameView project={project} level={level} sounds={sounds} patterns={patterns} />
     </div>
   );
 }

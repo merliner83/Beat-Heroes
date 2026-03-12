@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Project, Level, Sound, GameScore, SoundType } from '@/lib/game/types';
+import { Project, Level, Sound, GameScore, SoundType, TriggerPattern } from '@/lib/game/types';
 import { audioEngine, AudioEngine } from '@/lib/game/audio-engine';
 import { SamplerPad } from './SamplerPad';
 import { NoteLane } from './NoteLane';
@@ -44,9 +44,10 @@ interface GameViewProps {
   project: Project;
   level: Level;
   sounds: Sound[];
+  patterns: TriggerPattern[];
 }
 
-export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) => {
+export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patterns }) => {
   const db = useFirestore();
   const { user } = useUser();
   const router = useRouter();
@@ -60,6 +61,15 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const [loadStates, setLoadStates] = useState<Record<string, string>>({});
   const frameRef = useRef<number>(null);
   const { toast } = useToast();
+
+  // Map patterns to sounds
+  const soundsWithPatterns = sounds.map(sound => {
+    const pattern = patterns.find(p => p.id === sound.patternId);
+    return {
+      ...sound,
+      triggerSteps: pattern ? pattern.steps : (sound.triggerSteps || [])
+    };
+  });
 
   useEffect(() => {
     const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl), AudioEngine.METRONOME_URL];
@@ -96,7 +106,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     const isPlayable = checkIsPlayable(type, level.difficulty);
     if (!isPlayable) return;
 
-    const sound = sounds.find(s => s.type === type);
+    const sound = soundsWithPatterns.find(s => s.type === type);
     if (sound) {
       audioEngine.playOneShot(sound.sampleUrl);
     }
@@ -112,9 +122,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       const tolerance = 0.6;
       
       const isHit = sound.triggerSteps.some(step => {
-        const relativeStep = currentStep % 16;
+        const relativeStep = currentStep % 128; // 8 Takte à 16 Steps
         const diff = Math.abs(relativeStep - step);
-        const circularDiff = Math.min(diff, 16 - diff);
+        const circularDiff = Math.min(diff, 128 - diff);
         return circularDiff <= tolerance;
       });
 
@@ -129,7 +139,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         };
       });
     }
-  }, [isPlaying, sounds, level.difficulty, project.bpm]);
+  }, [isPlaying, soundsWithPatterns, level.difficulty, project.bpm]);
 
   const startLevel = async () => {
     if (!audioEngine) return;
@@ -146,12 +156,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       const secondsPerBeat = 60 / project.bpm;
       const countInDuration = 4 * secondsPerBeat;
       
-      // Start visualization loop immediately with negative offset
-      // This allows notes to start falling before the backing track begins
       audioEngine.setStartTime(audioEngine.getContextTime() + countInDuration);
       setIsPlaying(true); 
 
-      // Start Count-in audio
       if (metronomeReady) {
         await audioEngine.playCountIn(project.bpm, (beat) => {
           setCountIn(5 - beat); 
@@ -160,7 +167,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       }
       
       if (backingTrackReady) {
-        // Start backing track preserving the startTime established by count-in
         await audioEngine.startBackingTrack(project.backingTrackUrl, true);
       }
       
@@ -193,7 +199,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
-          // Auto-stop when track finishes (roughly 60s for now or buffer duration)
           if (t >= 60) {
             setIsPlaying(false);
             setIsFinished(true);
@@ -230,12 +235,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       }, { merge: true });
 
       setHasAwardedPoints(true);
-      toast({
-        title: "Level bestanden!",
-        description: `Du hast ${reward} SC verdient. Deine Genauigkeit: ${score.accuracy}%`,
-      });
     }
-  }, [isFinished, isPassed, hasAwardedPoints, user, db, level, score.accuracy, toast]);
+  }, [isFinished, isPassed, hasAwardedPoints, user, db, level, score.accuracy]);
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-6 max-w-5xl mx-auto overflow-hidden">
@@ -290,7 +291,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
 
         <div className="flex-1 flex px-4 relative bg-black/40">
           {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => {
-            const sound = sounds.find(s => s.type === type);
+            const sound = soundsWithPatterns.find(s => s.type === type);
             const isPlayable = checkIsPlayable(type, level.difficulty);
             return (
               <NoteLane
@@ -308,7 +309,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         <div className="p-8 bg-black/40 border-t border-white/5 flex flex-col gap-4">
           <div className="flex justify-center gap-6">
             {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => {
-              const sound = sounds.find(s => s.type === type);
+              const sound = soundsWithPatterns.find(s => s.type === type);
               const status = loadStates[sound?.sampleUrl || ''];
               const isPlayable = checkIsPlayable(type, level.difficulty);
               
@@ -335,7 +336,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
           </div>
         </div>
 
-        {/* Start Overlay - Only visible if not playing and not counting in */}
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50">
             <Card className="p-12 bg-black border-none gemini-border gemini-glow text-center max-w-sm">
@@ -348,10 +348,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                   <span className="text-[10px] uppercase font-black tracking-widest opacity-30">Status:</span>
                   {backingTrackReady ? (
                     <span className="text-[10px] text-green-400 font-black uppercase tracking-widest">Ready</span>
-                  ) : backingTrackFailed ? (
-                    <span className="text-[10px] text-destructive font-black uppercase tracking-widest flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> Blocked
-                    </span>
                   ) : (
                     <span className="text-[10px] opacity-30 flex items-center gap-1 animate-pulse font-black uppercase tracking-widest">
                       <Loader2 className="w-3 h-3 animate-spin" /> Loading
@@ -362,20 +358,15 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
 
               <Button 
                 onClick={startLevel} 
-                disabled={isLoadingAudio || (!backingTrackReady && !backingTrackFailed)}
+                disabled={isLoadingAudio || !backingTrackReady}
                 className="w-full h-16 text-xl font-black uppercase italic tracking-tighter bg-white text-black hover:bg-white/90 rounded-2xl"
               >
-                {isLoadingAudio ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  "Start Level"
-                )}
+                {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Start Level"}
               </Button>
             </Card>
           </div>
         )}
 
-        {/* Count-in Overlay - Semi-transparent to show falling notes */}
         {countIn !== null && (
           <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center z-50 pointer-events-none">
             <div className="text-[12rem] font-black italic tracking-tighter text-white/80 animate-in zoom-in-50 duration-200 drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]">
@@ -399,14 +390,12 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                       +{DIFFICULTY_REWARDS[level.difficulty]} <span className="italic">SC</span>
                     </p>
                   </div>
-                  <p className="text-white/40 text-sm font-medium mt-4">Exceptional rhythm! You've secured the sector data.</p>
                 </>
               ) : (
                 <>
                   <XCircle className="w-24 h-24 text-[#FF3D00] mx-auto mb-4 drop-shadow-[0_0_20px_rgba(255,61,0,0.5)]" />
                   <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-none">Level Failed</h2>
                   <p className="text-[#FF3D00] font-black text-3xl italic tracking-tighter">{score.accuracy}% Accuracy</p>
-                  <p className="text-white/40 text-sm font-medium">Critical failure. Minimum {PASS_THRESHOLD}% required to advance.</p>
                 </>
               )}
               

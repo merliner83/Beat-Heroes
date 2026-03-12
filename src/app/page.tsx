@@ -32,10 +32,8 @@ export default function HomePage() {
   const { user } = useUser();
   const { toast } = useToast();
   
-  // Beide Distrikte sind standardmäßig aktiv
   const [activeDistricts, setActiveDistricts] = useState<string[]>(['bantiger', 'oberemmental']);
   
-  // Automatischer Login für Street Cred Tracking
   useEffect(() => {
     if (!user && auth) {
       initiateAnonymousSignIn(auth);
@@ -76,6 +74,30 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     
+    // 1. Create Global Patterns (8 bars = 128 steps)
+    const patterns = [
+      {
+        id: 'kick-4-4',
+        name: 'KICK 4/4 Basic',
+        steps: Array.from({ length: 32 }, (_, i) => i * 4) // 0, 4, 8, 12... 124
+      },
+      {
+        id: 'clap-2-4',
+        name: 'CLAP on 2 & 4',
+        steps: Array.from({ length: 16 }, (_, i) => (i * 8) + 4) // 4, 12, 20... 124
+      },
+      {
+        id: 'hats-offbeat',
+        name: 'HATS Offbeat',
+        steps: Array.from({ length: 32 }, (_, i) => (i * 4) + 2) // 2, 6, 10... 126
+      },
+      {
+        id: 'perc-syncopated',
+        name: 'PERC Syncopated',
+        steps: [2, 7, 10, 15, 18, 23, 26, 31, 34, 39, 42, 47, 50, 55, 58, 63]
+      }
+    ];
+
     const newStudios = [
       { 
         id: 'gabriel-beats', 
@@ -116,25 +138,27 @@ export default function HomePage() {
     ];
 
     try {
+      for (const p of patterns) {
+        await setDoc(doc(db, 'patterns', p.id), p);
+      }
       for (const s of newStudios) {
         await setDoc(doc(db, 'studios', s.id), s);
       }
       toast({
-        title: "Studios synchronisiert",
-        description: "Die Gebiete wurden auf der Karte markiert.",
+        title: "Datenbank synchronisiert",
+        description: "Studios und globale Patterns wurden angelegt.",
       });
     } catch (e) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not initialize map data.",
+        description: "Could not initialize setup data.",
       });
     }
   };
 
   return (
     <div className="h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none">
-      {/* Gemini Style Header */}
       <header className="p-6 flex justify-between items-start z-50">
         <div className="gemini-border gemini-glow p-4">
           <div className="flex items-center gap-3">
@@ -154,9 +178,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Map View Container */}
       <main className="relative flex-1 w-full bg-[#080808] overflow-hidden">
-        {/* Styled City Grid Background */}
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -170,7 +192,6 @@ export default function HomePage() {
           </svg>
         </div>
 
-        {/* Studio Pins */}
         <div className="absolute inset-0">
           {filteredStudios?.map((studio) => {
             const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
@@ -210,7 +231,6 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* GPS Mini-Map Graphic - Fixed at bottom center of map area */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-72 z-50">
           <div className="gemini-border gemini-glow p-2 bg-black/40 backdrop-blur-md">
             <div className="h-44 w-full rounded-lg relative overflow-hidden bg-[#111]">
@@ -223,7 +243,6 @@ export default function HomePage() {
                 </svg>
               </div>
 
-              {/* Interactive District GPS Points */}
               {DISTRICTS.map((district) => {
                 const isActive = activeDistricts.includes(district.id);
                 
@@ -252,28 +271,14 @@ export default function HomePage() {
                     )}>
                       {district.name}
                     </div>
-                    <div className={cn(
-                      "text-[5px] font-black uppercase tracking-widest",
-                      isActive ? "text-green-500" : "text-red-500"
-                    )}>
-                      {isActive ? 'ACTIVE' : 'OFFLINE'}
-                    </div>
                   </div>
                 );
               })}
-
-              <div className="absolute top-2 left-2 text-[6px] font-black uppercase tracking-widest text-white/20">
-                SECTOR ANALYSIS MODE
-              </div>
-              <div className="absolute bottom-2 right-2 text-[6px] font-black uppercase tracking-widest text-[#FFEA00] animate-pulse">
-                GPS ONLINE
-              </div>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Hidden Admin Setup in Footer */}
       <footer className="p-4 border-t border-white/5 flex justify-end opacity-10 hover:opacity-100 transition-opacity">
         <Button 
           variant="ghost" 

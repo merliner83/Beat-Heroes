@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -23,20 +24,18 @@ service cloud.firestore {
       }
     }
 
-    // Studios: Öffentlich lesbar, Erstellung/Bearbeitung für angemeldete Nutzer
+    // Studios: Öffentlich lesbar
     match /studios/{studioId} {
       allow read: if true;
-      allow create, update: if isSignedIn();
-      allow delete: if isSignedIn() && (resource.data.ownerUserId == request.auth.uid);
+      allow write: if isSignedIn();
     }
 
-    // Projekte: Öffentlich lesbar, Erstellung für angemeldete Nutzer
+    // Projekte, Levels, Sounds: Öffentlich lesbar
     match /projects/{projectId} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Levels & Sounds: Öffentlich lesbar, Erstellung für angemeldete Nutzer
     match /levels/{levelId} {
       allow read: if true;
       allow write: if isSignedIn();
@@ -45,6 +44,12 @@ service cloud.firestore {
         allow read: if true;
         allow write: if isSignedIn();
       }
+    }
+
+    // Patterns: Öffentlich lesbar
+    match /patterns/{patternId} {
+      allow read: if true;
+      allow write: if isSignedIn();
     }
   }
 }
