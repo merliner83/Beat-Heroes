@@ -43,23 +43,7 @@ export class AudioEngine {
       }
     }
 
-    // Play a silent click to unlock audio on mobile/Safari
-    this.playUnlockSound();
-
     return this.context.state === 'running';
-  }
-
-  private playUnlockSound() {
-    if (!this.context || !this.masterGain) return;
-    try {
-      const osc = this.context.createOscillator();
-      const g = this.context.createGain();
-      osc.connect(g);
-      g.connect(this.masterGain);
-      g.gain.setValueAtTime(0.001, this.context.currentTime);
-      osc.start();
-      osc.stop(this.context.currentTime + 0.01);
-    } catch (e) {}
   }
 
   /**
@@ -133,9 +117,11 @@ export class AudioEngine {
       
       this.loadingStatus.set(url, 'loading');
       try {
-        // Simple fetch without additional headers to minimize CORS issues
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        // Wir nutzen den lokalen Proxy, um CORS-Sperren der externen Server zu umgehen
+        const proxyUrl = `/api/proxy-audio?url=${encodeURIComponent(url)}`;
+        const response = await fetch(proxyUrl);
+        
+        if (!response.ok) throw new Error(`Proxy failed: ${response.status}`);
         
         const arrayBuffer = await response.arrayBuffer();
         const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
@@ -143,18 +129,18 @@ export class AudioEngine {
         this.buffers.set(url, audioBuffer);
         this.loadingStatus.set(url, 'ready');
       } catch (e) {
-        console.warn(`AudioEngine: FAILED to load ${url}. Using synth fallback.`, e);
+        console.warn(`AudioEngine: FAILED to load ${url}. Proxy might be blocked or URL invalid.`, e);
         this.loadingStatus.set(url, 'failed');
       }
     }));
   }
 
   async playOneShot(url: string) {
-    // Re-ensure context is running on interaction
     await this.resume();
 
     const buffer = this.buffers.get(url);
     if (!buffer) {
+      // Falls das echte Sample nicht geladen werden konnte, nutzen wir den Synthesizer
       this.playSynthFallback(url);
       return;
     }
