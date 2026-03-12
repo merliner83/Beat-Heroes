@@ -15,8 +15,10 @@ interface SamplerPadProps {
 export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress, color, isInactive }) => {
   const [isPressed, setIsPressed] = useState(false);
 
-  const handlePress = () => {
+  const handlePress = (e?: React.PointerEvent | KeyboardEvent) => {
     if (isInactive) return;
+    if (e && 'preventDefault' in e) e.preventDefault();
+    
     onPress();
     setIsPressed(true);
     setTimeout(() => setIsPressed(false), 80);
@@ -25,7 +27,7 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isInactive && e.key.toLowerCase() === shortcut.toLowerCase()) {
-        handlePress();
+        handlePress(e);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -34,9 +36,9 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
 
   return (
     <button
-      onMouseDown={handlePress}
+      onPointerDown={(e) => handlePress(e)}
       className={cn(
-        "relative flex flex-col items-center justify-center aspect-square w-full max-w-[140px] rounded-xl border-2 transition-all duration-75 select-none",
+        "relative flex flex-col items-center justify-center aspect-square w-full max-w-[140px] rounded-xl border-2 transition-all duration-75 select-none touch-none",
         isPressed 
           ? "scale-95 brightness-125" 
           : "scale-100 hover:brightness-110 active:scale-95",

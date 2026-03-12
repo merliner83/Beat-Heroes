@@ -122,8 +122,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       const secondsPerStep = secondsPerBeat / 4;
       const currentStep = adjustedTime / secondsPerStep;
       
-      // Etwas toleranteres Fenster (0.4 Steps ~ 50-80ms je nach BPM)
-      const tolerance = 0.4;
+      // Etwas toleranteres Fenster (0.6 Steps ~ 70-100ms je nach BPM) für Maus-Latenz
+      const tolerance = 0.6;
       
       const isHit = sound.triggerSteps.some(step => {
         const relativeStep = currentStep % 16;
