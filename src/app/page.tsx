@@ -100,10 +100,10 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none">
+    <div className="h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none">
       {/* Gemini Style Header */}
-      <header className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-start pointer-events-none">
-        <div className="gemini-border gemini-glow p-4 pointer-events-auto">
+      <header className="p-6 flex justify-between items-start z-50">
+        <div className="gemini-border gemini-glow p-4">
           <div className="flex items-center gap-3">
             <Radio className="w-8 h-8 text-[#FFEA00]" />
             <div>
@@ -113,7 +113,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="gemini-border gemini-glow p-4 text-right pointer-events-auto">
+        <div className="gemini-border gemini-glow p-4 text-right">
           <div className="text-white font-bold text-xl leading-none tracking-tighter">
             {streetCred.toLocaleString()} <span className="text-[#FFEA00] italic ml-1 font-black">SC</span>
           </div>
@@ -177,69 +177,71 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* GPS Mini-Map Graphic - Zentriert unten */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-72 gemini-border gemini-glow p-2 z-50">
-          <div className="h-44 w-full rounded-lg relative overflow-hidden bg-[#111]">
-            <div className="absolute inset-0 opacity-10 pointer-events-none">
-              <svg width="100%" height="100%">
-                <pattern id="grid-mini" width="20" height="20" patternUnits="userSpaceOnUse">
-                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" strokeWidth="0.5"/>
-                </pattern>
-                <rect width="100%" height="100%" fill="url(#grid-mini)" />
-              </svg>
-            </div>
+        {/* GPS Mini-Map Graphic - Fixed at bottom center of map area */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-72 z-50">
+          <div className="gemini-border gemini-glow p-2 bg-black/40 backdrop-blur-md">
+            <div className="h-44 w-full rounded-lg relative overflow-hidden bg-[#111]">
+              <div className="absolute inset-0 opacity-10 pointer-events-none">
+                <svg width="100%" height="100%">
+                  <pattern id="grid-mini" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" strokeWidth="0.5"/>
+                  </pattern>
+                  <rect width="100%" height="100%" fill="url(#grid-mini)" />
+                </svg>
+              </div>
 
-            {/* Interactive District GPS Points */}
-            {DISTRICTS.map((district) => {
-              const isActive = activeDistricts.includes(district.id);
-              
-              return (
-                <div
-                  key={district.id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleDistrict(district.id);
-                  }}
-                  className={cn(
-                    "absolute flex flex-col items-center gap-1 transition-all group cursor-pointer",
-                    !isActive && "opacity-30"
-                  )}
-                  style={{ left: `${district.x}%`, top: `${district.y}%`, transform: 'translate(-50%, -50%)' }}
-                >
-                  <div className={cn(
-                    "w-3 h-3 rounded-full border border-white transition-all",
-                    isActive 
-                      ? "bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] scale-110 animate-pulse" 
-                      : "bg-white/10 border-white/20"
-                  )} />
-                  <div className={cn(
-                    "bg-black/90 backdrop-blur-md border border-white/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap rounded transition-colors",
-                    isActive ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white/20"
-                  )}>
-                    {district.name}
+              {/* Interactive District GPS Points */}
+              {DISTRICTS.map((district) => {
+                const isActive = activeDistricts.includes(district.id);
+                
+                return (
+                  <div
+                    key={district.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleDistrict(district.id);
+                    }}
+                    className={cn(
+                      "absolute flex flex-col items-center gap-1 transition-all group cursor-pointer",
+                      !isActive && "opacity-30"
+                    )}
+                    style={{ left: `${district.x}%`, top: `${district.y}%`, transform: 'translate(-50%, -50%)' }}
+                  >
+                    <div className={cn(
+                      "w-3 h-3 rounded-full border border-white transition-all",
+                      isActive 
+                        ? "bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] scale-110 animate-pulse" 
+                        : "bg-white/10 border-white/20"
+                    )} />
+                    <div className={cn(
+                      "bg-black/90 backdrop-blur-md border border-white/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap rounded transition-colors",
+                      isActive ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white/20"
+                    )}>
+                      {district.name}
+                    </div>
+                    <div className={cn(
+                      "text-[5px] font-black uppercase tracking-widest",
+                      isActive ? "text-green-500" : "text-red-500"
+                    )}>
+                      {isActive ? 'ACTIVE' : 'OFFLINE'}
+                    </div>
                   </div>
-                  <div className={cn(
-                    "text-[5px] font-black uppercase tracking-widest",
-                    isActive ? "text-green-500" : "text-red-500"
-                  )}>
-                    {isActive ? 'ACTIVE' : 'OFFLINE'}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
 
-            <div className="absolute top-2 left-2 text-[6px] font-black uppercase tracking-widest text-white/20">
-              SECTOR ANALYSIS MODE
-            </div>
-            <div className="absolute bottom-2 right-2 text-[6px] font-black uppercase tracking-widest text-[#FFEA00] animate-pulse">
-              GPS ONLINE
+              <div className="absolute top-2 left-2 text-[6px] font-black uppercase tracking-widest text-white/20">
+                SECTOR ANALYSIS MODE
+              </div>
+              <div className="absolute bottom-2 right-2 text-[6px] font-black uppercase tracking-widest text-[#FFEA00] animate-pulse">
+                GPS ONLINE
+              </div>
             </div>
           </div>
         </div>
       </main>
 
       {/* Hidden Admin Setup in Footer */}
-      <footer className="p-4 border-t border-white/5 flex justify-end opacity-10 hover:opacity-100 transition-opacity absolute bottom-0 right-0">
+      <footer className="p-4 border-t border-white/5 flex justify-end opacity-10 hover:opacity-100 transition-opacity">
         <Button 
           variant="ghost" 
           size="sm" 
