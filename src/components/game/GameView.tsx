@@ -64,6 +64,13 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const backingTrackReady = loadStates[project.backingTrackUrl] === 'ready';
   const backingTrackFailed = loadStates[project.backingTrackUrl] === 'failed';
 
+  const checkIsPlayable = (type: SoundType, difficulty: number) => {
+    if (difficulty === 1) return type === 'kick';
+    if (difficulty === 2) return type === 'kick' || type === 'clap';
+    if (difficulty === 3) return type === 'kick' || type === 'clap' || type === 'percs';
+    return true; 
+  };
+
   const startMission = async () => {
     if (!audioEngine) return;
     setIsLoadingAudio(true);
@@ -72,11 +79,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
       const isResumed = await audioEngine.resume();
       if (!isResumed) throw new Error("AudioContext failed to resume");
 
-      // Reset score and state
       setScore({ hits: 0, misses: 0, accuracy: 100 });
       setIsFinished(false);
       
-      // Start music before setting isPlaying to ensure startTime is fresh
       if (backingTrackReady) {
         await audioEngine.startBackingTrack(project.backingTrackUrl);
       }
@@ -92,44 +97,37 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   const handlePadPress = (type: SoundType) => {
     if (!audioEngine) return;
 
+    const isPlayable = checkIsPlayable(type, level.difficulty);
+    if (!isPlayable) return;
+
     const sound = sounds.find(s => s.type === type);
     if (sound) {
       audioEngine.playOneShot(sound.sampleUrl);
     }
 
-    if (isPlaying) {
-      const isPlayable = checkIsPlayable(type, level.difficulty);
-      if (isPlayable && sound) {
-        const time = audioEngine.getCurrentTime();
-        const secondsPerBeat = 60 / project.bpm;
-        const secondsPerStep = secondsPerBeat / 4;
-        const currentStep = time / secondsPerStep;
-        const tolerance = 0.35;
-        
-        const isHit = sound.triggerSteps.some(step => {
-          const relativeStep = currentStep % 16;
-          return Math.abs(relativeStep - step) <= tolerance;
-        });
+    if (isPlaying && sound) {
+      const time = audioEngine.getCurrentTime();
+      const secondsPerBeat = 60 / project.bpm;
+      const secondsPerStep = secondsPerBeat / 4;
+      const currentStep = time / secondsPerStep;
+      const tolerance = 0.35;
+      
+      const isHit = sound.triggerSteps.some(step => {
+        const relativeStep = currentStep % 16;
+        return Math.abs(relativeStep - step) <= tolerance;
+      });
 
-        setScore(prev => {
-          const nextHits = isHit ? prev.hits + 1 : prev.hits;
-          const nextMisses = isHit ? prev.misses : prev.misses + 1;
-          const total = nextHits + nextMisses;
-          return {
-            hits: nextHits,
-            misses: nextMisses,
-            accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
-          };
-        });
-      }
+      setScore(prev => {
+        const nextHits = isHit ? prev.hits + 1 : prev.hits;
+        const nextMisses = isHit ? prev.misses : prev.misses + 1;
+        const total = nextHits + nextMisses;
+        return {
+          hits: nextHits,
+          misses: nextMisses,
+          accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
+        };
+      });
     }
-  };
-
-  const checkIsPlayable = (type: SoundType, difficulty: number) => {
-    if (difficulty === 1) return type === 'kick';
-    if (difficulty === 2) return type === 'clap';
-    if (difficulty === 3) return type === 'percs';
-    return true; 
   };
 
   useEffect(() => {
@@ -138,7 +136,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
-          // End level after 60 seconds of playback
           if (t >= 60) {
             setIsPlaying(false);
             setIsFinished(true);
@@ -151,8 +148,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     }
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
-      // We don't call audioEngine?.stop() here to allow pads to ring out on simple re-renders,
-      // but the unmount logic is handled by the parent route if needed.
     };
   }, [isPlaying]);
 
@@ -207,6 +202,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
             {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => {
               const sound = sounds.find(s => s.type === type);
               const status = loadStates[sound?.sampleUrl || ''];
+              const isPlayable = checkIsPlayable(type, level.difficulty);
               
               return (
                 <div key={type} className="flex flex-col items-center gap-2 w-full max-w-[140px]">
@@ -215,14 +211,16 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                     shortcut={SHORTCUTS[type]}
                     onPress={() => handlePadPress(type)}
                     color={PAD_COLORS[type]}
-                    isInactive={!checkIsPlayable(type, level.difficulty)}
+                    isInactive={!isPlayable}
                   />
-                  <div className="flex items-center gap-1 text-[10px] uppercase font-bold opacity-60">
-                    {status === 'ready' && <CheckCircle2 className="w-3 h-3 text-green-400" />}
-                    {status === 'failed' && <AlertCircle className="w-3 h-3 text-destructive" />}
-                    {status === 'loading' && <Loader2 className="w-3 h-3 animate-spin" />}
-                    <span>{status === 'ready' ? 'Ready' : (status || 'Idle')}</span>
-                  </div>
+                  {isPlayable && (
+                    <div className="flex items-center gap-1 text-[10px] uppercase font-bold opacity-60">
+                      {status === 'ready' && <CheckCircle2 className="w-3 h-3 text-green-400" />}
+                      {status === 'failed' && <AlertCircle className="w-3 h-3 text-destructive" />}
+                      {status === 'loading' && <Loader2 className="w-3 h-3 animate-spin" />}
+                      <span>{status === 'ready' ? 'Ready' : (status || 'Idle')}</span>
+                    </div>
+                  )}
                 </div>
               );
             })}

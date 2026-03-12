@@ -4,7 +4,7 @@
 /**
  * AudioEngine handles loading, decoding, and playback.
  * Optimized for CD Quality (44.1kHz).
- * Uses a dedicated slot for backing tracks to prevent premature stopping.
+ * No synth fallback - only plays loaded samples.
  */
 export class AudioEngine {
   private context: AudioContext | null = null;
@@ -25,7 +25,6 @@ export class AudioEngine {
     if (!this.context) {
       try {
         const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
-        // Fix sample rate to 44.1 kHz as requested
         this.context = new AudioContextClass({ sampleRate: 44100 });
         this.masterGain = this.context.createGain();
         this.masterGain.connect(this.context.destination);
@@ -76,7 +75,7 @@ export class AudioEngine {
         this.buffers.set(url, audioBuffer);
         this.loadingStatus.set(url, 'ready');
       } catch (e) {
-        console.warn(`AudioEngine: Proxy load failed for ${url}.`, e);
+        console.warn(`AudioEngine: Load failed for ${url}. Sample will be silent.`);
         this.loadingStatus.set(url, 'failed');
       }
     }));
