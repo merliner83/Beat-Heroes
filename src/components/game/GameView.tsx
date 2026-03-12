@@ -9,7 +9,7 @@ import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Play, RotateCcw, Trophy, Home, Loader2, Music2, Activity, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { Play, RotateCcw, Trophy, Home, Loader2, Music2, Activity, CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -74,8 +74,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
 
       if (backingTrackReady) {
         await audioEngine.startBackingTrack(project.backingTrackUrl);
-      } else {
-        console.warn("Starting mission without backing track (CORS or Load Error)");
       }
       
       setIsPlaying(true);
@@ -93,7 +91,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
 
     const sound = sounds.find(s => s.type === type);
     if (sound) {
-      // Trigger audio immediately (includes auto-resume logic)
       audioEngine.playOneShot(sound.sampleUrl);
     }
 
@@ -217,9 +214,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                   />
                   <div className="flex items-center gap-1 text-[10px] uppercase font-bold opacity-60">
                     {status === 'ready' && <CheckCircle2 className="w-3 h-3 text-green-400" />}
-                    {status === 'failed' && <AlertCircle className="w-3 h-3 text-yellow-400" title="Using synth fallback" />}
+                    {status === 'failed' && <AlertCircle className="w-3 h-3 text-destructive" />}
                     {status === 'loading' && <Loader2 className="w-3 h-3 animate-spin" />}
-                    <span>{status === 'ready' ? 'Ready' : status === 'failed' ? 'Synth' : (status || 'Idle')}</span>
+                    <span>{status === 'ready' ? 'Ready' : (status || 'Idle')}</span>
                   </div>
                 </div>
               );
@@ -240,7 +237,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                   {backingTrackReady ? (
                     <span className="text-[10px] text-green-400 font-bold uppercase">Ready</span>
                   ) : backingTrackFailed ? (
-                    <span className="text-[10px] text-yellow-400 font-bold uppercase flex items-center gap-1">
+                    <span className="text-[10px] text-destructive font-bold uppercase flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" /> Blocked
                     </span>
                   ) : (
@@ -266,11 +263,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                   </>
                 )}
               </Button>
-              {backingTrackFailed && (
-                <p className="mt-4 text-[10px] text-yellow-400 opacity-80 italic">
-                  Note: Music blocked by CORS. Synth-Pads are enabled!
-                </p>
-              )}
             </Card>
           </div>
         )}

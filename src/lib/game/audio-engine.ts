@@ -4,7 +4,7 @@
 /**
  * AudioEngine handles loading, decoding, and playback.
  * Optimized with a Server-Side Proxy to bypass CORS issues.
- * Fixed sample rate: 44.1 kHz.
+ * Fixed sample rate: 44.1 kHz. No synth fallback.
  */
 export class AudioEngine {
   private context: AudioContext | null = null;
@@ -24,7 +24,7 @@ export class AudioEngine {
     if (!this.context) {
       try {
         const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
-        // Fix sample rate to 44.1 kHz
+        // Fix sample rate to 44.1 kHz as requested
         this.context = new AudioContextClass({ sampleRate: 44100 });
         this.masterGain = this.context.createGain();
         this.masterGain.connect(this.context.destination);
@@ -39,40 +39,6 @@ export class AudioEngine {
     }
 
     return this.context.state === 'running';
-  }
-
-  private playSynthFallback(url: string) {
-    if (!this.context || !this.masterGain) return;
-    
-    const now = this.context.currentTime;
-    const osc = this.context.createOscillator();
-    const env = this.context.createGain();
-    
-    osc.connect(env);
-    env.connect(this.masterGain);
-
-    const type = url.toLowerCase();
-    if (type.includes('kick')) {
-      osc.frequency.setValueAtTime(150, now);
-      osc.frequency.exponentialRampToValueAtTime(40, now + 0.1);
-      env.gain.setValueAtTime(0.8, now);
-      env.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-      osc.start(now);
-      osc.stop(now + 0.2);
-    } else if (type.includes('clap') || type.includes('jump')) {
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(800, now);
-      env.gain.setValueAtTime(0.3, now);
-      env.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-      osc.start(now);
-      osc.stop(now + 0.1);
-    } else {
-      osc.frequency.setValueAtTime(400, now);
-      env.gain.setValueAtTime(0.4, now);
-      env.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-      osc.start(now);
-      osc.stop(now + 0.1);
-    }
   }
 
   getAudioStatus() {
@@ -110,7 +76,7 @@ export class AudioEngine {
         this.buffers.set(url, audioBuffer);
         this.loadingStatus.set(url, 'ready');
       } catch (e) {
-        console.warn(`AudioEngine: Proxy load failed for ${url}. Using synth fallback.`, e);
+        console.warn(`AudioEngine: Proxy load failed for ${url}. Sample will not play.`, e);
         this.loadingStatus.set(url, 'failed');
       }
     }));
@@ -121,7 +87,7 @@ export class AudioEngine {
 
     const buffer = this.buffers.get(url);
     if (!buffer) {
-      this.playSynthFallback(url);
+      console.warn(`AudioEngine: Buffer not ready for ${url}`);
       return;
     }
 
@@ -133,7 +99,7 @@ export class AudioEngine {
       source.onended = () => this.sources.delete(source);
       this.sources.add(source);
     } catch (e) {
-      this.playSynthFallback(url);
+      console.error('AudioEngine: Playback failed', e);
     }
   }
 
@@ -142,7 +108,10 @@ export class AudioEngine {
     this.stop();
 
     const buffer = this.buffers.get(url);
-    if (!buffer || !this.context || !this.masterGain) return;
+    if (!buffer || !this.context || !this.masterGain) {
+      console.error('AudioEngine: Backing track buffer not ready for URL:', url);
+      return;
+    }
 
     this.startTime = this.context.currentTime;
     const source = this.context.createBufferSource();
