@@ -9,9 +9,10 @@ import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Play, RotateCcw, Trophy, Home, Loader2, Music2, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { Play, RotateCcw, Trophy, Home, Loader2, Music2, CheckCircle2, AlertCircle, XCircle, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc, increment, setDoc } from 'firebase/firestore';
@@ -48,6 +49,7 @@ interface GameViewProps {
 export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) => {
   const db = useFirestore();
   const { user } = useUser();
+  const router = useRouter();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -127,7 +129,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     }
   }, [isPlaying, sounds, level.difficulty, project.bpm]);
 
-  const startMission = async () => {
+  const startLevel = async () => {
     if (!audioEngine) return;
     setIsLoadingAudio(true);
     
@@ -155,6 +157,15 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
     }
   };
 
+  const abortLevel = () => {
+    if (audioEngine) {
+      audioEngine.stop();
+    }
+    setIsPlaying(false);
+    setIsFinished(false);
+    router.push(`/studio/${project.studioId}`);
+  };
+
   useEffect(() => {
     if (isPlaying) {
       const update = () => {
@@ -178,7 +189,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
 
   const isPassed = score.accuracy >= PASS_THRESHOLD;
 
-  // Award SC Points on Finish
   useEffect(() => {
     if (isFinished && isPassed && !hasAwardedPoints && user && db) {
       const reward = DIFFICULTY_REWARDS[level.difficulty] || 0;
@@ -190,10 +200,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
         setHasAwardedPoints(true);
         toast({
           title: "Street Cred verdient!",
-          description: `Du hast ${reward} SC für diese Mission erhalten.`,
+          description: `Du hast ${reward} SC für dieses Level erhalten.`,
         });
       }).catch(() => {
-        // Falls das Dokument noch nicht existiert (erster Score)
         setDoc(userRef, { streetCred: reward }, { merge: true });
         setHasAwardedPoints(true);
       });
@@ -203,12 +212,24 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-6 max-w-5xl mx-auto overflow-hidden">
       <div className="flex justify-between items-center mb-6">
-        <Link href={`/studio/${project.studioId}`}>
-          <div className="cursor-pointer group">
-            <h1 className="text-4xl font-black tracking-tighter text-white uppercase italic leading-none group-hover:text-[#993DEB] transition-colors">BeatHero</h1>
-            <p className="text-[10px] opacity-40 font-black uppercase tracking-[0.3em] mt-1">{project.name} • {level.name}</p>
-          </div>
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href={`/studio/${project.studioId}`}>
+            <div className="cursor-pointer group">
+              <h1 className="text-4xl font-black tracking-tighter text-white uppercase italic leading-none group-hover:text-[#993DEB] transition-colors">BeatHero</h1>
+              <p className="text-[10px] opacity-40 font-black uppercase tracking-[0.3em] mt-1">{project.name} • {level.name}</p>
+            </div>
+          </Link>
+          {isPlaying && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={abortLevel}
+              className="text-[10px] uppercase font-black tracking-widest text-destructive hover:bg-destructive/10 hover:text-destructive border border-destructive/20 gap-2 px-3 h-8 rounded-full"
+            >
+              <X className="w-3 h-3" /> Abort
+            </Button>
+          )}
+        </div>
         <div className="flex items-center gap-8">
           <div className="flex flex-col items-end">
             <p className="text-[10px] uppercase font-black tracking-widest opacity-30">Target</p>
@@ -293,7 +314,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               <h2 className="text-3xl font-black mb-2 uppercase italic tracking-tighter">Ready?</h2>
               
               <div className="flex flex-col gap-3 mb-10">
-                <p className="text-sm opacity-50 font-medium">Unlock audio to start the mission.</p>
+                <p className="text-sm opacity-50 font-medium">Unlock audio to start the level.</p>
                 <div className="flex items-center justify-center gap-2 py-2.5 px-4 bg-white/5 rounded-2xl border border-white/10">
                   <span className="text-[10px] uppercase font-black tracking-widest opacity-30">Status:</span>
                   {backingTrackReady ? (
@@ -311,14 +332,14 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               </div>
 
               <Button 
-                onClick={startMission} 
+                onClick={startLevel} 
                 disabled={isLoadingAudio || (!backingTrackReady && !backingTrackFailed)}
                 className="w-full h-16 text-xl font-black uppercase italic tracking-tighter bg-white text-black hover:bg-white/90 rounded-2xl"
               >
                 {isLoadingAudio ? (
                   <Loader2 className="animate-spin" />
                 ) : (
-                  "Start Mission"
+                  "Start Level"
                 )}
               </Button>
             </Card>
@@ -333,7 +354,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
                   <div className="relative inline-block">
                     <Trophy className="w-24 h-24 text-[#FFEA00] mx-auto mb-4 drop-shadow-[0_0_20px_rgba(255,234,0,0.5)]" />
                   </div>
-                  <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-none">Mission Accomplished</h2>
+                  <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-none">Level Accomplished</h2>
                   <p className="text-[#00E676] font-black text-3xl italic tracking-tighter">{score.accuracy}% Accuracy</p>
                   <div className="bg-white/5 rounded-2xl p-4 border border-white/10 inline-block">
                     <p className="text-[#FFEA00] font-black text-xl tracking-widest uppercase">
@@ -345,14 +366,14 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds }) =>
               ) : (
                 <>
                   <XCircle className="w-24 h-24 text-[#FF3D00] mx-auto mb-4 drop-shadow-[0_0_20px_rgba(255,61,0,0.5)]" />
-                  <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-none">Mission Failed</h2>
+                  <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-none">Level Failed</h2>
                   <p className="text-[#FF3D00] font-black text-3xl italic tracking-tighter">{score.accuracy}% Accuracy</p>
                   <p className="text-white/40 text-sm font-medium">Critical failure. Minimum {PASS_THRESHOLD}% required to advance.</p>
                 </>
               )}
               
               <div className="flex gap-4 pt-8">
-                <Button onClick={startMission} variant="outline" className="flex-1 h-14 border-white/20 bg-white/5 hover:bg-white/10 rounded-2xl font-black uppercase italic tracking-tighter">
+                <Button onClick={startLevel} variant="outline" className="flex-1 h-14 border-white/20 bg-white/5 hover:bg-white/10 rounded-2xl font-black uppercase italic tracking-tighter">
                   <RotateCcw className="mr-2 h-5 w-5" /> Retry
                 </Button>
                 <Link href="/" className="flex-1">
