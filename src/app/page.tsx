@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -20,7 +21,7 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
 
 const DISTRICTS = [
   { id: 'all', name: 'All Districts', x: 50, y: 50 },
-  { id: 'bantiger', name: 'Bantiger District', x: 25, y: 50 },
+  { id: 'bantiger', name: 'Bantiger District', x: 25, y: 55 },
   { id: 'oberemmental', name: 'Oberemmental District', x: 75, y: 30 }
 ];
 
@@ -129,12 +130,6 @@ export default function HomePage() {
 
                     <div className="mt-4 bg-black/90 backdrop-blur-md border border-white/20 px-6 py-3 rounded-xl transition-transform group-hover:-translate-y-1">
                       <h3 className="text-2xl font-black uppercase italic tracking-tighter whitespace-nowrap leading-none">{studio.name}</h3>
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <Target className="w-4 h-4 text-[#FFEA00]" />
-                        <span className="text-[11px] font-black opacity-80 uppercase tracking-[0.15em] text-[#FFEA00]">
-                          {studio.district || 'Downtown'}
-                        </span>
-                      </div>
                     </div>
                   </div>
                 </Link>
@@ -152,7 +147,7 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Gemini Style Mini-Map GPS Graphic */}
+        {/* GPS Mini-Map Graphic */}
         <div className="absolute bottom-10 left-10 w-72 gemini-border gemini-glow p-2 z-50">
           <div 
             className="h-44 w-full rounded-lg relative overflow-hidden bg-[#111] cursor-crosshair"
@@ -167,32 +162,38 @@ export default function HomePage() {
               </svg>
             </div>
 
-            {/* Interactive District Labels/Points */}
-            {DISTRICTS.filter(d => d.id !== 'all').map((district) => (
-              <div
-                key={district.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedDistrict(selectedDistrict === district.id ? 'all' : district.id);
-                }}
-                className={cn(
-                  "absolute flex flex-col items-center gap-1 transition-all group",
-                  selectedDistrict === district.id ? "z-20 scale-110" : "opacity-40 hover:opacity-100"
-                )}
-                style={{ left: `${district.x}%`, top: `${district.y}%`, transform: 'translate(-50%, -50%)' }}
-              >
-                <div className={cn(
-                  "w-3 h-3 rounded-full border border-white transition-all",
-                  selectedDistrict === district.id ? "bg-[#FF3D00] shadow-[0_0_15px_#FF3D00]" : "bg-white/20"
-                )} />
-                <div className={cn(
-                  "bg-black/90 backdrop-blur-md border border-white/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap rounded",
-                  selectedDistrict === district.id ? "text-[#FFEA00]" : "text-white/60"
-                )}>
-                  {district.name}
+            {/* Interactive District GPS Points */}
+            {DISTRICTS.filter(d => d.id !== 'all').map((district) => {
+              const isActive = selectedDistrict === 'all' || selectedDistrict === district.id;
+              
+              return (
+                <div
+                  key={district.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedDistrict(selectedDistrict === district.id ? 'all' : district.id);
+                  }}
+                  className={cn(
+                    "absolute flex flex-col items-center gap-1 transition-all group cursor-pointer",
+                    isActive ? "opacity-100" : "opacity-20 grayscale"
+                  )}
+                  style={{ left: `${district.x}%`, top: `${district.y}%`, transform: 'translate(-50%, -50%)' }}
+                >
+                  <div className={cn(
+                    "w-3 h-3 rounded-full border border-white transition-all",
+                    selectedDistrict === district.id 
+                      ? "bg-[#FF3D00] shadow-[0_0_15px_#FF3D00] scale-125" 
+                      : "bg-white/40"
+                  )} />
+                  <div className={cn(
+                    "bg-black/90 backdrop-blur-md border border-white/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap rounded",
+                    selectedDistrict === district.id ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white/60"
+                  )}>
+                    {district.name}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             <div className="absolute top-2 left-2 text-[6px] font-black uppercase tracking-widest text-white/20">
               {selectedDistrict === 'all' ? 'SCANNING ALL SECTORS' : 'FOCUSED VIEW ACTIVE'}
