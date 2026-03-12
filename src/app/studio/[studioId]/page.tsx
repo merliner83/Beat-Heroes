@@ -59,7 +59,7 @@ export default function StudioPage() {
                 >
                   <Card className={cn(
                     "p-8 border-none bg-transparent transition-all relative z-10",
-                    selectedProjectId === project.id ? "bg-black/20" : ""
+                    selectedProjectId === project.id ? "bg-white/5" : ""
                   )}>
                     <div className="flex justify-between items-center text-white">
                       <div>
@@ -82,7 +82,7 @@ export default function StudioPage() {
                             key={level.id}
                             onClick={() => router.push(`/play/${studioId}/${project.id}/${level.id}`)}
                             variant="ghost"
-                            className="h-28 bg-black/40 gemini-border-subtle border-none text-lg font-black flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl relative overflow-visible"
+                            className="h-28 bg-black/40 border border-white/10 hover:border-white/30 hover:bg-white/5 text-lg font-black flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl relative overflow-hidden"
                           >
                             <span className="text-[10px] opacity-40 font-black uppercase tracking-[0.2em] text-white relative z-10">Level {level.difficulty}</span>
                             <div className="flex items-center gap-1 uppercase italic text-white group-hover:text-[#FFEA00] relative z-10">
