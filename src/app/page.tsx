@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
-import { Home, MapPin, Target, Settings, Radio, Layers } from 'lucide-react';
+import { Home, Radio, Target, Settings } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -20,9 +20,9 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
 };
 
 const DISTRICTS = [
-  { id: 'all', name: 'All Districts' },
-  { id: 'bantiger', name: 'Bantiger District' },
-  { id: 'oberemmental', name: 'Oberemmental District' }
+  { id: 'all', name: 'All Districts', x: 50, y: 50 },
+  { id: 'bantiger', name: 'Bantiger District', x: 25, y: 50 },
+  { id: 'oberemmental', name: 'Oberemmental District', x: 75, y: 30 }
 ];
 
 export default function HomePage() {
@@ -37,7 +37,6 @@ export default function HomePage() {
 
   const { data: allStudios, isLoading } = useCollection<Studio>(studiosQuery);
 
-  // Filterung der Studios basierend auf dem ausgewählten Distrikt
   const filteredStudios = allStudios?.filter(studio => {
     if (selectedDistrict === 'all') return true;
     if (selectedDistrict === 'bantiger') return studio.district === 'Bantiger District';
@@ -120,10 +119,8 @@ export default function HomePage() {
               >
                 <Link href={`/studio/${studio.id}`}>
                   <div className="relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
-                    {/* Pulsing Target Ring */}
                     <div className="absolute inset-0 w-24 h-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#993DEB] animate-ping opacity-20" />
                     
-                    {/* Studio Icon/Marker (HOUSE) */}
                     <div 
                       className="w-20 h-20 rounded-xl bg-black border-4 border-white flex items-center justify-center shadow-2xl relative z-10 transition-all group-hover:bg-[#993DEB] group-hover:scale-110"
                       style={{ boxShadow: `0 0 30px ${studio.coverColor}66` }}
@@ -131,7 +128,6 @@ export default function HomePage() {
                       <Home className="w-10 h-10 text-white" />
                     </div>
 
-                    {/* Permanent Label (Readable Name & District) */}
                     <div className="mt-4 bg-black/95 border-2 border-white px-6 py-3 shadow-[8px_8px_0px_0px_white] transition-transform group-hover:-translate-y-1">
                       <h3 className="text-2xl font-black uppercase italic tracking-tighter whitespace-nowrap leading-none">{studio.name}</h3>
                       <div className="flex items-center gap-1.5 mt-2">
@@ -157,65 +153,54 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Mini-Map / District Selection Overlay (Legend Style) */}
-        <div className="absolute bottom-10 left-10 w-72 bg-black/95 border-4 border-white shadow-[10px_10px_0px_0px_rgba(0,0,0,0.5)] p-5 hidden md:block z-50">
-          <div className="flex flex-col gap-5">
-            <div className="flex items-center gap-3 border-b-2 border-white/20 pb-4">
-              <Layers className="w-6 h-6 text-[#993DEB]" />
-              <div className="text-[12px] font-black uppercase tracking-widest leading-tight">
-                Region Index<br/>
-                <span className="text-[#993DEB] opacity-100">GPS Active</span>
-              </div>
+        {/* Simple Interactive Mini-Map GPS Graphic */}
+        <div className="absolute bottom-10 left-10 w-72 bg-black/95 border-4 border-white shadow-[10px_10px_0px_0px_rgba(0,0,0,0.5)] p-2 z-50">
+          <div 
+            className="h-44 w-full border-2 border-white/10 relative overflow-hidden bg-[#111] cursor-crosshair"
+            onClick={() => setSelectedDistrict('all')}
+          >
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
+              <svg width="100%" height="100%">
+                <pattern id="grid-mini" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" strokeWidth="0.5"/>
+                </pattern>
+                <rect width="100%" height="100%" fill="url(#grid-mini)" />
+              </svg>
             </div>
 
-            {/* List-style District Selection */}
-            <div className="space-y-1.5">
-              {DISTRICTS.map((district) => (
-                <div
-                  key={district.id}
-                  onClick={() => setSelectedDistrict(district.id)}
-                  className={cn(
-                    "cursor-pointer py-1.5 px-3 border-l-2 transition-all flex items-center gap-3 group",
-                    selectedDistrict === district.id
-                      ? "border-[#993DEB] text-white bg-[#993DEB]/10"
-                      : "border-transparent text-white/40 hover:text-white/70 hover:bg-white/5"
-                  )}
-                >
-                  <div className={cn(
-                    "w-1.5 h-1.5 rounded-full transition-all", 
-                    selectedDistrict === district.id ? "bg-[#993DEB] scale-125 shadow-[0_0_5px_#993DEB]" : "bg-white/20"
-                  )} />
-                  <span className="text-[9px] font-black uppercase tracking-[0.25em] whitespace-nowrap">
-                    {district.name}
-                  </span>
+            {/* Interactive District Labels/Points */}
+            {DISTRICTS.filter(d => d.id !== 'all').map((district) => (
+              <div
+                key={district.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedDistrict(selectedDistrict === district.id ? 'all' : district.id);
+                }}
+                className={cn(
+                  "absolute flex flex-col items-center gap-1 transition-all group",
+                  selectedDistrict === district.id ? "z-20 scale-110" : "opacity-40 hover:opacity-100 grayscale hover:grayscale-0"
+                )}
+                style={{ left: `${district.x}%`, top: `${district.y}%`, transform: 'translate(-50%, -50%)' }}
+              >
+                <div className={cn(
+                  "w-3 h-3 rounded-full border-2 border-white transition-all",
+                  selectedDistrict === district.id ? "bg-[#993DEB] shadow-[0_0_15px_#993DEB]" : "bg-white/20"
+                )} />
+                <div className={cn(
+                  "bg-black/90 border border-white/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap",
+                  selectedDistrict === district.id ? "text-[#993DEB] border-[#993DEB]" : "text-white/60"
+                )}>
+                  {district.name}
                 </div>
-              ))}
+              </div>
+            ))}
+
+            {/* Reset / All Districts indicator */}
+            <div className="absolute top-2 left-2 text-[6px] font-black uppercase tracking-widest text-white/20">
+              {selectedDistrict === 'all' ? 'SCANNING ALL SECTORS' : 'FOCUSED VIEW ACTIVE'}
             </div>
-
-            {/* Stylized GPS Graphic */}
-            <div className="h-28 w-full border-2 border-white/10 relative flex items-center justify-center overflow-hidden bg-[#111] group">
-               <div className="absolute inset-0 opacity-10">
-                  <svg width="100%" height="100%">
-                    <rect width="100%" height="100%" fill="url(#grid)" />
-                  </svg>
-               </div>
-               
-               {/* Decorative GPS elements */}
-               <div className="absolute top-2 right-2 flex gap-1">
-                 <div className="w-1 h-1 bg-[#993DEB] animate-pulse" />
-                 <div className="w-1 h-1 bg-[#993DEB] animate-pulse delay-75" />
-                 <div className="w-1 h-1 bg-[#993DEB] animate-pulse delay-150" />
-               </div>
-
-               <div className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20 group-hover:text-[#993DEB]/40 transition-colors">
-                 Area Map v4.0
-               </div>
-
-               {/* Area labels inside the graphic area as requested */}
-               <div className="absolute inset-0 pointer-events-none p-2 flex flex-col justify-end gap-1">
-                  <div className="text-[7px] text-white/10 uppercase font-black">Scanning Bantiger...</div>
-                  <div className="text-[7px] text-white/10 uppercase font-black">Oberemmental Connected</div>
-               </div>
+            <div className="absolute bottom-2 right-2 text-[6px] font-black uppercase tracking-widest text-[#993DEB] animate-pulse">
+              GPS ONLINE
             </div>
           </div>
         </div>
