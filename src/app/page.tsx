@@ -108,7 +108,7 @@ export default function HomePage() {
       {
         id: 'hats-trap',
         name: 'HATS Trap Rolls',
-        steps: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 31, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 63, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 95, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 127]
+        steps: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 31, 32, 34, 36, 38, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 63, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 95, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 127]
       },
       {
         id: 'misc-afro',
@@ -167,6 +167,8 @@ export default function HomePage() {
       const demoProjectId = 'gabriel-debut';
       const demoLevel1Id = 'gabriel-1-level-1';
       const demoLevel2Id = 'gabriel-1-level-2';
+      const demoLevel3Id = 'gabriel-1-level-3';
+      const demoLevel4Id = 'gabriel-1-level-4';
 
       const projectRef = doc(db, 'projects', demoProjectId);
       const projectSnap = await getDoc(projectRef);
@@ -176,12 +178,12 @@ export default function HomePage() {
         id: demoProjectId,
         studioId: 'gabriel-beats',
         name: 'Neon Horizon',
-        difficulty: 4, // Set to HERO
+        difficulty: 4, // HERO
         bpm: existingProject.bpm || 162,
         backingTrackUrl: existingProject.backingTrackUrl || 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
       }, { merge: true });
 
-      // Level 1: Foundation (Kick)
+      // Level 1: Kick
       await setDoc(doc(db, 'levels', demoLevel1Id), {
         id: demoLevel1Id,
         projectId: demoProjectId,
@@ -189,7 +191,7 @@ export default function HomePage() {
         name: 'Gabriel Foundation'
       }, { merge: true });
 
-      // Level 2: Clap Groove (Clap)
+      // Level 2: Clap
       await setDoc(doc(db, 'levels', demoLevel2Id), {
         id: demoLevel2Id,
         projectId: demoProjectId,
@@ -197,29 +199,52 @@ export default function HomePage() {
         name: 'Clap Precision'
       }, { merge: true });
 
-      // Sounds für Level 1 (Nur Kick)
-      const l1Sounds = [
+      // Level 3: Hats (Percs)
+      await setDoc(doc(db, 'levels', demoLevel3Id), {
+        id: demoLevel3Id,
+        projectId: demoProjectId,
+        difficulty: 3,
+        name: 'Hi-Hat Grooves'
+      }, { merge: true });
+
+      // Level 4: Afro Clave (Misc)
+      await setDoc(doc(db, 'levels', demoLevel4Id), {
+        id: demoLevel4Id,
+        projectId: demoProjectId,
+        difficulty: 4,
+        name: 'Afro Clave Rhythms'
+      }, { merge: true });
+
+      const allSounds = [
         {
           id: 'kick-main',
           levelId: demoLevel1Id,
           type: 'kick',
           sampleUrl: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg',
           patternIds: ['kick-intro', 'kick-drop', 'kick-buildup', 'kick-drop']
-        }
-      ];
-
-      // Sounds für Level 2 (Nur Clap)
-      const l2Sounds = [
+        },
         {
           id: 'clap-main',
           levelId: demoLevel2Id,
           type: 'clap',
           sampleUrl: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg',
           patternIds: ['clap-drop', 'clap-drop', 'clap-buildup', 'clap-drop']
+        },
+        {
+          id: 'hats-main',
+          levelId: demoLevel3Id,
+          type: 'percs',
+          sampleUrl: 'https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg',
+          patternIds: ['hats-edm', 'hats-trap', 'hats-edm', 'hats-trap']
+        },
+        {
+          id: 'afro-main',
+          levelId: demoLevel4Id,
+          type: 'misc',
+          sampleUrl: 'https://actions.google.com/sounds/v1/cartoon/clown_horn.ogg',
+          patternIds: ['misc-afro', 'misc-afro', 'misc-afro', 'misc-afro']
         }
       ];
-
-      const allSounds = [...l1Sounds, ...l2Sounds];
 
       for (const snd of allSounds) {
         const soundRef = doc(db, 'levels', snd.levelId, 'sounds', snd.id);
@@ -234,7 +259,7 @@ export default function HomePage() {
 
       toast({
         title: "Database Ready",
-        description: "Levels updated. Gabriel Beats now has Kick and Clap levels!",
+        description: "Levels 1-4 updated for Gabriel Beats!",
       });
     } catch (e) {
       toast({

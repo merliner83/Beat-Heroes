@@ -105,9 +105,11 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   const metronomeReady = loadStates[AudioEngine.METRONOME_URL] === 'ready';
 
   const checkIsPlayable = (type: SoundType, difficulty: number) => {
+    // Exklusive Instrumente für Lernphasen (1-4)
     if (difficulty === 1) return type === 'kick';
-    if (difficulty === 2) return type === 'kick' || type === 'clap';
-    if (difficulty === 3) return type === 'kick' || type === 'clap' || type === 'percs';
+    if (difficulty === 2) return type === 'clap';
+    if (difficulty === 3) return type === 'percs';
+    if (difficulty === 4) return type === 'misc';
     return true; 
   };
 
@@ -131,7 +133,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
       const secondsPerStep = secondsPerBeat / 4;
       const currentStep = adjustedTime / secondsPerStep;
       
-      const tolerance = 1.0; // Großzügigere Toleranz für besseren Spielfluss (1.0 Steps = +/- 92ms bei 162 BPM)
+      const tolerance = 1.0; // Großzügigere Toleranz für besseren Spielfluss
       
       const isHit = sound.triggerSteps.some(step => {
         const diff = Math.abs(currentStep - step);
