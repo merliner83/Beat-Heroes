@@ -99,7 +99,7 @@ export default function HomePage() {
       for (const s of newStudios) await setDoc(doc(db, 'studios', s.id), s, { merge: true });
 
       const projectsToSetup = [
-        { id: 'gabriel-debut', studioId: 'gabriel-beats', name: 'Neon Horizon', bpm: 162, difficulty: 4 },
+        { id: 'gabriel-1', studioId: 'gabriel-beats', name: 'Neon Horizon', bpm: 162, difficulty: 4 },
         { id: 'yoan-sampling', studioId: 'yoan-beats', name: 'Sampling', bpm: 125, difficulty: 2 }
       ];
 
