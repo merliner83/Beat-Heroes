@@ -121,8 +121,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
 
     if (isPlaying && sound) {
       const time = audioEngine.getCurrentTime();
-      // Zero offset for pure engine timing at high BPM
-      const adjustedTime = time; 
+      // Wir ziehen den gleichen Visual Offset ab, damit die Logik zu den (verspäteten) Bildern passt
+      const adjustedTime = time - 0.07; 
       
       const secondsPerBeat = 60 / project.bpm;
       const secondsPerStep = secondsPerBeat / 4;
