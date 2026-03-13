@@ -15,10 +15,10 @@ import { useAuth } from '@/firebase/provider';
 
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'gabriel-beats': { x: 15, y: 20 },
+  'yoan-beats': { x: 40, y: 45 },
   'nintu-music': { x: 70, y: 65 },
   'dave-beats': { x: 20, y: 75 },
-  'noxxos': { x: 80, y: 30 },
-  'yoan-beats': { x: 40, y: 45 }
+  'noxxos': { x: 80, y: 30 }
 };
 
 const DISTRICTS = [
@@ -74,209 +74,85 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     
-    // 8-Bar Patterns (128 steps) - Optimized for 162 BPM
+    // Patterns
     const patterns = [
-      { 
-        id: 'kick-intro', 
-        name: 'KICK Intro (Sparse)', 
-        steps: [0, 16, 32, 48, 64, 80, 96, 112] 
-      },
-      { 
-        id: 'kick-drop', 
-        name: 'KICK Main Drop (Driving)', 
-        steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124] 
-      },
-      { 
-        id: 'kick-buildup', 
-        name: 'KICK Buildup (Rush)', 
-        steps: [0, 16, 32, 48, 64, 72, 80, 88, 96, 100, 104, 108, 112, 114, 116, 118, 120, 121, 122, 123, 124, 125, 126, 127] 
-      },
-      { 
-        id: 'clap-drop', 
-        name: 'CLAP Standard (2 & 4)', 
-        steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] 
-      },
-      {
-        id: 'clap-buildup',
-        name: 'CLAP Accelerating',
-        steps: [16, 48, 80, 96, 104, 112, 116, 120, 122, 124, 125, 126, 127]
-      },
-      { 
-        id: 'hats-edm', 
-        name: 'HATS EDM Quarter Offbeat', 
-        steps: [2, 10, 18, 26, 34, 42, 50, 58, 66, 74, 82, 90, 98, 106, 114, 122] 
-      },
-      {
-        id: 'hats-trap',
-        name: 'HATS Simple Trap',
-        steps: [0, 4, 8, 10, 12, 16, 20, 24, 26, 28, 32, 36, 40, 42, 44, 48, 52, 56, 58, 60, 64, 68, 72, 74, 76, 80, 84, 88, 90, 92, 96, 100, 104, 106, 108, 112, 116, 120, 122, 124]
-      },
-      {
-        id: 'misc-afro',
-        name: 'MISC Afro Clave',
-        steps: [0, 3, 6, 10, 12, 16, 19, 22, 26, 28, 32, 35, 38, 42, 44, 48, 51, 54, 58, 60, 64, 67, 70, 74, 76, 80, 83, 86, 90, 92, 96, 99, 102, 106, 108, 112, 115, 118, 122, 124]
-      }
+      { id: 'kick-intro', name: 'KICK Intro (Sparse)', steps: [0, 16, 32, 48, 64, 80, 96, 112] },
+      { id: 'kick-drop', name: 'KICK Main Drop (Driving)', steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124] },
+      { id: 'kick-buildup', name: 'KICK Buildup (Rush)', steps: [0, 16, 32, 48, 64, 72, 80, 88, 96, 100, 104, 108, 112, 114, 116, 118, 120, 121, 122, 123, 124, 125, 126, 127] },
+      { id: 'clap-drop', name: 'CLAP Standard (2 & 4)', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
+      { id: 'clap-buildup', name: 'CLAP Accelerating', steps: [16, 48, 80, 96, 104, 112, 116, 120, 122, 124, 125, 126, 127] },
+      { id: 'hats-edm', name: 'HATS EDM Quarter Offbeat', steps: [2, 10, 18, 26, 34, 42, 50, 58, 66, 74, 82, 90, 98, 106, 114, 122] },
+      { id: 'hats-trap', name: 'HATS Simple Trap', steps: [0, 4, 8, 10, 12, 16, 20, 24, 26, 28, 32, 36, 40, 42, 44, 48, 52, 56, 58, 60, 64, 68, 72, 74, 76, 80, 84, 88, 90, 92, 96, 100, 104, 106, 108, 112, 116, 120, 122, 124] },
+      { id: 'misc-afro', name: 'MISC Afro Clave', steps: [0, 3, 6, 10, 12, 16, 19, 22, 26, 28, 32, 35, 38, 42, 44, 48, 51, 54, 58, 60, 64, 67, 70, 74, 76, 80, 83, 86, 90, 92, 96, 99, 102, 106, 108, 112, 115, 118, 122, 124] }
     ];
 
     const newStudios = [
-      { 
-        id: 'gabriel-beats', 
-        name: 'Gabriel Beats', 
-        description: 'Urban grooves and sharp transients.', 
-        coverColor: '#FF3D00', 
-        district: 'Bantiger District',
-        linkUrl: 'https://example.com/gabriel',
-        linkLabel: 'Portfolio'
-      },
-      { 
-        id: 'yoan-beats', 
-        name: 'Yoan Beats', 
-        description: 'Atmospheric layers and heavy kicks.', 
-        coverColor: '#FFEA00', 
-        district: 'Bantiger District',
-        linkUrl: 'https://example.com/yoan',
-        linkLabel: 'Beat Store'
-      },
-      { 
-        id: 'nintu-music', 
-        name: 'Nintu Music', 
-        description: 'Electronic textures and deep soul.', 
-        coverColor: '#00E676', 
-        district: 'Bantiger District',
-        linkUrl: 'https://example.com/nintu',
-        linkLabel: 'Soundcloud'
-      },
-      { 
-        id: 'dave-beats', 
-        name: 'Dave Beats', 
-        description: 'The golden era of hip hop rhythm.', 
-        coverColor: '#2979FF', 
-        district: 'Bantiger District',
-        linkUrl: 'https://example.com/dave',
-        linkLabel: 'Beat Store'
-      },
-      { 
-        id: 'noxxos', 
-        name: 'Noxxos', 
-        description: 'Experimental rhythms from the outer rim.', 
-        coverColor: '#EB3D99', 
-        district: 'Oberemmental District',
-        linkUrl: 'https://example.com/noxxos',
-        linkLabel: 'Lab Logs'
-      }
+      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and sharp transients.', coverColor: '#FF3D00', district: 'Bantiger District', linkUrl: 'https://example.com/gabriel', linkLabel: 'Portfolio' },
+      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Atmospheric layers and heavy kicks.', coverColor: '#FFEA00', district: 'Bantiger District', linkUrl: 'https://example.com/yoan', linkLabel: 'Beat Store' },
+      { id: 'nintu-music', name: 'Nintu Music', description: 'Electronic textures and deep soul.', coverColor: '#00E676', district: 'Bantiger District', linkUrl: 'https://example.com/nintu', linkLabel: 'Soundcloud' },
+      { id: 'dave-beats', name: 'Dave Beats', description: 'The golden era of hip hop rhythm.', coverColor: '#2979FF', district: 'Bantiger District', linkUrl: 'https://example.com/dave', linkLabel: 'Beat Store' },
+      { id: 'noxxos', name: 'Noxxos', description: 'Experimental rhythms from the outer rim.', coverColor: '#EB3D99', district: 'Oberemmental District', linkUrl: 'https://example.com/noxxos', linkLabel: 'Lab Logs' }
     ];
 
     try {
-      for (const p of patterns) {
-        await setDoc(doc(db, 'patterns', p.id), p, { merge: true });
-      }
-      for (const s of newStudios) {
-        await setDoc(doc(db, 'studios', s.id), s, { merge: true });
-      }
+      for (const p of patterns) await setDoc(doc(db, 'patterns', p.id), p, { merge: true });
+      for (const s of newStudios) await setDoc(doc(db, 'studios', s.id), s, { merge: true });
 
-      const demoProjectId = 'gabriel-debut';
-      const demoLevel1Id = 'gabriel-1-level-1';
-      const demoLevel2Id = 'gabriel-1-level-2';
-      const demoLevel3Id = 'gabriel-1-level-3';
-      const demoLevel4Id = 'gabriel-1-level-4';
-
-      const projectRef = doc(db, 'projects', demoProjectId);
-      const projectSnap = await getDoc(projectRef);
-      const existingProject = projectSnap.exists() ? projectSnap.data() : {};
-
-      await setDoc(projectRef, {
-        id: demoProjectId,
-        studioId: 'gabriel-beats',
-        name: 'Neon Horizon',
-        difficulty: 4, // HERO
-        bpm: existingProject.bpm || 162,
-        backingTrackUrl: existingProject.backingTrackUrl || 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
-      }, { merge: true });
-
-      // Level 1: Kick
-      await setDoc(doc(db, 'levels', demoLevel1Id), {
-        id: demoLevel1Id,
-        projectId: demoProjectId,
-        difficulty: 1,
-        name: 'Gabriel Foundation'
-      }, { merge: true });
-
-      // Level 2: Clap
-      await setDoc(doc(db, 'levels', demoLevel2Id), {
-        id: demoLevel2Id,
-        projectId: demoProjectId,
-        difficulty: 2,
-        name: 'Clap Precision'
-      }, { merge: true });
-
-      // Level 3: Hats (Percs)
-      await setDoc(doc(db, 'levels', demoLevel3Id), {
-        id: demoLevel3Id,
-        projectId: demoProjectId,
-        difficulty: 3,
-        name: 'Hi-Hat Grooves'
-      }, { merge: true });
-
-      // Level 4: Afro Clave (Misc)
-      await setDoc(doc(db, 'levels', demoLevel4Id), {
-        id: demoLevel4Id,
-        projectId: demoProjectId,
-        difficulty: 4,
-        name: 'Afro Clave Rhythms'
-      }, { merge: true });
-
-      const allSounds = [
-        {
-          id: 'kick-main',
-          levelId: demoLevel1Id,
-          type: 'kick',
-          sampleUrl: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg',
-          patternIds: ['kick-intro', 'kick-drop', 'kick-buildup', 'kick-drop']
-        },
-        {
-          id: 'clap-main',
-          levelId: demoLevel2Id,
-          type: 'clap',
-          sampleUrl: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg',
-          patternIds: ['clap-drop', 'clap-drop', 'clap-buildup', 'clap-drop']
-        },
-        {
-          id: 'hats-main',
-          levelId: demoLevel3Id,
-          type: 'percs',
-          sampleUrl: 'https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg',
-          patternIds: ['hats-edm', 'hats-trap', 'hats-edm', 'hats-trap']
-        },
-        {
-          id: 'afro-main',
-          levelId: demoLevel4Id,
-          type: 'misc',
-          sampleUrl: 'https://actions.google.com/sounds/v1/cartoon/clown_horn.ogg',
-          patternIds: ['misc-afro', 'misc-afro', 'misc-afro', 'misc-afro']
-        }
+      const projectsToSetup = [
+        { id: 'gabriel-debut', studioId: 'gabriel-beats', name: 'Neon Horizon', bpm: 162, difficulty: 4 },
+        { id: 'yoan-sampling', studioId: 'yoan-beats', name: 'Sampling', bpm: 125, difficulty: 2 }
       ];
 
-      for (const snd of allSounds) {
-        const soundRef = doc(db, 'levels', snd.levelId, 'sounds', snd.id);
-        const soundSnap = await getDoc(soundRef);
-        const existingSound = soundSnap.exists() ? soundSnap.data() : {};
-
-        await setDoc(soundRef, {
-          ...snd,
-          sampleUrl: existingSound.sampleUrl || snd.sampleUrl
+      for (const pConfig of projectsToSetup) {
+        const projectRef = doc(db, 'projects', pConfig.id);
+        const pSnap = await getDoc(projectRef);
+        const existing = pSnap.exists() ? pSnap.data() : {};
+        
+        await setDoc(projectRef, {
+          ...pConfig,
+          bpm: existing.bpm || pConfig.bpm,
+          backingTrackUrl: existing.backingTrackUrl || 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
         }, { merge: true });
+
+        // Setup 4 Levels for each project
+        const levels = [
+          { id: `${pConfig.id}-level-1`, name: 'Foundation', diff: 1 },
+          { id: `${pConfig.id}-level-2`, name: 'Clap Groove', diff: 2 },
+          { id: `${pConfig.id}-level-3`, name: 'Hi-Hat Grooves', diff: 3 },
+          { id: `${pConfig.id}-level-4`, name: 'Afro Clave Rhythms', diff: 4 }
+        ];
+
+        for (const l of levels) {
+          await setDoc(doc(db, 'levels', l.id), {
+            id: l.id, projectId: pConfig.id, difficulty: l.diff, name: l.name
+          }, { merge: true });
+
+          const soundTypes: Record<number, any> = {
+            1: { type: 'kick', p: ['kick-intro', 'kick-drop', 'kick-buildup', 'kick-drop'] },
+            2: { type: 'clap', p: ['clap-drop', 'clap-drop', 'clap-buildup', 'clap-drop'] },
+            3: { type: 'percs', p: ['hats-edm', 'hats-trap', 'hats-edm', 'hats-trap'] },
+            4: { type: 'misc', p: ['misc-afro', 'misc-afro', 'misc-afro', 'misc-afro'] }
+          };
+
+          const sInfo = soundTypes[l.diff];
+          const soundId = `${sInfo.type}-main`;
+          const soundRef = doc(db, 'levels', l.id, 'sounds', soundId);
+          const sSnap = await getDoc(soundRef);
+          const sExisting = sSnap.exists() ? sSnap.data() : {};
+
+          await setDoc(soundRef, {
+            id: soundId,
+            levelId: l.id,
+            type: sInfo.type,
+            patternIds: sInfo.p,
+            sampleUrl: sExisting.sampleUrl || 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg'
+          }, { merge: true });
+        }
       }
 
-      toast({
-        title: "Database Ready",
-        description: "Map and levels updated successfully!",
-      });
+      toast({ title: "Database Ready", description: "All projects and levels updated!" });
     } catch (e) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Could not initialize data.",
-      });
+      toast({ variant: "destructive", title: "Error", description: "Initialization failed." });
     }
   };
 
@@ -302,19 +178,6 @@ export default function HomePage() {
       </header>
 
       <main className="relative flex-1 w-full bg-[#080808] overflow-hidden">
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
-                <path d="M 100 0 L 0 0 0 100" fill="none" stroke="white" strokeWidth="1"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-            <circle cx="30%" cy="40%" r="300" fill="#993DEB" className="blur-[150px] opacity-10" />
-            <circle cx="70%" cy="30%" r="350" fill="#FF3D00" className="blur-[180px] opacity-10" />
-          </svg>
-        </div>
-
         <div className="absolute inset-0">
           {filteredStudios?.map((studio) => {
             const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
