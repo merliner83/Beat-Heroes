@@ -8,7 +8,6 @@ import { collection, query, where, doc } from 'firebase/firestore';
 import { Studio, Project, Level, LevelProgress } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, LayoutGrid, ChevronRight, ExternalLink, Trophy, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -138,7 +137,16 @@ export default function StudioPage() {
                           <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Project Progress</span>
                           <span className="text-xs font-black italic text-[#FFEA00]">{progressPercent}%</span>
                         </div>
-                        <Progress value={progressPercent} className="h-1.5 bg-white/5" />
+                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full transition-all duration-1000 ease-out"
+                            style={{ 
+                              width: `${progressPercent}%`,
+                              background: 'linear-gradient(90deg, #993DEB 0%, #FF3D00 60%, #FF8C00 100%)',
+                              boxShadow: '0 0 10px rgba(255, 61, 0, 0.4)'
+                            }}
+                          />
+                        </div>
                       </div>
                     </Card>
                   </div>
