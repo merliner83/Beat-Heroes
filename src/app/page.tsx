@@ -175,7 +175,7 @@ export default function HomePage() {
         id: demoProjectId,
         studioId: 'gabriel-beats',
         name: 'Neon Horizon',
-        bpm: 124,
+        bpm: existingProject.bpm || 162,
         backingTrackUrl: existingProject.backingTrackUrl || 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
       }, { merge: true });
 
@@ -210,7 +210,7 @@ export default function HomePage() {
 
       toast({
         title: "Database Ready",
-        description: "Level 1 initialized with KICK only.",
+        description: "Level data updated (Existing BPM and URLs preserved).",
       });
     } catch (e) {
       toast({

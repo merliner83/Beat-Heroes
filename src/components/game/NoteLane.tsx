@@ -18,11 +18,12 @@ export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isA
   
   const speed = 400; // pixels per second
   const hitPosition = 500; 
-  const VISUAL_OFFSET = 0.05; 
+  // Visual offset removed for raw audio-visual sync at high BPM
+  const VISUAL_OFFSET = 0.0; 
 
   return (
     <div className="relative h-full w-full border-x border-white/5 overflow-hidden group">
-      {/* Statische Ziel-Zone */}
+      {/* Target Zone */}
       <div 
         className="absolute left-1/2 -translate-x-1/2 w-14 h-4 rounded-full border-2 opacity-20"
         style={{ 
@@ -32,11 +33,12 @@ export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isA
         }}
       />
 
-      {/* Fallende Noten (32 Takte Abfolge) */}
+      {/* Falling Notes */}
       {notes.map((step, idx) => {
         const noteTime = step * secondsPerStep;
         const relativeTime = noteTime - (currentTime - VISUAL_OFFSET);
         
+        // Culling notes far off screen
         if (relativeTime < -0.5 || relativeTime > 2.5) return null;
 
         const top = hitPosition - (relativeTime * speed) - 6;

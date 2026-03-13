@@ -121,13 +121,14 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
 
     if (isPlaying && sound) {
       const time = audioEngine.getCurrentTime();
-      const adjustedTime = time - 0.05; 
+      // Zero offset for pure engine timing at high BPM
+      const adjustedTime = time; 
       
       const secondsPerBeat = 60 / project.bpm;
       const secondsPerStep = secondsPerBeat / 4;
       const currentStep = adjustedTime / secondsPerStep;
       
-      const tolerance = 0.6;
+      const tolerance = 0.5; // Tighter tolerance for 162 BPM
       
       const isHit = sound.triggerSteps.some(step => {
         const diff = Math.abs(currentStep - step);
@@ -181,8 +182,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
     } catch (e) {
       toast({
         variant: "destructive",
-        title: "Audio Fehler",
-        description: "Das Audiosystem konnte nicht gestartet werden.",
+        title: "Audio Error",
+        description: "The audio system could not be started.",
       });
       setCountIn(null);
       setIsPlaying(false);
