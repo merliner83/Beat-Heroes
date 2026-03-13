@@ -4,6 +4,9 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
+// Globaler Latenz-Ausgleich in Sekunden (40ms) - muss mit GameView übereinstimmen
+const SYNC_OFFSET = 0.04;
+
 interface NoteLaneProps {
   notes: number[];
   currentTime: number;
@@ -18,9 +21,6 @@ export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isA
   
   const speed = 400; // pixels per second
   const hitPosition = 500; 
-  // Latenz-Ausgleich: Ein positiver Wert verzögert das Eintreffen der Noten an der Linie.
-  // 0.07s (70ms) ist ein guter Standardwert für Browser-Audio-Latenz.
-  const VISUAL_OFFSET = 0.07; 
 
   return (
     <div className="relative h-full w-full border-x border-white/5 overflow-hidden group">
@@ -37,7 +37,8 @@ export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isA
       {/* Falling Notes */}
       {notes.map((step, idx) => {
         const noteTime = step * secondsPerStep;
-        const relativeTime = noteTime - (currentTime - VISUAL_OFFSET);
+        // currentTime wird um den SYNC_OFFSET korrigiert, damit Noten später eintreffen
+        const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
         
         // Culling notes far off screen
         if (relativeTime < -0.5 || relativeTime > 2.5) return null;

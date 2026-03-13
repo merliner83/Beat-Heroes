@@ -17,6 +17,9 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
+// Globaler Latenz-Ausgleich in Sekunden (40ms)
+const SYNC_OFFSET = 0.04;
+
 const PAD_COLORS: Record<SoundType, string> = {
   kick: '#993DEB',
   clap: '#FF3D00',
@@ -121,14 +124,14 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
 
     if (isPlaying && sound) {
       const time = audioEngine.getCurrentTime();
-      // Wir ziehen den gleichen Visual Offset ab, damit die Logik zu den (verspäteten) Bildern passt
-      const adjustedTime = time - 0.07; 
+      // Wir korrigieren das Zeitfenster um den Latenz-Ausgleich
+      const adjustedTime = time - SYNC_OFFSET; 
       
       const secondsPerBeat = 60 / project.bpm;
       const secondsPerStep = secondsPerBeat / 4;
       const currentStep = adjustedTime / secondsPerStep;
       
-      const tolerance = 0.5; // Tighter tolerance for 162 BPM
+      const tolerance = 0.6; // Toleranz-Fenster für 162 BPM
       
       const isHit = sound.triggerSteps.some(step => {
         const diff = Math.abs(currentStep - step);
