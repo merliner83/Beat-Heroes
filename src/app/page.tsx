@@ -165,7 +165,8 @@ export default function HomePage() {
       }
 
       const demoProjectId = 'gabriel-debut';
-      const demoLevelId = 'gabriel-level-1';
+      const demoLevel1Id = 'gabriel-level-1';
+      const demoLevel2Id = 'gabriel-level-2';
 
       const projectRef = doc(db, 'projects', demoProjectId);
       const projectSnap = await getDoc(projectRef);
@@ -180,26 +181,48 @@ export default function HomePage() {
         backingTrackUrl: existingProject.backingTrackUrl || 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
       }, { merge: true });
 
-      await setDoc(doc(db, 'levels', demoLevelId), {
-        id: demoLevelId,
+      // Level 1: Foundation (Kick)
+      await setDoc(doc(db, 'levels', demoLevel1Id), {
+        id: demoLevel1Id,
         projectId: demoProjectId,
         difficulty: 1,
         name: 'Gabriel Foundation'
       }, { merge: true });
 
-      // Nur Kick für Level 1
-      const sounds = [
+      // Level 2: Clap Groove (Clap)
+      await setDoc(doc(db, 'levels', demoLevel2Id), {
+        id: demoLevel2Id,
+        projectId: demoProjectId,
+        difficulty: 2,
+        name: 'Clap Precision'
+      }, { merge: true });
+
+      // Sounds für Level 1 (Nur Kick)
+      const l1Sounds = [
         {
           id: 'kick-main',
-          levelId: demoLevelId,
+          levelId: demoLevel1Id,
           type: 'kick',
           sampleUrl: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg',
           patternIds: ['kick-intro', 'kick-drop', 'kick-buildup', 'kick-drop']
         }
       ];
 
-      for (const snd of sounds) {
-        const soundRef = doc(db, 'levels', demoLevelId, 'sounds', snd.id);
+      // Sounds für Level 2 (Nur Clap)
+      const l2Sounds = [
+        {
+          id: 'clap-main',
+          levelId: demoLevel2Id,
+          type: 'clap',
+          sampleUrl: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg',
+          patternIds: ['clap-drop', 'clap-drop', 'clap-buildup', 'clap-drop']
+        }
+      ];
+
+      const allSounds = [...l1Sounds, ...l2Sounds];
+
+      for (const snd of allSounds) {
+        const soundRef = doc(db, 'levels', snd.levelId, 'sounds', snd.id);
         const soundSnap = await getDoc(soundRef);
         const existingSound = soundSnap.exists() ? soundSnap.data() : {};
 
@@ -211,7 +234,7 @@ export default function HomePage() {
 
       toast({
         title: "Database Ready",
-        description: "Level data updated. Neon Horizon is now HERO difficulty.",
+        description: "Levels updated. Gabriel Beats now has Kick and Clap levels!",
       });
     } catch (e) {
       toast({
