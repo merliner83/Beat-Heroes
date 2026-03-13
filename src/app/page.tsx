@@ -73,7 +73,7 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     
-    // 8-Bar Patterns (128 steps)
+    // 8-Bar Patterns (128 steps) - Vereinfacht für 162 BPM
     const patterns = [
       { 
         id: 'kick-intro', 
@@ -102,13 +102,13 @@ export default function HomePage() {
       },
       { 
         id: 'hats-edm', 
-        name: 'HATS EDM Offbeat', 
-        steps: [2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 62, 66, 70, 74, 78, 82, 86, 90, 94, 98, 102, 106, 110, 114, 118, 122, 126] 
+        name: 'HATS EDM Quarter Offbeat', 
+        steps: [2, 10, 18, 26, 34, 42, 50, 58, 66, 74, 82, 90, 98, 106, 114, 122] 
       },
       {
         id: 'hats-trap',
-        name: 'HATS Trap Rolls',
-        steps: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 31, 32, 34, 36, 38, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 63, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 95, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 127]
+        name: 'HATS Simple Trap',
+        steps: [0, 4, 8, 10, 12, 16, 20, 24, 26, 28, 32, 36, 40, 42, 44, 48, 52, 56, 58, 60, 64, 68, 72, 74, 76, 80, 84, 88, 90, 92, 96, 100, 104, 106, 108, 112, 116, 120, 122, 124]
       },
       {
         id: 'misc-afro',
