@@ -4,8 +4,8 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-// Globaler Latenz-Ausgleich in Sekunden (60ms) - muss mit GameView übereinstimmen
-const SYNC_OFFSET = 0.06;
+// Globaler Latenz-Ausgleich in Sekunden (80ms) - muss mit GameView übereinstimmen
+const SYNC_OFFSET = 0.08;
 
 interface NoteLaneProps {
   notes: number[];

@@ -17,8 +17,8 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// Globaler Latenz-Ausgleich in Sekunden (60ms)
-const SYNC_OFFSET = 0.06;
+// Globaler Latenz-Ausgleich in Sekunden (80ms)
+const SYNC_OFFSET = 0.08;
 
 const PAD_COLORS: Record<SoundType, string> = {
   kick: '#993DEB',
@@ -131,7 +131,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
       const secondsPerStep = secondsPerBeat / 4;
       const currentStep = adjustedTime / secondsPerStep;
       
-      const tolerance = 0.6; // Toleranz-Fenster für 162 BPM
+      const tolerance = 1.0; // Großzügigere Toleranz für besseren Spielfluss (1.0 Steps = +/- 92ms bei 162 BPM)
       
       const isHit = sound.triggerSteps.some(step => {
         const diff = Math.abs(currentStep - step);
