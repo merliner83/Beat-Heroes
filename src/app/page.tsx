@@ -14,10 +14,11 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 20, y: 25 },
-  'nintu-music': { x: 55, y: 55 },
-  'dave-beats': { x: 15, y: 70 },
-  'noxxos': { x: 75, y: 35 }
+  'gabriel-beats': { x: 15, y: 20 },
+  'nintu-music': { x: 70, y: 65 },
+  'dave-beats': { x: 20, y: 75 },
+  'noxxos': { x: 80, y: 30 },
+  'yoan-beats': { x: 40, y: 45 }
 };
 
 const DISTRICTS = [
@@ -73,7 +74,7 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     
-    // 8-Bar Patterns (128 steps) - Vereinfacht für 162 BPM
+    // 8-Bar Patterns (128 steps) - Optimized for 162 BPM
     const patterns = [
       { 
         id: 'kick-intro', 
@@ -126,6 +127,15 @@ export default function HomePage() {
         district: 'Bantiger District',
         linkUrl: 'https://example.com/gabriel',
         linkLabel: 'Portfolio'
+      },
+      { 
+        id: 'yoan-beats', 
+        name: 'Yoan Beats', 
+        description: 'Atmospheric layers and heavy kicks.', 
+        coverColor: '#FFEA00', 
+        district: 'Bantiger District',
+        linkUrl: 'https://example.com/yoan',
+        linkLabel: 'Beat Store'
       },
       { 
         id: 'nintu-music', 
@@ -251,7 +261,6 @@ export default function HomePage() {
         const soundSnap = await getDoc(soundRef);
         const existingSound = soundSnap.exists() ? soundSnap.data() : {};
 
-        // Hier stellen wir sicher, dass sampleUrl NUR gesetzt wird, wenn noch keine existiert.
         await setDoc(soundRef, {
           ...snd,
           sampleUrl: existingSound.sampleUrl || snd.sampleUrl
@@ -260,7 +269,7 @@ export default function HomePage() {
 
       toast({
         title: "Database Ready",
-        description: "Levels 1-4 updated for Gabriel Beats!",
+        description: "Map and levels updated successfully!",
       });
     } catch (e) {
       toast({
