@@ -102,8 +102,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   const metronomeReady = loadStates[AudioEngine.METRONOME_URL] === 'ready';
 
   const checkIsPlayable = (type: SoundType, difficulty: number) => {
-    if (difficulty === 1) return type === 'kick' || type === 'clap';
-    if (difficulty === 2) return type === 'kick' || type === 'clap' || type === 'percs';
+    if (difficulty === 1) return type === 'kick';
+    if (difficulty === 2) return type === 'kick' || type === 'clap';
+    if (difficulty === 3) return type === 'kick' || type === 'clap' || type === 'percs';
     return true; 
   };
 

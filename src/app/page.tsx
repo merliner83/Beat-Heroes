@@ -186,7 +186,7 @@ export default function HomePage() {
         name: 'Gabriel Foundation'
       }, { merge: true });
 
-      // Sounds mit Pattern-ABFOLGE (Intro -> Drop -> Buildup -> Drop)
+      // Nur Kick für Level 1
       const sounds = [
         {
           id: 'kick-main',
@@ -194,13 +194,6 @@ export default function HomePage() {
           type: 'kick',
           sampleUrl: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg',
           patternIds: ['kick-intro', 'kick-drop', 'kick-buildup', 'kick-drop']
-        },
-        {
-          id: 'clap-main',
-          levelId: demoLevelId,
-          type: 'clap',
-          sampleUrl: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg',
-          patternIds: ['kick-intro', 'clap-drop', 'clap-buildup', 'clap-drop'] // Intro leer/kick
         }
       ];
 
@@ -217,7 +210,7 @@ export default function HomePage() {
 
       toast({
         title: "Database Ready",
-        description: "Extended Patterns for Gabriel Beats (Intro/Drop/Buildup) initialized.",
+        description: "Level 1 initialized with KICK only.",
       });
     } catch (e) {
       toast({
