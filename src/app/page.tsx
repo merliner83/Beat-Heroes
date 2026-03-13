@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -75,42 +76,42 @@ export default function HomePage() {
     // 8-Bar Patterns (128 steps)
     const patterns = [
       { 
-        id: 'kick-8-bars', 
-        name: 'KICK 8 Bar Drive', 
-        steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124] 
-      },
-      {
-        id: 'kick-slow-intro',
-        name: 'KICK Intro Sparse',
-        steps: [0, 32, 64, 96]
-      },
-      {
-        id: 'kick-buildup-drive',
-        name: 'KICK Buildup Rush',
-        steps: [0, 16, 32, 48, 64, 72, 80, 88, 96, 100, 104, 108, 112, 114, 116, 118, 120, 121, 122, 123, 124, 125, 126, 127]
+        id: 'kick-intro', 
+        name: 'KICK Intro (Sparse)', 
+        steps: [0, 16, 32, 48, 64, 80, 96, 112] 
       },
       { 
-        id: 'clap-8-bars', 
-        name: 'CLAP 8 Bar Groove', 
+        id: 'kick-drop', 
+        name: 'KICK Main Drop (Driving)', 
+        steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124] 
+      },
+      { 
+        id: 'kick-buildup', 
+        name: 'KICK Buildup (Rush)', 
+        steps: [0, 16, 32, 48, 64, 72, 80, 88, 96, 100, 104, 108, 112, 114, 116, 118, 120, 121, 122, 123, 124, 125, 126, 127] 
+      },
+      { 
+        id: 'clap-drop', 
+        name: 'CLAP Standard (2 & 4)', 
         steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] 
       },
       {
-        id: 'clap-buildup-fast',
+        id: 'clap-buildup',
         name: 'CLAP Accelerating',
         steps: [16, 48, 80, 96, 104, 112, 116, 120, 122, 124, 125, 126, 127]
       },
       { 
-        id: 'hats-edm-dance', 
+        id: 'hats-edm', 
         name: 'HATS EDM Offbeat', 
         steps: [2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 62, 66, 70, 74, 78, 82, 86, 90, 94, 98, 102, 106, 110, 114, 118, 122, 126] 
       },
       {
-        id: 'hats-trap-vibe',
+        id: 'hats-trap',
         name: 'HATS Trap Rolls',
-        steps: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 31, 31.5, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 63, 63.5, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 95, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 127].map(Math.floor)
+        steps: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 31, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 63, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 95, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 127]
       },
       {
-        id: 'misc-afro-clave',
+        id: 'misc-afro',
         name: 'MISC Afro Clave',
         steps: [0, 3, 6, 10, 12, 16, 19, 22, 26, 28, 32, 35, 38, 42, 44, 48, 51, 54, 58, 60, 64, 67, 70, 74, 76, 80, 83, 86, 90, 92, 96, 99, 102, 106, 108, 112, 115, 118, 122, 124]
       }
@@ -156,16 +157,13 @@ export default function HomePage() {
     ];
 
     try {
-      // 1. Patterns anlegen
       for (const p of patterns) {
         await setDoc(doc(db, 'patterns', p.id), p, { merge: true });
       }
-      // 2. Studios anlegen
       for (const s of newStudios) {
         await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
-      // 3. Demo Projekt & Level für Gabriel Beats anlegen
       const demoProjectId = 'gabriel-debut';
       const demoLevelId = 'gabriel-level-1';
 
@@ -185,17 +183,24 @@ export default function HomePage() {
         id: demoLevelId,
         projectId: demoProjectId,
         difficulty: 1,
-        name: 'Foundation'
+        name: 'Gabriel Foundation'
       }, { merge: true });
 
-      // 4. Sounds für das Level anlegen (Link zu PatternId!)
+      // Sounds mit Pattern-ABFOLGE (Intro -> Drop -> Buildup -> Drop)
       const sounds = [
         {
           id: 'kick-main',
           levelId: demoLevelId,
           type: 'kick',
           sampleUrl: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg',
-          patternId: 'kick-8-bars'
+          patternIds: ['kick-intro', 'kick-drop', 'kick-buildup', 'kick-drop']
+        },
+        {
+          id: 'clap-main',
+          levelId: demoLevelId,
+          type: 'clap',
+          sampleUrl: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg',
+          patternIds: ['kick-intro', 'clap-drop', 'clap-buildup', 'clap-drop'] // Intro leer/kick
         }
       ];
 
@@ -212,7 +217,7 @@ export default function HomePage() {
 
       toast({
         title: "Database Ready",
-        description: "Extended Patterns, Studios, and Demo Level initialized. Your custom URLs were preserved.",
+        description: "Extended Patterns for Gabriel Beats (Intro/Drop/Buildup) initialized.",
       });
     } catch (e) {
       toast({

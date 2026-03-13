@@ -59,15 +59,19 @@
     "Sound": {
       "title": "Sound",
       "type": "object",
-      "description": "Ein Instrument-Trigger innerhalb eines Levels mit einem 8-Takt-Pattern.",
+      "description": "Ein Instrument-Trigger innerhalb eines Levels mit einer Abfolge von Patterns.",
       "properties": {
         "id": { "type": "string" },
         "levelId": { "type": "string" },
         "type": { "type": "string", "enum": ["kick", "clap", "percs", "misc"] },
         "sampleUrl": { "type": "string", "format": "uri" },
-        "patternId": { "type": "string", "description": "ID des 8-Takt-Patterns." }
+        "patternIds": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "Abfolge von 8-Takt-Patterns (z.B. 4 Stück für 32 Takte)." 
+        }
       },
-      "required": ["id", "levelId", "type", "sampleUrl", "patternId"]
+      "required": ["id", "levelId", "type", "sampleUrl", "patternIds"]
     },
     "UserProfile": {
       "title": "UserProfile",

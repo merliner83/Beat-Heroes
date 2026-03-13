@@ -62,14 +62,23 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   const frameRef = useRef<number>(null);
   const { toast } = useToast();
 
-  // Map 8-bar patterns to sounds
+  // Pattern-Abfolge zu Steps zusammenführen (32 Takte = 512 Steps)
   const soundsWithPatterns = sounds.map(sound => {
-    const pattern = patterns.find(p => p.id === sound.patternId);
+    let allSteps: number[] = [];
+    sound.patternIds?.forEach((pId, index) => {
+      const pattern = patterns.find(p => p.id === pId);
+      if (pattern) {
+        const offset = index * 128;
+        allSteps = [...allSteps, ...pattern.steps.map(s => s + offset)];
+      }
+    });
     return {
       ...sound,
-      triggerSteps: pattern ? pattern.steps : []
+      triggerSteps: allSteps
     };
   });
+
+  const TOTAL_STEPS = 512; // 32 Takte festgelegt
 
   useEffect(() => {
     const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl), AudioEngine.METRONOME_URL];
@@ -93,9 +102,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   const metronomeReady = loadStates[AudioEngine.METRONOME_URL] === 'ready';
 
   const checkIsPlayable = (type: SoundType, difficulty: number) => {
-    if (difficulty === 1) return type === 'kick';
-    if (difficulty === 2) return type === 'kick' || type === 'clap';
-    if (difficulty === 3) return type === 'kick' || type === 'clap' || type === 'percs';
+    if (difficulty === 1) return type === 'kick' || type === 'clap';
+    if (difficulty === 2) return type === 'kick' || type === 'clap' || type === 'percs';
     return true; 
   };
 
@@ -112,20 +120,17 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
 
     if (isPlaying && sound) {
       const time = audioEngine.getCurrentTime();
-      // Adjust for visual sync and latency
       const adjustedTime = time - 0.05; 
       
       const secondsPerBeat = 60 / project.bpm;
       const secondsPerStep = secondsPerBeat / 4;
       const currentStep = adjustedTime / secondsPerStep;
       
-      const tolerance = 0.5; // Tighter hit window for 8-bar patterns
+      const tolerance = 0.6;
       
       const isHit = sound.triggerSteps.some(step => {
-        const relativeStep = currentStep % 128; // Strict 8-bar loop
-        const diff = Math.abs(relativeStep - step);
-        const circularDiff = Math.min(diff, 128 - diff);
-        return circularDiff <= tolerance;
+        const diff = Math.abs(currentStep - step);
+        return diff <= tolerance;
       });
 
       setScore(prev => {
@@ -169,7 +174,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
       }
       
       if (backingTrackReady) {
-        // Precise start scheduled exactly at actualStartTime
         await audioEngine.startBackingTrack(project.backingTrackUrl, actualStartTime);
       }
       
@@ -202,9 +206,11 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
-          // Auto-end after 8 bars loop completion (e.g. 32 beats or just duration)
-          // For now we keep 60s as safety buffer
-          if (t >= 120) { 
+          
+          const secondsPerBeat = 60 / project.bpm;
+          const totalDuration = (TOTAL_STEPS / 4) * secondsPerBeat;
+          
+          if (t >= totalDuration) { 
             setIsPlaying(false);
             setIsFinished(true);
             audioEngine.stop();
@@ -217,7 +223,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
     };
-  }, [isPlaying]);
+  }, [isPlaying, project.bpm, TOTAL_STEPS]);
 
   const isPassed = score.accuracy >= PASS_THRESHOLD;
 

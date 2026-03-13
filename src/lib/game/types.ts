@@ -37,7 +37,7 @@ export interface Sound {
   levelId: string;
   type: SoundType;
   sampleUrl: string;
-  patternId: string; // Link to the TriggerPattern
+  patternIds: string[]; // Sequence of 8-bar patterns
   triggerSteps?: number[]; // Internal UI cache (not stored in DB)
 }
 
