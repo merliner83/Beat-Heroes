@@ -17,7 +17,7 @@ const DIFFICULTY_MAP: Record<number, { label: string, color: string }> = {
   1: { label: 'BEGINNER', color: '#00E676' },
   2: { label: 'SKILLED', color: '#FFEA00' },
   3: { label: 'PRO', color: '#EB3D99' },
-  4: { label: 'MASTER', color: '#FF3D00' },
+  4: { label: 'HERO', color: '#FF3D00' },
 };
 
 export default function StudioPage() {
@@ -114,15 +114,15 @@ export default function StudioPage() {
                     )}>
                       <div className="flex justify-between items-start text-white mb-6">
                         <div>
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white leading-none">{project.name}</h3>
+                          <div className="flex items-center gap-4 mb-3">
+                            <h3 className="text-4xl font-black uppercase italic tracking-tighter text-white leading-none">{project.name}</h3>
                             <div 
-                              className="px-2 py-0.5 rounded border-2 text-[8px] font-black tracking-widest italic"
+                              className="px-4 py-1.5 rounded-lg border-2 text-[10px] font-black tracking-widest italic transition-all"
                               style={{ 
                                 borderColor: diffInfo.color, 
                                 color: diffInfo.color,
-                                boxShadow: `0 0 10px ${diffInfo.color}44`,
-                                textShadow: `0 0 5px ${diffInfo.color}`
+                                boxShadow: `0 0 20px ${diffInfo.color}66`,
+                                textShadow: `0 0 8px ${diffInfo.color}`
                               }}
                             >
                               {diffInfo.label}
@@ -130,15 +130,15 @@ export default function StudioPage() {
                           </div>
                           <p className="text-sm font-bold tracking-widest uppercase text-[#FFEA00]">{project.bpm} BPM</p>
                         </div>
-                        <LayoutGrid className={cn("w-8 h-8 transition-all", isSelected ? "text-[#FFEA00] scale-110" : "opacity-20")} />
+                        <LayoutGrid className={cn("w-10 h-10 transition-all", isSelected ? "text-[#FFEA00] scale-110" : "opacity-20")} />
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <div className="flex justify-between items-end">
                           <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Project Progress</span>
                           <span className="text-xs font-black italic text-[#FFEA00]">{progressPercent}%</span>
                         </div>
-                        <Progress value={progressPercent} className="h-1 bg-white/5" />
+                        <Progress value={progressPercent} className="h-1.5 bg-white/5" />
                       </div>
                     </Card>
                   </div>
