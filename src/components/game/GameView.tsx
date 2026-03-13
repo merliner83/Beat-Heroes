@@ -17,8 +17,8 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// Globaler Latenz-Ausgleich in Sekunden (40ms)
-const SYNC_OFFSET = 0.04;
+// Globaler Latenz-Ausgleich in Sekunden (60ms)
+const SYNC_OFFSET = 0.06;
 
 const PAD_COLORS: Record<SoundType, string> = {
   kick: '#993DEB',
