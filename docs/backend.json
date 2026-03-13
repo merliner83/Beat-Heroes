@@ -25,6 +25,7 @@
         "studioId": { "type": "string" },
         "name": { "type": "string" },
         "bpm": { "type": "number" },
+        "difficulty": { "type": "number", "description": "Schwierigkeitsgrad des Projekts (1-4)" },
         "backingTrackUrl": { "type": "string", "format": "uri" }
       },
       "required": ["id", "studioId", "name", "bpm", "backingTrackUrl"]

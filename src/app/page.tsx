@@ -175,6 +175,7 @@ export default function HomePage() {
         id: demoProjectId,
         studioId: 'gabriel-beats',
         name: 'Neon Horizon',
+        difficulty: 1,
         bpm: existingProject.bpm || 162,
         backingTrackUrl: existingProject.backingTrackUrl || 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
       }, { merge: true });

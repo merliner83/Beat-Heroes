@@ -13,6 +13,13 @@ import { ArrowLeft, LayoutGrid, ChevronRight, ExternalLink, Trophy, Loader2 } fr
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
+const DIFFICULTY_MAP: Record<number, { label: string, color: string }> = {
+  1: { label: 'BEGINNER', color: '#00E676' },
+  2: { label: 'SKILLED', color: '#FFEA00' },
+  3: { label: 'PRO', color: '#EB3D99' },
+  4: { label: 'MASTER', color: '#FF3D00' },
+};
+
 export default function StudioPage() {
   const { studioId } = useParams();
   const router = useRouter();
@@ -30,14 +37,12 @@ export default function StudioPage() {
 
   const [selectedProjectId, setSelectedProjectId] = React.useState<string | null>(null);
 
-  // Wir laden alle Level, um den Fortschritt für alle Projekte berechnen zu können
   const allLevelsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'levels'));
   }, [db]);
   const { data: allLevels, isLoading: isLoadingLevels } = useCollection<Level>(allLevelsQuery);
 
-  // User Progress
   const progressQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return query(collection(db, 'users', user.uid, 'progress'));
@@ -95,6 +100,7 @@ export default function StudioPage() {
               const isSelected = selectedProjectId === project.id;
               const progressPercent = calculateProjectProgress(project.id);
               const projectLevels = allLevels?.filter(l => l.projectId === project.id) || [];
+              const diffInfo = DIFFICULTY_MAP[project.difficulty || 1];
 
               return (
                 <div key={project.id} className="space-y-4">
@@ -106,15 +112,27 @@ export default function StudioPage() {
                       "p-8 border-none bg-transparent transition-all relative z-10",
                       isSelected ? "bg-white/5" : "hover:bg-white/2"
                     )}>
-                      <div className="flex justify-between items-center text-white mb-6">
+                      <div className="flex justify-between items-start text-white mb-6">
                         <div>
-                          <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white">{project.name}</h3>
-                          <p className="text-sm font-bold tracking-widest uppercase mt-1 text-[#FFEA00]">{project.bpm} BPM</p>
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white leading-none">{project.name}</h3>
+                            <div 
+                              className="px-2 py-0.5 rounded border-2 text-[8px] font-black tracking-widest italic"
+                              style={{ 
+                                borderColor: diffInfo.color, 
+                                color: diffInfo.color,
+                                boxShadow: `0 0 10px ${diffInfo.color}44`,
+                                textShadow: `0 0 5px ${diffInfo.color}`
+                              }}
+                            >
+                              {diffInfo.label}
+                            </div>
+                          </div>
+                          <p className="text-sm font-bold tracking-widest uppercase text-[#FFEA00]">{project.bpm} BPM</p>
                         </div>
                         <LayoutGrid className={cn("w-8 h-8 transition-all", isSelected ? "text-[#FFEA00] scale-110" : "opacity-20")} />
                       </div>
 
-                      {/* Project Progress Bar */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-end">
                           <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Project Progress</span>

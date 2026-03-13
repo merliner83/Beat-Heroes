@@ -16,6 +16,7 @@ export interface Project {
   studioId: string;
   name: string;
   bpm: number;
+  difficulty?: number; // 1-4
   backingTrackUrl: string;
 }
 
