@@ -1,10 +1,9 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
-import { collection, query, doc, setDoc } from 'firebase/firestore';
+import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
 import { Radio, Home, Settings } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
@@ -159,31 +158,35 @@ export default function HomePage() {
     try {
       // 1. Patterns anlegen
       for (const p of patterns) {
-        await setDoc(doc(db, 'patterns', p.id), p);
+        await setDoc(doc(db, 'patterns', p.id), p, { merge: true });
       }
       // 2. Studios anlegen
       for (const s of newStudios) {
-        await setDoc(doc(db, 'studios', s.id), s);
+        await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
       // 3. Demo Projekt & Level für Gabriel Beats anlegen
       const demoProjectId = 'gabriel-debut';
       const demoLevelId = 'gabriel-level-1';
 
-      await setDoc(doc(db, 'projects', demoProjectId), {
+      const projectRef = doc(db, 'projects', demoProjectId);
+      const projectSnap = await getDoc(projectRef);
+      const existingProject = projectSnap.exists() ? projectSnap.data() : {};
+
+      await setDoc(projectRef, {
         id: demoProjectId,
         studioId: 'gabriel-beats',
         name: 'Neon Horizon',
         bpm: 124,
-        backingTrackUrl: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
-      });
+        backingTrackUrl: existingProject.backingTrackUrl || 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
+      }, { merge: true });
 
       await setDoc(doc(db, 'levels', demoLevelId), {
         id: demoLevelId,
         projectId: demoProjectId,
         difficulty: 1,
         name: 'Foundation'
-      });
+      }, { merge: true });
 
       // 4. Sounds für das Level anlegen (Link zu PatternId!)
       const sounds = [
@@ -197,12 +200,19 @@ export default function HomePage() {
       ];
 
       for (const snd of sounds) {
-        await setDoc(doc(db, 'levels', demoLevelId, 'sounds', snd.id), snd);
+        const soundRef = doc(db, 'levels', demoLevelId, 'sounds', snd.id);
+        const soundSnap = await getDoc(soundRef);
+        const existingSound = soundSnap.exists() ? soundSnap.data() : {};
+
+        await setDoc(soundRef, {
+          ...snd,
+          sampleUrl: existingSound.sampleUrl || snd.sampleUrl
+        }, { merge: true });
       }
 
       toast({
         title: "Database Ready",
-        description: "Extended Patterns, Studios, and Demo Level initialized.",
+        description: "Extended Patterns, Studios, and Demo Level initialized. Your custom URLs were preserved.",
       });
     } catch (e) {
       toast({
