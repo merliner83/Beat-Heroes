@@ -251,6 +251,7 @@ export default function HomePage() {
         const soundSnap = await getDoc(soundRef);
         const existingSound = soundSnap.exists() ? soundSnap.data() : {};
 
+        // Hier stellen wir sicher, dass sampleUrl NUR gesetzt wird, wenn noch keine existiert.
         await setDoc(soundRef, {
           ...snd,
           sampleUrl: existingSound.sampleUrl || snd.sampleUrl
