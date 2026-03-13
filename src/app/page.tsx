@@ -165,8 +165,8 @@ export default function HomePage() {
       }
 
       const demoProjectId = 'gabriel-debut';
-      const demoLevel1Id = 'gabriel-level-1';
-      const demoLevel2Id = 'gabriel-level-2';
+      const demoLevel1Id = 'gabriel-1-level-1';
+      const demoLevel2Id = 'gabriel-1-level-2';
 
       const projectRef = doc(db, 'projects', demoProjectId);
       const projectSnap = await getDoc(projectRef);
