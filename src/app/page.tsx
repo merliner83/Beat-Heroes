@@ -22,8 +22,8 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
 };
 
 const DISTRICTS = [
-  { id: 'bantiger', name: 'Bantiger District', x: 25, y: 55 },
-  { id: 'oberemmental', name: 'Oberemmental District', x: 75, y: 30 }
+  { id: 'bantiger', name: 'MS Bantiger', x: 25, y: 55 },
+  { id: 'oberemmental', name: 'MS Oberemmental', x: 75, y: 30 }
 ];
 
 export default function HomePage() {
@@ -158,22 +158,22 @@ export default function HomePage() {
 
   return (
     <div className="h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none">
-      <header className="p-6 flex flex-col items-center z-50">
-        <div className="gemini-border gemini-glow p-4 inline-block mb-4">
+      <header className="p-4 md:p-6 flex flex-col items-center z-50">
+        <div className="gemini-border gemini-glow p-3 md:p-4 inline-block mb-2 md:mb-4">
           <div className="flex items-center gap-3">
-            <Radio className="w-8 h-8 text-[#FFEA00]" />
+            <Radio className="w-6 h-6 md:w-8 md:h-8 text-[#FFEA00]" />
             <div>
-              <h1 className="text-4xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
-              <p className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-50 text-white">Select Destination</p>
+              <h1 className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
+              <p className="text-[8px] md:text-[10px] uppercase tracking-[0.2em] font-bold opacity-50 text-white">Select Destination</p>
             </div>
           </div>
         </div>
 
-        <div className="gemini-border gemini-glow p-4 text-center">
-          <div className="text-white font-bold text-xl leading-none tracking-tighter">
+        <div className="gemini-border gemini-glow p-2 md:p-4 text-center">
+          <div className="text-white font-bold text-sm md:text-xl leading-none tracking-tighter">
             {streetCred.toLocaleString()} <span className="text-[#FFEA00] italic ml-1 font-black">SC</span>
           </div>
-          <div className="text-[10px] uppercase opacity-40 mt-1 font-bold tracking-widest text-white">Street Credibilities</div>
+          <div className="text-[8px] md:text-[10px] uppercase opacity-40 mt-1 font-bold tracking-widest text-white">Street Credibilities</div>
         </div>
       </header>
 
@@ -189,17 +189,17 @@ export default function HomePage() {
               >
                 <Link href={`/studio/${studio.id}`}>
                   <div className="relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
-                    <div className="absolute inset-0 w-24 h-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/20 animate-ping opacity-20" />
+                    <div className="absolute inset-0 w-16 h-16 md:w-24 md:h-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/20 animate-ping opacity-20" />
                     
                     <div 
-                      className="w-20 h-20 rounded-2xl bg-black border-2 border-white/20 flex items-center justify-center shadow-2xl relative z-10 transition-all group-hover:scale-110"
+                      className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-black border-2 border-white/20 flex items-center justify-center shadow-2xl relative z-10 transition-all group-hover:scale-110"
                       style={{ boxShadow: `0 0 30px ${studio.coverColor}44` }}
                     >
-                      <Home className="w-10 h-10 text-white" />
+                      <Home className="w-8 h-8 md:w-10 md:h-10 text-white" />
                     </div>
 
-                    <div className="mt-4 bg-black/90 backdrop-blur-md border border-white/20 px-6 py-3 rounded-xl transition-transform group-hover:-translate-y-1">
-                      <h3 className="text-2xl font-black uppercase italic tracking-tighter whitespace-nowrap leading-none text-white">{studio.name}</h3>
+                    <div className="mt-2 md:mt-4 bg-black/90 backdrop-blur-md border border-white/20 px-4 py-2 md:px-6 md:py-3 rounded-xl transition-transform group-hover:-translate-y-1">
+                      <h3 className="text-sm md:text-2xl font-black uppercase italic tracking-tighter whitespace-nowrap leading-none text-white">{studio.name}</h3>
                     </div>
                   </div>
                 </Link>
@@ -210,16 +210,19 @@ export default function HomePage() {
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-40">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-16 h-16 border-4 border-[#FFEA00] border-t-transparent rounded-full animate-spin" />
-                <p className="text-xs font-black uppercase tracking-[0.3em]">Downloading Area Data...</p>
+                <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-[#FFEA00] border-t-transparent rounded-full animate-spin" />
+                <p className="text-[10px] font-black uppercase tracking-[0.3em]">Downloading Area Data...</p>
               </div>
             </div>
           )}
         </div>
+      </main>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-72 z-50">
+      {/* Mini-Map Filter Area - Now as an independent block below the studios */}
+      <div className="p-4 md:p-6 bg-[#050505] border-t border-white/5 z-50">
+        <div className="max-w-xs mx-auto">
           <div className="gemini-border gemini-glow p-2 bg-black/40 backdrop-blur-md">
-            <div className="h-44 w-full rounded-lg relative overflow-hidden bg-[#111]">
+            <div className="h-32 md:h-44 w-full rounded-lg relative overflow-hidden bg-[#111]">
               <div className="absolute inset-0 opacity-10 pointer-events-none">
                 <svg width="100%" height="100%">
                   <pattern id="grid-mini" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -252,7 +255,7 @@ export default function HomePage() {
                         : "bg-white/10 border-white/20"
                     )} />
                     <div className={cn(
-                      "bg-black/90 backdrop-blur-md border border-white/20 px-2 py-0.5 text-[7px] font-black uppercase tracking-widest whitespace-nowrap rounded transition-colors",
+                      "bg-black/90 backdrop-blur-md border border-white/20 px-2 py-1 text-[10px] md:text-[12px] font-black uppercase tracking-widest whitespace-nowrap rounded transition-colors",
                       isActive ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white/20"
                     )}>
                       {district.name}
@@ -263,14 +266,14 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
-      <footer className="p-4 border-t border-white/5 flex justify-end opacity-10 hover:opacity-100 transition-opacity">
+      <footer className="p-2 md:p-4 border-t border-white/5 flex justify-end opacity-10 hover:opacity-100 transition-opacity">
         <Button 
           variant="ghost" 
           size="sm" 
           onClick={setupStudios}
-          className="text-[10px] uppercase tracking-tighter gap-2 text-white"
+          className="text-[8px] md:text-[10px] uppercase tracking-tighter gap-2 text-white"
         >
           <Settings className="w-3 h-3" />
           Map Setup
