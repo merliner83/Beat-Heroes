@@ -1,10 +1,9 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Project, Level, Sound, GameScore, SoundType, TriggerPattern } from '@/lib/game/types';
 import { audioEngine, AudioEngine } from '@/lib/game/audio-engine';
-import { SamplerPad } from './SamplerPad';
+import { SamplerPad, FlashType } from './SamplerPad';
 import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -63,6 +62,14 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   const [hasAwardedPoints, setHasAwardedPoints] = useState(false);
   const [loadStates, setLoadStates] = useState<Record<string, string>>({});
   
+  // Flash states for each pad
+  const [padFlashes, setPadFlashes] = useState<Record<SoundType, { type: FlashType, key: number }>>({
+    kick: { type: null, key: 0 },
+    clap: { type: null, key: 0 },
+    percs: { type: null, key: 0 },
+    misc: { type: null, key: 0 },
+  });
+  
   const frameRef = useRef<number>(null);
   const clearedNotesRef = useRef<Set<string>>(new Set());
   const { toast } = useToast();
@@ -114,6 +121,13 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
     return true; 
   };
 
+  const triggerPadFlash = (type: SoundType, flashType: FlashType) => {
+    setPadFlashes(prev => ({
+      ...prev,
+      [type]: { type: flashType, key: Date.now() }
+    }));
+  };
+
   const handlePadPress = useCallback((type: SoundType) => {
     if (!audioEngine || !isPlaying) return;
 
@@ -148,25 +162,30 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
         }
       });
 
-      setScore(prev => {
-        let nextHits = prev.hits;
-        let nextMisses = prev.misses;
-
-        if (hitNoteId) {
-          clearedNotesRef.current.add(hitNoteId);
-          nextHits += 1;
-        } else {
-          // Ghost press miss
-          nextMisses += 1;
-        }
-
-        const total = nextHits + nextMisses;
-        return {
-          hits: nextHits,
-          misses: nextMisses,
-          accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
-        };
-      });
+      if (hitNoteId) {
+        triggerPadFlash(type, 'hit');
+        clearedNotesRef.current.add(hitNoteId);
+        setScore(prev => {
+          const nextHits = prev.hits + 1;
+          const total = nextHits + prev.misses;
+          return {
+            hits: nextHits,
+            misses: prev.misses,
+            accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
+          };
+        });
+      } else {
+        triggerPadFlash(type, 'miss');
+        setScore(prev => {
+          const nextMisses = prev.misses + 1;
+          const total = prev.hits + nextMisses;
+          return {
+            hits: prev.hits,
+            misses: nextMisses,
+            accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100),
+          };
+        });
+      }
     }
   }, [isPlaying, soundsWithPatterns, level.difficulty, project.bpm]);
 
@@ -381,6 +400,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
               const sound = soundsWithPatterns.find(s => s.type === type);
               const status = loadStates[sound?.sampleUrl || ''];
               const isPlayable = checkIsPlayable(type, level.difficulty);
+              const flash = padFlashes[type];
               
               return (
                 <div key={type} className="flex flex-col items-center gap-2 md:gap-3 w-full max-w-[140px]">
@@ -390,6 +410,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
                     onPress={() => handlePadPress(type)}
                     color={PAD_COLORS[type]}
                     isInactive={!isPlayable}
+                    flash={flash.type}
+                    key={flash.key}
                   />
                   {isPlayable && (
                     <div className="flex items-center gap-1 text-[7px] md:text-[9px] uppercase font-black tracking-widest opacity-40">

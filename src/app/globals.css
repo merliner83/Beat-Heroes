@@ -78,3 +78,34 @@
   0% { opacity: 1; transform: scale(1.2); }
   100% { opacity: 0; transform: scale(1); }
 }
+
+/* Hit & Miss Animations */
+.animate-hit-green {
+  animation: hit-pulse-green 0.4s ease-out forwards;
+}
+
+.animate-miss-red {
+  animation: miss-pulse-red 0.4s ease-out forwards;
+}
+
+@keyframes hit-pulse-green {
+  0% { 
+    box-shadow: 0 0 0 0px rgba(0, 230, 118, 0.8);
+    background-color: rgba(0, 230, 118, 0.4);
+  }
+  100% { 
+    box-shadow: 0 0 40px 20px rgba(0, 230, 118, 0);
+    background-color: transparent;
+  }
+}
+
+@keyframes miss-pulse-red {
+  0% { 
+    box-shadow: 0 0 0 0px rgba(255, 61, 0, 0.8);
+    background-color: rgba(255, 61, 0, 0.4);
+  }
+  100% { 
+    box-shadow: 0 0 40px 20px rgba(255, 61, 0, 0);
+    background-color: transparent;
+  }
+}
