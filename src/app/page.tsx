@@ -127,26 +127,30 @@ export default function HomePage() {
             id: l.id, projectId: pConfig.id, difficulty: l.diff, name: l.name
           }, { merge: true });
 
-          const soundTypes: Record<number, any> = {
-            1: { type: 'kick', p: ['kick-intro', 'kick-drop', 'kick-buildup', 'kick-drop'] },
-            2: { type: 'clap', p: ['clap-drop', 'clap-drop', 'clap-buildup', 'clap-drop'] },
-            3: { type: 'percs', p: ['hats-edm', 'hats-trap', 'hats-edm', 'hats-trap'] },
-            4: { type: 'misc', p: ['misc-afro', 'misc-afro', 'misc-afro', 'misc-afro'] }
-          };
+          const soundConfigs = [
+            { type: 'kick', p: ['kick-intro', 'kick-drop', 'kick-buildup', 'kick-drop'], diff: 1 },
+            { type: 'clap', p: ['clap-drop', 'clap-drop', 'clap-buildup', 'clap-drop'], diff: 2 },
+            { type: 'percs', p: ['hats-edm', 'hats-trap', 'hats-edm', 'hats-trap'], diff: 3 },
+            { type: 'misc', p: ['misc-afro', 'misc-afro', 'misc-afro', 'misc-afro'], diff: 4 }
+          ];
 
-          const sInfo = soundTypes[l.diff];
-          const soundId = `${sInfo.type}-main`;
-          const soundRef = doc(db, 'levels', l.id, 'sounds', soundId);
-          const sSnap = await getDoc(soundRef);
-          const sExisting = sSnap.exists() ? sSnap.data() : {};
+          // For each level, we add all instruments up to the current level's difficulty
+          for (const sInfo of soundConfigs) {
+            if (sInfo.diff <= l.diff) {
+              const soundId = `${sInfo.type}-main`;
+              const soundRef = doc(db, 'levels', l.id, 'sounds', soundId);
+              const sSnap = await getDoc(soundRef);
+              const sExisting = sSnap.exists() ? sSnap.data() : {};
 
-          await setDoc(soundRef, {
-            id: soundId,
-            levelId: l.id,
-            type: sInfo.type,
-            patternIds: sInfo.p,
-            sampleUrl: sExisting.sampleUrl || 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg'
-          }, { merge: true });
+              await setDoc(soundRef, {
+                id: soundId,
+                levelId: l.id,
+                type: sInfo.type,
+                patternIds: sInfo.p,
+                sampleUrl: sExisting.sampleUrl || 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg'
+              }, { merge: true });
+            }
+          }
         }
       }
 

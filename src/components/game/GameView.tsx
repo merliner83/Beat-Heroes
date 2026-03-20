@@ -105,11 +105,11 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   const metronomeReady = loadStates[AudioEngine.METRONOME_URL] === 'ready';
 
   const checkIsPlayable = (type: SoundType, difficulty: number) => {
-    // Exklusive Instrumente für Lernphasen (1-4)
-    if (difficulty === 1) return type === 'kick';
-    if (difficulty === 2) return type === 'clap';
-    if (difficulty === 3) return type === 'percs';
-    if (difficulty === 4) return type === 'misc';
+    // Kumulatives System für Lernphasen (1-4)
+    if (type === 'kick') return difficulty >= 1;
+    if (type === 'clap') return difficulty >= 2;
+    if (type === 'percs') return difficulty >= 3;
+    if (type === 'misc') return difficulty >= 4;
     return true; 
   };
 
@@ -142,7 +142,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
 
       setScore(prev => {
         const nextHits = isHit ? prev.hits + 1 : prev.hits;
-        const nextMisses = isHit ? prev.hits : prev.misses + 1; // fix logic if required
         const actualNextMisses = isHit ? prev.misses : prev.misses + 1;
         const total = nextHits + actualNextMisses;
         return {
