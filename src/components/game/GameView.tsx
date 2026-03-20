@@ -62,7 +62,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   const [isFinished, setIsFinished] = useState(false);
   const [hasAwardedPoints, setHasAwardedPoints] = useState(false);
   const [loadStates, setLoadStates] = useState<Record<string, string>>({});
+  
   const frameRef = useRef<number>(null);
+  const clearedNotesRef = useRef<Set<string>>(new Set());
   const { toast } = useToast();
 
   // Pattern-Abfolge zu Steps zusammenführen (32 Takte = 512 Steps)
@@ -105,7 +107,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   const metronomeReady = loadStates[AudioEngine.METRONOME_URL] === 'ready';
 
   const checkIsPlayable = (type: SoundType, difficulty: number) => {
-    // Kumulatives System für Lernphasen (1-4)
     if (type === 'kick') return difficulty >= 1;
     if (type === 'clap') return difficulty >= 2;
     if (type === 'percs') return difficulty >= 3;
@@ -114,7 +115,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   };
 
   const handlePadPress = useCallback((type: SoundType) => {
-    if (!audioEngine) return;
+    if (!audioEngine || !isPlaying) return;
 
     const isPlayable = checkIsPlayable(type, level.difficulty);
     if (!isPlayable) return;
@@ -124,29 +125,45 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
       audioEngine.playOneShot(sound.sampleUrl);
     }
 
-    if (isPlaying && sound) {
+    if (sound) {
       const time = audioEngine.getCurrentTime();
-      // Wir korrigieren das Zeitfenster um den Latenz-Ausgleich
       const adjustedTime = time - SYNC_OFFSET; 
       
       const secondsPerBeat = 60 / project.bpm;
       const secondsPerStep = secondsPerBeat / 4;
       const currentStep = adjustedTime / secondsPerStep;
+      const tolerance = 1.0; 
       
-      const tolerance = 1.0; // Großzügigere Toleranz für besseren Spielfluss
-      
-      const isHit = sound.triggerSteps.some(step => {
+      let hitNoteId: string | null = null;
+      let minDiff = Infinity;
+
+      sound.triggerSteps.forEach(step => {
+        const noteId = `${type}-${step}`;
+        if (clearedNotesRef.current.has(noteId)) return;
+
         const diff = Math.abs(currentStep - step);
-        return diff <= tolerance;
+        if (diff <= tolerance && diff < minDiff) {
+          minDiff = diff;
+          hitNoteId = noteId;
+        }
       });
 
       setScore(prev => {
-        const nextHits = isHit ? prev.hits + 1 : prev.hits;
-        const actualNextMisses = isHit ? prev.misses : prev.misses + 1;
-        const total = nextHits + actualNextMisses;
+        let nextHits = prev.hits;
+        let nextMisses = prev.misses;
+
+        if (hitNoteId) {
+          clearedNotesRef.current.add(hitNoteId);
+          nextHits += 1;
+        } else {
+          // Ghost press miss
+          nextMisses += 1;
+        }
+
+        const total = nextHits + nextMisses;
         return {
           hits: nextHits,
-          misses: actualNextMisses,
+          misses: nextMisses,
           accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
         };
       });
@@ -161,6 +178,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
       const isResumed = await audioEngine.resume();
       if (!isResumed) throw new Error("AudioContext failed to resume");
 
+      clearedNotesRef.current = new Set();
       setScore({ hits: 0, misses: 0, accuracy: 100 });
       setIsFinished(false);
       setHasAwardedPoints(false);
@@ -215,8 +233,38 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
           setCurrentTime(t);
           
           const secondsPerBeat = 60 / project.bpm;
-          const totalDuration = (TOTAL_STEPS / 4) * secondsPerBeat;
+          const secondsPerStep = secondsPerBeat / 4;
+          const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
+          const tolerance = 1.0;
+
+          // Check for passive misses (notes passed without being hit)
+          let newMisses = 0;
+          soundsWithPatterns.forEach(sound => {
+            const isPlayable = checkIsPlayable(sound.type, level.difficulty);
+            if (!isPlayable) return;
+
+            sound.triggerSteps.forEach(step => {
+              const noteId = `${sound.type}-${step}`;
+              if (!clearedNotesRef.current.has(noteId) && currentStep > step + tolerance) {
+                clearedNotesRef.current.add(noteId);
+                newMisses++;
+              }
+            });
+          });
+
+          if (newMisses > 0) {
+            setScore(prev => {
+              const nextMisses = prev.misses + newMisses;
+              const total = prev.hits + nextMisses;
+              return {
+                hits: prev.hits,
+                misses: nextMisses,
+                accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100),
+              };
+            });
+          }
           
+          const totalDuration = (TOTAL_STEPS / 4) * secondsPerBeat;
           if (t >= totalDuration) { 
             setIsPlaying(false);
             setIsFinished(true);
@@ -230,7 +278,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
     };
-  }, [isPlaying, project.bpm, TOTAL_STEPS]);
+  }, [isPlaying, project.bpm, TOTAL_STEPS, level.difficulty, soundsWithPatterns]);
 
   const isPassed = score.accuracy >= PASS_THRESHOLD;
 
