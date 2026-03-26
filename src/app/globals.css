@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -68,15 +69,6 @@
   background-color: hsla(271, 81%, 58%, 0.8) !important;
   box-shadow: 0 0 30px hsla(271, 81%, 58%, 0.8);
   transform: scale(0.95);
-}
-
-.note-hit-flash {
-  animation: flash 0.2s ease-out;
-}
-
-@keyframes flash {
-  0% { opacity: 1; transform: scale(1.2); }
-  100% { opacity: 0; transform: scale(1); }
 }
 
 /* Hit & Miss Animations */
