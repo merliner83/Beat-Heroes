@@ -7,12 +7,11 @@ import { useFirestore, useMemoFirebase, useDoc, useCollection } from '@/firebase
 import { doc, collection, query } from 'firebase/firestore';
 import { Game, Level, Sound, TriggerPattern } from '@/lib/game/types';
 import { GameView } from '@/components/game/GameView';
-import { SampleHunterView } from '@/components/game/SampleHunterView';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-export default function PlayGamePage() {
+export default function GamePlayPage() {
   const { studioId, gameId, levelId } = useParams();
   const db = useFirestore();
 
@@ -40,7 +39,7 @@ export default function PlayGamePage() {
     return (
       <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-[#FFEA00]" />
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Loading Game Assets...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Initializing Session...</p>
       </div>
     );
   }
@@ -49,8 +48,8 @@ export default function PlayGamePage() {
     return (
       <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white p-6 text-center">
         <AlertCircle className="w-16 h-16 text-destructive mb-6" />
-        <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2">Level Not Found</h2>
-        <p className="text-sm opacity-50 mb-8 max-w-xs">Data sync error. Please return to studio.</p>
+        <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2">Data Missing</h2>
+        <p className="text-sm opacity-50 mb-8 max-w-xs">Return to home and click "Re-Link Database" to fix.</p>
         <Link href="/">
           <Button className="bg-white text-black font-black uppercase italic">Back to Map</Button>
         </Link>
@@ -59,18 +58,9 @@ export default function PlayGamePage() {
   }
 
   return (
-    <div className="h-screen bg-[#050505]">
-      {game.type === 'rhythm-producer' && sounds && patterns && (
+    <div className="h-screen bg-[#050505] overflow-hidden">
+      {sounds && patterns && (
         <GameView game={game} level={level} sounds={sounds} patterns={patterns} />
-      )}
-      {game.type === 'sample-hunter' && sounds && patterns && (
-        <SampleHunterView game={game} level={level} sounds={sounds} patterns={patterns} />
-      )}
-      {(!sounds || sounds.length === 0) && (
-        <div className="h-full flex flex-col items-center justify-center text-white gap-4">
-          <AlertCircle className="w-12 h-12 text-[#FF3D00] opacity-50" />
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Missing sound triggers for this level.</p>
-        </div>
       )}
     </div>
   );

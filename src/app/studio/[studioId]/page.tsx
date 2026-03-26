@@ -53,10 +53,8 @@ export default function StudioPage() {
 
   const calculateGameProgress = (gameId: string) => {
     if (!allLevels || !userProgress) return 0;
-    
     const gameLevels = allLevels.filter(l => l.gameId === gameId);
     if (gameLevels.length === 0) return 0;
-
     const completedCount = gameLevels.filter(l => getLevelProgress(l.id)).length;
     return Math.round((completedCount / gameLevels.length) * 100);
   };
@@ -64,26 +62,14 @@ export default function StudioPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-white p-8 font-body">
       <div className="max-w-4xl mx-auto">
-        <Link href="/" className="inline-flex items-center gap-2 text-sm opacity-50 hover:opacity-100 mb-8 transition-opacity uppercase font-bold tracking-widest text-white">
+        <Link href="/" className="inline-flex items-center gap-2 text-sm opacity-50 hover:opacity-100 mb-8 transition-opacity uppercase font-bold tracking-widest">
           <ArrowLeft className="w-4 h-4" /> Back to Map
         </Link>
 
         {studio && (
           <div className="mb-12">
-            <h1 className="text-4xl md:text-6xl font-black mb-2 uppercase italic tracking-tighter text-white">{studio.name}</h1>
-            <p className="text-lg md:text-xl opacity-60 font-medium text-white mb-4">{studio.description}</p>
-            
-            {studio.linkUrl && (
-              <a 
-                href={studio.linkUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-[#FFEA00] hover:text-[#FFEA00]/80 font-black uppercase tracking-widest text-xs transition-colors"
-              >
-                <ExternalLink className="w-3 h-3" />
-                {studio.linkLabel || 'Visit Studio'}
-              </a>
-            )}
+            <h1 className="text-4xl md:text-6xl font-black mb-2 uppercase italic tracking-tighter">{studio.name}</h1>
+            <p className="text-lg md:text-xl opacity-60 font-medium mb-4">{studio.description}</p>
           </div>
         )}
 
@@ -110,32 +96,27 @@ export default function StudioPage() {
                       "p-6 md:p-8 border-none bg-transparent transition-all relative z-10",
                       isSelected ? "bg-white/5" : "hover:bg-white/2"
                     )}>
-                      <div className="flex justify-between items-start text-white mb-6">
+                      <div className="flex justify-between items-start mb-6">
                         <div>
                           <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3">
-                            <h3 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-white leading-none">{game.name}</h3>
+                            <h3 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter leading-none">{game.name}</h3>
                             <div 
                               className="px-3 py-1 rounded-lg border-2 text-[8px] md:text-[10px] font-black tracking-widest italic w-fit"
-                              style={{ 
-                                borderColor: diffInfo.color, 
-                                color: diffInfo.color,
-                                boxShadow: `0 0 15px ${diffInfo.color}44`,
-                                textShadow: `0 0 5px ${diffInfo.color}`
-                              }}
+                              style={{ borderColor: diffInfo.color, color: diffInfo.color }}
                             >
                               {diffInfo.label}
                             </div>
                           </div>
                           <p className="text-xs font-bold tracking-widest uppercase text-[#FFEA00]">
-                            {game.type === 'rhythm-producer' ? `${game.bpm} BPM` : 'Arcade Mode'}
+                            {game.bpm} BPM
                           </p>
                         </div>
-                        <LayoutGrid className={cn("w-8 h-8 md:w-10 md:h-10 transition-all", isSelected ? "text-[#FFEA00] scale-110" : "opacity-20")} />
+                        <LayoutGrid className={cn("w-8 h-8 md:w-10 md:h-10 transition-all", isSelected ? "text-[#FFEA00]" : "opacity-20")} />
                       </div>
 
                       <div className="space-y-3">
                         <div className="flex justify-between items-end">
-                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Overall Progress</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Progress</span>
                           <span className="text-xs font-black italic text-[#FFEA00]">{progressPercent}%</span>
                         </div>
                         <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -143,8 +124,7 @@ export default function StudioPage() {
                             className="h-full transition-all duration-1000 ease-out"
                             style={{ 
                               width: `${progressPercent}%`,
-                              background: 'linear-gradient(90deg, #993DEB 0%, #FF3D00 60%, #FF8C00 100%)',
-                              boxShadow: '0 0 10px rgba(255, 61, 0, 0.4)'
+                              background: 'linear-gradient(90deg, #993DEB 0%, #FF3D00 100%)'
                             }}
                           />
                         </div>
@@ -160,33 +140,27 @@ export default function StudioPage() {
                           return (
                             <Link 
                               key={level.id}
-                              href={`/play/${studioId}/${game.id}/${level.id}`}
+                              href={`/play-game/${studioId}/${game.id}/${level.id}`}
                               className="block"
                             >
                               <Button
-                                asChild
                                 variant="ghost"
                                 className={cn(
-                                  "w-full h-24 md:h-32 border-2 hover:bg-white/5 flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl relative overflow-hidden",
-                                  progress 
-                                    ? "border-[#00E676]/40 bg-[#00E676]/5" 
-                                    : "border-white/10 bg-black/40 hover:border-white/30"
+                                  "w-full h-24 md:h-32 border-2 hover:bg-white/5 flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl relative",
+                                  progress ? "border-[#00E676]/40 bg-[#00E676]/5" : "border-white/10"
                                 )}
                               >
-                                <div>
-                                  <span className="text-[8px] md:text-[10px] opacity-40 font-black uppercase tracking-[0.2em] text-white relative z-10">Level {level.difficulty}</span>
-                                  <div className="text-xs md:text-base flex items-center gap-1 uppercase italic text-white group-hover:text-[#FFEA00] relative z-10">
-                                    {level.name || 'Untitled'}
-                                    <ChevronRight className="w-3 h-3 md:w-4 md:h-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
-                                  </div>
-                                  
-                                  {progress && (
-                                    <div className="mt-2 flex items-center gap-1.5 bg-[#00E676]/20 px-2 py-0.5 rounded-full border border-[#00E676]/30">
-                                      <Trophy className="w-2.5 h-2.5 text-[#00E676]" />
-                                      <span className="text-[8px] md:text-[9px] font-black text-[#00E676]">{progress.accuracy}%</span>
-                                    </div>
-                                  )}
+                                <span className="text-[8px] md:text-[10px] opacity-40 font-black uppercase tracking-[0.2em]">Level {level.difficulty}</span>
+                                <div className="text-xs md:text-base flex items-center gap-1 uppercase italic text-white group-hover:text-[#FFEA00]">
+                                  {level.name}
+                                  <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
                                 </div>
+                                {progress && (
+                                  <div className="mt-2 flex items-center gap-1.5 bg-[#00E676]/20 px-2 py-0.5 rounded-full">
+                                    <Trophy className="w-2.5 h-2.5 text-[#00E676]" />
+                                    <span className="text-[8px] md:text-[9px] font-black text-[#00E676]">{progress.accuracy}%</span>
+                                  </div>
+                                )}
                               </Button>
                             </Link>
                           );
@@ -197,12 +171,6 @@ export default function StudioPage() {
                 </div>
               );
             })}
-
-            {games?.length === 0 && (
-              <div className="py-24 text-center border-2 border-dashed border-white/5 rounded-3xl opacity-20">
-                <p className="font-black uppercase tracking-widest text-white">No Games in this Studio</p>
-              </div>
-            )}
           </div>
         </div>
       </div>

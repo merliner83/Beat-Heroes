@@ -47,7 +47,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  padding: 1px; /* The border thickness */
+  padding: 1px;
   border-radius: inherit;
   background: linear-gradient(90deg, #993DEB, #FF3D00, #FFEA00, #FFFF00, #993DEB);
   background-size: 200% 100%;
@@ -63,12 +63,6 @@
 
 .gemini-glow {
   box-shadow: 0 0 15px rgba(153, 61, 235, 0.1), 0 0 30px rgba(255, 61, 0, 0.05);
-}
-
-.pad-active {
-  background-color: hsla(271, 81%, 58%, 0.8) !important;
-  box-shadow: 0 0 30px hsla(271, 81%, 58%, 0.8);
-  transform: scale(0.95);
 }
 
 /* Hit & Miss Animations */

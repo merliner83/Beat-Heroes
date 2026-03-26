@@ -1,10 +1,9 @@
 
 "use client";
-
 import { useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
-export default function LegacyRouteNeutralizer() {
+export default function LegacyRedirect() {
   const router = useRouter();
   useEffect(() => {
     router.replace('/');
