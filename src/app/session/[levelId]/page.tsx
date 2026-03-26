@@ -4,7 +4,7 @@
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useDoc, useCollection } from '@/firebase';
-import { doc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, collection, query } from 'firebase/firestore';
 import { Game, Level, Sound, TriggerPattern } from '@/lib/game/types';
 import { GameView } from '@/components/game/GameView';
 import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
