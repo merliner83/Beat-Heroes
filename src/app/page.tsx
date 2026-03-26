@@ -82,8 +82,9 @@ export default function HomePage() {
       { id: 'clap-drop', name: 'CLAP Standard (2 & 4)', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
       { id: 'clap-buildup', name: 'CLAP Accelerating', steps: [16, 48, 80, 96, 104, 112, 116, 120, 122, 124, 125, 126, 127] },
       { id: 'hats-edm', name: 'HATS EDM Quarter Offbeat', steps: [2, 10, 18, 26, 34, 42, 50, 58, 66, 74, 82, 90, 98, 106, 114, 122] },
-      { id: 'hats-trap', name: 'HATS Simple Trap', steps: [0, 4, 8, 10, 12, 16, 20, 24, 26, 28, 32, 36, 40, 42, 44, 48, 52, 56, 58, 60, 64, 68, 72, 74, 76, 80, 84, 88, 90, 92, 96, 100, 104, 106, 108, 112, 116, 120, 122, 124] },
-      { id: 'misc-afro', name: 'MISC Afro Clave', steps: [0, 3, 6, 10, 12, 16, 19, 22, 26, 28, 32, 35, 38, 42, 44, 48, 51, 54, 58, 60, 64, 67, 70, 74, 76, 80, 83, 86, 90, 92, 96, 99, 102, 106, 108, 112, 115, 118, 122, 124] }
+      { id: 'hats-pro', name: 'HATS Syncopated 16th (Advanced)', steps: [2, 6, 10, 12, 14, 18, 22, 26, 28, 30, 34, 38, 42, 44, 46, 50, 54, 58, 60, 62, 66, 70, 74, 76, 78, 82, 86, 90, 92, 94, 98, 102, 106, 108, 110, 114, 118, 122, 124, 126] },
+      { id: 'misc-afro', name: 'MISC Afro Clave', steps: [0, 3, 6, 10, 12, 16, 19, 22, 26, 28, 32, 35, 38, 42, 44, 48, 51, 54, 58, 60, 64, 67, 70, 74, 76, 80, 83, 86, 90, 92, 96, 99, 102, 106, 108, 112, 115, 118, 122, 124] },
+      { id: 'misc-pro', name: 'MISC Polyrhythmic Clave (Hero)', steps: [0, 3, 7, 10, 12, 16, 19, 23, 26, 28, 32, 35, 39, 42, 44, 48, 51, 55, 58, 60, 64, 67, 71, 74, 76, 80, 83, 87, 90, 92, 96, 99, 103, 106, 108, 112, 115, 119, 122, 124] }
     ];
 
     const newStudios = [
@@ -119,7 +120,7 @@ export default function HomePage() {
           { id: `${pConfig.id}-level-1`, name: 'Foundation', diff: 1 },
           { id: `${pConfig.id}-level-2`, name: 'Clap Groove', diff: 2 },
           { id: `${pConfig.id}-level-3`, name: 'Hi-Hat Grooves', diff: 3 },
-          { id: `${pConfig.id}-level-4`, name: 'Afro Clave Rhythms', diff: 4 }
+          { id: `${pConfig.id}-level-4`, name: 'Hero Rhythms', diff: 4 }
         ];
 
         for (const l of levels) {
@@ -128,15 +129,14 @@ export default function HomePage() {
           }, { merge: true });
 
           const soundConfigs = [
-            { type: 'kick', p: ['kick-intro', 'kick-drop', 'kick-buildup', 'kick-drop'], diff: 1 },
-            { type: 'clap', p: ['clap-drop', 'clap-drop', 'clap-buildup', 'clap-drop'], diff: 2 },
-            { type: 'percs', p: ['hats-edm', 'hats-trap', 'hats-edm', 'hats-trap'], diff: 3 },
-            { type: 'misc', p: ['misc-afro', 'misc-afro', 'misc-afro', 'misc-afro'], diff: 4 }
+            { type: 'kick', p: ['kick-intro', 'kick-drop', 'kick-buildup', 'kick-drop'], minLvl: 1 },
+            { type: 'clap', p: ['clap-drop', 'clap-drop', 'clap-buildup', 'clap-drop'], minLvl: 2 },
+            { type: 'percs', p: l.diff === 4 ? ['hats-pro', 'hats-pro', 'hats-pro', 'hats-pro'] : ['hats-edm', 'hats-edm', 'hats-edm', 'hats-edm'], minLvl: 3 },
+            { type: 'misc', p: l.diff === 4 ? ['misc-pro', 'misc-pro', 'misc-pro', 'misc-pro'] : ['misc-afro', 'misc-afro', 'misc-afro', 'misc-afro'], minLvl: 4 }
           ];
 
-          // For each level, we add all instruments up to the current level's difficulty
           for (const sInfo of soundConfigs) {
-            if (sInfo.diff <= l.diff) {
+            if (sInfo.minLvl <= l.diff) {
               const soundId = `${sInfo.type}-main`;
               const soundRef = doc(db, 'levels', l.id, 'sounds', soundId);
               const sSnap = await getDoc(soundRef);
@@ -222,7 +222,7 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Mini-Map Filter Area - Now as an independent block below the studios */}
+      {/* Mini-Map Filter Area */}
       <div className="p-4 md:p-6 bg-[#050505] border-t border-white/5 z-50">
         <div className="max-w-xs mx-auto">
           <div className="gemini-border gemini-glow p-2 bg-black/40 backdrop-blur-md">
