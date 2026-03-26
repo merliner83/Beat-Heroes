@@ -7,7 +7,6 @@ import { useFirestore, useMemoFirebase, useDoc, useCollection } from '@/firebase
 import { doc, collection, query } from 'firebase/firestore';
 import { Game, Level, Sound, TriggerPattern } from '@/lib/game/types';
 import { GameView } from '@/components/game/GameView';
-import { SampleHunterView } from '@/components/game/SampleHunterView';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -60,11 +59,8 @@ export default function GameSessionPage() {
 
   return (
     <div className="h-screen bg-[#050505] overflow-hidden">
-      {game.type === 'rhythm-producer' && sounds && patterns && (
+      {sounds && patterns && (
         <GameView game={game} level={level} sounds={sounds} patterns={patterns} />
-      )}
-      {game.type === 'sample-hunter' && sounds && patterns && (
-        <SampleHunterView game={game} level={level} sounds={sounds} patterns={patterns} />
       )}
       {(!sounds || sounds.length === 0) && (
         <div className="h-full flex flex-col items-center justify-center text-white gap-4">

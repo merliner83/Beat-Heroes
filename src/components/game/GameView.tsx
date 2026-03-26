@@ -8,10 +8,9 @@ import { SamplerPad, FlashType } from './SamplerPad';
 import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Music2, Trophy, Loader2, XCircle, X } from 'lucide-react';
+import { Music2, Trophy, Loader2, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -41,7 +40,6 @@ interface GameViewProps {
 export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, patterns }) => {
   const db = useFirestore();
   const { user } = useUser();
-  const router = useRouter();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [countIn, setCountIn] = useState<number | null>(null);
@@ -72,8 +70,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     return { ...sound, triggerSteps: allSteps };
   });
 
-  const TOTAL_STEPS = 512;
   const bpm = game.bpm || 120;
+  const TOTAL_STEPS = 512;
 
   const triggerPadFlash = (type: SoundType, flashType: FlashType) => {
     setPadFlashes(prev => ({
@@ -194,8 +192,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   useEffect(() => {
     if (isFinished && score.accuracy >= PASS_THRESHOLD && user && db) {
-      const reward = 100;
-      updateDoc(doc(db, 'users', user.uid), { streetCred: increment(reward) });
+      updateDoc(doc(db, 'users', user.uid), { streetCred: increment(100) });
       setDoc(doc(db, 'users', user.uid, 'progress', level.id), { 
         levelId: level.id, 
         accuracy: score.accuracy, 
@@ -218,7 +215,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         <div className="flex items-center gap-4 border-l border-white/10 pl-4">
           <div className="text-right">
             <p className="text-[8px] uppercase font-black opacity-30">Accuracy</p>
-            <p className={cn("text-xl md:text-2xl font-black italic", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
+            <p className={cn("text-xl font-black italic", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
               {score.accuracy}%
             </p>
           </div>
@@ -247,7 +244,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-50">
             <Card className="p-12 bg-black border-none gemini-border text-center">
               <Music2 className="w-12 h-12 text-[#993DEB] mx-auto mb-6" />
-              <h2 className="text-3xl font-black mb-8 uppercase italic italic">Ready?</h2>
+              <h2 className="text-3xl font-black mb-8 uppercase italic">Ready?</h2>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-48 h-16 text-xl font-black uppercase italic bg-white text-black rounded-2xl">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Start"}
               </Button>
@@ -280,7 +277,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
               <div className="flex gap-4 pt-8">
                 <Button onClick={startLevel} variant="outline" className="flex-1 h-12">Retry</Button>
                 <Link href={`/studio/${game.studioId}`} className="flex-1">
-                  <Button className="w-full h-12 bg-white text-black">Studio</Button>
+                  <Button className="w-full h-12 bg-white text-black font-black uppercase italic">Studio</Button>
                 </Link>
               </div>
             </div>

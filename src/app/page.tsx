@@ -4,12 +4,11 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
-import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
+import { collection, query, doc, setDoc } from 'firebase/firestore';
 import { Radio, Home, RefreshCw } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 
@@ -21,18 +20,11 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'noxxos': { x: 80, y: 30 }
 };
 
-const DISTRICTS = [
-  { id: 'bantiger', name: 'MS Bantiger', x: 25, y: 55 },
-  { id: 'oberemmental', name: 'MS Oberemmental', x: 75, y: 30 }
-];
-
 export default function HomePage() {
   const db = useFirestore();
   const auth = useAuth();
   const { user } = useUser();
   const { toast } = useToast();
-  
-  const [activeDistricts, setActiveDistricts] = useState<string[]>(['bantiger', 'oberemmental']);
   
   useEffect(() => {
     if (!user && auth) {
@@ -53,23 +45,7 @@ export default function HomePage() {
     return query(collection(db, 'studios'));
   }, [db]);
 
-  const { data: allStudios, isLoading } = useCollection<Studio>(studiosQuery);
-
-  const filteredStudios = allStudios?.filter(studio => {
-    const studioDistrictId = studio.district === 'Bantiger District' ? 'bantiger' : 
-                             studio.district === 'Oberemmental District' ? 'oberemmental' : null;
-    
-    if (!studioDistrictId) return true;
-    return activeDistricts.includes(studioDistrictId);
-  });
-
-  const toggleDistrict = (id: string) => {
-    setActiveDistricts(prev => 
-      prev.includes(id) 
-        ? prev.filter(d => d !== id) 
-        : [...prev, id]
-    );
-  };
+  const { data: allStudios } = useCollection<Studio>(studiosQuery);
 
   const setupStudios = async () => {
     if (!db) return;
@@ -170,7 +146,7 @@ export default function HomePage() {
 
       <main className="relative flex-1 w-full bg-[#080808] overflow-hidden min-h-[400px]">
         <div className="absolute inset-0">
-          {filteredStudios?.map((studio) => {
+          {allStudios?.map((studio) => {
             const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
             return (
               <div 

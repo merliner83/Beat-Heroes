@@ -65,33 +65,37 @@
   box-shadow: 0 0 15px rgba(153, 61, 235, 0.1), 0 0 30px rgba(255, 61, 0, 0.05);
 }
 
-/* Hit & Miss Animations */
+/* Hit & Miss Animations (Waves) */
 .animate-hit-green {
-  animation: hit-pulse-green 0.4s ease-out forwards;
+  animation: hit-pulse-green 0.5s cubic-bezier(0, 0, 0.2, 1) forwards;
 }
 
 .animate-miss-red {
-  animation: miss-pulse-red 0.4s ease-out forwards;
+  animation: miss-pulse-red 0.5s cubic-bezier(0, 0, 0.2, 1) forwards;
 }
 
 @keyframes hit-pulse-green {
   0% { 
     box-shadow: 0 0 0 0px rgba(0, 230, 118, 0.8);
-    background-color: rgba(0, 230, 118, 0.4);
+    background-color: rgba(0, 230, 118, 0.5);
+    transform: scale(0.95);
   }
   100% { 
-    box-shadow: 0 0 40px 20px rgba(0, 230, 118, 0);
+    box-shadow: 0 0 50px 30px rgba(0, 230, 118, 0);
     background-color: transparent;
+    transform: scale(1.1);
   }
 }
 
 @keyframes miss-pulse-red {
   0% { 
     box-shadow: 0 0 0 0px rgba(255, 61, 0, 0.8);
-    background-color: rgba(255, 61, 0, 0.4);
+    background-color: rgba(255, 61, 0, 0.5);
+    transform: scale(0.95);
   }
   100% { 
-    box-shadow: 0 0 40px 20px rgba(255, 61, 0, 0);
+    box-shadow: 0 0 50px 30px rgba(255, 61, 0, 0);
     background-color: transparent;
+    transform: scale(1.1);
   }
 }

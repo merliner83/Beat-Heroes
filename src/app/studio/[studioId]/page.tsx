@@ -8,7 +8,7 @@ import { collection, query, where, doc } from 'firebase/firestore';
 import { Studio, Game, Level, LevelProgress } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, LayoutGrid, ChevronRight, ExternalLink, Trophy, Loader2 } from 'lucide-react';
+import { ArrowLeft, LayoutGrid, ChevronRight, Trophy, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -140,7 +140,7 @@ export default function StudioPage() {
                           return (
                             <Link 
                               key={level.id}
-                              href={`/play-game/${studioId}/${game.id}/${level.id}`}
+                              href={`/game-session/${studioId}/${game.id}/${level.id}`}
                               className="block"
                             >
                               <Button
