@@ -70,8 +70,8 @@ export default function StudioPage() {
 
         {studio && (
           <div className="mb-12">
-            <h1 className="text-6xl font-black mb-2 uppercase italic tracking-tighter text-white">{studio.name}</h1>
-            <p className="text-xl opacity-60 font-medium text-white mb-4">{studio.description}</p>
+            <h1 className="text-4xl md:text-6xl font-black mb-2 uppercase italic tracking-tighter text-white">{studio.name}</h1>
+            <p className="text-lg md:text-xl opacity-60 font-medium text-white mb-4">{studio.description}</p>
             
             {studio.linkUrl && (
               <a 
@@ -107,30 +107,30 @@ export default function StudioPage() {
                     className="cursor-pointer relative gemini-border overflow-visible"
                   >
                     <Card className={cn(
-                      "p-8 border-none bg-transparent transition-all relative z-10",
+                      "p-6 md:p-8 border-none bg-transparent transition-all relative z-10",
                       isSelected ? "bg-white/5" : "hover:bg-white/2"
                     )}>
                       <div className="flex justify-between items-start text-white mb-6">
                         <div>
-                          <div className="flex items-center gap-4 mb-3">
-                            <h3 className="text-4xl font-black uppercase italic tracking-tighter text-white leading-none">{game.name}</h3>
+                          <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3">
+                            <h3 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-white leading-none">{game.name}</h3>
                             <div 
-                              className="px-4 py-1.5 rounded-lg border-2 text-[10px] font-black tracking-widest italic transition-all"
+                              className="px-3 py-1 rounded-lg border-2 text-[8px] md:text-[10px] font-black tracking-widest italic w-fit"
                               style={{ 
                                 borderColor: diffInfo.color, 
                                 color: diffInfo.color,
-                                boxShadow: `0 0 20px ${diffInfo.color}66`,
-                                textShadow: `0 0 8px ${diffInfo.color}`
+                                boxShadow: `0 0 15px ${diffInfo.color}44`,
+                                textShadow: `0 0 5px ${diffInfo.color}`
                               }}
                             >
                               {diffInfo.label}
                             </div>
                           </div>
-                          <p className="text-sm font-bold tracking-widest uppercase text-[#FFEA00]">
-                            {game.type === 'rhythm-producer' ? `${game.bpm} BPM` : 'Arcade'}
+                          <p className="text-xs font-bold tracking-widest uppercase text-[#FFEA00]">
+                            {game.type === 'rhythm-producer' ? `${game.bpm} BPM` : 'Arcade Mode'}
                           </p>
                         </div>
-                        <LayoutGrid className={cn("w-10 h-10 transition-all", isSelected ? "text-[#FFEA00] scale-110" : "opacity-20")} />
+                        <LayoutGrid className={cn("w-8 h-8 md:w-10 md:h-10 transition-all", isSelected ? "text-[#FFEA00] scale-110" : "opacity-20")} />
                       </div>
 
                       <div className="space-y-3">
@@ -154,36 +154,36 @@ export default function StudioPage() {
 
                   {isSelected && (
                     <div className="pl-4 py-2 animate-in slide-in-from-top-4 duration-300">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {gameLevels.sort((a,b) => a.difficulty - b.difficulty).map((level) => {
                           const progress = getLevelProgress(level.id);
                           return (
                             <Link 
                               key={level.id}
-                              href={`/play-game/${studioId}/${game.id}/${level.id}`}
+                              href={`/game-session/${studioId}/${game.id}/${level.id}`}
                               className="block"
                             >
                               <Button
                                 asChild
                                 variant="ghost"
                                 className={cn(
-                                  "w-full h-32 border-2 hover:bg-white/5 flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl relative overflow-hidden",
+                                  "w-full h-24 md:h-32 border-2 hover:bg-white/5 flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl relative overflow-hidden",
                                   progress 
                                     ? "border-[#00E676]/40 bg-[#00E676]/5" 
                                     : "border-white/10 bg-black/40 hover:border-white/30"
                                 )}
                               >
                                 <div>
-                                  <span className="text-[10px] opacity-40 font-black uppercase tracking-[0.2em] text-white relative z-10">Level {level.difficulty}</span>
-                                  <div className="flex items-center gap-1 uppercase italic text-white group-hover:text-[#FFEA00] relative z-10">
+                                  <span className="text-[8px] md:text-[10px] opacity-40 font-black uppercase tracking-[0.2em] text-white relative z-10">Level {level.difficulty}</span>
+                                  <div className="text-xs md:text-base flex items-center gap-1 uppercase italic text-white group-hover:text-[#FFEA00] relative z-10">
                                     {level.name || 'Untitled'}
-                                    <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                                    <ChevronRight className="w-3 h-3 md:w-4 md:h-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
                                   </div>
                                   
                                   {progress && (
                                     <div className="mt-2 flex items-center gap-1.5 bg-[#00E676]/20 px-2 py-0.5 rounded-full border border-[#00E676]/30">
-                                      <Trophy className="w-3 h-3 text-[#00E676]" />
-                                      <span className="text-[9px] font-black text-[#00E676]">{progress.accuracy}%</span>
+                                      <Trophy className="w-2.5 h-2.5 text-[#00E676]" />
+                                      <span className="text-[8px] md:text-[9px] font-black text-[#00E676]">{progress.accuracy}%</span>
                                     </div>
                                   )}
                                 </div>

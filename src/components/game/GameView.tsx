@@ -263,7 +263,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         <div className="flex items-center gap-2 md:gap-6 min-w-0">
           <Link href={`/studio/${game.studioId}`} className="min-w-0">
             <div className="cursor-pointer group">
-              <h1 className="text-xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none group-hover:text-[#993DEB] transition-colors truncate">BeatHero</h1>
+              <h1 className="text-xl md:text-3xl font-black tracking-tighter text-white uppercase italic leading-none group-hover:text-[#993DEB] transition-colors truncate">BeatHero</h1>
               <p className="text-[8px] md:text-[10px] opacity-40 font-black uppercase tracking-[0.2em] mt-1 truncate">
                 {game.name} • {level.name}
               </p>
@@ -280,7 +280,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           <div className="text-right border-l border-white/10 pl-3 md:pl-8">
             <p className="text-[8px] md:text-[10px] uppercase font-black tracking-widest opacity-30">Accuracy</p>
             <div className="flex items-center gap-1.5 md:gap-3">
-              <p className={cn("text-2xl md:text-4xl font-black italic tracking-tighter transition-colors", isPassed ? "text-[#00E676]" : "text-[#FF3D00]")}>
+              <p className={cn("text-xl md:text-4xl font-black italic tracking-tighter transition-colors", isPassed ? "text-[#00E676]" : "text-[#FF3D00]")}>
                 {score.accuracy}%
               </p>
             </div>
@@ -289,7 +289,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
       </div>
 
       <div className="relative flex-1 gemini-border gemini-glow overflow-hidden flex flex-col">
-        <div className="flex-1 flex px-2 md:px-4 relative bg-black/40">
+        <div className="flex-1 flex px-1 md:px-4 relative bg-black/40">
           {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => {
             const sound = soundsWithPatterns.find(s => s.type === type);
             return (
@@ -298,8 +298,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           })}
         </div>
 
-        <div className="p-4 md:p-8 bg-black/40 border-t border-white/5 flex flex-col gap-4">
-          <div className="flex justify-center gap-3 md:gap-6">
+        <div className="p-2 md:p-8 bg-black/40 border-t border-white/5 flex flex-col gap-4">
+          <div className="flex justify-center gap-2 md:gap-6">
             {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => (
               <div key={type} className="flex flex-col items-center gap-2 w-full max-w-[140px]">
                 <SamplerPad label={type} shortcut={SHORTCUTS[type]} onPress={() => handlePadPress(type)} color={PAD_COLORS[type]} isInactive={!checkIsPlayable(type, level.difficulty)} flash={padFlashes[type].type} key={padFlashes[type].key} />
@@ -322,7 +322,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
         {countIn !== null && (
           <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center z-50 pointer-events-none">
-            <div className="text-[8rem] md:text-[12rem] font-black italic tracking-tighter text-white/80 animate-in zoom-in-50 duration-200">
+            <div className="text-[6rem] md:text-[12rem] font-black italic tracking-tighter text-white/80 animate-in zoom-in-50 duration-200">
               {countIn}
             </div>
           </div>
