@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -79,7 +80,6 @@ export default function HomePage() {
       { id: 'kick-drop', name: 'KICK Drop', steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124] },
       { id: 'kick-buildup', name: 'KICK Buildup', steps: [0, 16, 32, 48, 64, 72, 80, 88, 96, 100, 104, 108, 112, 114, 116, 118, 120, 121, 122, 123, 124, 125, 126, 127] },
       { id: 'clap-drop', name: 'CLAP Standard', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
-      { id: 'clap-buildup', name: 'CLAP Accelerating', steps: [16, 48, 80, 96, 104, 112, 116, 120, 122, 124, 125, 126, 127] },
       { id: 'hats-edm', name: 'HATS EDM Quarter', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
       { id: 'hats-pro', name: 'HATS Syncopated 16th', steps: [2, 6, 10, 12, 14, 18, 22, 26, 28, 30, 34, 38, 42, 44, 46, 50, 54, 58, 60, 62, 66, 70, 74, 76, 78, 82, 86, 90, 92, 94, 98, 102, 106, 108, 110, 114, 118, 122, 124, 126] },
       { id: 'misc-afro', name: 'MISC Afro Clave', steps: [0, 3, 6, 10, 12, 16, 19, 22, 26, 28, 32, 35, 38, 42, 44, 48, 51, 54, 58, 60, 64, 67, 70, 74, 76, 80, 83, 86, 90, 92, 96, 99, 102, 106, 108, 112, 115, 118, 122, 124] },
@@ -99,8 +99,9 @@ export default function HomePage() {
       for (const s of newStudios) await setDoc(doc(db, 'studios', s.id), s, { merge: true });
 
       const gamesToSetup = [
-        { id: 'gabriel-rhythm', studioId: 'gabriel-beats', name: 'Neon Horizon', type: 'rhythm-producer', bpm: 162, difficulty: 4 },
-        { id: 'yoan-rhythm', studioId: 'yoan-beats', name: 'Sampling', type: 'rhythm-producer', bpm: 125, difficulty: 2 }
+        { id: 'gabriel-1', studioId: 'gabriel-beats', name: 'Neon Horizon', type: 'rhythm-producer', bpm: 162, difficulty: 4 },
+        { id: 'yoan-1', studioId: 'yoan-beats', name: 'Sampling', type: 'rhythm-producer', bpm: 125, difficulty: 2 },
+        { id: 'noxxos-hunter', studioId: 'noxxos', name: 'Sample Hunter', type: 'sample-hunter', bpm: 120, difficulty: 3 }
       ];
 
       for (const gameConfig of gamesToSetup) {
@@ -152,7 +153,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Database Ready", description: "Games and levels synchronized!" });
+      toast({ title: "Database Ready", description: "Multi-Game structure synchronized!" });
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Initialization failed." });
     }
@@ -191,7 +192,7 @@ export default function HomePage() {
               >
                 <Link href={`/studio/${studio.id}`}>
                   <div className="relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
-                    <div className="absolute inset-0 w-12 h-12 md:w-20 md:h-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/20 animate-ping opacity-20" />
+                    <div className="absolute inset-0 w-12 h-12 md:w-16 md:h-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/20 animate-ping opacity-20" />
                     
                     <div 
                       className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-black border-2 border-white/20 flex items-center justify-center shadow-2xl relative z-10 transition-all group-hover:scale-110"
@@ -220,7 +221,7 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Mini-Map Filter Area - Solid block at the bottom */}
+      {/* Mini-Map Filter Area */}
       <div className="p-4 md:p-8 bg-[#050505] border-t border-white/5 z-50">
         <div className="max-w-md mx-auto">
           <div className="gemini-border gemini-glow p-3 bg-black/40 backdrop-blur-md">
@@ -257,7 +258,7 @@ export default function HomePage() {
                         : "bg-white/10 border-white/20"
                     )} />
                     <div className={cn(
-                      "bg-black/90 backdrop-blur-md border border-white/20 px-3 py-1.5 text-xs md:text-sm font-black uppercase tracking-widest whitespace-nowrap rounded transition-colors",
+                      "bg-black/90 backdrop-blur-md border border-white/20 px-3 py-1.5 text-xs md:text-lg font-black uppercase tracking-widest whitespace-nowrap rounded transition-colors",
                       isActive ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white/20"
                     )}>
                       {district.name}

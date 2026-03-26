@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Studio": {
@@ -23,7 +24,7 @@
         "id": { "type": "string" },
         "studioId": { "type": "string" },
         "name": { "type": "string" },
-        "type": { "type": "string", "enum": ["rhythm-producer", "synth-master"], "description": "Der technische Typ des Spiels." },
+        "type": { "type": "string", "enum": ["rhythm-producer", "sample-hunter"], "description": "Der technische Typ des Spiels." },
         "bpm": { "type": "number", "description": "Spezifisch für Rhythm Producer." },
         "difficulty": { "type": "number", "description": "Schwierigkeitsgrad (1-4)" },
         "backingTrackUrl": { "type": "string", "format": "uri", "description": "Spezifisch für Rhythm Producer." }

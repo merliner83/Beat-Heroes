@@ -1,5 +1,6 @@
+
 export type SoundType = 'kick' | 'clap' | 'percs' | 'misc';
-export type GameType = 'rhythm-producer' | 'synth-master';
+export type GameType = 'rhythm-producer' | 'sample-hunter';
 
 export interface Studio {
   id: string;

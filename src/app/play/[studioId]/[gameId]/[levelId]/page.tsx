@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -6,6 +7,7 @@ import { useFirestore, useMemoFirebase, useDoc, useCollection } from '@/firebase
 import { doc, collection, query } from 'firebase/firestore';
 import { Game, Level, Sound, TriggerPattern } from '@/lib/game/types';
 import { GameView } from '@/components/game/GameView';
+import { SampleHunterView } from '@/components/game/SampleHunterView';
 import { Loader2 } from 'lucide-react';
 
 export default function PlayPage() {
@@ -38,18 +40,19 @@ export default function PlayPage() {
     );
   }
 
-  // Hier können später verschiedene Game-Views basierend auf game.type geladen werden
-  if (game.type === 'rhythm-producer') {
-    return (
-      <div className="h-screen bg-[#050505]">
-        <GameView game={game} level={level} sounds={sounds} patterns={patterns} />
-      </div>
-    );
-  }
-
   return (
-    <div className="h-screen bg-[#050505] flex items-center justify-center text-white">
-      <p className="uppercase font-black tracking-widest opacity-40">Unsupported Game Type: {game.type}</p>
+    <div className="h-screen bg-[#050505]">
+      {game.type === 'rhythm-producer' && (
+        <GameView game={game} level={level} sounds={sounds} patterns={patterns} />
+      )}
+      {game.type === 'sample-hunter' && (
+        <SampleHunterView game={game} level={level} sounds={sounds} patterns={patterns} />
+      )}
+      {!['rhythm-producer', 'sample-hunter'].includes(game.type) && (
+        <div className="h-full flex items-center justify-center text-white">
+          <p className="uppercase font-black tracking-widest opacity-40">Unsupported Game Type: {game.type}</p>
+        </div>
+      )}
     </div>
   );
 }
