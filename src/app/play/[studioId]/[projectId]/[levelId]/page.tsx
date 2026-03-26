@@ -1,16 +1,8 @@
 
-"use client";
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-
 /**
- * Empty legacy route to avoid dynamic segment conflicts in Next.js.
+ * Diese Datei wurde neutralisiert, um Konflikte mit der neuen [gameId]-Route zu vermeiden.
+ * Next.js erlaubt keine zwei dynamischen Segmente auf derselben Ebene.
  */
-export default function LegacyRedirect() {
-  const router = useRouter();
-  useEffect(() => {
-    router.replace('/');
-  }, [router]);
+export default function LegacyRoutePlaceholder() {
   return null;
 }
