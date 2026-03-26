@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Project, Level, Sound, GameScore, SoundType, TriggerPattern } from '@/lib/game/types';
+import { Game, Level, Sound, GameScore, SoundType, TriggerPattern } from '@/lib/game/types';
 import { audioEngine, AudioEngine } from '@/lib/game/audio-engine';
 import { SamplerPad, FlashType } from './SamplerPad';
 import { NoteLane } from './NoteLane';
@@ -16,7 +16,6 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// Globaler Latenz-Ausgleich in Sekunden (80ms)
 const SYNC_OFFSET = 0.08;
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -43,13 +42,13 @@ const DIFFICULTY_REWARDS: Record<number, number> = {
 };
 
 interface GameViewProps {
-  project: Project;
+  game: Game;
   level: Level;
   sounds: Sound[];
   patterns: TriggerPattern[];
 }
 
-export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patterns }) => {
+export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, patterns }) => {
   const db = useFirestore();
   const { user } = useUser();
   const router = useRouter();
@@ -62,7 +61,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   const [hasAwardedPoints, setHasAwardedPoints] = useState(false);
   const [loadStates, setLoadStates] = useState<Record<string, string>>({});
   
-  // Flash states for each pad
   const [padFlashes, setPadFlashes] = useState<Record<SoundType, { type: FlashType, key: number }>>({
     kick: { type: null, key: 0 },
     clap: { type: null, key: 0 },
@@ -74,7 +72,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
   const clearedNotesRef = useRef<Set<string>>(new Set());
   const { toast } = useToast();
 
-  // Pattern-Abfolge zu Steps zusammenführen (32 Takte = 512 Steps)
   const soundsWithPatterns = sounds.map(sound => {
     let allSteps: number[] = [];
     sound.patternIds?.forEach((pId, index) => {
@@ -84,16 +81,15 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
         allSteps = [...allSteps, ...pattern.steps.map(s => s + offset)];
       }
     });
-    return {
-      ...sound,
-      triggerSteps: allSteps
-    };
+    return { ...sound, triggerSteps: allSteps };
   });
 
-  const TOTAL_STEPS = 512; // 32 Takte festgelegt
+  const TOTAL_STEPS = 512;
+  const bpm = game.bpm || 120;
+  const backingTrackUrl = game.backingTrackUrl || '';
 
   useEffect(() => {
-    const urls = [project.backingTrackUrl, ...sounds.map(s => s.sampleUrl), AudioEngine.METRONOME_URL];
+    const urls = [backingTrackUrl, ...sounds.map(s => s.sampleUrl), AudioEngine.METRONOME_URL];
     if (audioEngine) {
       audioEngine.preloadAudio(urls);
     }
@@ -108,9 +104,9 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
       }
     }, 500);
     return () => clearInterval(interval);
-  }, [project, sounds]);
+  }, [backingTrackUrl, sounds]);
 
-  const backingTrackReady = loadStates[project.backingTrackUrl] === 'ready';
+  const backingTrackReady = loadStates[backingTrackUrl] === 'ready';
   const metronomeReady = loadStates[AudioEngine.METRONOME_URL] === 'ready';
 
   const checkIsPlayable = (type: SoundType, difficulty: number) => {
@@ -130,21 +126,14 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
 
   const handlePadPress = useCallback((type: SoundType) => {
     if (!audioEngine || !isPlaying) return;
-
-    const isPlayable = checkIsPlayable(type, level.difficulty);
-    if (!isPlayable) return;
+    if (!checkIsPlayable(type, level.difficulty)) return;
 
     const sound = soundsWithPatterns.find(s => s.type === type);
     if (sound) {
       audioEngine.playOneShot(sound.sampleUrl);
-    }
-
-    if (sound) {
       const time = audioEngine.getCurrentTime();
       const adjustedTime = time - SYNC_OFFSET; 
-      
-      const secondsPerBeat = 60 / project.bpm;
-      const secondsPerStep = secondsPerBeat / 4;
+      const secondsPerStep = (60 / bpm) / 4;
       const currentStep = adjustedTime / secondsPerStep;
       const tolerance = 1.0; 
       
@@ -154,7 +143,6 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
       sound.triggerSteps.forEach(step => {
         const noteId = `${type}-${step}`;
         if (clearedNotesRef.current.has(noteId)) return;
-
         const diff = Math.abs(currentStep - step);
         if (diff <= tolerance && diff < minDiff) {
           minDiff = diff;
@@ -168,31 +156,22 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
         setScore(prev => {
           const nextHits = prev.hits + 1;
           const total = nextHits + prev.misses;
-          return {
-            hits: nextHits,
-            misses: prev.misses,
-            accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100),
-          };
+          return { hits: nextHits, misses: prev.misses, accuracy: total === 0 ? 100 : Math.round((nextHits / total) * 100) };
         });
       } else {
         triggerPadFlash(type, 'miss');
         setScore(prev => {
           const nextMisses = prev.misses + 1;
           const total = prev.hits + nextMisses;
-          return {
-            hits: prev.hits,
-            misses: nextMisses,
-            accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100),
-          };
+          return { hits: prev.hits, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
         });
       }
     }
-  }, [isPlaying, soundsWithPatterns, level.difficulty, project.bpm]);
+  }, [isPlaying, soundsWithPatterns, level.difficulty, bpm]);
 
   const startLevel = async () => {
     if (!audioEngine) return;
     setIsLoadingAudio(true);
-    
     try {
       const isResumed = await audioEngine.resume();
       if (!isResumed) throw new Error("AudioContext failed to resume");
@@ -202,46 +181,24 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
       setIsFinished(false);
       setHasAwardedPoints(false);
       
-      const secondsPerBeat = 60 / project.bpm;
-      const countInDuration = 4 * secondsPerBeat;
+      const secondsPerBeat = 60 / bpm;
       const now = audioEngine.getContextTime();
-      const actualStartTime = now + countInDuration;
-      
+      const actualStartTime = now + (4 * secondsPerBeat);
       audioEngine.setStartTime(actualStartTime);
       setIsPlaying(true); 
 
       if (metronomeReady) {
-        await audioEngine.playCountIn(project.bpm, (beat) => {
-          setCountIn(5 - beat); 
-        });
+        await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
         setCountIn(null);
       }
-      
-      if (backingTrackReady) {
-        await audioEngine.startBackingTrack(project.backingTrackUrl, actualStartTime);
-      }
-      
+      if (backingTrackReady) await audioEngine.startBackingTrack(backingTrackUrl, actualStartTime);
     } catch (e) {
-      toast({
-        variant: "destructive",
-        title: "Audio Error",
-        description: "The audio system could not be started.",
-      });
+      toast({ variant: "destructive", title: "Audio Error", description: "The audio system could not be started." });
       setCountIn(null);
       setIsPlaying(false);
     } finally {
       setIsLoadingAudio(false);
     }
-  };
-
-  const abortLevel = () => {
-    if (audioEngine) {
-      audioEngine.stop();
-    }
-    setIsPlaying(false);
-    setIsFinished(false);
-    setCountIn(null);
-    router.push(`/studio/${project.studioId}`);
   };
 
   useEffect(() => {
@@ -250,18 +207,13 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
-          
-          const secondsPerBeat = 60 / project.bpm;
-          const secondsPerStep = secondsPerBeat / 4;
+          const secondsPerStep = (60 / bpm) / 4;
           const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
           const tolerance = 1.0;
 
-          // Check for passive misses (notes passed without being hit)
           let newMisses = 0;
           soundsWithPatterns.forEach(sound => {
-            const isPlayable = checkIsPlayable(sound.type, level.difficulty);
-            if (!isPlayable) return;
-
+            if (!checkIsPlayable(sound.type, level.difficulty)) return;
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
               if (!clearedNotesRef.current.has(noteId) && currentStep > step + tolerance) {
@@ -275,16 +227,11 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
             setScore(prev => {
               const nextMisses = prev.misses + newMisses;
               const total = prev.hits + nextMisses;
-              return {
-                hits: prev.hits,
-                misses: nextMisses,
-                accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100),
-              };
+              return { hits: prev.hits, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
             });
           }
           
-          const totalDuration = (TOTAL_STEPS / 4) * secondsPerBeat;
-          if (t >= totalDuration) { 
+          if (t >= (TOTAL_STEPS / 4) * (60 / bpm)) { 
             setIsPlaying(false);
             setIsFinished(true);
             audioEngine.stop();
@@ -294,10 +241,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
       };
       frameRef.current = requestAnimationFrame(update);
     }
-    return () => {
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
-    };
-  }, [isPlaying, project.bpm, TOTAL_STEPS, level.difficulty, soundsWithPatterns]);
+    return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+  }, [isPlaying, bpm, level.difficulty, soundsWithPatterns]);
 
   const isPassed = score.accuracy >= PASS_THRESHOLD;
 
@@ -306,19 +251,8 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
       const reward = DIFFICULTY_REWARDS[level.difficulty] || 0;
       const userRef = doc(db, 'users', user.uid);
       const progressRef = doc(db, 'users', user.uid, 'progress', level.id);
-      
-      updateDoc(userRef, {
-        streetCred: increment(reward)
-      }).catch(() => {
-        setDoc(userRef, { streetCred: reward }, { merge: true });
-      });
-
-      setDoc(progressRef, {
-        levelId: level.id,
-        accuracy: score.accuracy,
-        completedAt: serverTimestamp()
-      }, { merge: true });
-
+      updateDoc(userRef, { streetCred: increment(reward) }).catch(() => setDoc(userRef, { streetCred: reward }, { merge: true }));
+      setDoc(progressRef, { levelId: level.id, accuracy: score.accuracy, completedAt: serverTimestamp() }, { merge: true });
       setHasAwardedPoints(true);
     }
   }, [isFinished, isPassed, hasAwardedPoints, user, db, level, score.accuracy]);
@@ -327,131 +261,59 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
     <div className="flex flex-col h-screen bg-[#050505] text-white p-4 md:p-6 max-w-5xl mx-auto overflow-hidden">
       <div className="flex justify-between items-center mb-4 md:mb-6 gap-2">
         <div className="flex items-center gap-2 md:gap-6 min-w-0">
-          <Link href={`/studio/${project.studioId}`} className="min-w-0">
+          <Link href={`/studio/${game.studioId}`} className="min-w-0">
             <div className="cursor-pointer group">
               <h1 className="text-xl md:text-4xl font-black tracking-tighter text-white uppercase italic leading-none group-hover:text-[#993DEB] transition-colors truncate">BeatHero</h1>
-              <p className="text-[8px] md:text-[10px] opacity-40 font-black uppercase tracking-[0.2em] md:tracking-[0.3em] mt-1 truncate">
-                {project.name} • {level.name}
+              <p className="text-[8px] md:text-[10px] opacity-40 font-black uppercase tracking-[0.2em] mt-1 truncate">
+                {game.name} • {level.name}
               </p>
             </div>
           </Link>
           {(isPlaying || countIn !== null) && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={abortLevel}
-              className="text-[8px] md:text-[10px] uppercase font-black tracking-widest text-destructive hover:bg-destructive/10 hover:text-destructive border border-destructive/20 gap-1 md:gap-2 px-2 md:px-3 h-7 md:h-8 rounded-full shrink-0"
-            >
-              <X className="w-2 h-2 md:w-3 md:h-3" /> Abort
+            <Button variant="ghost" size="sm" onClick={() => { audioEngine?.stop(); router.push(`/studio/${game.studioId}`); }} className="text-[8px] md:text-[10px] uppercase font-black tracking-widest text-destructive border border-destructive/20 gap-1 px-2 h-7 rounded-full shrink-0">
+              <X className="w-2 h-2" /> Abort
             </Button>
           )}
         </div>
         
         <div className="flex items-center gap-3 md:gap-8 shrink-0">
-          <div className="hidden sm:flex flex-col items-end">
-            <p className="text-[8px] md:text-[10px] uppercase font-black tracking-widest opacity-30">Target</p>
-            <p className="text-xs md:text-sm font-black opacity-60 italic">{PASS_THRESHOLD}%+</p>
-          </div>
           <div className="text-right border-l border-white/10 pl-3 md:pl-8">
             <p className="text-[8px] md:text-[10px] uppercase font-black tracking-widest opacity-30">Accuracy</p>
             <div className="flex items-center gap-1.5 md:gap-3">
-              <p className={cn(
-                "text-2xl md:text-4xl font-black italic tracking-tighter transition-colors",
-                isPassed ? "text-[#00E676]" : "text-[#FF3D00]"
-              )}>
+              <p className={cn("text-2xl md:text-4xl font-black italic tracking-tighter transition-colors", isPassed ? "text-[#00E676]" : "text-[#FF3D00]")}>
                 {score.accuracy}%
               </p>
-              {isPlaying && (
-                <Badge variant={isPassed ? "default" : "destructive"} className="text-[7px] md:text-[10px] h-4 md:h-5 px-1 md:px-2 uppercase font-black italic rounded-full hidden xs:inline-flex">
-                  {isPassed ? "OK" : "Low"}
-                </Badge>
-              )}
             </div>
           </div>
         </div>
       </div>
 
       <div className="relative flex-1 gemini-border gemini-glow overflow-hidden flex flex-col">
-        <div 
-          className="absolute left-0 right-0 h-px bg-white/20 z-10"
-          style={{ top: '500px' }}
-        />
-
         <div className="flex-1 flex px-2 md:px-4 relative bg-black/40">
           {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => {
             const sound = soundsWithPatterns.find(s => s.type === type);
-            const isPlayable = checkIsPlayable(type, level.difficulty);
             return (
-              <NoteLane
-                key={type}
-                notes={sound?.triggerSteps || []}
-                currentTime={currentTime}
-                bpm={project.bpm}
-                isActive={isPlaying && isPlayable}
-                color={PAD_COLORS[type]}
-              />
+              <NoteLane key={type} notes={sound?.triggerSteps || []} currentTime={currentTime} bpm={bpm} isActive={isPlaying && checkIsPlayable(type, level.difficulty)} color={PAD_COLORS[type]} />
             );
           })}
         </div>
 
         <div className="p-4 md:p-8 bg-black/40 border-t border-white/5 flex flex-col gap-4">
           <div className="flex justify-center gap-3 md:gap-6">
-            {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => {
-              const sound = soundsWithPatterns.find(s => s.type === type);
-              const status = loadStates[sound?.sampleUrl || ''];
-              const isPlayable = checkIsPlayable(type, level.difficulty);
-              const flash = padFlashes[type];
-              
-              return (
-                <div key={type} className="flex flex-col items-center gap-2 md:gap-3 w-full max-w-[140px]">
-                  <SamplerPad
-                    label={type}
-                    shortcut={SHORTCUTS[type]}
-                    onPress={() => handlePadPress(type)}
-                    color={PAD_COLORS[type]}
-                    isInactive={!isPlayable}
-                    flash={flash.type}
-                    key={flash.key}
-                  />
-                  {isPlayable && (
-                    <div className="flex items-center gap-1 text-[7px] md:text-[9px] uppercase font-black tracking-widest opacity-40">
-                      {status === 'ready' && <CheckCircle2 className="w-2 h-2 md:w-3 md:h-3 text-green-400" />}
-                      {status === 'failed' && <AlertCircle className="w-2 h-2 md:w-3 md:h-3 text-destructive" />}
-                      {status === 'loading' && <Loader2 className="w-2 h-2 md:w-3 md:h-3 animate-spin" />}
-                      <span className="hidden xs:inline">{status === 'ready' ? 'Ready' : (status || 'Idle')}</span>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => (
+              <div key={type} className="flex flex-col items-center gap-2 w-full max-w-[140px]">
+                <SamplerPad label={type} shortcut={SHORTCUTS[type]} onPress={() => handlePadPress(type)} color={PAD_COLORS[type]} isInactive={!checkIsPlayable(type, level.difficulty)} flash={padFlashes[type].type} key={padFlashes[type].key} />
+              </div>
+            ))}
           </div>
         </div>
 
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
             <Card className="p-8 md:p-12 bg-black border-none gemini-border gemini-glow text-center max-w-sm w-full">
-              <Music2 className="w-12 h-12 md:w-16 md:h-16 text-[#993DEB] mx-auto mb-4 md:mb-6" />
-              <h2 className="text-2xl md:text-3xl font-black mb-2 uppercase italic tracking-tighter">Ready?</h2>
-              
-              <div className="flex flex-col gap-3 mb-6 md:mb-10">
-                <p className="text-xs md:text-sm opacity-50 font-medium">Unlock audio to start the level.</p>
-                <div className="flex items-center justify-center gap-2 py-2 px-3 md:py-2.5 md:px-4 bg-white/5 rounded-xl md:rounded-2xl border border-white/10">
-                  <span className="text-[8px] md:text-[10px] uppercase font-black tracking-widest opacity-30">Status:</span>
-                  {backingTrackReady ? (
-                    <span className="text-[8px] md:text-[10px] text-green-400 font-black uppercase tracking-widest">Ready</span>
-                  ) : (
-                    <span className="text-[8px] md:text-[10px] opacity-30 flex items-center gap-1 animate-pulse font-black uppercase tracking-widest">
-                      <Loader2 className="w-2 h-2 md:w-3 md:h-3 animate-spin" /> Loading
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <Button 
-                onClick={startLevel} 
-                disabled={isLoadingAudio || !backingTrackReady}
-                className="w-full h-12 md:h-16 text-lg md:text-xl font-black uppercase italic tracking-tighter bg-white text-black hover:bg-white/90 rounded-xl md:rounded-2xl"
-              >
+              <Music2 className="w-12 h-12 text-[#993DEB] mx-auto mb-6" />
+              <h2 className="text-2xl md:text-3xl font-black mb-6 uppercase italic tracking-tighter">Ready?</h2>
+              <Button onClick={startLevel} disabled={isLoadingAudio || !backingTrackReady} className="w-full h-12 md:h-16 text-lg md:text-xl font-black uppercase italic tracking-tighter bg-white text-black hover:bg-white/90 rounded-xl md:rounded-2xl">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Start Level"}
               </Button>
             </Card>
@@ -460,7 +322,7 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
 
         {countIn !== null && (
           <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center z-50 pointer-events-none">
-            <div className="text-[8rem] md:text-[12rem] font-black italic tracking-tighter text-white/80 animate-in zoom-in-50 duration-200 drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+            <div className="text-[8rem] md:text-[12rem] font-black italic tracking-tighter text-white/80 animate-in zoom-in-50 duration-200">
               {countIn}
             </div>
           </div>
@@ -468,36 +330,27 @@ export const GameView: React.FC<GameViewProps> = ({ project, level, sounds, patt
 
         {isFinished && (
           <div className="absolute inset-0 bg-black/95 backdrop-blur-xl flex items-center justify-center p-6 z-50">
-            <div className="max-w-md w-full text-center space-y-6 md:space-y-8 animate-in zoom-in-95 duration-500">
+            <div className="max-w-md w-full text-center space-y-6 animate-in zoom-in-95 duration-500">
               {isPassed ? (
                 <>
-                  <div className="relative inline-block">
-                    <Trophy className="w-16 h-16 md:w-24 md:h-24 text-[#FFEA00] mx-auto mb-4 drop-shadow-[0_0_20px_rgba(255,234,0,0.5)]" />
-                  </div>
-                  <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none">Accomplished</h2>
-                  <p className="text-[#00E676] font-black text-2xl md:text-3xl italic tracking-tighter">{score.accuracy}% Accuracy</p>
-                  <div className="bg-white/5 rounded-xl md:rounded-2xl p-3 md:p-4 border border-white/10 inline-block">
-                    <p className="text-[#FFEA00] font-black text-lg md:text-xl tracking-widest uppercase">
-                      +{DIFFICULTY_REWARDS[level.difficulty]} <span className="italic">SC</span>
-                    </p>
+                  <Trophy className="w-16 h-16 text-[#FFEA00] mx-auto mb-4" />
+                  <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter">Accomplished</h2>
+                  <p className="text-[#00E676] font-black text-2xl italic">{score.accuracy}% Accuracy</p>
+                  <div className="bg-white/5 p-4 rounded-2xl border border-white/10 inline-block">
+                    <p className="text-[#FFEA00] font-black text-xl tracking-widest">+{DIFFICULTY_REWARDS[level.difficulty]} SC</p>
                   </div>
                 </>
               ) : (
                 <>
-                  <XCircle className="w-16 h-16 md:w-24 md:h-24 text-[#FF3D00] mx-auto mb-4 drop-shadow-[0_0_20px_rgba(255,61,0,0.5)]" />
-                  <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none">Level Failed</h2>
-                  <p className="text-[#FF3D00] font-black text-2xl md:text-3xl italic tracking-tighter">{score.accuracy}% Accuracy</p>
+                  <XCircle className="w-16 h-16 text-[#FF3D00] mx-auto mb-4" />
+                  <h2 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter">Level Failed</h2>
+                  <p className="text-[#FF3D00] font-black text-2xl italic">{score.accuracy}% Accuracy</p>
                 </>
               )}
-              
-              <div className="flex gap-3 md:gap-4 pt-4 md:pt-8">
-                <Button onClick={startLevel} variant="outline" className="flex-1 h-12 md:h-14 border-white/20 bg-white/5 hover:bg-white/10 rounded-xl md:rounded-2xl font-black uppercase italic tracking-tighter">
-                  <RotateCcw className="mr-2 h-4 w-4 md:h-5 md:w-5" /> Retry
-                </Button>
-                <Link href={`/studio/${project.studioId}`} className="flex-1">
-                  <Button className="w-full h-12 md:h-14 bg-white text-black hover:bg-white/90 rounded-xl md:rounded-2xl font-black uppercase italic tracking-tighter">
-                    <Home className="mr-2 h-4 w-4 md:h-5 md:w-5" /> Studio
-                  </Button>
+              <div className="flex gap-4 pt-8">
+                <Button onClick={startLevel} variant="outline" className="flex-1 h-12 border-white/20 bg-white/5 rounded-xl font-black uppercase italic tracking-tighter">Retry</Button>
+                <Link href={`/studio/${game.studioId}`} className="flex-1">
+                  <Button className="w-full h-12 bg-white text-black rounded-xl font-black uppercase italic tracking-tighter">Studio</Button>
                 </Link>
               </div>
             </div>

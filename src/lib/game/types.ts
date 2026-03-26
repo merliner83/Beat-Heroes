@@ -1,5 +1,5 @@
-
 export type SoundType = 'kick' | 'clap' | 'percs' | 'misc';
+export type GameType = 'rhythm-producer' | 'synth-master';
 
 export interface Studio {
   id: string;
@@ -11,18 +11,19 @@ export interface Studio {
   linkLabel?: string;
 }
 
-export interface Project {
+export interface Game {
   id: string;
   studioId: string;
   name: string;
-  bpm: number;
+  type: GameType;
+  bpm?: number;
   difficulty?: number; // 1-4
-  backingTrackUrl: string;
+  backingTrackUrl?: string;
 }
 
 export interface Level {
   id: string;
-  projectId: string;
+  gameId: string;
   difficulty: number;
   name: string;
 }

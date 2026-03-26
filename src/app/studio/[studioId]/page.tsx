@@ -1,11 +1,10 @@
-
 "use client";
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useCollection, useDoc, useUser } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
-import { Studio, Project, Level, LevelProgress } from '@/lib/game/types';
+import { Studio, Game, Level, LevelProgress } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft, LayoutGrid, ChevronRight, ExternalLink, Trophy, Loader2 } from 'lucide-react';
@@ -28,13 +27,13 @@ export default function StudioPage() {
   const studioRef = useMemoFirebase(() => studioId ? doc(db, 'studios', studioId as string) : null, [db, studioId]);
   const { data: studio } = useDoc<Studio>(studioRef);
 
-  const projectsQuery = useMemoFirebase(() => {
+  const gamesQuery = useMemoFirebase(() => {
     if (!db || !studioId) return null;
-    return query(collection(db, 'projects'), where('studioId', '==', studioId));
+    return query(collection(db, 'games'), where('studioId', '==', studioId));
   }, [db, studioId]);
-  const { data: projects } = useCollection<Project>(projectsQuery);
+  const { data: games } = useCollection<Game>(gamesQuery);
 
-  const [selectedProjectId, setSelectedProjectId] = React.useState<string | null>(null);
+  const [selectedGameId, setSelectedGameId] = React.useState<string | null>(null);
 
   const allLevelsQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -52,14 +51,14 @@ export default function StudioPage() {
     return userProgress?.find(p => p.levelId === levelId);
   };
 
-  const calculateProjectProgress = (projectId: string) => {
+  const calculateGameProgress = (gameId: string) => {
     if (!allLevels || !userProgress) return 0;
     
-    const projectLevels = allLevels.filter(l => l.projectId === projectId);
-    if (projectLevels.length === 0) return 0;
+    const gameLevels = allLevels.filter(l => l.gameId === gameId);
+    if (gameLevels.length === 0) return 0;
 
-    const completedCount = projectLevels.filter(l => getLevelProgress(l.id)).length;
-    return Math.round((completedCount / projectLevels.length) * 100);
+    const completedCount = gameLevels.filter(l => getLevelProgress(l.id)).length;
+    return Math.round((completedCount / gameLevels.length) * 100);
   };
 
   return (
@@ -90,21 +89,21 @@ export default function StudioPage() {
 
         <div className="space-y-8">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-white/40">Projects</h2>
+            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-white/40">Mini Games</h2>
             {isLoadingLevels && <Loader2 className="w-4 h-4 animate-spin opacity-20" />}
           </div>
           
           <div className="space-y-6">
-            {projects?.map((project) => {
-              const isSelected = selectedProjectId === project.id;
-              const progressPercent = calculateProjectProgress(project.id);
-              const projectLevels = allLevels?.filter(l => l.projectId === project.id) || [];
-              const diffInfo = DIFFICULTY_MAP[project.difficulty || 1];
+            {games?.map((game) => {
+              const isSelected = selectedGameId === game.id;
+              const progressPercent = calculateGameProgress(game.id);
+              const gameLevels = allLevels?.filter(l => l.gameId === game.id) || [];
+              const diffInfo = DIFFICULTY_MAP[game.difficulty || 1];
 
               return (
-                <div key={project.id} className="space-y-4">
+                <div key={game.id} className="space-y-4">
                   <div 
-                    onClick={() => setSelectedProjectId(isSelected ? null : project.id)}
+                    onClick={() => setSelectedGameId(isSelected ? null : game.id)}
                     className="cursor-pointer relative gemini-border overflow-visible"
                   >
                     <Card className={cn(
@@ -114,7 +113,7 @@ export default function StudioPage() {
                       <div className="flex justify-between items-start text-white mb-6">
                         <div>
                           <div className="flex items-center gap-4 mb-3">
-                            <h3 className="text-4xl font-black uppercase italic tracking-tighter text-white leading-none">{project.name}</h3>
+                            <h3 className="text-4xl font-black uppercase italic tracking-tighter text-white leading-none">{game.name}</h3>
                             <div 
                               className="px-4 py-1.5 rounded-lg border-2 text-[10px] font-black tracking-widest italic transition-all"
                               style={{ 
@@ -127,14 +126,16 @@ export default function StudioPage() {
                               {diffInfo.label}
                             </div>
                           </div>
-                          <p className="text-sm font-bold tracking-widest uppercase text-[#FFEA00]">{project.bpm} BPM</p>
+                          <p className="text-sm font-bold tracking-widest uppercase text-[#FFEA00]">
+                            {game.type === 'rhythm-producer' ? `${game.bpm} BPM` : 'Arcade'}
+                          </p>
                         </div>
                         <LayoutGrid className={cn("w-10 h-10 transition-all", isSelected ? "text-[#FFEA00] scale-110" : "opacity-20")} />
                       </div>
 
                       <div className="space-y-3">
                         <div className="flex justify-between items-end">
-                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Project Progress</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Progress</span>
                           <span className="text-xs font-black italic text-[#FFEA00]">{progressPercent}%</span>
                         </div>
                         <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -154,12 +155,12 @@ export default function StudioPage() {
                   {isSelected && (
                     <div className="pl-4 py-2 animate-in slide-in-from-top-4 duration-300">
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                        {projectLevels.sort((a,b) => a.difficulty - b.difficulty).map((level) => {
+                        {gameLevels.sort((a,b) => a.difficulty - b.difficulty).map((level) => {
                           const progress = getLevelProgress(level.id);
                           return (
                             <Button
                               key={level.id}
-                              onClick={() => router.push(`/play/${studioId}/${project.id}/${level.id}`)}
+                              onClick={() => router.push(`/play/${studioId}/${game.id}/${level.id}`)}
                               variant="ghost"
                               className={cn(
                                 "h-32 border-2 hover:bg-white/5 flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl relative overflow-hidden",
@@ -183,11 +184,6 @@ export default function StudioPage() {
                             </Button>
                           );
                         })}
-                        {projectLevels.length === 0 && !isLoadingLevels && (
-                          <div className="col-span-full py-12 text-center bg-white/5 rounded-2xl opacity-40 font-bold uppercase tracking-widest text-sm text-white">
-                            No levels available in this sector.
-                          </div>
-                        )}
                       </div>
                     </div>
                   )}
@@ -195,9 +191,9 @@ export default function StudioPage() {
               );
             })}
 
-            {projects?.length === 0 && (
+            {games?.length === 0 && (
               <div className="py-24 text-center border-2 border-dashed border-white/5 rounded-3xl opacity-20">
-                <p className="font-black uppercase tracking-widest text-white">No Projects Found</p>
+                <p className="font-black uppercase tracking-widest text-white">No Games Found</p>
               </div>
             )}
           </div>

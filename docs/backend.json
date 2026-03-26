@@ -1,10 +1,9 @@
-
 {
   "entities": {
     "Studio": {
       "title": "Studio",
       "type": "object",
-      "description": "Ein Musik-Studio, das mehrere Projekte enthält.",
+      "description": "Ein Musik-Studio, das mehrere Spiele enthält.",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
@@ -16,31 +15,32 @@
       },
       "required": ["id", "name"]
     },
-    "Project": {
-      "title": "Project",
+    "Game": {
+      "title": "Game",
       "type": "object",
-      "description": "Ein Musikprojekt (Song) innerhalb eines Studios.",
+      "description": "Ein Minigame innerhalb eines Studios.",
       "properties": {
         "id": { "type": "string" },
         "studioId": { "type": "string" },
         "name": { "type": "string" },
-        "bpm": { "type": "number" },
-        "difficulty": { "type": "number", "description": "Schwierigkeitsgrad des Projekts (1-4)" },
-        "backingTrackUrl": { "type": "string", "format": "uri" }
+        "type": { "type": "string", "enum": ["rhythm-producer", "synth-master"], "description": "Der technische Typ des Spiels." },
+        "bpm": { "type": "number", "description": "Spezifisch für Rhythm Producer." },
+        "difficulty": { "type": "number", "description": "Schwierigkeitsgrad (1-4)" },
+        "backingTrackUrl": { "type": "string", "format": "uri", "description": "Spezifisch für Rhythm Producer." }
       },
-      "required": ["id", "studioId", "name", "bpm", "backingTrackUrl"]
+      "required": ["id", "studioId", "name", "type"]
     },
     "Level": {
       "title": "Level",
       "type": "object",
-      "description": "Ein Schwierigkeitsgrad innerhalb eines Projekts.",
+      "description": "Ein Schwierigkeitsgrad innerhalb eines Spiels.",
       "properties": {
         "id": { "type": "string" },
-        "projectId": { "type": "string" },
+        "gameId": { "type": "string" },
         "difficulty": { "type": "number", "description": "1 bis 4" },
         "name": { "type": "string" }
       },
-      "required": ["id", "projectId", "difficulty"]
+      "required": ["id", "gameId", "difficulty"]
     },
     "TriggerPattern": {
       "title": "TriggerPattern",
@@ -60,7 +60,7 @@
     "Sound": {
       "title": "Sound",
       "type": "object",
-      "description": "Ein Instrument-Trigger innerhalb eines Levels mit einer Abfolge von Patterns.",
+      "description": "Ein Instrument-Trigger innerhalb eines Levels (Rhythm Producer).",
       "properties": {
         "id": { "type": "string" },
         "levelId": { "type": "string" },
@@ -69,7 +69,7 @@
         "patternIds": { 
           "type": "array", 
           "items": { "type": "string" },
-          "description": "Abfolge von 8-Takt-Patterns (z.B. 4 Stück für 32 Takte)." 
+          "description": "Abfolge von 8-Takt-Patterns." 
         }
       },
       "required": ["id", "levelId", "type", "sampleUrl", "patternIds"]
@@ -104,13 +104,13 @@
       "schema": "#/backend/entities/Studio",
       "description": "Öffentliche Studios."
     },
-    "/projects/{projectId}": {
-      "schema": "#/backend/entities/Project",
-      "description": "Unabhängige Projekte."
+    "/games/{gameId}": {
+      "schema": "#/backend/entities/Game",
+      "description": "Alle Minigames."
     },
     "/levels/{levelId}": {
       "schema": "#/backend/entities/Level",
-      "description": "Unabhängige Levels."
+      "description": "Levels der Spiele."
     },
     "/levels/{levelId}/sounds/{soundId}": {
       "schema": "#/backend/entities/Sound",
@@ -118,15 +118,15 @@
     },
     "/patterns/{patternId}": {
       "schema": "#/backend/entities/TriggerPattern",
-      "description": "Globale Rhythmus-Vorlagen (8 Takte)."
+      "description": "Globale Rhythmus-Vorlagen."
     },
     "/users/{userId}": {
       "schema": "#/backend/entities/UserProfile",
-      "description": "Nutzer-Profile mit Street Cred."
+      "description": "Nutzer-Profile."
     },
     "/users/{userId}/progress/{levelId}": {
       "schema": "#/backend/entities/LevelProgress",
-      "description": "Fortschritt des Nutzers pro Level."
+      "description": "Fortschritt des Nutzers."
     }
   }
 }

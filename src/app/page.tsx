@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -76,56 +75,55 @@ export default function HomePage() {
     
     // Patterns
     const patterns = [
-      { id: 'kick-intro', name: 'KICK Intro (Sparse)', steps: [0, 16, 32, 48, 64, 80, 96, 112] },
-      { id: 'kick-drop', name: 'KICK Main Drop (Driving)', steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124] },
-      { id: 'kick-buildup', name: 'KICK Buildup (Rush)', steps: [0, 16, 32, 48, 64, 72, 80, 88, 96, 100, 104, 108, 112, 114, 116, 118, 120, 121, 122, 123, 124, 125, 126, 127] },
-      { id: 'clap-drop', name: 'CLAP Standard (2 & 4)', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
+      { id: 'kick-intro', name: 'KICK Intro', steps: [0, 16, 32, 48, 64, 80, 96, 112] },
+      { id: 'kick-drop', name: 'KICK Drop', steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124] },
+      { id: 'kick-buildup', name: 'KICK Buildup', steps: [0, 16, 32, 48, 64, 72, 80, 88, 96, 100, 104, 108, 112, 114, 116, 118, 120, 121, 122, 123, 124, 125, 126, 127] },
+      { id: 'clap-drop', name: 'CLAP Standard', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
       { id: 'clap-buildup', name: 'CLAP Accelerating', steps: [16, 48, 80, 96, 104, 112, 116, 120, 122, 124, 125, 126, 127] },
-      { id: 'hats-edm', name: 'HATS EDM Quarter Offbeat', steps: [2, 10, 18, 26, 34, 42, 50, 58, 66, 74, 82, 90, 98, 106, 114, 122] },
-      { id: 'hats-pro', name: 'HATS Syncopated 16th (Advanced)', steps: [2, 6, 10, 12, 14, 18, 22, 26, 28, 30, 34, 38, 42, 44, 46, 50, 54, 58, 60, 62, 66, 70, 74, 76, 78, 82, 86, 90, 92, 94, 98, 102, 106, 108, 110, 114, 118, 122, 124, 126] },
+      { id: 'hats-edm', name: 'HATS EDM Quarter', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
+      { id: 'hats-pro', name: 'HATS Syncopated 16th', steps: [2, 6, 10, 12, 14, 18, 22, 26, 28, 30, 34, 38, 42, 44, 46, 50, 54, 58, 60, 62, 66, 70, 74, 76, 78, 82, 86, 90, 92, 94, 98, 102, 106, 108, 110, 114, 118, 122, 124, 126] },
       { id: 'misc-afro', name: 'MISC Afro Clave', steps: [0, 3, 6, 10, 12, 16, 19, 22, 26, 28, 32, 35, 38, 42, 44, 48, 51, 54, 58, 60, 64, 67, 70, 74, 76, 80, 83, 86, 90, 92, 96, 99, 102, 106, 108, 112, 115, 118, 122, 124] },
-      { id: 'misc-pro', name: 'MISC Polyrhythmic Clave (Hero)', steps: [0, 3, 7, 10, 12, 16, 19, 23, 26, 28, 32, 35, 39, 42, 44, 48, 51, 55, 58, 60, 64, 67, 71, 74, 76, 80, 83, 87, 90, 92, 96, 99, 103, 106, 108, 112, 115, 119, 122, 124] }
+      { id: 'misc-pro', name: 'MISC Polyrhythmic Clave', steps: [0, 3, 7, 10, 12, 16, 19, 23, 26, 28, 32, 35, 39, 42, 44, 48, 51, 55, 58, 60, 64, 67, 71, 74, 76, 80, 83, 87, 90, 92, 96, 99, 103, 106, 108, 112, 115, 119, 122, 124] }
     ];
 
     const newStudios = [
-      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and sharp transients.', coverColor: '#FF3D00', district: 'Bantiger District', linkUrl: 'https://example.com/gabriel', linkLabel: 'Portfolio' },
-      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Atmospheric layers and heavy kicks.', coverColor: '#FFEA00', district: 'Bantiger District', linkUrl: 'https://example.com/yoan', linkLabel: 'Beat Store' },
-      { id: 'nintu-music', name: 'Nintu Music', description: 'Electronic textures and deep soul.', coverColor: '#00E676', district: 'Bantiger District', linkUrl: 'https://example.com/nintu', linkLabel: 'Soundcloud' },
-      { id: 'dave-beats', name: 'Dave Beats', description: 'The golden era of hip hop rhythm.', coverColor: '#2979FF', district: 'Bantiger District', linkUrl: 'https://example.com/dave', linkLabel: 'Beat Store' },
-      { id: 'noxxos', name: 'Noxxos', description: 'Experimental rhythms from the outer rim.', coverColor: '#EB3D99', district: 'Oberemmental District', linkUrl: 'https://example.com/noxxos', linkLabel: 'Lab Logs' }
+      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and sharp transients.', coverColor: '#FF3D00', district: 'Bantiger District' },
+      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Atmospheric layers and heavy kicks.', coverColor: '#FFEA00', district: 'Bantiger District' },
+      { id: 'nintu-music', name: 'Nintu Music', description: 'Electronic textures and deep soul.', coverColor: '#00E676', district: 'Bantiger District' },
+      { id: 'dave-beats', name: 'Dave Beats', description: 'The golden era of hip hop rhythm.', coverColor: '#2979FF', district: 'Bantiger District' },
+      { id: 'noxxos', name: 'Noxxos', description: 'Experimental rhythms.', coverColor: '#EB3D99', district: 'Oberemmental District' }
     ];
 
     try {
       for (const p of patterns) await setDoc(doc(db, 'patterns', p.id), p, { merge: true });
       for (const s of newStudios) await setDoc(doc(db, 'studios', s.id), s, { merge: true });
 
-      const projectsToSetup = [
-        { id: 'gabriel-1', studioId: 'gabriel-beats', name: 'Neon Horizon', bpm: 162, difficulty: 4 },
-        { id: 'yoan-sampling', studioId: 'yoan-beats', name: 'Sampling', bpm: 125, difficulty: 2 }
+      const gamesToSetup = [
+        { id: 'gabriel-rhythm', studioId: 'gabriel-beats', name: 'Neon Horizon', type: 'rhythm-producer', bpm: 162, difficulty: 4 },
+        { id: 'yoan-rhythm', studioId: 'yoan-beats', name: 'Sampling', type: 'rhythm-producer', bpm: 125, difficulty: 2 }
       ];
 
-      for (const pConfig of projectsToSetup) {
-        const projectRef = doc(db, 'projects', pConfig.id);
-        const pSnap = await getDoc(projectRef);
-        const existing = pSnap.exists() ? pSnap.data() : {};
+      for (const gameConfig of gamesToSetup) {
+        const gameRef = doc(db, 'games', gameConfig.id);
+        const gSnap = await getDoc(gameRef);
+        const existing = gSnap.exists() ? gSnap.data() : {};
         
-        await setDoc(projectRef, {
-          ...pConfig,
-          bpm: existing.bpm || pConfig.bpm,
+        await setDoc(gameRef, {
+          ...gameConfig,
+          bpm: existing.bpm || gameConfig.bpm,
           backingTrackUrl: existing.backingTrackUrl || 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
         }, { merge: true });
 
-        // Setup 4 Levels for each project
         const levels = [
-          { id: `${pConfig.id}-level-1`, name: 'Foundation', diff: 1 },
-          { id: `${pConfig.id}-level-2`, name: 'Clap Groove', diff: 2 },
-          { id: `${pConfig.id}-level-3`, name: 'Hi-Hat Grooves', diff: 3 },
-          { id: `${pConfig.id}-level-4`, name: 'Hero Rhythms', diff: 4 }
+          { id: `${gameConfig.id}-level-1`, name: 'Foundation', diff: 1 },
+          { id: `${gameConfig.id}-level-2`, name: 'Clap Groove', diff: 2 },
+          { id: `${gameConfig.id}-level-3`, name: 'Hi-Hat Grooves', diff: 3 },
+          { id: `${gameConfig.id}-level-4`, name: 'Hero Rhythms', diff: 4 }
         ];
 
         for (const l of levels) {
           await setDoc(doc(db, 'levels', l.id), {
-            id: l.id, projectId: pConfig.id, difficulty: l.diff, name: l.name
+            id: l.id, gameId: gameConfig.id, difficulty: l.diff, name: l.name
           }, { merge: true });
 
           const soundConfigs = [
@@ -154,14 +152,14 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Database Ready", description: "All projects and levels updated!" });
+      toast({ title: "Database Ready", description: "Games and levels synchronized!" });
     } catch (e) {
       toast({ variant: "destructive", title: "Error", description: "Initialization failed." });
     }
   };
 
   return (
-    <div className="h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none">
+    <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col overflow-x-hidden select-none">
       <header className="p-4 md:p-6 flex flex-col items-center z-50">
         <div className="gemini-border gemini-glow p-3 md:p-4 inline-block mb-2 md:mb-4">
           <div className="flex items-center gap-3">
@@ -181,7 +179,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="relative flex-1 w-full bg-[#080808] overflow-hidden">
+      <main className="relative flex-1 w-full bg-[#080808] overflow-hidden min-h-[400px]">
         <div className="absolute inset-0">
           {filteredStudios?.map((studio) => {
             const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
@@ -193,17 +191,17 @@ export default function HomePage() {
               >
                 <Link href={`/studio/${studio.id}`}>
                   <div className="relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
-                    <div className="absolute inset-0 w-16 h-16 md:w-24 md:h-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/20 animate-ping opacity-20" />
+                    <div className="absolute inset-0 w-12 h-12 md:w-20 md:h-20 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white/20 animate-ping opacity-20" />
                     
                     <div 
-                      className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-black border-2 border-white/20 flex items-center justify-center shadow-2xl relative z-10 transition-all group-hover:scale-110"
+                      className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-black border-2 border-white/20 flex items-center justify-center shadow-2xl relative z-10 transition-all group-hover:scale-110"
                       style={{ boxShadow: `0 0 30px ${studio.coverColor}44` }}
                     >
-                      <Home className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                      <Home className="w-6 h-6 md:w-8 md:h-8 text-white" />
                     </div>
 
-                    <div className="mt-2 md:mt-4 bg-black/90 backdrop-blur-md border border-white/20 px-4 py-2 md:px-6 md:py-3 rounded-xl transition-transform group-hover:-translate-y-1">
-                      <h3 className="text-sm md:text-2xl font-black uppercase italic tracking-tighter whitespace-nowrap leading-none text-white">{studio.name}</h3>
+                    <div className="mt-2 md:mt-3 bg-black/90 backdrop-blur-md border border-white/20 px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl transition-transform group-hover:-translate-y-1">
+                      <h3 className="text-[10px] md:text-xl font-black uppercase italic tracking-tighter whitespace-nowrap leading-none text-white">{studio.name}</h3>
                     </div>
                   </div>
                 </Link>
@@ -214,7 +212,7 @@ export default function HomePage() {
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-40">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-[#FFEA00] border-t-transparent rounded-full animate-spin" />
+                <div className="w-12 h-12 border-4 border-[#FFEA00] border-t-transparent rounded-full animate-spin" />
                 <p className="text-[10px] font-black uppercase tracking-[0.3em]">Downloading Area Data...</p>
               </div>
             </div>
@@ -222,11 +220,11 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Mini-Map Filter Area */}
-      <div className="p-4 md:p-6 bg-[#050505] border-t border-white/5 z-50">
-        <div className="max-w-xs mx-auto">
-          <div className="gemini-border gemini-glow p-2 bg-black/40 backdrop-blur-md">
-            <div className="h-32 md:h-44 w-full rounded-lg relative overflow-hidden bg-[#111]">
+      {/* Mini-Map Filter Area - Solid block at the bottom */}
+      <div className="p-4 md:p-8 bg-[#050505] border-t border-white/5 z-50">
+        <div className="max-w-md mx-auto">
+          <div className="gemini-border gemini-glow p-3 bg-black/40 backdrop-blur-md">
+            <div className="h-32 md:h-48 w-full rounded-lg relative overflow-hidden bg-[#111]">
               <div className="absolute inset-0 opacity-10 pointer-events-none">
                 <svg width="100%" height="100%">
                   <pattern id="grid-mini" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -247,19 +245,19 @@ export default function HomePage() {
                       toggleDistrict(district.id);
                     }}
                     className={cn(
-                      "absolute flex flex-col items-center gap-1 transition-all group cursor-pointer",
+                      "absolute flex flex-col items-center gap-2 transition-all group cursor-pointer",
                       !isActive && "opacity-30"
                     )}
                     style={{ left: `${district.x}%`, top: `${district.y}%`, transform: 'translate(-50%, -50%)' }}
                   >
                     <div className={cn(
-                      "w-3 h-3 rounded-full border border-white transition-all",
+                      "w-4 h-4 rounded-full border-2 border-white transition-all",
                       isActive 
                         ? "bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] scale-110 animate-pulse" 
                         : "bg-white/10 border-white/20"
                     )} />
                     <div className={cn(
-                      "bg-black/90 backdrop-blur-md border border-white/20 px-2 py-1 text-[10px] md:text-[12px] font-black uppercase tracking-widest whitespace-nowrap rounded transition-colors",
+                      "bg-black/90 backdrop-blur-md border border-white/20 px-3 py-1.5 text-xs md:text-sm font-black uppercase tracking-widest whitespace-nowrap rounded transition-colors",
                       isActive ? "text-[#FFEA00] border-[#FFEA00]/40" : "text-white/20"
                     )}>
                       {district.name}
