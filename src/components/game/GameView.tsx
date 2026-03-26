@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -7,7 +8,6 @@ import { SamplerPad, FlashType } from './SamplerPad';
 import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Play, RotateCcw, Trophy, Home, Loader2, Music2, CheckCircle2, AlertCircle, XCircle, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
