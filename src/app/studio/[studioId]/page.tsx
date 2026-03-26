@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useCollection, useDoc, useUser } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
 import { Studio, Game, Level, LevelProgress } from '@/lib/game/types';
@@ -89,7 +89,7 @@ export default function StudioPage() {
 
         <div className="space-y-8">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-white/40">Mini Games</h2>
+            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-white/40">Available Games</h2>
             {isLoadingLevels && <Loader2 className="w-4 h-4 animate-spin opacity-20" />}
           </div>
           
@@ -135,7 +135,7 @@ export default function StudioPage() {
 
                       <div className="space-y-3">
                         <div className="flex justify-between items-end">
-                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Progress</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Overall Progress</span>
                           <span className="text-xs font-black italic text-[#FFEA00]">{progressPercent}%</span>
                         </div>
                         <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -160,7 +160,7 @@ export default function StudioPage() {
                           return (
                             <Link 
                               key={level.id}
-                              href={`/game-session/${studioId}/${game.id}/${level.id}`}
+                              href={`/play/${studioId}/${game.id}/${level.id}`}
                               className="block"
                             >
                               <Button
@@ -200,7 +200,7 @@ export default function StudioPage() {
 
             {games?.length === 0 && (
               <div className="py-24 text-center border-2 border-dashed border-white/5 rounded-3xl opacity-20">
-                <p className="font-black uppercase tracking-widest text-white">No Games Found</p>
+                <p className="font-black uppercase tracking-widest text-white">No Games in this Studio</p>
               </div>
             )}
           </div>

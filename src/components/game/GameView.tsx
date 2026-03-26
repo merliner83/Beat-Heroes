@@ -216,6 +216,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
             if (!checkIsPlayable(sound.type, level.difficulty)) return;
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
+              // REAL-TIME ACCURACY DROP: If note has passed the hit zone plus tolerance and isn't cleared
               if (!clearedNotesRef.current.has(noteId) && currentStep > step + tolerance) {
                 clearedNotesRef.current.add(noteId);
                 newMisses++;
@@ -277,10 +278,10 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         </div>
         
         <div className="flex items-center gap-3 md:gap-8 shrink-0">
-          <div className="text-right border-l border-white/10 pl-3 md:pl-8">
+          <div className="text-right border-l border-white/10 pl-3 md:pl-5">
             <p className="text-[8px] md:text-[10px] uppercase font-black tracking-widest opacity-30">Accuracy</p>
-            <div className="flex items-center gap-1.5 md:gap-3">
-              <p className={cn("text-xl md:text-4xl font-black italic tracking-tighter transition-colors", isPassed ? "text-[#00E676]" : "text-[#FF3D00]")}>
+            <div className="flex items-center gap-1.5">
+              <p className={cn("text-xl md:text-3xl font-black italic tracking-tighter transition-colors", isPassed ? "text-[#00E676]" : "text-[#FF3D00]")}>
                 {score.accuracy}%
               </p>
             </div>
