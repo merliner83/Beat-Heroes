@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -20,7 +21,6 @@ const DIFFICULTY_MAP: Record<number, { label: string, color: string }> = {
 
 export default function StudioPage() {
   const { studioId } = useParams();
-  const router = useRouter();
   const db = useFirestore();
   const { user } = useUser();
 
@@ -158,30 +158,37 @@ export default function StudioPage() {
                         {gameLevels.sort((a,b) => a.difficulty - b.difficulty).map((level) => {
                           const progress = getLevelProgress(level.id);
                           return (
-                            <Button
+                            <Link 
                               key={level.id}
-                              onClick={() => router.push(`/play/${studioId}/${game.id}/${level.id}`)}
-                              variant="ghost"
-                              className={cn(
-                                "h-32 border-2 hover:bg-white/5 flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl relative overflow-hidden",
-                                progress 
-                                  ? "border-[#00E676]/40 bg-[#00E676]/5" 
-                                  : "border-white/10 bg-black/40 hover:border-white/30"
-                              )}
+                              href={`/play/${studioId}/${game.id}/${level.id}`}
+                              className="block"
                             >
-                              <span className="text-[10px] opacity-40 font-black uppercase tracking-[0.2em] text-white relative z-10">Level {level.difficulty}</span>
-                              <div className="flex items-center gap-1 uppercase italic text-white group-hover:text-[#FFEA00] relative z-10">
-                                {level.name || 'Untitled'}
-                                <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
-                              </div>
-                              
-                              {progress && (
-                                <div className="mt-2 flex items-center gap-1.5 bg-[#00E676]/20 px-2 py-0.5 rounded-full border border-[#00E676]/30">
-                                  <Trophy className="w-3 h-3 text-[#00E676]" />
-                                  <span className="text-[9px] font-black text-[#00E676]">{progress.accuracy}%</span>
+                              <Button
+                                asChild
+                                variant="ghost"
+                                className={cn(
+                                  "w-full h-32 border-2 hover:bg-white/5 flex flex-col items-center justify-center gap-1 group transition-all rounded-2xl relative overflow-hidden",
+                                  progress 
+                                    ? "border-[#00E676]/40 bg-[#00E676]/5" 
+                                    : "border-white/10 bg-black/40 hover:border-white/30"
+                                )}
+                              >
+                                <div>
+                                  <span className="text-[10px] opacity-40 font-black uppercase tracking-[0.2em] text-white relative z-10">Level {level.difficulty}</span>
+                                  <div className="flex items-center gap-1 uppercase italic text-white group-hover:text-[#FFEA00] relative z-10">
+                                    {level.name || 'Untitled'}
+                                    <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                                  </div>
+                                  
+                                  {progress && (
+                                    <div className="mt-2 flex items-center gap-1.5 bg-[#00E676]/20 px-2 py-0.5 rounded-full border border-[#00E676]/30">
+                                      <Trophy className="w-3 h-3 text-[#00E676]" />
+                                      <span className="text-[9px] font-black text-[#00E676]">{progress.accuracy}%</span>
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                            </Button>
+                              </Button>
+                            </Link>
                           );
                         })}
                       </div>

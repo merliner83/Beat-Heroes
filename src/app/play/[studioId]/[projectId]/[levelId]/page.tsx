@@ -2,24 +2,15 @@
 "use client";
 
 import { useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 /**
- * Redirect component for legacy 'project' routes.
- * Ensures users are sent to the new 'game' structure or back to the studio.
+ * Empty legacy route to avoid dynamic segment conflicts in Next.js.
  */
-export default function ProjectRedirectPage() {
+export default function LegacyRedirect() {
   const router = useRouter();
-  const { studioId } = useParams();
-
   useEffect(() => {
-    // Redirect to the studio page since the project structure has migrated to games
-    if (studioId) {
-      router.replace(`/studio/${studioId}`);
-    } else {
-      router.replace('/');
-    }
-  }, [router, studioId]);
-
+    router.replace('/');
+  }, [router]);
   return null;
 }
