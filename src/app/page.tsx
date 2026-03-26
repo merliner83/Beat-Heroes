@@ -61,8 +61,6 @@ export default function HomePage() {
     const studios = [
       { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves.', coverColor: '#FF3D00', district: 'Bantiger District' },
       { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures.', coverColor: '#FFEA00', district: 'Bantiger District' },
-      { id: 'nintu-music', name: 'Nintu Music', description: 'Atmospheric layers.', coverColor: '#00E676', district: 'Bantiger District' },
-      { id: 'dave-beats', name: 'Dave Beats', description: 'Hip hop soul.', coverColor: '#2979FF', district: 'Bantiger District' },
       { id: 'noxxos', name: 'Noxxos', description: 'Experimental sounds.', coverColor: '#EB3D99', district: 'Oberemmental District' }
     ];
 

@@ -140,7 +140,7 @@ export default function StudioPage() {
                           return (
                             <Link 
                               key={level.id}
-                              href={`/game-session/${studioId}/${game.id}/${level.id}`}
+                              href={`/session/${level.id}`}
                               className="block"
                             >
                               <Button
