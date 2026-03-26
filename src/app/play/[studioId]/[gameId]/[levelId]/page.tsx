@@ -8,7 +8,7 @@ export default function OldRouteRedirect() {
   const { studioId, gameId, levelId } = useParams();
   
   useEffect(() => {
-    router.replace(`/play-game/${studioId}/${gameId}/${levelId}`);
+    router.replace(`/game-session/${studioId}/${gameId}/${levelId}`);
   }, [router, studioId, gameId, levelId]);
 
   return null;
