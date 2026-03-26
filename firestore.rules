@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -28,7 +29,7 @@ service cloud.firestore {
       allow write: if isSignedIn();
     }
 
-    // Games (previously projects)
+    // Games
     match /games/{gameId} {
       allow read: if true;
       allow write: if isSignedIn();

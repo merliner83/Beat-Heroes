@@ -1,47 +1,25 @@
 
 "use client";
 
-import React from 'react';
-import { useParams } from 'next/navigation';
-import { useFirestore, useMemoFirebase, useDoc, useCollection } from '@/firebase';
-import { doc, collection, query } from 'firebase/firestore';
-import { Project, Level, Sound, TriggerPattern } from '@/lib/game/types';
-import { GameView } from '@/components/game/GameView';
-import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 
-export default function PlayPage() {
-  const { studioId, projectId, levelId } = useParams();
-  const db = useFirestore();
+/**
+ * Redirect component for legacy 'project' routes.
+ * Ensures users are sent to the new 'game' structure or back to the studio.
+ */
+export default function ProjectRedirectPage() {
+  const router = useRouter();
+  const { studioId } = useParams();
 
-  const projectRef = useMemoFirebase(() => projectId ? doc(db, 'projects', projectId as string) : null, [db, projectId]);
-  const { data: project } = useDoc<Project>(projectRef);
+  useEffect(() => {
+    // Redirect to the studio page since the project structure has migrated to games
+    if (studioId) {
+      router.replace(`/studio/${studioId}`);
+    } else {
+      router.replace('/');
+    }
+  }, [router, studioId]);
 
-  const levelRef = useMemoFirebase(() => levelId ? doc(db, 'levels', levelId as string) : null, [db, levelId]);
-  const { data: level } = useDoc<Level>(levelRef);
-
-  const soundsQuery = useMemoFirebase(() => {
-    if (!db || !levelId) return null;
-    return query(collection(db, 'levels', levelId as string, 'sounds'));
-  }, [db, levelId]);
-  const { data: sounds } = useCollection<Sound>(soundsQuery);
-
-  const patternsQuery = useMemoFirebase(() => {
-    if (!db) return null;
-    return query(collection(db, 'patterns'));
-  }, [db]);
-  const { data: patterns } = useCollection<TriggerPattern>(patternsQuery);
-
-  if (!project || !level || !sounds || !patterns) {
-    return (
-      <div className="h-screen bg-[#050505] flex items-center justify-center text-white">
-        <Loader2 className="w-8 h-8 animate-spin text-[#FFEA00]" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="h-screen bg-[#050505]">
-      <GameView project={project} level={level} sounds={sounds} patterns={patterns} />
-    </div>
-  );
+  return null;
 }
