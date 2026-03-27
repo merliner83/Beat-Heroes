@@ -1,23 +1,23 @@
-
 "use client";
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
-import { Radio, RefreshCw, Loader2, Map as MapIcon, Compass } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, Map as MapIcon, Target } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
-// Exakte Koordinaten für die Map-Darstellung (keine Überlappung)
+// Koordinaten für die Avatare im Hauptbereich (keine Überlappung)
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 25, y: 35 },
-  'yoan-beats': { x: 75, y: 65 },
-  'noxxos': { x: 50, y: 50 },
+  'gabriel-beats': { x: 25, y: 30 },
+  'yoan-beats': { x: 75, y: 60 },
+  'noxxos': { x: 50, y: 45 },
 };
 
 export default function HomePage() {
@@ -67,7 +67,6 @@ export default function HomePage() {
       for (const p of patterns) await setDoc(doc(db, 'patterns', p.id), p, { merge: true });
       for (const s of studios) await setDoc(doc(db, 'studios', s.id), s, { merge: true });
 
-      // Yoan Beats Fokus Setup
       const gameConfig = { 
         id: 'yoan-rhythm', 
         studioId: 'yoan-beats', 
@@ -110,7 +109,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Rack Synchronized!", description: "All studios and levels are live." });
+      toast({ title: "Radar Synced!", description: "MS Districts live." });
     } catch (e) {
       toast({ variant: "destructive", title: "Setup Failed" });
     }
@@ -124,7 +123,7 @@ export default function HomePage() {
             <Radio className="w-8 h-8 text-[#FFEA00]" />
             <div>
               <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic leading-none">BeatHero</h1>
-              <p className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">Command Center</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">Tactical Hub</p>
             </div>
           </div>
         </div>
@@ -139,20 +138,12 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="relative flex-1 w-full overflow-hidden flex flex-col items-center justify-center">
-        {/* Die ursprüngliche Map im taktischen Rahmen */}
-        <div className="relative w-full max-w-4xl aspect-[4/3] md:aspect-video gemini-border gemini-glow bg-black/60 mx-4 overflow-hidden">
-          {/* Hintergrund Grid */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      <main className="relative flex-1 w-full overflow-hidden flex flex-col items-center justify-center p-4">
+        {/* Haupt-Kartenbereich */}
+        <div className="relative w-full max-w-5xl aspect-[4/3] md:aspect-video bg-black/40 rounded-[2rem] overflow-hidden">
+          {/* Grid Background */}
+          <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
           
-          {/* Feste Distrikt-Labels im Rahmen */}
-          <div className="absolute top-4 left-6 text-[10px] font-black uppercase tracking-[0.4em] text-white/20 z-10">
-            MS BANTIGER DISTRICT
-          </div>
-          <div className="absolute bottom-4 right-6 text-[10px] font-black uppercase tracking-[0.4em] text-white/20 z-10">
-            MS OBEREMMENTAL
-          </div>
-
           {isLoadingStudios ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <Loader2 className="w-8 h-8 animate-spin text-[#FFEA00]" />
@@ -164,26 +155,26 @@ export default function HomePage() {
                 return (
                   <div 
                     key={studio.id}
-                    className="absolute transition-all duration-500 animate-in fade-in zoom-in group"
+                    className="absolute transition-all duration-700 animate-in fade-in zoom-in group"
                     style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
                   >
                     <Link href={`/studio/${studio.id}`}>
                       <div className="relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
-                        {/* Pulse Effect */}
+                        {/* Pulse Ring */}
                         <div 
-                          className="absolute inset-0 w-16 h-16 md:w-24 md:h-24 rounded-full border-2 border-[#FFEA00]/20 animate-ping opacity-10" 
-                          style={{ animationDuration: '3s' }}
+                          className="absolute inset-0 w-20 h-20 md:w-32 md:h-32 rounded-full border-2 border-[#FFEA00]/10 animate-ping opacity-20" 
+                          style={{ animationDuration: '4s' }}
                         />
 
-                        <div 
-                          className="w-12 h-12 md:w-20 md:h-20 rounded-2xl bg-black border-2 border-white/20 flex items-center justify-center shadow-2xl relative z-10 transition-all group-hover:scale-110 group-hover:border-[#FFEA00]"
-                          style={{ boxShadow: `0 0 40px ${studio.coverColor}44` }}
-                        >
-                          <Compass className="w-6 h-6 md:w-10 md:h-10 text-white group-hover:text-[#FFEA00] transition-colors" />
+                        <div className="relative z-10 p-1 rounded-full bg-white/5 border-2 border-white/10 group-hover:border-[#FFEA00] transition-all group-hover:scale-110">
+                          <Avatar className="w-16 h-16 md:w-24 md:h-24">
+                            <AvatarImage src={`https://picsum.photos/seed/${studio.id}/200`} />
+                            <AvatarFallback className="bg-black text-white font-black italic">{studio.name.substring(0,2).toUpperCase()}</AvatarFallback>
+                          </Avatar>
                         </div>
 
-                        <div className="mt-4 bg-black/80 backdrop-blur-xl border border-white/10 p-2 md:p-4 rounded-xl shadow-2xl transform transition-transform group-hover:-translate-y-1 text-center">
-                          <h3 className="text-xs md:text-xl font-black uppercase italic tracking-tighter whitespace-nowrap leading-none">
+                        <div className="mt-4 bg-black/60 backdrop-blur-xl border border-white/10 p-2 md:p-3 rounded-xl shadow-2xl transform transition-transform group-hover:-translate-y-1 text-center min-w-[120px]">
+                          <h3 className="text-xs md:text-sm font-black uppercase italic tracking-tighter whitespace-nowrap leading-none">
                             {studio.name}
                           </h3>
                         </div>
@@ -194,13 +185,28 @@ export default function HomePage() {
               })}
             </div>
           )}
+
+          {/* Kleinerer taktischer Rahmen unten */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6">
+            <div className="gemini-border bg-black/80 backdrop-blur-md p-3 flex justify-between items-center px-8 border-white/5">
+              <div className="flex items-center gap-3">
+                <Target className="w-3 h-3 text-[#00E676]" />
+                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">MS BANTIGER DISTRICT</span>
+              </div>
+              <div className="w-px h-4 bg-white/10" />
+              <div className="flex items-center gap-3">
+                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">MS OBEREMMENTAL</span>
+                <Target className="w-3 h-3 text-[#EB3D99]" />
+              </div>
+            </div>
+          </div>
         </div>
       </main>
 
       <footer className="p-6 border-t border-white/5 bg-black/60 flex justify-between items-center z-50">
         <div className="flex items-center gap-2 opacity-40">
           <MapIcon className="w-4 h-4" />
-          <span className="text-[10px] uppercase font-bold tracking-[0.2em]">Global Studio Radar</span>
+          <span className="text-[10px] uppercase font-bold tracking-[0.2em]">Tactical Overlay Active</span>
         </div>
         <Button variant="ghost" size="sm" onClick={setupStudios} className="text-[10px] uppercase tracking-tighter gap-2 opacity-40 hover:opacity-100 group">
           <RefreshCw className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500" /> Rack Sync
