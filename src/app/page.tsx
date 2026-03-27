@@ -24,9 +24,9 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
   <div className="relative flex flex-col items-center group cursor-pointer">
-    {/* House Shape Container - Adjusted aspect ratio to prevent stretching */}
+    {/* House Shape Container - Increased size for better visibility */}
     <div 
-      className="relative w-16 h-18 md:w-28 md:h-28 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-1 overflow-hidden"
+      className="relative w-20 h-22 md:w-36 md:h-36 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-1 overflow-hidden"
       style={{ 
         clipPath: 'polygon(50% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%)',
         padding: '2px',
@@ -62,9 +62,9 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
       </div>
     </div>
 
-    {/* Studio Name Label */}
+    {/* Studio Name Label - Increased font size */}
     <div className="mt-2 text-center pointer-events-none">
-      <h3 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-white/90 drop-shadow-[0_4px_10px_rgba(0,0,0,1)] group-hover:text-primary transition-colors leading-none">
+      <h3 className="text-xs md:text-sm font-black uppercase italic tracking-tighter text-white/90 drop-shadow-[0_4px_10px_rgba(0,0,0,1)] group-hover:text-primary transition-colors leading-none">
         {studioName}
       </h3>
     </div>
@@ -176,7 +176,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Tactical Mini Map - Increased size and font */}
+        {/* Tactical Mini Map - Compact layout with huge labels */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[420px] pt-4">
           <div className="relative w-full h-56 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]">
             {/* Grid Overlay */}
@@ -189,16 +189,16 @@ export default function HomePage() {
               <div className="absolute inset-0 w-16 h-16 translate-x-1/4 translate-y-1/4 rounded-full bg-white/5 animate-pulse blur-sm" />
             </div>
 
-            {/* Bantiger - Increased Label Size */}
+            {/* Bantiger - Significantly increased font size */}
             <div className="absolute left-[35%] top-[35%] flex flex-col items-center gap-1 group transition-transform hover:scale-110">
               <div className="w-3 h-3 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676] border border-white/50 animate-pulse" />
-              <span className="text-[12px] md:text-sm font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_8px_rgba(0,0,0,1)]">BANTIGER</span>
+              <span className="text-sm md:text-lg font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_8px_rgba(0,0,0,1)]">BANTIGER</span>
             </div>
 
-            {/* Oberemmental - Increased Label Size */}
+            {/* Oberemmental - Significantly increased font size */}
             <div className="absolute right-[38%] bottom-[40%] flex flex-col items-center gap-1 transition-transform hover:scale-110">
               <div className="w-3 h-3 rounded-full bg-[#FF3D00] shadow-[0_0_15px_#FF3D00] border border-white/50 animate-pulse" />
-              <span className="text-[12px] md:text-sm font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_8px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
+              <span className="text-sm md:text-lg font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_8px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
             </div>
 
             {/* Radar Sweep FX */}
