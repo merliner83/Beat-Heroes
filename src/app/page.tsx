@@ -28,7 +28,7 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
       style={{ 
         clipPath: 'polygon(50% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%)',
         padding: '2px',
-        background: `linear-gradient(90deg, ${color}, #222, ${color}, #222, ${color})`,
+        backgroundImage: `linear-gradient(90deg, ${color}, #222, ${color}, #222, ${color})`,
         backgroundSize: '200% 100%',
         animation: 'border-rotate 4s linear infinite'
       }}
