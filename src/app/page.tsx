@@ -150,19 +150,15 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="relative w-full h-full max-w-6xl">
-            {allStudios?.map((studio, idx) => {
+            {allStudios?.map((studio) => {
               const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
               return (
                 <div 
                   key={studio.id}
-                  className={cn(
-                    "absolute transition-all duration-[2000ms] ease-in-out animate-in fade-in zoom-in group",
-                    idx % 2 === 0 ? "animate-bounce" : "animate-pulse"
-                  )}
+                  className="absolute transition-all duration-500 ease-in-out animate-in fade-in zoom-in group"
                   style={{ 
                     left: `${pos.x}%`, 
                     top: `${pos.y}%`,
-                    animationDuration: '4s'
                   }}
                 >
                   <Link href={`/studio/${studio.id}`}>
@@ -174,7 +170,7 @@ export default function HomePage() {
                       />
                       
                       {/* Avatar mit Rahmen-Animation */}
-                      <div className="relative z-10 p-1 rounded-full bg-white/5 border-2 border-white/10 group-hover:border-white transition-all group-hover:scale-125 duration-500 shadow-2xl">
+                      <div className="relative z-10 p-1 rounded-full bg-white/5 border-2 border-white/10 group-hover:border-white transition-all group-hover:scale-110 duration-500 shadow-2xl">
                         <Avatar className="w-20 h-20 md:w-40 md:h-40 shadow-2xl">
                           <AvatarImage src={`https://picsum.photos/seed/${studio.id}/400`} />
                           <AvatarFallback className="bg-black text-white font-black italic text-xl">{studio.name.substring(0,2).toUpperCase()}</AvatarFallback>
