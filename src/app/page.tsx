@@ -24,9 +24,9 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
   <div className="relative flex flex-col items-center group cursor-pointer">
-    {/* House Shape Container with Colored Dynamic Border */}
+    {/* House Shape Container - Adjusted aspect ratio to prevent stretching */}
     <div 
-      className="relative w-16 h-20 md:w-24 md:h-30 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-1 overflow-hidden"
+      className="relative w-16 h-18 md:w-28 md:h-28 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-1 overflow-hidden"
       style={{ 
         clipPath: 'polygon(50% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%)',
         padding: '2px',
@@ -45,7 +45,7 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
           style={{ backgroundColor: color }} 
         />
         
-        {/* Heavily Darkened Image filling the house shape */}
+        {/* Heavily Darkened Image */}
         <Avatar className="w-full h-full rounded-none border-none bg-black">
           <AvatarImage 
             src={`https://picsum.photos/seed/${studioName}-dark/600/800`} 
@@ -62,8 +62,8 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
       </div>
     </div>
 
-    {/* Studio Name Label - Smaller */}
-    <div className="mt-1 text-center pointer-events-none">
+    {/* Studio Name Label */}
+    <div className="mt-2 text-center pointer-events-none">
       <h3 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-white/90 drop-shadow-[0_4px_10px_rgba(0,0,0,1)] group-hover:text-primary transition-colors leading-none">
         {studioName}
       </h3>
@@ -176,32 +176,32 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Tactical Mini Map - Gemini Themed & Enhanced UI */}
+        {/* Tactical Mini Map - Increased size and font */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[420px] pt-4">
           <div className="relative w-full h-56 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]">
             {/* Grid Overlay */}
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
             
-            {/* Central Signal Pulse Circles - Stronger Pulse */}
+            {/* Central Signal Pulse Circles */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
               <div className="w-20 h-20 rounded-full border-2 border-white/20 animate-ping" />
               <div className="absolute inset-0 w-40 h-40 -translate-x-1/4 -translate-y-1/4 rounded-full border border-white/10 animate-[ping_3s_linear_infinite]" />
               <div className="absolute inset-0 w-16 h-16 translate-x-1/4 translate-y-1/4 rounded-full bg-white/5 animate-pulse blur-sm" />
             </div>
 
-            {/* Bantiger - Organic position */}
+            {/* Bantiger - Increased Label Size */}
             <div className="absolute left-[35%] top-[35%] flex flex-col items-center gap-1 group transition-transform hover:scale-110">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676] border border-white/50 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_8px_rgba(0,0,0,1)]">BANTIGER</span>
+              <div className="w-3 h-3 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676] border border-white/50 animate-pulse" />
+              <span className="text-[12px] md:text-sm font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_8px_rgba(0,0,0,1)]">BANTIGER</span>
             </div>
 
-            {/* Oberemmental - Organic position */}
+            {/* Oberemmental - Increased Label Size */}
             <div className="absolute right-[38%] bottom-[40%] flex flex-col items-center gap-1 transition-transform hover:scale-110">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#FF3D00] shadow-[0_0_15px_#FF3D00] border border-white/50 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_8px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
+              <div className="w-3 h-3 rounded-full bg-[#FF3D00] shadow-[0_0_15px_#FF3D00] border border-white/50 animate-pulse" />
+              <span className="text-[12px] md:text-sm font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_8px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
             </div>
 
-            {/* Radar Sweep FX - Intensified Gemini Conic Gradient */}
+            {/* Radar Sweep FX */}
             <div 
               className="absolute inset-0 origin-center animate-[spin_12s_linear_infinite] opacity-40 pointer-events-none" 
               style={{ 
@@ -210,7 +210,7 @@ export default function HomePage() {
             />
           </div>
           
-          <div className="mt-2 text-[7px] font-black uppercase tracking-[1em] text-primary/30 text-center italic leading-none pointer-events-none select-none">
+          <div className="mt-2 text-[8px] font-black uppercase tracking-[1em] text-primary/30 text-center italic leading-none pointer-events-none select-none">
             districts
           </div>
         </div>
