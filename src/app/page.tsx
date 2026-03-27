@@ -14,23 +14,24 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 // Optimierte Koordinaten für eine großzügige Verteilung im oberen Bereich
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 15, y: 15 }, // Oben Links
-  'yoan-beats': { x: 82, y: 22 },   // Oben Rechts
-  'noxxos': { x: 50, y: 40 },      // Zentral Mitte (weit weg von der Mini-Map)
+  'gabriel-beats': { x: 20, y: 18 }, // Oben Links
+  'yoan-beats': { x: 75, y: 22 },   // Oben Rechts
+  'noxxos': { x: 45, y: 38 },      // Zentral Mitte (weit weg von der Mini-Map)
 };
 
-const StudioHouseFrame = ({ children, color, studioName }: { children: React.ReactNode, color: string, studioName: string }) => (
+const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
   <div className="relative flex flex-col items-center group cursor-pointer">
-    {/* Stylische Haus-Umrandung (SVG) */}
+    {/* Stylische Haus-Umrandung (SVG) mit Glow-Effekt nach hinten */}
     <div className="relative w-28 h-28 md:w-44 md:h-44 flex items-center justify-center">
+      <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 blur-3xl rounded-full transition-all duration-700" style={{ backgroundColor: `${color}11` }} />
       <svg 
-        className="absolute inset-0 w-full h-full -z-10 transition-all duration-500 group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]" 
+        className="absolute inset-0 w-full h-full -z-10 transition-all duration-500 group-hover:scale-110 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]" 
         viewBox="0 0 100 100" 
         preserveAspectRatio="none"
       >
         <path 
           d="M50 5 L92 38 L92 95 L8 95 L8 38 Z" 
-          fill="rgba(0,0,0,0.8)" 
+          fill="rgba(0,0,0,0.85)" 
           stroke={color} 
           strokeWidth="2.5"
           className="transition-all duration-500 group-hover:stroke-white"
@@ -44,14 +45,11 @@ const StudioHouseFrame = ({ children, color, studioName }: { children: React.Rea
           <AvatarFallback className="bg-black text-white font-black italic text-lg">{studioName.substring(0,2).toUpperCase()}</AvatarFallback>
         </Avatar>
       </div>
-      
-      {/* Aktiver Indikator (Schornstein-Style oder Corner) */}
-      <div className="absolute top-8 right-6 md:top-12 md:right-10 w-3 h-3 md:w-5 md:h-5 bg-[#00E676] rounded-full border-2 border-black animate-pulse" />
     </div>
 
-    {/* Studio Name Tag */}
-    <div className="mt-2 bg-black/90 backdrop-blur-xl border border-white/10 p-2 md:p-3 rounded-xl shadow-2xl transform transition-all group-hover:-translate-y-1 group-hover:border-[#FFEA00] text-center min-w-[120px]">
-      <h3 className="text-[10px] md:text-sm font-black uppercase italic tracking-tighter whitespace-nowrap leading-none flex items-center justify-center gap-2">
+    {/* Studio Name Tag - Prägnanter und kompakter am Icon */}
+    <div className="mt-1 bg-black border-l-4 border-white/20 p-2 md:px-4 py-1 shadow-2xl transform transition-all group-hover:border-[#FFEA00] text-center min-w-[100px]">
+      <h3 className="text-[10px] md:text-sm font-black uppercase italic tracking-tighter whitespace-nowrap leading-tight flex items-center justify-center gap-2">
         <Sparkles className="w-2.5 h-2.5 text-[#FFEA00] opacity-0 group-hover:opacity-100 transition-opacity" />
         {studioName}
       </h3>
@@ -202,9 +200,7 @@ export default function HomePage() {
                   }}
                 >
                   <Link href={`/studio/${studio.id}`}>
-                    <StudioHouseFrame color={studio.coverColor || '#993DEB'} studioName={studio.name}>
-                      {/* Avatar ist jetzt Teil des Frames */}
-                    </StudioHouseFrame>
+                    <StudioHouseFrame color={studio.coverColor || '#993DEB'} studioName={studio.name} />
                   </Link>
                 </div>
               );
