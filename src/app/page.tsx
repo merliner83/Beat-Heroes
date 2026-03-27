@@ -108,7 +108,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Radar Synced!", description: "MS Districts live." });
+      toast({ title: "Radar Synced!", description: "Districts live." });
     } catch (e) {
       toast({ variant: "destructive", title: "Setup Failed" });
     }
@@ -123,7 +123,7 @@ export default function HomePage() {
             <Radio className="w-8 h-8 text-[#FFEA00]" />
             <div>
               <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic leading-none">BeatHero</h1>
-              <p className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">Tactical Hub</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">Districts Hub</p>
             </div>
           </div>
         </div>
@@ -205,7 +205,7 @@ export default function HomePage() {
             {/* Radar Sweep Animation */}
             <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-[#FFEA00]/5 to-transparent animate-[spin_4s_linear_infinite]" />
           </div>
-          <div className="mt-4 text-xs font-black uppercase tracking-[0.4em] text-white/30 text-center">TACTICAL OVERLAY</div>
+          <div className="mt-4 text-xs font-black uppercase tracking-[0.4em] text-white/30 text-center">DISTRICTS</div>
         </div>
       </main>
 
