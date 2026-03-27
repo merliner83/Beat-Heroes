@@ -5,7 +5,7 @@ import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
-import { Radio, RefreshCw, Loader2, Map as MapIcon, Sparkles } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, Map as MapIcon } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -18,7 +18,6 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'gabriel-beats': { x: 20, y: 15 }, // Oben Links
   'yoan-beats': { x: 80, y: 22 },   // Oben Rechts
   'noxxos': { x: 35, y: 45 },      // Mitte Links
-  'nintu-beats': { x: 65, y: 50 },  // Mitte Rechts (Platzhalter für potenzielle Distrikte)
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
@@ -54,9 +53,9 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
       </div>
     </div>
 
-    {/* Prägnantes Tactical Label direkt am Icon */}
-    <div className="mt-1 bg-black/95 border-l-2 border-white/20 px-3 py-1 shadow-2xl transform transition-all group-hover:border-[#FFEA00] text-center min-w-[100px] border border-white/5 backdrop-blur-xl rounded-sm">
-      <h3 className="text-[9px] md:text-[11px] font-black uppercase italic tracking-tighter whitespace-nowrap leading-tight">
+    {/* Prägnante Beschriftung ohne Rahmen, deutlich größer */}
+    <div className="mt-2 text-center pointer-events-none">
+      <h3 className="text-sm md:text-xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] group-hover:text-[#FFEA00] transition-colors leading-none">
         {studioName}
       </h3>
     </div>
