@@ -18,6 +18,8 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'noxxos': { x: 50, y: 25 },
   'dave-beats': { x: 25, y: 45 },
   'nintu-music': { x: 75, y: 45 },
+  'dj-avox': { x: 40, y: 65 },
+  'benjamin-beats': { x: 60, y: 65 },
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
@@ -104,7 +106,9 @@ export default function HomePage() {
         { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00' },
         { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#FF3D00' },
         { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap.', coverColor: '#FF9100' },
-        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep house and tech vibes.', coverColor: '#00E676' }
+        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep house and tech vibes.', coverColor: '#00E676' },
+        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', coverColor: '#00B0FF' },
+        { id: 'benjamin-beats', name: 'Benjamin Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00' }
       ];
       for (const s of studios) await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       toast({ title: "Radar Synced!", description: "Districts live." });
@@ -126,7 +130,7 @@ export default function HomePage() {
       <header className="p-6 md:p-8 flex flex-col items-center z-50">
         <div className="gemini-border gemini-glow p-4 px-10 inline-block mb-4 bg-black/80 backdrop-blur-2xl">
           <div className="flex items-center gap-4">
-            <Radio className="w-8 h-8 text-primary animate-pulse" />
+            <Radio className="w-8 h-8 text-white animate-pulse" />
             <div>
               <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
             </div>
@@ -172,7 +176,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Tactical Mini Map - Compact & Strategic Placement */}
+        {/* Tactical Mini Map - Gemini Themed & Enhanced UI */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[400px]">
           <div className="relative w-full h-64 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]">
             {/* Grid Overlay */}
