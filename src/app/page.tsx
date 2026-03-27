@@ -4,20 +4,19 @@ import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
-import { Radio, RefreshCw, Loader2, Map as MapIcon, Target, Crosshair } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, Map as MapIcon } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
 
-// Specific coordinates for the studios in the main area (no overlap)
+// Spezifische Koordinaten für die Studios im Hauptbereich (keine Überlappung)
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 20, y: 30 },
-  'yoan-beats': { x: 70, y: 50 },
-  'noxxos': { x: 40, y: 70 },
+  'gabriel-beats': { x: 25, y: 25 },
+  'yoan-beats': { x: 75, y: 40 },
+  'noxxos': { x: 45, y: 65 },
 };
 
 export default function HomePage() {
@@ -117,7 +116,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none">
-      {/* Header with Title and SC */}
+      {/* Header mit Titel und SC */}
       <header className="p-6 flex flex-col items-center z-50">
         <div className="gemini-border gemini-glow p-4 inline-block mb-4">
           <div className="flex items-center gap-3">
@@ -139,9 +138,9 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Frameless Studio Area */}
+      {/* Hauptbereich ohne Rahmen */}
       <main className="relative flex-1 w-full overflow-hidden flex flex-col items-center justify-center p-4">
-        {/* Grid Background */}
+        {/* Raster Hintergrund */}
         <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         
         {isLoadingStudios ? (
@@ -161,7 +160,7 @@ export default function HomePage() {
                   <Link href={`/studio/${studio.id}`}>
                     <div className="relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
                       <div className="relative z-10 p-1 rounded-full bg-white/5 border-2 border-white/10 group-hover:border-[#FFEA00] transition-all group-hover:scale-110">
-                        <Avatar className="w-16 h-16 md:w-28 md:h-28 shadow-2xl">
+                        <Avatar className="w-16 h-16 md:w-32 md:h-32 shadow-2xl">
                           <AvatarImage src={`https://picsum.photos/seed/${studio.id}/400`} />
                           <AvatarFallback className="bg-black text-white font-black italic">{studio.name.substring(0,2).toUpperCase()}</AvatarFallback>
                         </Avatar>
@@ -180,33 +179,33 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* GTA-Style Mini Map (Floating Bottom Left) */}
-        <div className="absolute bottom-10 left-10 z-50">
-          <div className="relative w-32 h-32 md:w-48 md:h-48 rounded-2xl border-2 border-white/10 bg-black/60 backdrop-blur-md overflow-hidden gemini-glow">
+        {/* Mini Map (Zentriert am unteren Rand) */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-50">
+          <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-2xl border-2 border-white/10 bg-black/60 backdrop-blur-md overflow-hidden gemini-glow">
             {/* Tactical Grid */}
-            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '15px 15px' }} />
+            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
             
             {/* Pulse Effects */}
             <div className="absolute inset-0 flex items-center justify-center">
-               <div className="w-2 h-2 bg-[#FFEA00] rounded-full animate-ping opacity-50" />
+               <div className="w-3 h-3 bg-[#FFEA00] rounded-full animate-ping opacity-50" />
             </div>
 
             {/* Tactical Points */}
-            <div className="absolute inset-0 p-4 flex flex-col justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#00E676] shadow-[0_0_8px_#00E676]" />
-                <span className="text-[8px] font-black uppercase tracking-tighter text-[#00E676]">MS BANTIGER</span>
+            <div className="absolute inset-0 p-6 flex flex-col justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-[#00E676] shadow-[0_0_12px_#00E676]" />
+                <span className="text-[10px] font-black uppercase tracking-tighter text-[#00E676]">MS BANTIGER</span>
               </div>
-              <div className="flex items-center gap-2 self-end">
-                <span className="text-[8px] font-black uppercase tracking-tighter text-[#EB3D99]">MS OBEREMMENTAL</span>
-                <div className="w-2 h-2 rounded-full bg-[#EB3D99] shadow-[0_0_8px_#EB3D99]" />
+              <div className="flex items-center gap-3 self-end">
+                <span className="text-[10px] font-black uppercase tracking-tighter text-[#EB3D99]">MS OBEREMMENTAL</span>
+                <div className="w-3 h-3 rounded-full bg-[#EB3D99] shadow-[0_0_12px_#EB3D99]" />
               </div>
             </div>
 
             {/* Radar Sweep Animation */}
             <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-[#FFEA00]/5 to-transparent animate-[spin_4s_linear_infinite]" />
           </div>
-          <div className="mt-2 text-[8px] font-black uppercase tracking-[0.4em] text-white/20 text-center">TACTICAL OVERLAY</div>
+          <div className="mt-3 text-[10px] font-black uppercase tracking-[0.4em] text-white/20 text-center">TACTICAL OVERLAY</div>
         </div>
       </main>
 

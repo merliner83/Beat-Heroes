@@ -159,7 +159,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
-              // Passive Miss Detection: Check if note has passed the hit zone
+              // Passive Miss Detection: Sink accuracy if note passed hit zone unplayed
               if (!clearedNotesRef.current.has(noteId) && currentStep > step + tolerance) {
                 clearedNotesRef.current.add(noteId);
                 passiveMissesCount++;
@@ -205,7 +205,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 max-w-5xl mx-auto overflow-hidden">
-      {/* Compact Header for iPhone */}
+      {/* Kompakter Header für iPhone */}
       <header className="flex justify-between items-center mb-1 px-2 h-10 md:h-12 shrink-0">
         <div className="flex items-center gap-2">
           <Link href={`/studio/${game.studioId}`}>
