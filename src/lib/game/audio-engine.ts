@@ -83,6 +83,7 @@ export class AudioEngine {
         this.buffers.set(url, audioBuffer);
         this.loadingStatus.set(url, 'ready');
       } catch (e) {
+        // Robust handling: Log as warning, don't throw to prevent blocking the game loop
         console.warn(`AudioEngine: Non-critical load failure for ${url}`, e);
         this.loadingStatus.set(url, 'failed');
       }
@@ -138,7 +139,8 @@ export class AudioEngine {
 
     const buffer = this.buffers.get(url);
     if (!buffer || !this.context || !this.masterGain) {
-      console.warn('AudioEngine: Backing track buffer not ready. Playing silently for now.');
+      // Warning instead of error to prevent session block
+      console.warn('AudioEngine: Backing track buffer not ready for URL:', url);
       return;
     }
 

@@ -14,52 +14,41 @@ import { useAuth } from '@/firebase/provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 20, y: 15 },
-  'yoan-beats': { x: 80, y: 15 },
-  'noxxos': { x: 50, y: 20 },
-  'dave-beats': { x: 25, y: 45 },
-  'nintu-music': { x: 75, y: 45 },
+  'gabriel-beats': { x: 20, y: 20 },
+  'yoan-beats': { x: 80, y: 20 },
+  'noxxos': { x: 50, y: 15 },
+  'dave-beats': { x: 30, y: 45 },
+  'nintu-music': { x: 70, y: 45 },
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
   <div className="relative flex flex-col items-center group cursor-pointer">
-    <div className="relative w-28 h-28 md:w-36 md:h-36 flex items-center justify-center">
-      {/* Dynamic Backglow */}
+    {/* Square Image Container with Gemini Border */}
+    <div className="relative w-32 h-32 md:w-44 md:h-44 gemini-border gemini-glow transition-all duration-500 group-hover:scale-105 group-hover:-rotate-1 bg-black overflow-hidden">
+      {/* Dynamic Backglow behind the square */}
       <div 
-        className="absolute inset-2 blur-3xl rounded-full opacity-20 group-hover:opacity-60 transition-all duration-700 animate-pulse" 
+        className="absolute inset-0 blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700" 
         style={{ backgroundColor: color }} 
       />
       
-      {/* Stylized House Frame */}
-      <svg 
-        className="absolute inset-0 w-full h-full -z-10 transition-all duration-500 group-hover:scale-110 drop-shadow-[0_0_20px_rgba(0,0,0,0.8)]" 
-        viewBox="0 0 100 100" 
-        preserveAspectRatio="none"
-      >
-        <path 
-          d="M50 5 L95 40 L95 95 L5 95 L5 40 Z" 
-          fill="rgba(10,10,10,0.95)" 
-          stroke={color} 
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="transition-all duration-500 group-hover:stroke-white"
+      {/* Square Image filling the entire area */}
+      <Avatar className="w-full h-full rounded-none border-none bg-black">
+        <AvatarImage 
+          src={`https://picsum.photos/seed/${studioName}/600`} 
+          className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
         />
-        {/* Internal Detail Line */}
-        <path d="M5 40 L50 5 L95 40" stroke="white" strokeWidth="0.5" opacity="0.3" fill="none" />
-      </svg>
-      
-      <div className="p-1 rounded-full overflow-hidden transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-        <Avatar className="w-16 h-16 md:w-24 md:h-24 border-2 border-white/10 bg-black">
-          <AvatarImage src={`https://picsum.photos/seed/${studioName}/400`} />
-          <AvatarFallback className="bg-black text-white font-black italic text-xl">{studioName.substring(0,2).toUpperCase()}</AvatarFallback>
-        </Avatar>
-      </div>
+        <AvatarFallback className="bg-black text-white font-black italic text-4xl rounded-none">
+          {studioName.substring(0,2).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+
+      {/* Glossy Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-white/10 pointer-events-none" />
     </div>
 
-    {/* Studio Name Label - Large and Bold */}
-    <div className="mt-6 text-center pointer-events-none">
-      <h3 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_4px_10px_rgba(0,0,0,1)] group-hover:text-primary transition-colors leading-none">
+    {/* Massive Studio Name Label - No Frame */}
+    <div className="mt-4 text-center pointer-events-none">
+      <h3 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_4px_12px_rgba(0,0,0,1)] group-hover:text-primary transition-colors leading-none">
         {studioName}
       </h3>
     </div>
@@ -112,28 +101,28 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none relative">
-      {/* Background Grid & FX */}
-      <div className="absolute inset-0 opacity-[0.1] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#993DEB 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-      <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(153,61,235,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(153,61,235,0.1) 1px, transparent 1px)', backgroundSize: '150px 150px' }} />
+      {/* Background Urban Grid & FX */}
+      <div className="absolute inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#993DEB 1.5px, transparent 1.5px)', backgroundSize: '60px 60px' }} />
+      <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(153,61,235,0.1) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(153,61,235,0.1) 1.5px, transparent 1.5px)', backgroundSize: '180px 180px' }} />
       
       <header className="p-8 flex flex-col items-center z-50">
-        <div className="gemini-border gemini-glow p-4 px-10 inline-block mb-6 bg-black/60 backdrop-blur-md">
-          <div className="flex items-center gap-4">
-            <Radio className="w-8 h-8 text-primary animate-pulse" />
+        <div className="gemini-border gemini-glow p-5 px-12 inline-block mb-6 bg-black/70 backdrop-blur-xl">
+          <div className="flex items-center gap-5">
+            <Radio className="w-10 h-10 text-primary animate-pulse" />
             <div>
-              <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic leading-none">BeatHero</h1>
-              <p className="text-[10px] uppercase tracking-[0.4em] font-bold opacity-60 text-primary">Urban District Mapper</p>
+              <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic leading-none text-gradient">BeatHero</h1>
+              <p className="text-[11px] uppercase tracking-[0.5em] font-black opacity-60 text-primary">Urban District Mapper</p>
             </div>
           </div>
         </div>
 
-        <div className="flex gap-4">
-          <div className="gemini-border gemini-glow p-3 px-10 text-center bg-black/60 backdrop-blur-md">
-            <div className="text-white font-bold text-2xl md:text-3xl leading-none tracking-tighter flex items-center gap-2">
-              <Zap className="w-5 h-5 text-primary" fill="currentColor" />
+        <div className="flex gap-6">
+          <div className="gemini-border gemini-glow-accent p-4 px-12 text-center bg-black/70 backdrop-blur-xl border-2 border-primary/20">
+            <div className="text-white font-black text-3xl md:text-4xl leading-none tracking-tighter flex items-center gap-3">
+              <Zap className="w-6 h-6 text-primary" fill="currentColor" />
               {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
             </div>
-            <div className="text-[10px] uppercase opacity-60 mt-2 font-bold tracking-widest">Street Cred</div>
+            <div className="text-[10px] uppercase opacity-50 mt-2 font-black tracking-[0.3em]">Street Credibility</div>
           </div>
         </div>
       </header>
@@ -141,7 +130,7 @@ export default function HomePage() {
       <main className="relative flex-1 w-full overflow-hidden p-4">
         {isLoadingStudios ? (
           <div className="h-full flex items-center justify-center">
-            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            <Loader2 className="w-14 h-14 animate-spin text-primary" />
           </div>
         ) : (
           <div className="absolute inset-0 max-w-full mx-auto pointer-events-none">
@@ -150,7 +139,7 @@ export default function HomePage() {
               return (
                 <div 
                   key={studio.id}
-                  className="absolute transition-all duration-700 ease-in-out animate-in fade-in zoom-in-95 pointer-events-auto"
+                  className="absolute transition-all duration-1000 ease-in-out animate-in fade-in zoom-in-90 pointer-events-auto"
                   style={{ 
                     left: `${pos.x}%`, 
                     top: `${pos.y}%`,
@@ -166,52 +155,52 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Tactical Mini Map - Wider & Centered */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6">
-          <div className="relative w-full max-w-3xl h-56 md:h-80 rounded-3xl border-2 border-white/20 bg-black/95 backdrop-blur-2xl overflow-hidden gemini-glow shadow-[0_0_60px_rgba(0,0,0,0.9)]">
+        {/* Tactical Mini Map - Massive & Wide */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-6xl">
+          <div className="relative w-full h-64 md:h-96 rounded-[3rem] border-[3px] border-white/20 bg-black/95 backdrop-blur-3xl overflow-hidden gemini-glow shadow-[0_0_80px_rgba(0,0,0,1)]">
             {/* Grid Overlay */}
-            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
             
-            {/* Pulsing Center Point */}
+            {/* Pulsing Radar Point - Large */}
             <div className="absolute inset-0 flex items-center justify-center">
-               <div className="w-24 h-24 bg-primary rounded-full animate-ping opacity-10" />
-               <div className="w-6 h-6 bg-primary rounded-full shadow-[0_0_40px_#993DEB] border-2 border-white/50" />
+               <div className="w-32 h-32 bg-primary rounded-full animate-ping opacity-20" />
+               <div className="w-10 h-10 bg-primary rounded-full shadow-[0_0_60px_#993DEB] border-[3px] border-white/60" />
             </div>
 
-            {/* District Labels - Larger & Vibrant */}
-            <div className="absolute inset-0 p-8 flex flex-col justify-between">
-              <div className="flex items-center gap-4 group">
-                <div className="w-8 h-8 rounded-full bg-[#00E676] shadow-[0_0_30px_#00E676] border-2 border-white/50 animate-pulse" />
-                <span className="text-lg md:text-3xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">BANTIGER</span>
+            {/* District Labels - Large & Bold */}
+            <div className="absolute inset-0 p-12 flex flex-col justify-between">
+              <div className="flex items-center gap-6 group">
+                <div className="w-10 h-10 rounded-full bg-[#00E676] shadow-[0_0_40px_#00E676] border-[3px] border-white/60 animate-pulse" />
+                <span className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]">BANTIGER</span>
               </div>
-              <div className="flex items-center gap-4 self-end text-right">
-                <span className="text-lg md:text-3xl font-black uppercase tracking-tighter text-[#EB3D99] italic drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">OBEREMMENTAL</span>
-                <div className="w-8 h-8 rounded-full bg-[#EB3D99] shadow-[0_0_30px_#EB3D99] border-2 border-white/50 animate-pulse" />
+              <div className="flex items-center gap-6 self-end text-right">
+                <span className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-[#EB3D99] italic drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]">OBEREMMENTAL</span>
+                <div className="w-10 h-10 rounded-full bg-[#EB3D99] shadow-[0_0_40px_#EB3D99] border-[3px] border-white/60 animate-pulse" />
               </div>
             </div>
 
             {/* Radar Sweep FX */}
-            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-primary/20 to-transparent animate-[spin_6s_linear_infinite]" />
+            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-primary/30 to-transparent animate-[spin_5s_linear_infinite]" />
           </div>
           
-          <div className="mt-6 text-sm md:text-xl font-black uppercase tracking-[0.6em] text-primary/40 text-center italic leading-none pointer-events-none select-none">
-            DISTRICTS
+          <div className="mt-4 text-[9px] md:text-xs font-black uppercase tracking-[0.8em] text-primary/50 text-center italic leading-none pointer-events-none select-none opacity-60">
+            RADAR SCANNER ACTIVE
           </div>
         </div>
       </main>
 
-      <footer className="p-6 border-t border-white/5 bg-black/95 flex justify-between items-center z-50">
-        <div className="flex items-center gap-3 opacity-60">
-          <MapIcon className="w-4 h-4 text-primary" />
-          <span className="text-[10px] uppercase font-bold tracking-[0.3em]">City Scanner Active - v2.0</span>
+      <footer className="p-6 border-t border-white/5 bg-black/98 flex justify-between items-center z-50">
+        <div className="flex items-center gap-3 opacity-50">
+          <MapIcon className="w-5 h-5 text-primary" />
+          <span className="text-[11px] uppercase font-black tracking-[0.4em]">City Scanner Active - v2.5</span>
         </div>
         <Button 
           variant="ghost" 
           size="sm" 
           onClick={setupStudios} 
-          className="text-[10px] uppercase tracking-tighter gap-3 opacity-60 hover:opacity-100 group h-10 px-6 hover:bg-white/5"
+          className="text-[11px] uppercase tracking-tighter gap-3 opacity-60 hover:opacity-100 group h-12 px-8 hover:bg-white/5 font-black"
         >
-          <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-700" /> Rack Sync
+          <RefreshCw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-1000" /> Rack Sync
         </Button>
       </footer>
     </div>
