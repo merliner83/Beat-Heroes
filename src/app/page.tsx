@@ -188,7 +188,7 @@ export default function HomePage() {
             </div>
 
             {/* Radar Sweep FX */}
-            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-primary/5 to-transparent animate-[spin_10s_linear_infinite]" />
+            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-primary/15 to-transparent animate-[spin_10s_linear_infinite]" />
           </div>
           
           <div className="mt-2 text-[7px] font-black uppercase tracking-[1em] text-primary/30 text-center italic leading-none pointer-events-none select-none">
