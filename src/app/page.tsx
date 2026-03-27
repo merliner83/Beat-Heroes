@@ -47,7 +47,7 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
         <Avatar className="w-full h-full rounded-none border-none bg-black">
           <AvatarImage 
             src={`https://picsum.photos/seed/${studioName}-dark/600/800`} 
-            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110 brightness-[0.35] contrast-[1.1] grayscale-[0.4]"
+            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110 brightness-[0.3] contrast-[1.1] grayscale-[0.5]"
             data-ai-hint="dark building"
           />
           <AvatarFallback className="bg-black text-white/10 font-black italic text-4xl rounded-none">
@@ -119,6 +119,10 @@ export default function HomePage() {
       <div className="absolute inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '60px 60px' }} />
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,51,153,0.1) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(255,51,153,0.1) 1.5px, transparent 1.5px)', backgroundSize: '180px 180px' }} />
       
+      {/* Decorative Background Pulses */}
+      <div className="absolute top-[20%] left-[10%] w-[40rem] h-[40rem] rounded-full border border-primary/5 animate-[ping_8s_linear_infinite] pointer-events-none" />
+      <div className="absolute bottom-[10%] right-[10%] w-[30rem] h-[30rem] rounded-full border border-accent/5 animate-[ping_12s_linear_infinite] pointer-events-none" />
+
       <header className="p-6 md:p-8 flex flex-col items-center z-50">
         <div className="gemini-border gemini-glow p-4 px-10 inline-block mb-4 bg-black/80 backdrop-blur-2xl">
           <div className="flex items-center gap-4">
@@ -169,34 +173,35 @@ export default function HomePage() {
         )}
 
         {/* Tactical Mini Map - Compact & Strategic Placement */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[800px]">
-          <div className="relative w-full h-56 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[400px]">
+          <div className="relative w-full h-64 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]">
             {/* Grid Overlay */}
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
             
-            {/* Central Signal Pulse Circles */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-              <div className="w-16 h-16 rounded-full border border-primary/20 animate-ping" />
-              <div className="absolute inset-0 w-32 h-32 -translate-x-1/4 -translate-y-1/4 rounded-full border border-primary/10 animate-[ping_4s_linear_infinite] opacity-50" />
+            {/* Central Signal Pulse Circles - Enhanced brightness */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
+              <div className="w-12 h-12 rounded-full border-2 border-primary/60 animate-ping" />
+              <div className="absolute inset-0 w-24 h-24 -translate-x-1/4 -translate-y-1/4 rounded-full border border-white/30 animate-[ping_3s_linear_infinite]" />
+              <div className="absolute inset-0 w-8 h-8 translate-x-1/4 translate-y-1/4 rounded-full bg-primary/20 animate-pulse blur-sm" />
             </div>
 
             {/* Bantiger - Offset Position */}
-            <div className="absolute left-[20%] top-[25%] flex flex-col items-center gap-2 group">
-              <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-[#00E676] shadow-[0_0_20px_#00E676] border-2 border-white/70 animate-pulse" />
-              <span className="text-xl md:text-2xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">BANTIGER</span>
+            <div className="absolute left-[25%] top-[20%] flex flex-col items-center gap-1.5 group transition-transform hover:scale-110">
+              <div className="w-4 h-4 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676] border border-white/50 animate-pulse" />
+              <span className="text-lg font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_8px_rgba(0,0,0,1)]">BANTIGER</span>
             </div>
 
             {/* Oberemmental - Offset Position */}
-            <div className="absolute right-[20%] bottom-[25%] flex flex-col items-center gap-2">
-              <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] border-2 border-white/70 animate-pulse" />
-              <span className="text-xl md:text-2xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
+            <div className="absolute right-[25%] bottom-[20%] flex flex-col items-center gap-1.5 transition-transform hover:scale-110">
+              <div className="w-4 h-4 rounded-full bg-[#FF3D00] shadow-[0_0_15px_#FF3D00] border border-white/50 animate-pulse" />
+              <span className="text-lg font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_8px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
             </div>
 
             {/* Radar Sweep FX - Intensified Gemini Conic Gradient */}
             <div 
-              className="absolute inset-0 origin-center animate-[spin_10s_linear_infinite] opacity-40 pointer-events-none" 
+              className="absolute inset-0 origin-center animate-[spin_12s_linear_infinite] opacity-40 pointer-events-none" 
               style={{ 
-                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 51, 153, 0.1) 120deg, rgba(255, 234, 0, 0.2) 330deg, rgba(255, 255, 255, 0.4) 360deg)' 
+                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 51, 153, 0.15) 120deg, rgba(255, 234, 0, 0.25) 330deg, rgba(255, 255, 255, 0.5) 360deg)' 
               }}
             />
           </div>
