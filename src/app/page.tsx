@@ -48,7 +48,6 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     
-    // Globale Rhythmus-Vorlagen
     const patterns = [
       { id: 'kick-basic', name: 'KICK Basic', steps: [0, 16, 32, 48, 64, 80, 96, 112] },
       { id: 'clap-basic', name: 'CLAP Basic', steps: [16, 48, 80, 112] },

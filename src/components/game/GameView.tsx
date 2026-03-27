@@ -20,7 +20,7 @@ const PAD_COLORS: Record<SoundType, string> = {
   kick: '#993DEB',
   clap: '#FF3D00',
   percs: '#FFEA00',
-  misc: '#FFFFFF',
+  misc: '#3838FA',
 };
 const SHORTCUTS: Record<SoundType, string> = {
   kick: 'A',
@@ -155,20 +155,20 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           const currentStep = (t - SYNC_OFFSET) / ((60 / bpm) / 4);
           const tolerance = 1.2;
 
-          let passiveMisses = 0;
+          let passiveMissesCount = 0;
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
               if (!clearedNotesRef.current.has(noteId) && currentStep > step + tolerance) {
                 clearedNotesRef.current.add(noteId);
-                passiveMisses++;
+                passiveMissesCount++;
               }
             });
           });
 
-          if (passiveMisses > 0) {
+          if (passiveMissesCount > 0) {
             setScore(prev => {
-              const nextMisses = prev.misses + passiveMisses;
+              const nextMisses = prev.misses + passiveMissesCount;
               const total = prev.hits + nextMisses;
               return { 
                 hits: prev.hits, 
