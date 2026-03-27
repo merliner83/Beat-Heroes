@@ -186,8 +186,13 @@ export default function HomePage() {
               <span className="text-xl md:text-2xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
             </div>
 
-            {/* Radar Sweep FX - Bright & Strategic with Gemini colors */}
-            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-white/30 via-[#FF3399]/10 via-[#FFEA00]/10 to-transparent animate-[spin_10s_linear_infinite]" />
+            {/* Radar Sweep FX - Refined Smoother Conic Gradient */}
+            <div 
+              className="absolute inset-0 origin-center animate-[spin_12s_linear_infinite] opacity-30 pointer-events-none" 
+              style={{ 
+                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 51, 153, 0.05) 120deg, rgba(255, 234, 0, 0.1) 330deg, rgba(255, 255, 255, 0.25) 360deg)' 
+              }}
+            />
           </div>
           
           <div className="mt-2 text-[7px] font-black uppercase tracking-[1em] text-primary/30 text-center italic leading-none pointer-events-none select-none">
