@@ -125,7 +125,6 @@ export default function HomePage() {
             <Radio className="w-8 h-8 text-primary animate-pulse" />
             <div>
               <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
-              <p className="text-[9px] uppercase tracking-[0.4em] font-black opacity-60 text-[#FF9100]">Urban District Mapper</p>
             </div>
           </div>
         </div>
