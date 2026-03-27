@@ -12,11 +12,11 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-// Spezifische Koordinaten für die Studios im Hauptbereich (regelmäßige vertikale und horizontale Verteilung)
+// Optimierte Koordinaten für eine regelmäßige vertikale und horizontale Verteilung im Hauptbereich
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 20, y: 15 }, // Oben links
-  'yoan-beats': { x: 80, y: 30 },   // Mitte rechts
-  'noxxos': { x: 40, y: 55 },      // Unten links/mittig (oberhalb der Mini-Map)
+  'gabriel-beats': { x: 15, y: 15 }, // Oben links
+  'yoan-beats': { x: 80, y: 40 },   // Mitte rechts
+  'noxxos': { x: 30, y: 65 },      // Unten links (oberhalb der Mini-Map)
 };
 
 export default function HomePage() {
@@ -139,22 +139,22 @@ export default function HomePage() {
       </header>
 
       {/* Hauptbereich: Studios als schwebende Avatare */}
-      <main className="relative flex-1 w-full overflow-hidden flex flex-col items-center justify-center p-4">
+      <main className="relative flex-1 w-full overflow-hidden p-4">
         {/* Raster Hintergrund */}
         <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         
         {isLoadingStudios ? (
-          <div className="flex items-center justify-center">
+          <div className="h-full flex items-center justify-center">
             <Loader2 className="w-8 h-8 animate-spin text-[#FFEA00]" />
           </div>
         ) : (
-          <div className="relative w-full h-full max-w-6xl">
+          <div className="absolute inset-x-0 top-0 bottom-64 max-w-6xl mx-auto pointer-events-none">
             {allStudios?.map((studio) => {
               const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
               return (
                 <div 
                   key={studio.id}
-                  className="absolute transition-all duration-500 ease-in-out animate-in fade-in zoom-in group"
+                  className="absolute transition-all duration-500 ease-in-out animate-in fade-in zoom-in group pointer-events-auto"
                   style={{ 
                     left: `${pos.x}%`, 
                     top: `${pos.y}%`,
@@ -179,7 +179,7 @@ export default function HomePage() {
                         <div className="absolute top-2 right-2 md:top-4 md:right-4 w-4 h-4 md:w-6 md:h-6 bg-[#00E676] rounded-full border-4 border-black animate-ping" />
                       </div>
 
-                      {/* Studio Name Tag (Kein District Label hier, wie gewünscht) */}
+                      {/* Studio Name Tag */}
                       <div className="mt-6 bg-black/90 backdrop-blur-2xl border border-white/20 p-2 md:p-4 rounded-2xl shadow-2xl transform transition-all group-hover:-translate-y-2 group-hover:border-[#FFEA00] text-center min-w-[140px]">
                         <h3 className="text-sm md:text-lg font-black uppercase italic tracking-tighter whitespace-nowrap leading-none flex items-center justify-center gap-2">
                           <Sparkles className="w-3 h-3 text-[#FFEA00] opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -205,14 +205,14 @@ export default function HomePage() {
                <div className="w-6 h-6 bg-[#FFEA00] rounded-full animate-ping opacity-50" />
             </div>
 
-            {/* Tactical Points mit größeren Schriften */}
+            {/* Tactical Points */}
             <div className="absolute inset-0 p-8 flex flex-col justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-6 h-6 rounded-full bg-[#00E676] shadow-[0_0_20px_#00E676]" />
-                <span className="text-base md:text-xl font-black uppercase tracking-tighter text-[#00E676] drop-shadow-lg">MS BANTIGER</span>
+                <span className="text-lg md:text-2xl font-black uppercase tracking-tighter text-[#00E676] drop-shadow-lg">MS BANTIGER</span>
               </div>
               <div className="flex items-center gap-4 self-end">
-                <span className="text-base md:text-xl font-black uppercase tracking-tighter text-[#EB3D99] drop-shadow-lg">MS OBEREMMENTAL</span>
+                <span className="text-lg md:text-2xl font-black uppercase tracking-tighter text-[#EB3D99] drop-shadow-lg">MS OBEREMMENTAL</span>
                 <div className="w-6 h-6 rounded-full bg-[#EB3D99] shadow-[0_0_20px_#EB3D99]" />
               </div>
             </div>
@@ -220,7 +220,7 @@ export default function HomePage() {
             {/* Radar Sweep Animation */}
             <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-[#FFEA00]/5 to-transparent animate-[spin_4s_linear_infinite]" />
           </div>
-          <div className="mt-4 text-sm font-black uppercase tracking-[0.5em] text-white/40 text-center">DISTRICTS</div>
+          <div className="mt-6 text-xl md:text-3xl font-black uppercase tracking-[0.5em] text-white/50 text-center drop-shadow-2xl">DISTRICTS</div>
         </div>
       </main>
 
