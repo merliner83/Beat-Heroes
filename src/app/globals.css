@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,19 +10,19 @@
     --card-foreground: 280 10% 98%;
     --popover: 280 15% 6%;
     --popover-foreground: 280 10% 98%;
-    --primary: 271 81% 58%;
+    --primary: 340 82% 52%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 96% 60%;
+    --secondary: 15 100% 50%;
     --secondary-foreground: 0 0% 100%;
     --muted: 280 15% 12%;
     --muted-foreground: 280 10% 65%;
-    --accent: 240 96% 60%;
+    --accent: 35 100% 50%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     --border: 280 15% 15%;
     --input: 280 15% 15%;
-    --ring: 271 81% 58%;
+    --ring: 340 82% 52%;
     --radius: 1rem;
   }
 }
@@ -34,7 +33,7 @@
   }
   body {
     @apply bg-background text-foreground font-body antialiased;
-    background-image: radial-gradient(circle at 50% 50%, hsla(271, 81%, 58%, 0.05) 0%, transparent 80%);
+    background-image: radial-gradient(circle at 50% 50%, hsla(340, 82%, 52%, 0.05) 0%, transparent 80%);
   }
 }
 
@@ -75,7 +74,7 @@
   inset: 0;
   padding: 2px;
   border-radius: inherit;
-  background: linear-gradient(90deg, #993DEB, #3838FA, #FFEA00, #993DEB);
+  background: linear-gradient(90deg, #FF3399, #FF3D00, #FF9100, #FFEA00, #FF3399);
   background-size: 200% 100%;
   animation: border-rotate 4s linear infinite;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -83,19 +82,19 @@
   mask-composite: exclude;
   pointer-events: none;
   z-index: -1;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .gemini-glow {
-  box-shadow: 0 0 25px rgba(153, 61, 235, 0.2);
+  box-shadow: 0 0 30px rgba(255, 51, 153, 0.3);
 }
 
 .gemini-glow-accent {
-  box-shadow: 0 0 25px rgba(56, 56, 250, 0.2);
+  box-shadow: 0 0 30px rgba(255, 145, 0, 0.3);
 }
 
 .text-gradient {
-  background: linear-gradient(90deg, #993DEB, #3838FA);
+  background: linear-gradient(90deg, #FF3399, #FF3D00, #FF9100);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
