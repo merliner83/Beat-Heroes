@@ -12,11 +12,11 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-// Spezifische Koordinaten für die Studios im Hauptbereich (keine Überlappung)
+// Spezifische Koordinaten für die Studios im Hauptbereich (regelmäßige Verteilung)
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 25, y: 25 },
-  'yoan-beats': { x: 75, y: 40 },
-  'noxxos': { x: 45, y: 65 },
+  'gabriel-beats': { x: 20, y: 15 },
+  'yoan-beats': { x: 80, y: 30 },
+  'noxxos': { x: 40, y: 55 },
 };
 
 export default function HomePage() {
