@@ -1,2 +1,2 @@
 "use client";
-export default function RemovedConflict() { return null; }
+export default function Removed() { return null; }

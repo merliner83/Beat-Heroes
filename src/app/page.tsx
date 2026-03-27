@@ -49,6 +49,7 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     
+    // Globale Rhythmus-Vorlagen
     const patterns = [
       { id: 'kick-basic', name: 'KICK Basic', steps: [0, 16, 32, 48, 64, 80, 96, 112] },
       { id: 'clap-basic', name: 'CLAP Basic', steps: [16, 48, 80, 112] },
@@ -56,16 +57,19 @@ export default function HomePage() {
       { id: 'misc-pro', name: 'MISC Pro', steps: [6, 14, 22, 30, 38, 46, 54, 62, 70, 78, 86, 94, 102, 110, 118, 126] }
     ];
 
+    // Studios definieren
     const studios = [
-      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves.', coverColor: '#993DEB' },
-      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures.', coverColor: '#FFEA00' },
-      { id: 'noxxos', name: 'Noxxos', description: 'Experimental sounds.', coverColor: '#EB3D99' }
+      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#993DEB' },
+      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00' },
+      { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes and hunter mode.', coverColor: '#EB3D99' }
     ];
 
     try {
+      // Patterns und Studios speichern
       for (const p of patterns) await setDoc(doc(db, 'patterns', p.id), p, { merge: true });
       for (const s of studios) await setDoc(doc(db, 'studios', s.id), s, { merge: true });
 
+      // Nur ein Beispiel-Projekt bei Yoan Beats (wie gewünscht)
       const gameConfig = { 
         id: 'yoan-rhythm', 
         studioId: 'yoan-beats', 
@@ -111,7 +115,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Re-Linked!", description: "Yoan Beats is ready." });
+      toast({ title: "Re-Linked!", description: "Yoan Beats example ready." });
     } catch (e) {
       toast({ variant: "destructive", title: "Setup Failed" });
     }
