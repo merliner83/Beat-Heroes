@@ -27,41 +27,42 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
       className="relative w-28 h-32 md:w-36 md:h-44 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-1 overflow-hidden"
       style={{ 
         clipPath: 'polygon(50% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%)',
-        padding: '3px',
-        background: `linear-gradient(90deg, ${color}, #fff, ${color}, #fff, ${color})`,
+        padding: '2px',
+        background: `linear-gradient(90deg, ${color}, #222, ${color}, #222, ${color})`,
         backgroundSize: '200% 100%',
-        animation: 'border-rotate 3s linear infinite'
+        animation: 'border-rotate 4s linear infinite'
       }}
     >
       <div 
-        className="w-full h-full bg-black overflow-hidden relative"
+        className="w-full h-full bg-[#0a0a0a] overflow-hidden relative"
         style={{ clipPath: 'polygon(50% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%)' }}
       >
         {/* Background Glow */}
         <div 
-          className="absolute inset-0 blur-2xl opacity-20 group-hover:opacity-50 transition-opacity duration-700" 
+          className="absolute inset-0 blur-2xl opacity-10 group-hover:opacity-40 transition-opacity duration-700" 
           style={{ backgroundColor: color }} 
         />
         
-        {/* Image filling the house shape */}
+        {/* Heavily Darkened Image filling the house shape */}
         <Avatar className="w-full h-full rounded-none border-none bg-black">
           <AvatarImage 
-            src={`https://picsum.photos/seed/${studioName}/600/800`} 
-            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
+            src={`https://picsum.photos/seed/${studioName}-dark/600/800`} 
+            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110 brightness-[0.35] contrast-[1.1] grayscale-[0.4]"
+            data-ai-hint="dark building"
           />
-          <AvatarFallback className="bg-black text-white font-black italic text-2xl rounded-none">
-            {studioName.substring(0,2).toUpperCase()}
+          <AvatarFallback className="bg-black text-white/10 font-black italic text-4xl rounded-none">
+            {studioName.substring(0,1).toUpperCase()}
           </AvatarFallback>
         </Avatar>
 
-        {/* Glossy Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-transparent to-white/10 pointer-events-none" />
+        {/* Dark Overlay Vignette */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
       </div>
     </div>
 
     {/* Massive Studio Name Label - No Frame */}
     <div className="mt-3 text-center pointer-events-none">
-      <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_4px_10px_rgba(0,0,0,1)] group-hover:text-primary transition-colors leading-none">
+      <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white/90 drop-shadow-[0_4px_10px_rgba(0,0,0,1)] group-hover:text-primary transition-colors leading-none">
         {studioName}
       </h3>
     </div>

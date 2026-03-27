@@ -11,6 +11,12 @@
       "description": "Vintage MPC Drum Sampler",
       "imageUrl": "https://picsum.photos/seed/beathero-mpc/600/800",
       "imageHint": "drum machine"
+    },
+    {
+      "id": "dark-urban",
+      "description": "Dark Urban Architecture Example",
+      "imageUrl": "https://picsum.photos/seed/dark-urban/600/800",
+      "imageHint": "dark building"
     }
   ]
 }
