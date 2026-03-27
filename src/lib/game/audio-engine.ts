@@ -27,12 +27,12 @@ export class AudioEngine {
 
     if (!this.context) {
       try {
-        const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
+        const AudioContextClass = (window as any).AudioContext || (window as any).webkitAutoContext;
         this.context = new AudioContextClass({ sampleRate: 44100 });
         this.masterGain = this.context.createGain();
         this.masterGain.connect(this.context.destination);
       } catch (e) {
-        console.error('AudioEngine: Context creation failed', e);
+        console.warn('AudioEngine: Context creation failed', e);
         return false;
       }
     }
@@ -117,7 +117,7 @@ export class AudioEngine {
       source.onended = () => this.sources.delete(source);
       this.sources.add(source);
     } catch (e) {
-      console.error('AudioEngine: One-shot playback failed', e);
+      console.warn('AudioEngine: One-shot playback failed', e);
     }
   }
 
@@ -161,7 +161,7 @@ export class AudioEngine {
       source.start(when);
       this.backingSource = source;
     } catch (e) {
-      console.error('AudioEngine: Backing track start failed', e);
+      console.warn('AudioEngine: Backing track start failed', e);
     }
   }
 

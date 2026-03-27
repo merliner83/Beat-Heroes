@@ -13,11 +13,14 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-// Weiträumige Verteilung über den gesamten Hauptbereich
+// Weiträumige Verteilung über den gesamten Hauptbereich, um Überlagerungen zu vermeiden
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'gabriel-beats': { x: 15, y: 15 }, // Oben Links
-  'yoan-beats': { x: 85, y: 18 },   // Oben Rechts
-  'noxxos': { x: 50, y: 32 },      // Mitte (weiter oben für Abstand zur Map)
+  'yoan-beats': { x: 85, y: 15 },    // Oben Rechts
+  'noxxos': { x: 50, y: 22 },       // Oben Mitte
+  'dave-beats': { x: 25, y: 40 },    // Mitte Links
+  'nintu-music': { x: 75, y: 40 },   // Mitte Rechts
+  'nintu-beats': { x: 75, y: 40 },   // Fallback für Nintu
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
@@ -55,7 +58,7 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
 
     {/* Prägnante Beschriftung ohne Rahmen, deutlich größer */}
     <div className="mt-4 text-center pointer-events-none">
-      <h3 className="text-lg md:text-3xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] group-hover:text-[#FFEA00] transition-colors leading-none">
+      <h3 className="text-xl md:text-3xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] group-hover:text-[#FFEA00] transition-colors leading-none">
         {studioName}
       </h3>
     </div>
@@ -139,7 +142,7 @@ export default function HomePage() {
         ) : (
           <div className="absolute inset-0 max-w-7xl mx-auto pointer-events-none">
             {allStudios?.map((studio) => {
-              const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
+              const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 30 }; // Fallback leicht nach oben versetzt
               return (
                 <div 
                   key={studio.id}
