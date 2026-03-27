@@ -3,13 +3,13 @@
 import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 
-export default function OldRouteRedirect() {
+export default function RedirectToSession() {
   const router = useRouter();
-  const { studioId, gameId, levelId } = useParams();
+  const { levelId } = useParams();
   
   useEffect(() => {
-    router.replace(`/game-session/${studioId}/${gameId}/${levelId}`);
-  }, [router, studioId, gameId, levelId]);
+    if (levelId) router.replace(`/session/${levelId}`);
+  }, [router, levelId]);
 
   return null;
 }

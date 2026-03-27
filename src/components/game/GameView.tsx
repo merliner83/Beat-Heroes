@@ -136,10 +136,10 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
       const now = audioEngine.getContextTime();
       const actualStartTime = now + (4 * secondsPerBeat);
       audioEngine.setStartTime(actualStartTime);
-      setIsPlaying(true); 
-
+      
       await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
       setCountIn(null);
+      setIsPlaying(true); 
       await audioEngine.startBackingTrack(game.backingTrackUrl || '', actualStartTime);
     } catch (e) {
       toast({ variant: "destructive", title: "Audio Error" });
@@ -206,7 +206,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
       <div className="flex justify-between items-center mb-2 md:mb-4 gap-2">
         <div className="flex items-center gap-2 md:gap-3">
           <Link href={`/studio/${game.studioId}`}>
-            <h1 className="text-lg md:text-2xl font-black uppercase italic tracking-tighter text-white">BeatHero</h1>
+            <h1 className="text-lg md:text-2xl font-black uppercase italic tracking-tighter text-white leading-none">BeatHero</h1>
           </Link>
           <div className="h-4 w-px bg-white/10" />
           <p className="text-[8px] md:text-[10px] uppercase font-black opacity-40 line-clamp-1">{game.name} • {level.name}</p>
@@ -215,7 +215,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         <div className="flex items-center gap-2 md:gap-4 border-l border-white/10 pl-2 md:pl-4">
           <div className="text-right">
             <p className="text-[7px] md:text-[8px] uppercase font-black opacity-30 leading-none mb-1">Accuracy</p>
-            <p className={cn("text-lg md:text-xl font-black italic leading-none", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
+            <p className={cn("text-base md:text-xl font-black italic leading-none", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
               {score.accuracy}%
             </p>
           </div>

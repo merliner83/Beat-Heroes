@@ -54,12 +54,12 @@ export default function HomePage() {
     const patterns = [
       { id: 'kick-basic', name: 'KICK Basic', steps: [0, 16, 32, 48, 64, 80, 96, 112] },
       { id: 'clap-basic', name: 'CLAP Basic', steps: [16, 48, 80, 112] },
-      { id: 'hats-basic', name: 'HATS Basic', steps: [8, 24, 40, 56, 72, 88, 104, 120] },
-      { id: 'misc-pro', name: 'MISC Pro Groove', steps: [0, 12, 28, 44, 60, 76, 92, 108, 124] }
+      { id: 'hats-pro', name: 'HATS Pro', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120] },
+      { id: 'misc-pro', name: 'MISC Pro', steps: [12, 28, 44, 60, 76, 92, 108, 124] }
     ];
 
     const studios = [
-      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves.', coverColor: '#FF3D00', district: 'Bantiger District' },
+      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves.', coverColor: '#993DEB', district: 'Bantiger District' },
       { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures.', coverColor: '#FFEA00', district: 'Bantiger District' },
       { id: 'noxxos', name: 'Noxxos', description: 'Experimental sounds.', coverColor: '#EB3D99', district: 'Oberemmental District' }
     ];
@@ -97,7 +97,7 @@ export default function HomePage() {
         const soundConfigs = [
           { type: 'kick', p: ['kick-basic', 'kick-basic', 'kick-basic', 'kick-basic'], minLvl: 1 },
           { type: 'clap', p: ['clap-basic', 'clap-basic', 'clap-basic', 'clap-basic'], minLvl: 2 },
-          { type: 'percs', p: ['hats-basic', 'hats-basic', 'hats-basic', 'hats-basic'], minLvl: 3 },
+          { type: 'percs', p: ['hats-pro', 'hats-pro', 'hats-pro', 'hats-pro'], minLvl: 3 },
           { type: 'misc', p: ['misc-pro', 'misc-pro', 'misc-pro', 'misc-pro'], minLvl: 4 }
         ];
 

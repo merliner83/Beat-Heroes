@@ -1,12 +1,15 @@
 
 "use client";
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
-export default function LegacyRedirect() {
+export default function RedirectToSessionLegacy() {
   const router = useRouter();
+  const { levelId } = useParams();
+  
   useEffect(() => {
-    router.replace('/');
-  }, [router]);
+    if (levelId) router.replace(`/session/${levelId}`);
+  }, [router, levelId]);
+
   return null;
 }
