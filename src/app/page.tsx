@@ -179,33 +179,33 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Mini Map (Zentriert am unteren Rand) */}
+        {/* Mini Map (Vergrößert und zentriert) */}
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-50">
-          <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-2xl border-2 border-white/10 bg-black/60 backdrop-blur-md overflow-hidden gemini-glow">
+          <div className="relative w-56 h-56 md:w-80 md:h-80 rounded-2xl border-2 border-white/10 bg-black/60 backdrop-blur-md overflow-hidden gemini-glow">
             {/* Tactical Grid */}
-            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '25px 25px' }} />
             
             {/* Pulse Effects */}
             <div className="absolute inset-0 flex items-center justify-center">
-               <div className="w-3 h-3 bg-[#FFEA00] rounded-full animate-ping opacity-50" />
+               <div className="w-4 h-4 bg-[#FFEA00] rounded-full animate-ping opacity-50" />
             </div>
 
-            {/* Tactical Points */}
-            <div className="absolute inset-0 p-6 flex flex-col justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-[#00E676] shadow-[0_0_12px_#00E676]" />
-                <span className="text-[10px] font-black uppercase tracking-tighter text-[#00E676]">MS BANTIGER</span>
+            {/* Tactical Points mit größeren Schriften */}
+            <div className="absolute inset-0 p-8 flex flex-col justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-4 h-4 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676]" />
+                <span className="text-xs md:text-base font-black uppercase tracking-tighter text-[#00E676] drop-shadow-md">MS BANTIGER</span>
               </div>
-              <div className="flex items-center gap-3 self-end">
-                <span className="text-[10px] font-black uppercase tracking-tighter text-[#EB3D99]">MS OBEREMMENTAL</span>
-                <div className="w-3 h-3 rounded-full bg-[#EB3D99] shadow-[0_0_12px_#EB3D99]" />
+              <div className="flex items-center gap-4 self-end">
+                <span className="text-xs md:text-base font-black uppercase tracking-tighter text-[#EB3D99] drop-shadow-md">MS OBEREMMENTAL</span>
+                <div className="w-4 h-4 rounded-full bg-[#EB3D99] shadow-[0_0_15px_#EB3D99]" />
               </div>
             </div>
 
             {/* Radar Sweep Animation */}
             <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-[#FFEA00]/5 to-transparent animate-[spin_4s_linear_infinite]" />
           </div>
-          <div className="mt-3 text-[10px] font-black uppercase tracking-[0.4em] text-white/20 text-center">TACTICAL OVERLAY</div>
+          <div className="mt-4 text-xs font-black uppercase tracking-[0.4em] text-white/30 text-center">TACTICAL OVERLAY</div>
         </div>
       </main>
 
