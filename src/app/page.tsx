@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect } from 'react';
@@ -19,14 +18,14 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'noxxos': { x: 50, y: 18 },
   'dave-beats': { x: 25, y: 35 },
   'nintu-music': { x: 75, y: 35 },
-  'dj-avox': { x: 35, y: 55 },
-  'benjamin-beats': { x: 65, y: 55 },
+  'dj-avox': { x: 35, y: 58 },
+  'benjamin-beats': { x: 65, y: 58 },
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
   <div className="relative flex flex-col items-center group cursor-pointer">
     <div 
-      className="relative w-24 h-26 md:w-28 md:h-28 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-1 overflow-hidden"
+      className="relative w-28 h-28 md:w-32 md:h-32 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-1 overflow-hidden"
       style={{ 
         clipPath: 'polygon(50% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%)',
         padding: '2px',
@@ -110,24 +109,24 @@ export default function HomePage() {
         await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
-      // --- PATTERNS (32 Takte = 512 Steps, aber wir definieren 128er Segmente für die DB-Logik) ---
-      const p1Steps = Array.from({ length: 128 }, (_, i) => i * 4); // Kick: Viertel
-      const p2Steps = Array.from({ length: 64 }, (_, i) => (i * 8) + 4); // Clap: 2 und 4
+      // --- PATTERNS (Fixe 32 Takte = 512 Steps) ---
+      // Wir definieren jetzt pro Instrument genau ein fixes 32-Takt-Pattern.
+      const p1Steps = Array.from({ length: 128 }, (_, i) => i * 4); // Kick: Viertel auf alle 512 Steps
+      const p2Steps = Array.from({ length: 64 }, (_, i) => (i * 8) + 4); // Clap: 2 und 4 auf alle 512 Steps
       const p3Steps = Array.from({ length: 32 }, (_, i) => (i * 16) + 7); // Vocals/Accents
       const p4Steps = Array.from({ length: 128 }, (_, i) => (i * 4) + 2); // Offbeat Percs
 
       const patterns = [
-        { id: 'pattern-p1', name: 'Kick Basic', steps: p1Steps },
-        { id: 'pattern-p2', name: 'Clap Basic', steps: p2Steps },
-        { id: 'pattern-p3', name: 'Vocal Basic', steps: p3Steps },
-        { id: 'pattern-p4', name: 'Perc Basic', steps: p4Steps },
+        { id: 'pattern-p1', name: 'Kick 32', steps: p1Steps },
+        { id: 'pattern-p2', name: 'Clap 32', steps: p2Steps },
+        { id: 'pattern-p3', name: 'Vocal 32', steps: p3Steps },
+        { id: 'pattern-p4', name: 'Perc 32', steps: p4Steps },
       ];
 
       for (const p of patterns) {
         await setDoc(doc(db, 'patterns', p.id), p);
       }
 
-      // --- GAMES FOR YOAN BEATS ---
       const games = [
         {
           id: 'yoan-techno-architect',
@@ -161,7 +160,6 @@ export default function HomePage() {
       for (const g of games) {
         await setDoc(doc(db, 'games', g.id), g);
         
-        // Levels 1-4
         for (let i = 1; i <= 4; i++) {
           const levelId = `${g.id}-lvl-${i}`;
           await setDoc(doc(db, 'levels', levelId), {
@@ -171,7 +169,6 @@ export default function HomePage() {
             name: i === 1 ? 'Initiation' : i === 2 ? 'The Pulse' : i === 3 ? 'Modular' : 'Master'
           });
 
-          // Sounds for Level
           const soundSet = [
             { type: 'kick', sample: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg', p: 'pattern-p1' },
             { type: 'clap', sample: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg', p: 'pattern-p2' },
@@ -186,13 +183,13 @@ export default function HomePage() {
               levelId: levelId,
               type: s.type,
               sampleUrl: s.sample,
-              patternIds: ['pattern-p1', 'pattern-p1', 'pattern-p1', 'pattern-p1'] // 4x8 bars = 32 bars
+              patternIds: [s.p] // Nur ein fixes 32-Takt-Pattern
             });
           }
         }
       }
 
-      toast({ title: "Radar Synced!", description: "Yoan Beats & Gabriel Beats updated." });
+      toast({ title: "Radar Synced!", description: "Studios and Patterns updated." });
     } catch (e) {
       toast({ variant: "destructive", title: "Setup Failed" });
     }
@@ -260,25 +257,25 @@ export default function HomePage() {
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
             
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
-              <div className="w-32 h-32 rounded-full border-2 border-white/60 animate-[ping_4s_linear_infinite]" />
-              <div className="absolute inset-0 w-48 h-48 -translate-x-[15%] -translate-y-[15%] rounded-full border border-white/30 animate-[ping_6s_linear_infinite]" />
+              <div className="w-32 h-32 rounded-full border-4 border-white/40 animate-[ping_4s_linear_infinite]" />
+              <div className="absolute inset-0 w-48 h-48 -translate-x-[15%] -translate-y-[15%] rounded-full border border-white/20 animate-[ping_6s_linear_infinite]" />
               <div className="absolute inset-0 w-24 h-24 translate-x-[20%] translate-y-[20%] rounded-full bg-white/10 animate-pulse blur-xl" />
             </div>
 
-            <div className="absolute left-[12%] top-[20%] flex flex-col items-start gap-1 group transition-transform hover:scale-105 z-20">
+            <div className="absolute left-[12%] top-[15%] flex flex-col items-start gap-1 group transition-transform hover:scale-105 z-20">
               <div className="w-3 h-3 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676] border border-white/50 animate-pulse" />
-              <span className="text-sm md:text-lg font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)]">BANTIGER</span>
+              <span className="text-xl md:text-3xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)]">BANTIGER</span>
             </div>
 
-            <div className="absolute right-[12%] bottom-[25%] flex flex-col items-end gap-1 transition-transform hover:scale-105 z-20">
+            <div className="absolute right-[12%] bottom-[20%] flex flex-col items-end gap-1 transition-transform hover:scale-105 z-20">
               <div className="w-3 h-3 rounded-full bg-[#FF3D00] shadow-[0_0_15px_#FF3D00] border border-white/50 animate-pulse" />
-              <span className="text-sm md:text-lg font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)] text-right">OBEREMMENTAL</span>
+              <span className="text-xl md:text-3xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)] text-right">OBEREMMENTAL</span>
             </div>
 
             <div 
-              className="absolute inset-0 origin-center animate-[spin_15s_linear_infinite] opacity-50 pointer-events-none" 
+              className="absolute inset-0 origin-center animate-[spin_15s_linear_infinite] opacity-40 pointer-events-none" 
               style={{ 
-                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 51, 153, 0.3) 120deg, rgba(255, 234, 0, 0.4) 330deg, rgba(255, 255, 255, 0.6) 360deg)' 
+                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 51, 153, 0.4) 120deg, rgba(255, 234, 0, 0.5) 330deg, rgba(255, 255, 255, 0.7) 360deg)' 
               }}
             />
           </div>

@@ -58,18 +58,17 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const TOTAL_STEPS = 512;
 
   const soundsWithPatterns = sounds.map(sound => {
-    let allSteps: number[] = [];
+    const uniqueSteps = new Set<number>();
     sound.patternIds?.forEach((pId, index) => {
       const pattern = patterns.find(p => p.id === pId);
       if (pattern) {
         const offset = index * 128;
-        allSteps = [...allSteps, ...pattern.steps.map(s => s + offset)];
+        pattern.steps.forEach(s => uniqueSteps.add(s + offset));
       }
     });
-    return { ...sound, triggerSteps: allSteps };
+    return { ...sound, triggerSteps: Array.from(uniqueSteps).sort((a, b) => a - b) };
   });
 
-  // Preload effects
   useEffect(() => {
     const preload = async () => {
       if (!audioEngine) return;
@@ -96,7 +95,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     try {
       await audioEngine.resume();
       
-      // Force reload check to ensure buffers are really there
       const urlsToLoad = [game.backingTrackUrl || '', ...sounds.map(s => s.sampleUrl)];
       await audioEngine.preloadAudio(urlsToLoad);
 
@@ -268,8 +266,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
         {isPlaying && soundsWithPatterns.map(sound => 
           sound.triggerSteps.map(step => {
-            const noteId = `${sound.type}-${step}`;
-            if (clearedNotesRef.current.has(noteId)) return null;
+            const noteId = `hunter-${sound.type}-${step}`;
+            if (clearedNotesRef.current.has(`${sound.type}-${step}`)) return null;
 
             const noteTime = step * ((60 / bpm) / 4);
             const relativeTime = noteTime - (currentTime - SYNC_OFFSET);

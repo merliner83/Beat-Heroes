@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -66,7 +65,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const clearedNotesRef = useRef<Set<string>>(new Set());
   const { toast } = useToast();
 
-  // Filter sounds based on level difficulty (1-4)
   const activeSoundTypes: SoundType[] = ['kick'];
   if (level.difficulty >= 2) activeSoundTypes.push('clap');
   if (level.difficulty >= 3) activeSoundTypes.push('percs');
@@ -75,21 +73,19 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const filteredSounds = sounds.filter(s => activeSoundTypes.includes(s.type));
 
   const soundsWithPatterns = filteredSounds.map(sound => {
-    let allSteps: number[] = [];
+    const uniqueSteps = new Set<number>();
     sound.patternIds?.forEach((pId, index) => {
       const pattern = patterns.find(p => p.id === pId);
       if (pattern) {
-        // We use an 8-bar offset if multiple patterns are provided, 
-        // but the user now wants 32-bar fixed patterns (512 steps).
         const offset = index * 128; 
-        allSteps = [...allSteps, ...pattern.steps.map(s => s + offset)];
+        pattern.steps.forEach(s => uniqueSteps.add(s + offset));
       }
     });
-    return { ...sound, triggerSteps: allSteps };
+    return { ...sound, triggerSteps: Array.from(uniqueSteps).sort((a, b) => a - b) };
   });
 
   const bpm = game.bpm || 120;
-  const TOTAL_STEPS = 512; // Fixed 32 bars * 16 steps = 512 steps
+  const TOTAL_STEPS = 512;
 
   useEffect(() => {
     const preload = async () => {
