@@ -186,8 +186,8 @@ export default function HomePage() {
               <span className="text-xl md:text-2xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
             </div>
 
-            {/* Radar Sweep FX - Bright & Strategic */}
-            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-white/15 to-transparent animate-[spin_10s_linear_infinite]" />
+            {/* Radar Sweep FX - Bright & Strategic with Gemini colors */}
+            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-white/30 via-[#FF3399]/10 via-[#FFEA00]/10 to-transparent animate-[spin_10s_linear_infinite]" />
           </div>
           
           <div className="mt-2 text-[7px] font-black uppercase tracking-[1em] text-primary/30 text-center italic leading-none pointer-events-none select-none">
