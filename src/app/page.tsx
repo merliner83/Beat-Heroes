@@ -14,10 +14,10 @@ import { useAuth } from '@/firebase/provider';
 
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'gabriel-beats': { x: 15, y: 20 },
-  'yoan-beats': { x: 40, y: 45 },
-  'nintu-music': { x: 70, y: 65 },
-  'dave-beats': { x: 20, y: 75 },
-  'noxxos': { x: 80, y: 30 }
+  'yoan-beats': { x: 45, y: 40 },
+  'noxxos': { x: 75, y: 25 },
+  'dave-beats': { x: 25, y: 70 },
+  'nintu-music': { x: 70, y: 70 }
 };
 
 export default function HomePage() {
@@ -50,18 +50,18 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     
-    // Core Patterns
+    // Clean Setup for Yoan Beats Only
     const patterns = [
       { id: 'kick-basic', name: 'KICK Basic', steps: [0, 16, 32, 48, 64, 80, 96, 112] },
       { id: 'clap-basic', name: 'CLAP Basic', steps: [16, 48, 80, 112] },
-      { id: 'hats-pro', name: 'HATS Pro', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120] },
-      { id: 'misc-pro', name: 'MISC Pro', steps: [12, 28, 44, 60, 76, 92, 108, 124] }
+      { id: 'hats-pro', name: 'HATS Pro', steps: [0, 8, 12, 16, 24, 28, 32, 40, 44, 48, 56, 60, 64, 72, 76, 80, 88, 92, 96, 104, 108, 112, 120, 124] },
+      { id: 'misc-pro', name: 'MISC Pro', steps: [6, 14, 22, 30, 38, 46, 54, 62, 70, 78, 86, 94, 102, 110, 118, 126] }
     ];
 
     const studios = [
-      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves.', coverColor: '#993DEB', district: 'Bantiger District' },
-      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures.', coverColor: '#FFEA00', district: 'Bantiger District' },
-      { id: 'noxxos', name: 'Noxxos', description: 'Experimental sounds.', coverColor: '#EB3D99', district: 'Oberemmental District' }
+      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves.', coverColor: '#993DEB' },
+      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures.', coverColor: '#FFEA00' },
+      { id: 'noxxos', name: 'Noxxos', description: 'Experimental sounds.', coverColor: '#EB3D99' }
     ];
 
     try {
@@ -74,13 +74,11 @@ export default function HomePage() {
         name: 'Yoan\'s Rhythm', 
         type: 'rhythm-producer', 
         bpm: 162, 
-        difficulty: 2 
+        difficulty: 2,
+        backingTrackUrl: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
       };
 
-      await setDoc(doc(db, 'games', gameConfig.id), {
-        ...gameConfig,
-        backingTrackUrl: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
-      }, { merge: true });
+      await setDoc(doc(db, 'games', gameConfig.id), gameConfig, { merge: true });
 
       const levels = [
         { id: `yoan-level-1`, name: 'Kick Foundation', diff: 1 },
@@ -115,26 +113,26 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Database Re-Linked", description: "Yoan Beats example is ready!" });
+      toast({ title: "Re-Linked!", description: "Yoan Beats is ready." });
     } catch (e) {
-      toast({ variant: "destructive", title: "Setup Error", description: "Check Firestore rules." });
+      toast({ variant: "destructive", title: "Setup Failed" });
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col overflow-x-hidden select-none">
+    <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none">
       <header className="p-4 md:p-6 flex flex-col items-center z-50">
-        <div className="gemini-border gemini-glow p-3 md:p-4 inline-block mb-2 md:mb-4">
+        <div className="gemini-border gemini-glow p-3 md:p-4 inline-block mb-4">
           <div className="flex items-center gap-3">
             <Radio className="w-6 h-6 md:w-8 md:h-8 text-[#FFEA00]" />
             <div>
-              <h1 className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
-              <p className="text-[8px] md:text-[10px] uppercase tracking-[0.2em] font-bold opacity-50">Select Destination</p>
+              <h1 className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic leading-none">BeatHero</h1>
+              <p className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">Select Destination</p>
             </div>
           </div>
         </div>
 
-        <div className="gemini-border gemini-glow p-2 md:p-4 text-center">
+        <div className="gemini-border gemini-glow p-2 px-6 text-center">
           <div className="text-white font-bold text-sm md:text-xl leading-none tracking-tighter">
             {streetCred.toLocaleString()} <span className="text-[#FFEA00] italic ml-1 font-black">SC</span>
           </div>
@@ -142,7 +140,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="relative flex-1 w-full bg-[#080808] overflow-hidden min-h-[400px]">
+      <main className="relative flex-1 w-full bg-[#080808]">
         <div className="absolute inset-0">
           {allStudios?.map((studio) => {
             const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };

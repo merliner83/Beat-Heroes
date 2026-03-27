@@ -3,27 +3,29 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: 280 15% 4%;
-  --foreground: 280 10% 98%;
-  --card: 280 15% 8%;
-  --card-foreground: 280 10% 98%;
-  --popover: 280 15% 6%;
-  --popover-foreground: 280 10% 98%;
-  --primary: 271 81% 58%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 240 96% 60%;
-  --secondary-foreground: 0 0% 100%;
-  --muted: 280 15% 12%;
-  --muted-foreground: 280 10% 65%;
-  --accent: 240 96% 60%;
-  --accent-foreground: 0 0% 100%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 280 15% 15%;
-  --input: 280 15% 15%;
-  --ring: 271 81% 58%;
-  --radius: 1rem;
+@layer base {
+  :root {
+    --background: 280 15% 4%;
+    --foreground: 280 10% 98%;
+    --card: 280 15% 8%;
+    --card-foreground: 280 10% 98%;
+    --popover: 280 15% 6%;
+    --popover-foreground: 280 10% 98%;
+    --primary: 271 81% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 96% 60%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 280 15% 12%;
+    --muted-foreground: 280 10% 65%;
+    --accent: 240 96% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 280 15% 15%;
+    --input: 280 15% 15%;
+    --ring: 271 81% 58%;
+    --radius: 1rem;
+  }
 }
 
 @layer base {
@@ -36,7 +38,25 @@
   }
 }
 
-/* Gemini-Style Gradient Border */
+/* Hit & Miss Animations (Wave Effect) */
+@keyframes wave-green {
+  0% { transform: scale(1); box-shadow: 0 0 0 0px rgba(0, 230, 118, 0.7); background-color: rgba(0, 230, 118, 0.3); }
+  100% { transform: scale(1.1); box-shadow: 0 0 40px 20px rgba(0, 230, 118, 0); background-color: transparent; }
+}
+
+@keyframes wave-red {
+  0% { transform: scale(1); box-shadow: 0 0 0 0px rgba(255, 61, 0, 0.7); background-color: rgba(255, 61, 0, 0.3); }
+  100% { transform: scale(0.95); box-shadow: 0 0 40px 20px rgba(255, 61, 0, 0); background-color: transparent; }
+}
+
+.animate-wave-green {
+  animation: wave-green 0.4s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+.animate-wave-red {
+  animation: wave-red 0.4s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
 .gemini-border {
   position: relative;
   z-index: 0;
@@ -49,53 +69,16 @@
   inset: 0;
   padding: 1px;
   border-radius: inherit;
-  background: linear-gradient(90deg, #993DEB, #FF3D00, #FFEA00, #FFFF00, #993DEB);
+  background: linear-gradient(90deg, #993DEB, #FF3D00, #FFEA00, #993DEB);
   background-size: 200% 100%;
-  -webkit-mask: 
-     linear-gradient(#fff 0 0) content-box, 
-     linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
-          mask-composite: exclude;
+  mask-composite: exclude;
   pointer-events: none;
   z-index: -1;
   opacity: 0.6;
 }
 
 .gemini-glow {
-  box-shadow: 0 0 15px rgba(153, 61, 235, 0.1), 0 0 30px rgba(255, 61, 0, 0.05);
-}
-
-/* Hit & Miss Animations (Waves) */
-.animate-hit-green {
-  animation: hit-pulse-green 0.5s cubic-bezier(0, 0, 0.2, 1) forwards;
-}
-
-.animate-miss-red {
-  animation: miss-pulse-red 0.5s cubic-bezier(0, 0, 0.2, 1) forwards;
-}
-
-@keyframes hit-pulse-green {
-  0% { 
-    box-shadow: 0 0 0 0px rgba(0, 230, 118, 0.8);
-    background-color: rgba(0, 230, 118, 0.5);
-    transform: scale(0.95);
-  }
-  100% { 
-    box-shadow: 0 0 50px 30px rgba(0, 230, 118, 0);
-    background-color: transparent;
-    transform: scale(1.1);
-  }
-}
-
-@keyframes miss-pulse-red {
-  0% { 
-    box-shadow: 0 0 0 0px rgba(255, 61, 0, 0.8);
-    background-color: rgba(255, 61, 0, 0.5);
-    transform: scale(0.95);
-  }
-  100% { 
-    box-shadow: 0 0 50px 30px rgba(255, 61, 0, 0);
-    background-color: transparent;
-    transform: scale(1.1);
-  }
+  box-shadow: 0 0 15px rgba(153, 61, 235, 0.1);
 }

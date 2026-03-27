@@ -22,7 +22,7 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
     if (e && 'preventDefault' in e) e.preventDefault();
     onPress();
     setIsPressed(true);
-    setTimeout(() => setIsPressed(false), 80);
+    setTimeout(() => setIsPressed(false), 100);
   }, [onPress]);
 
   useEffect(() => {
@@ -36,24 +36,31 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
   }, [shortcut, handlePress]);
 
   return (
-    <div className="relative w-full max-w-[120px] aspect-square">
-      {flash === 'hit' && <div key={`hit-${flashKey}`} className="absolute inset-0 rounded-2xl animate-hit-green z-0" />}
-      {flash === 'miss' && <div key={`miss-${flashKey}`} className="absolute inset-0 rounded-2xl animate-miss-red z-0" />}
+    <div className="relative w-full max-w-[110px] aspect-square">
+      {/* Wave Flash Overlay */}
+      <div 
+        key={flashKey} 
+        className={cn(
+          "absolute inset-0 rounded-2xl pointer-events-none z-0",
+          flash === 'hit' && "animate-wave-green",
+          flash === 'miss' && "animate-wave-red"
+        )} 
+      />
       
       <button
         onPointerDown={(e) => handlePress(e)}
         className={cn(
           "relative z-10 flex flex-col items-center justify-center w-full h-full rounded-2xl border-2 transition-all duration-75 select-none touch-none",
-          isPressed ? "scale-95 brightness-125 bg-white/20" : "scale-100 hover:brightness-110 active:scale-95"
+          isPressed ? "scale-95 brightness-125" : "scale-100 hover:brightness-110 active:scale-95"
         )}
         style={{
           borderColor: color,
-          backgroundColor: isPressed ? color : 'rgba(0,0,0,0.4)',
-          boxShadow: `0 0 15px ${color}22`,
+          backgroundColor: isPressed ? color : 'rgba(0,0,0,0.5)',
+          boxShadow: `0 0 20px ${color}33`,
         }}
       >
-        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">{shortcut}</span>
-        <span className="text-sm md:text-lg font-black uppercase italic tracking-tighter">{label}</span>
+        <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">{shortcut}</span>
+        <span className="text-xs md:text-lg font-black uppercase italic tracking-tighter line-clamp-1">{label}</span>
       </button>
     </div>
   );
