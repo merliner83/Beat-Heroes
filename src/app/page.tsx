@@ -12,12 +12,52 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-// Optimierte Koordinaten für eine regelmäßige vertikale und horizontale Verteilung im Hauptbereich
+// Optimierte Koordinaten für eine großzügige Verteilung im oberen Bereich
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 15, y: 15 }, // Oben links
-  'yoan-beats': { x: 80, y: 40 },   // Mitte rechts
-  'noxxos': { x: 30, y: 65 },      // Unten links (oberhalb der Mini-Map)
+  'gabriel-beats': { x: 15, y: 15 }, // Oben Links
+  'yoan-beats': { x: 82, y: 22 },   // Oben Rechts
+  'noxxos': { x: 50, y: 40 },      // Zentral Mitte (weit weg von der Mini-Map)
 };
+
+const StudioHouseFrame = ({ children, color, studioName }: { children: React.ReactNode, color: string, studioName: string }) => (
+  <div className="relative flex flex-col items-center group cursor-pointer">
+    {/* Stylische Haus-Umrandung (SVG) */}
+    <div className="relative w-28 h-28 md:w-44 md:h-44 flex items-center justify-center">
+      <svg 
+        className="absolute inset-0 w-full h-full -z-10 transition-all duration-500 group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]" 
+        viewBox="0 0 100 100" 
+        preserveAspectRatio="none"
+      >
+        <path 
+          d="M50 5 L92 38 L92 95 L8 95 L8 38 Z" 
+          fill="rgba(0,0,0,0.8)" 
+          stroke={color} 
+          strokeWidth="2.5"
+          className="transition-all duration-500 group-hover:stroke-white"
+        />
+      </svg>
+      
+      {/* Der Avatar im Haus */}
+      <div className="p-1 rounded-full overflow-hidden transition-transform duration-500 group-hover:scale-105">
+        <Avatar className="w-16 h-16 md:w-28 md:h-28 border-2 border-white/5">
+          <AvatarImage src={`https://picsum.photos/seed/${studioName}/400`} />
+          <AvatarFallback className="bg-black text-white font-black italic text-lg">{studioName.substring(0,2).toUpperCase()}</AvatarFallback>
+        </Avatar>
+      </div>
+      
+      {/* Aktiver Indikator (Schornstein-Style oder Corner) */}
+      <div className="absolute top-8 right-6 md:top-12 md:right-10 w-3 h-3 md:w-5 md:h-5 bg-[#00E676] rounded-full border-2 border-black animate-pulse" />
+    </div>
+
+    {/* Studio Name Tag */}
+    <div className="mt-2 bg-black/90 backdrop-blur-xl border border-white/10 p-2 md:p-3 rounded-xl shadow-2xl transform transition-all group-hover:-translate-y-1 group-hover:border-[#FFEA00] text-center min-w-[120px]">
+      <h3 className="text-[10px] md:text-sm font-black uppercase italic tracking-tighter whitespace-nowrap leading-none flex items-center justify-center gap-2">
+        <Sparkles className="w-2.5 h-2.5 text-[#FFEA00] opacity-0 group-hover:opacity-100 transition-opacity" />
+        {studioName}
+      </h3>
+    </div>
+  </div>
+);
 
 export default function HomePage() {
   const db = useFirestore();
@@ -116,7 +156,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none">
-      {/* Header mit Titel und SC */}
+      {/* Header mit Titel und Street Credits */}
       <header className="p-6 flex flex-col items-center z-50">
         <div className="gemini-border gemini-glow p-4 inline-block mb-4">
           <div className="flex items-center gap-3">
@@ -138,7 +178,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Hauptbereich: Studios als schwebende Avatare */}
+      {/* Hauptbereich: Studios als stylische Haus-Avatare */}
       <main className="relative flex-1 w-full overflow-hidden p-4">
         {/* Raster Hintergrund */}
         <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
@@ -148,45 +188,23 @@ export default function HomePage() {
             <Loader2 className="w-8 h-8 animate-spin text-[#FFEA00]" />
           </div>
         ) : (
-          <div className="absolute inset-x-0 top-0 bottom-64 max-w-6xl mx-auto pointer-events-none">
+          <div className="absolute inset-x-0 top-0 bottom-64 max-w-7xl mx-auto pointer-events-none">
             {allStudios?.map((studio) => {
               const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
               return (
                 <div 
                   key={studio.id}
-                  className="absolute transition-all duration-500 ease-in-out animate-in fade-in zoom-in group pointer-events-auto"
+                  className="absolute transition-all duration-500 ease-in-out animate-in fade-in zoom-in pointer-events-auto"
                   style={{ 
                     left: `${pos.x}%`, 
                     top: `${pos.y}%`,
+                    transform: 'translate(-50%, -50%)'
                   }}
                 >
                   <Link href={`/studio/${studio.id}`}>
-                    <div className="relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
-                      {/* Glow Effekt Hinter dem Avatar */}
-                      <div 
-                        className="absolute inset-0 rounded-full blur-3xl opacity-20 group-hover:opacity-60 transition-opacity duration-500"
-                        style={{ backgroundColor: studio.coverColor || '#993DEB' }}
-                      />
-                      
-                      {/* Avatar mit Rahmen-Animation */}
-                      <div className="relative z-10 p-1 rounded-full bg-white/5 border-2 border-white/10 group-hover:border-white transition-all group-hover:scale-110 duration-500 shadow-2xl">
-                        <Avatar className="w-20 h-20 md:w-40 md:h-40 shadow-2xl">
-                          <AvatarImage src={`https://picsum.photos/seed/${studio.id}/400`} />
-                          <AvatarFallback className="bg-black text-white font-black italic text-xl">{studio.name.substring(0,2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        
-                        {/* Aktiver Indikator */}
-                        <div className="absolute top-2 right-2 md:top-4 md:right-4 w-4 h-4 md:w-6 md:h-6 bg-[#00E676] rounded-full border-4 border-black animate-ping" />
-                      </div>
-
-                      {/* Studio Name Tag */}
-                      <div className="mt-6 bg-black/90 backdrop-blur-2xl border border-white/20 p-2 md:p-4 rounded-2xl shadow-2xl transform transition-all group-hover:-translate-y-2 group-hover:border-[#FFEA00] text-center min-w-[140px]">
-                        <h3 className="text-sm md:text-lg font-black uppercase italic tracking-tighter whitespace-nowrap leading-none flex items-center justify-center gap-2">
-                          <Sparkles className="w-3 h-3 text-[#FFEA00] opacity-0 group-hover:opacity-100 transition-opacity" />
-                          {studio.name}
-                        </h3>
-                      </div>
-                    </div>
+                    <StudioHouseFrame color={studio.coverColor || '#993DEB'} studioName={studio.name}>
+                      {/* Avatar ist jetzt Teil des Frames */}
+                    </StudioHouseFrame>
                   </Link>
                 </div>
               );
@@ -195,40 +213,44 @@ export default function HomePage() {
         )}
 
         {/* Mini Map (GTA Style, zentriert am unteren Rand) */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-50">
-          <div className="relative w-64 h-64 md:w-96 md:h-96 rounded-2xl border-2 border-white/10 bg-black/60 backdrop-blur-md overflow-hidden gemini-glow">
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50">
+          <div className="relative w-72 h-72 md:w-[28rem] md:h-[28rem] rounded-2xl border-2 border-white/10 bg-black/80 backdrop-blur-md overflow-hidden gemini-glow shadow-2xl">
             {/* Tactical Grid */}
             <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '25px 25px' }} />
             
             {/* Pulse Effects */}
             <div className="absolute inset-0 flex items-center justify-center">
-               <div className="w-6 h-6 bg-[#FFEA00] rounded-full animate-ping opacity-50" />
+               <div className="w-8 h-8 bg-[#FFEA00] rounded-full animate-ping opacity-40" />
             </div>
 
             {/* Tactical Points */}
             <div className="absolute inset-0 p-8 flex flex-col justify-between">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 transition-transform hover:scale-105">
                 <div className="w-6 h-6 rounded-full bg-[#00E676] shadow-[0_0_20px_#00E676]" />
-                <span className="text-lg md:text-2xl font-black uppercase tracking-tighter text-[#00E676] drop-shadow-lg">MS BANTIGER</span>
+                <span className="text-xl md:text-3xl font-black uppercase tracking-tighter text-[#00E676] drop-shadow-lg">MS BANTIGER</span>
               </div>
-              <div className="flex items-center gap-4 self-end">
-                <span className="text-lg md:text-2xl font-black uppercase tracking-tighter text-[#EB3D99] drop-shadow-lg">MS OBEREMMENTAL</span>
+              <div className="flex items-center gap-4 self-end transition-transform hover:scale-105">
+                <span className="text-xl md:text-3xl font-black uppercase tracking-tighter text-[#EB3D99] drop-shadow-lg">MS OBEREMMENTAL</span>
                 <div className="w-6 h-6 rounded-full bg-[#EB3D99] shadow-[0_0_20px_#EB3D99]" />
               </div>
             </div>
 
             {/* Radar Sweep Animation */}
-            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-[#FFEA00]/5 to-transparent animate-[spin_4s_linear_infinite]" />
+            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-[#FFEA00]/10 to-transparent animate-[spin_5s_linear_infinite]" />
           </div>
-          <div className="mt-6 text-xl md:text-3xl font-black uppercase tracking-[0.5em] text-white/50 text-center drop-shadow-2xl">DISTRICTS</div>
+          
+          {/* Großes GTA-Style Label */}
+          <div className="mt-8 text-4xl md:text-7xl font-black uppercase tracking-[0.6em] text-white/40 text-center drop-shadow-2xl italic leading-none">
+            DISTRICTS
+          </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="p-6 border-t border-white/5 bg-black/60 flex justify-between items-center z-50">
+      <footer className="p-6 border-t border-white/5 bg-black/80 flex justify-between items-center z-50">
         <div className="flex items-center gap-2 opacity-40">
           <MapIcon className="w-4 h-4" />
-          <span className="text-[10px] uppercase font-bold tracking-[0.2em]">Radar Active</span>
+          <span className="text-[10px] uppercase font-bold tracking-[0.2em]">Scanner Active</span>
         </div>
         <Button variant="ghost" size="sm" onClick={setupStudios} className="text-[10px] uppercase tracking-tighter gap-2 opacity-40 hover:opacity-100 group">
           <RefreshCw className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500" /> Rack Sync
