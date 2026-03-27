@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -20,12 +21,21 @@ const PAD_COLORS: Record<SoundType, string> = {
   percs: '#FFEA00',
   misc: '#3838FA',
 };
+
+const PAD_LABELS: Record<SoundType, string> = {
+  kick: 'PAD 1',
+  clap: 'PAD 2',
+  percs: 'PAD 3',
+  misc: 'PAD 4',
+};
+
 const SHORTCUTS: Record<SoundType, string> = {
   kick: 'A',
   clap: 'S',
-  percs: 'D',
-  misc: 'F',
+  percs: 'K',
+  misc: 'L',
 };
+
 const PASS_THRESHOLD = 80;
 
 interface GameViewProps {
@@ -56,12 +66,22 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const clearedNotesRef = useRef<Set<string>>(new Set());
   const { toast } = useToast();
 
-  const soundsWithPatterns = sounds.map(sound => {
+  // Filter sounds based on level difficulty (1-4)
+  const activeSoundTypes: SoundType[] = ['kick'];
+  if (level.difficulty >= 2) activeSoundTypes.push('clap');
+  if (level.difficulty >= 3) activeSoundTypes.push('percs');
+  if (level.difficulty >= 4) activeSoundTypes.push('misc');
+
+  const filteredSounds = sounds.filter(s => activeSoundTypes.includes(s.type));
+
+  const soundsWithPatterns = filteredSounds.map(sound => {
     let allSteps: number[] = [];
     sound.patternIds?.forEach((pId, index) => {
       const pattern = patterns.find(p => p.id === pId);
       if (pattern) {
-        const offset = index * 128;
+        // We use an 8-bar offset if multiple patterns are provided, 
+        // but the user now wants 32-bar fixed patterns (512 steps).
+        const offset = index * 128; 
         allSteps = [...allSteps, ...pattern.steps.map(s => s + offset)];
       }
     });
@@ -69,20 +89,19 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   });
 
   const bpm = game.bpm || 120;
-  const TOTAL_STEPS = 512;
+  const TOTAL_STEPS = 512; // Fixed 32 bars * 16 steps = 512 steps
 
-  // Automatischer Preload beim Mounten
   useEffect(() => {
     const preload = async () => {
       if (!audioEngine) return;
       const urls = [
-        ...sounds.map(s => s.sampleUrl),
+        ...filteredSounds.map(s => s.sampleUrl),
         game.backingTrackUrl || ''
       ];
       await audioEngine.preloadAudio(urls);
     };
     preload();
-  }, [sounds, game.backingTrackUrl]);
+  }, [filteredSounds, game.backingTrackUrl]);
 
   const triggerPadFlash = (type: SoundType, flashType: FlashType) => {
     setPadFlashes(prev => ({
@@ -93,6 +112,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   const handlePadPress = useCallback((type: SoundType) => {
     if (!audioEngine || !isPlaying) return;
+    if (!activeSoundTypes.includes(type)) return;
+
     const sound = soundsWithPatterns.find(s => s.type === type);
     if (!sound) return;
 
@@ -131,7 +152,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         return { hits: prev.hits, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
       });
     }
-  }, [isPlaying, soundsWithPatterns, bpm]);
+  }, [isPlaying, soundsWithPatterns, bpm, activeSoundTypes]);
 
   const startLevel = async () => {
     if (!audioEngine) return;
@@ -139,8 +160,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     try {
       await audioEngine.resume();
       
-      // Zusätzlicher Check: Falls Buffer noch nicht bereit sind, jetzt erzwingen
-      const urlsToLoad = [game.backingTrackUrl || '', ...sounds.map(s => s.sampleUrl)];
+      const urlsToLoad = [game.backingTrackUrl || '', ...filteredSounds.map(s => s.sampleUrl)];
       await audioEngine.preloadAudio(urlsToLoad);
 
       clearedNotesRef.current = new Set();
@@ -245,7 +265,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
       <main className="relative flex-1 gemini-border gemini-glow overflow-hidden flex flex-col bg-black/40 rounded-2xl md:rounded-[2rem]">
         <div className="flex-1 flex px-1">
-          {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => {
+          {activeSoundTypes.map((type) => {
             const sound = soundsWithPatterns.find(s => s.type === type);
             return (
               <NoteLane key={type} notes={sound?.triggerSteps || []} currentTime={currentTime} bpm={bpm} isActive={isPlaying} color={PAD_COLORS[type]} />
@@ -254,11 +274,16 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         </div>
 
         <div className="p-2 md:p-8 bg-black/60 border-t border-white/5 shrink-0">
-          <div className="grid grid-cols-4 gap-2 md:gap-4 max-w-lg mx-auto">
-            {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => (
+          <div className={cn(
+            "grid gap-2 md:gap-4 max-w-lg mx-auto",
+            activeSoundTypes.length === 1 ? "grid-cols-1 max-w-[120px]" :
+            activeSoundTypes.length === 2 ? "grid-cols-2 max-w-[240px]" :
+            "grid-cols-4"
+          )}>
+            {activeSoundTypes.map((type) => (
               <SamplerPad 
                 key={type} 
-                label={type} 
+                label={PAD_LABELS[type]} 
                 shortcut={SHORTCUTS[type]} 
                 onPress={() => handlePadPress(type)} 
                 color={PAD_COLORS[type]} 
