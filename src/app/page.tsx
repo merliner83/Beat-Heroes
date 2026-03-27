@@ -174,6 +174,12 @@ export default function HomePage() {
             {/* Grid Overlay */}
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
             
+            {/* Central Signal Pulse Circles */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+              <div className="w-16 h-16 rounded-full border border-primary/20 animate-ping" />
+              <div className="absolute inset-0 w-32 h-32 -translate-x-1/4 -translate-y-1/4 rounded-full border border-primary/10 animate-[ping_4s_linear_infinite] opacity-50" />
+            </div>
+
             {/* Bantiger - Offset Position */}
             <div className="absolute left-[20%] top-[25%] flex flex-col items-center gap-2 group">
               <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-[#00E676] shadow-[0_0_20px_#00E676] border-2 border-white/70 animate-pulse" />
@@ -186,11 +192,11 @@ export default function HomePage() {
               <span className="text-xl md:text-2xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
             </div>
 
-            {/* Radar Sweep FX - Refined Smoother Conic Gradient */}
+            {/* Radar Sweep FX - Intensified Gemini Conic Gradient */}
             <div 
-              className="absolute inset-0 origin-center animate-[spin_12s_linear_infinite] opacity-30 pointer-events-none" 
+              className="absolute inset-0 origin-center animate-[spin_10s_linear_infinite] opacity-40 pointer-events-none" 
               style={{ 
-                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 51, 153, 0.05) 120deg, rgba(255, 234, 0, 0.1) 330deg, rgba(255, 255, 255, 0.25) 360deg)' 
+                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 51, 153, 0.1) 120deg, rgba(255, 234, 0, 0.2) 330deg, rgba(255, 255, 255, 0.4) 360deg)' 
               }}
             />
           </div>
