@@ -136,7 +136,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       setScore(prev => {
         const nextMisses = prev.misses + 1;
         const total = prev.hits + nextMisses;
-        return { hits: prev.hits, misses: nextMisses, accuracy: Math.round((prev.hits / total) * 100) };
+        return { hits: prev.hits, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
       });
     }
   }, [isPlaying, soundsWithPatterns, bpm]);
@@ -178,7 +178,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             setScore(prev => {
               const nextMisses = prev.misses + newMisses;
               const total = prev.hits + nextMisses;
-              return { hits: prev.hits, misses: nextMisses, accuracy: Math.round((prev.hits / total) * 100) };
+              return { hits: prev.hits, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
             });
           }
 

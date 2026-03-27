@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
-import { Radio, RefreshCw, Loader2, Map as MapIcon, Target } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, Map as MapIcon, Target, Crosshair } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -13,11 +13,11 @@ import { useAuth } from '@/firebase/provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
-// Koordinaten für die Avatare im Hauptbereich (keine Überlappung)
+// Specific coordinates for the studios in the main area (no overlap)
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 25, y: 35 },
-  'yoan-beats': { x: 75, y: 55 },
-  'noxxos': { x: 45, y: 65 },
+  'gabriel-beats': { x: 20, y: 30 },
+  'yoan-beats': { x: 70, y: 50 },
+  'noxxos': { x: 40, y: 70 },
 };
 
 export default function HomePage() {
@@ -117,7 +117,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none">
-      <header className="p-6 flex flex-col items-center z-50 bg-gradient-to-b from-black/80 to-transparent">
+      {/* Header with Title and SC */}
+      <header className="p-6 flex flex-col items-center z-50">
         <div className="gemini-border gemini-glow p-4 inline-block mb-4">
           <div className="flex items-center gap-3">
             <Radio className="w-8 h-8 text-[#FFEA00]" />
@@ -138,75 +139,82 @@ export default function HomePage() {
         </div>
       </header>
 
+      {/* Frameless Studio Area */}
       <main className="relative flex-1 w-full overflow-hidden flex flex-col items-center justify-center p-4">
-        {/* Haupt-Kartenbereich */}
-        <div className="relative w-full max-w-5xl aspect-[4/3] md:aspect-video bg-black/40 rounded-[2rem] overflow-hidden border border-white/5">
-          {/* Grid Background */}
-          <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-          
-          {isLoadingStudios ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-[#FFEA00]" />
-            </div>
-          ) : (
-            <div className="absolute inset-0">
-              {allStudios?.map((studio) => {
-                const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
-                return (
-                  <div 
-                    key={studio.id}
-                    className="absolute transition-all duration-700 animate-in fade-in zoom-in group"
-                    style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-                  >
-                    <Link href={`/studio/${studio.id}`}>
-                      <div className="relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
-                        {/* Pulse Ring */}
-                        <div 
-                          className="absolute inset-0 w-20 h-20 md:w-32 md:h-32 rounded-full border-2 border-[#FFEA00]/10 animate-ping opacity-20" 
-                          style={{ animationDuration: '4s' }}
-                        />
-
-                        <div className="relative z-10 p-1 rounded-full bg-white/5 border-2 border-white/10 group-hover:border-[#FFEA00] transition-all group-hover:scale-110">
-                          <Avatar className="w-16 h-16 md:w-24 md:h-24">
-                            <AvatarImage src={`https://picsum.photos/seed/${studio.id}/200`} />
-                            <AvatarFallback className="bg-black text-white font-black italic">{studio.name.substring(0,2).toUpperCase()}</AvatarFallback>
-                          </Avatar>
-                        </div>
-
-                        <div className="mt-4 bg-black/60 backdrop-blur-xl border border-white/10 p-2 md:p-3 rounded-xl shadow-2xl transform transition-transform group-hover:-translate-y-1 text-center min-w-[120px]">
-                          <h3 className="text-xs md:text-sm font-black uppercase italic tracking-tighter whitespace-nowrap leading-none">
-                            {studio.name}
-                          </h3>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Kleinerer taktischer Rahmen unten (Labels) */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6">
-            <div className="gemini-border bg-black/80 backdrop-blur-md p-3 flex justify-between items-center px-8 border-white/5 rounded-xl">
-              <div className="flex items-center gap-3">
-                <Target className="w-3 h-3 text-[#00E676]" />
-                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">MS BANTIGER DISTRICT</span>
-              </div>
-              <div className="w-px h-4 bg-white/10 mx-4" />
-              <div className="flex items-center gap-3">
-                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">MS OBEREMMENTAL</span>
-                <Target className="w-3 h-3 text-[#EB3D99]" />
-              </div>
-            </div>
+        {/* Grid Background */}
+        <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+        
+        {isLoadingStudios ? (
+          <div className="flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-[#FFEA00]" />
           </div>
+        ) : (
+          <div className="relative w-full h-full max-w-6xl">
+            {allStudios?.map((studio) => {
+              const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
+              return (
+                <div 
+                  key={studio.id}
+                  className="absolute transition-all duration-700 animate-in fade-in zoom-in group"
+                  style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+                >
+                  <Link href={`/studio/${studio.id}`}>
+                    <div className="relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
+                      <div className="relative z-10 p-1 rounded-full bg-white/5 border-2 border-white/10 group-hover:border-[#FFEA00] transition-all group-hover:scale-110">
+                        <Avatar className="w-16 h-16 md:w-28 md:h-28 shadow-2xl">
+                          <AvatarImage src={`https://picsum.photos/seed/${studio.id}/400`} />
+                          <AvatarFallback className="bg-black text-white font-black italic">{studio.name.substring(0,2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                      </div>
+
+                      <div className="mt-4 bg-black/80 backdrop-blur-xl border border-white/10 p-2 md:p-3 rounded-xl shadow-2xl transform transition-transform group-hover:-translate-y-1 text-center min-w-[120px]">
+                        <h3 className="text-xs md:text-sm font-black uppercase italic tracking-tighter whitespace-nowrap leading-none">
+                          {studio.name}
+                        </h3>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* GTA-Style Mini Map (Floating Bottom Left) */}
+        <div className="absolute bottom-10 left-10 z-50">
+          <div className="relative w-32 h-32 md:w-48 md:h-48 rounded-2xl border-2 border-white/10 bg-black/60 backdrop-blur-md overflow-hidden gemini-glow">
+            {/* Tactical Grid */}
+            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '15px 15px' }} />
+            
+            {/* Pulse Effects */}
+            <div className="absolute inset-0 flex items-center justify-center">
+               <div className="w-2 h-2 bg-[#FFEA00] rounded-full animate-ping opacity-50" />
+            </div>
+
+            {/* Tactical Points */}
+            <div className="absolute inset-0 p-4 flex flex-col justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-[#00E676] shadow-[0_0_8px_#00E676]" />
+                <span className="text-[8px] font-black uppercase tracking-tighter text-[#00E676]">MS BANTIGER</span>
+              </div>
+              <div className="flex items-center gap-2 self-end">
+                <span className="text-[8px] font-black uppercase tracking-tighter text-[#EB3D99]">MS OBEREMMENTAL</span>
+                <div className="w-2 h-2 rounded-full bg-[#EB3D99] shadow-[0_0_8px_#EB3D99]" />
+              </div>
+            </div>
+
+            {/* Radar Sweep Animation */}
+            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-[#FFEA00]/5 to-transparent animate-[spin_4s_linear_infinite]" />
+          </div>
+          <div className="mt-2 text-[8px] font-black uppercase tracking-[0.4em] text-white/20 text-center">TACTICAL OVERLAY</div>
         </div>
       </main>
 
+      {/* Footer */}
       <footer className="p-6 border-t border-white/5 bg-black/60 flex justify-between items-center z-50">
         <div className="flex items-center gap-2 opacity-40">
           <MapIcon className="w-4 h-4" />
-          <span className="text-[10px] uppercase font-bold tracking-[0.2em]">Tactical Overlay Active</span>
+          <span className="text-[10px] uppercase font-bold tracking-[0.2em]">Live Radar Active</span>
         </div>
         <Button variant="ghost" size="sm" onClick={setupStudios} className="text-[10px] uppercase tracking-tighter gap-2 opacity-40 hover:opacity-100 group">
           <RefreshCw className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500" /> Rack Sync
