@@ -203,7 +203,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 max-w-5xl mx-auto overflow-hidden">
-      <header className="flex justify-between items-center mb-2 px-2 h-12 md:h-16 shrink-0">
+      <header className="flex justify-between items-center mb-1 px-2 h-10 md:h-16 shrink-0">
         <div className="flex items-center gap-2">
           <Link href={`/studio/${game.studioId}`}>
             <ArrowLeft className="w-4 h-4 text-white/50 hover:text-white" />
@@ -217,7 +217,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         <div className="flex items-center gap-4">
           <div className="text-right">
             <p className="text-[7px] md:text-[8px] uppercase font-black opacity-30 mb-0.5">Accuracy</p>
-            <p className={cn("text-base md:text-2xl font-black italic leading-none", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
+            <p className={cn("text-sm md:text-2xl font-black italic leading-none", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
               {score.accuracy}%
             </p>
           </div>
@@ -234,7 +234,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           })}
         </div>
 
-        <div className="p-3 md:p-8 bg-black/60 border-t border-white/5 shrink-0">
+        <div className="p-2 md:p-8 bg-black/60 border-t border-white/5 shrink-0">
           <div className="flex justify-center gap-2 md:gap-6">
             {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => (
               <SamplerPad 
@@ -253,8 +253,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-50 rounded-3xl">
             <div className="text-center mx-4">
-              <Sparkles className="w-8 h-8 md:w-12 md:h-12 text-[#993DEB] mx-auto mb-6 animate-pulse-neon" />
-              <h2 className="text-lg md:text-3xl font-black mb-8 uppercase italic tracking-tighter">Ready to Produce?</h2>
+              <Sparkles className="w-8 h-8 md:w-12 md:h-12 text-[#993DEB] mx-auto mb-4 md:mb-6 animate-pulse-neon" />
+              <h2 className="text-lg md:text-3xl font-black mb-6 md:mb-8 uppercase italic tracking-tighter">Ready to Produce?</h2>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-40 md:w-56 h-12 md:h-16 text-sm md:text-xl font-black uppercase italic bg-white text-black rounded-2xl hover:scale-105 transition-transform">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Start Session"}
               </Button>
