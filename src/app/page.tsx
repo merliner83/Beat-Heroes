@@ -171,33 +171,27 @@ export default function HomePage() {
 
         {/* Tactical Mini Map - Massively Wide & GTA Style */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[1400px]">
-          <div className="relative w-full h-52 md:h-72 rounded-[3rem] border-[3px] border-white/20 bg-black/95 backdrop-blur-3xl overflow-hidden gemini-glow shadow-[0_0_100px_rgba(0,0,0,1)]">
-            {/* Grid Overlay */}
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+          <div className="relative w-full h-44 md:h-56 rounded-[2rem] border-2 border-white/10 bg-black/95 backdrop-blur-3xl overflow-hidden gemini-glow shadow-[0_0_100px_rgba(0,0,0,1)]">
+            {/* Grid Overlay - Smaller Grid */}
+            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
             
-            {/* Pulsing Radar Point */}
-            <div className="absolute inset-0 flex items-center justify-center">
-               <div className="w-48 h-48 bg-primary rounded-full animate-ping opacity-10" />
-               <div className="w-14 h-14 bg-primary rounded-full shadow-[0_0_60px_#FF3399] border-[4px] border-white/70" />
-            </div>
-
-            {/* District Labels - Large & Bold */}
-            <div className="absolute inset-0 p-10 flex flex-col justify-between">
-              <div className="flex items-center gap-8 group">
-                <div className="w-12 h-12 rounded-full bg-[#00E676] shadow-[0_0_40px_#00E676] border-[3px] border-white/70 animate-pulse" />
-                <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_15px_rgba(0,0,0,1)]">BANTIGER</span>
+            {/* District Labels - Smaller & Scaled Down */}
+            <div className="absolute inset-0 p-8 flex flex-col justify-between">
+              <div className="flex items-center gap-4 group">
+                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-[#00E676] shadow-[0_0_20px_#00E676] border-2 border-white/70 animate-pulse" />
+                <span className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">BANTIGER</span>
               </div>
-              <div className="flex items-center gap-8 self-end text-right">
-                <span className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_15px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
-                <div className="w-12 h-12 rounded-full bg-[#FF3D00] shadow-[0_0_40px_#FF3D00] border-[3px] border-white/70 animate-pulse" />
+              <div className="flex items-center gap-4 self-end text-right">
+                <span className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
+                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] border-2 border-white/70 animate-pulse" />
               </div>
             </div>
 
             {/* Radar Sweep FX */}
-            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-primary/10 to-transparent animate-[spin_10s_linear_infinite]" />
+            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-primary/5 to-transparent animate-[spin_10s_linear_infinite]" />
           </div>
           
-          <div className="mt-2 text-[10px] font-black uppercase tracking-[1em] text-primary/40 text-center italic leading-none pointer-events-none select-none">
+          <div className="mt-2 text-[8px] font-black uppercase tracking-[1em] text-primary/30 text-center italic leading-none pointer-events-none select-none">
             districts
           </div>
         </div>
