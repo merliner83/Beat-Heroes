@@ -4,6 +4,7 @@
 /**
  * AudioEngine handles loading, decoding, and playback.
  * Optimized for CD Quality (44.1kHz).
+ * Resilient to individual load failures.
  */
 export class AudioEngine {
   private context: AudioContext | null = null;
@@ -64,7 +65,7 @@ export class AudioEngine {
   }
 
   /**
-   * Preloads audio files. Now more resilient to individual failures.
+   * Preloads audio files. Robust to individual failures to prevent app crashes.
    */
   async preloadAudio(urls: string[]): Promise<void> {
     if (!this.context) await this.resume();
@@ -76,7 +77,6 @@ export class AudioEngine {
     await Promise.all(uniqueUrls.map(async (url) => {
       if (this.buffers.has(url)) return;
       if (this.loadingStatus.get(url) === 'loading') {
-        // Wait if already loading
         while (this.loadingStatus.get(url) === 'loading') {
           await new Promise(r => setTimeout(r, 100));
         }
@@ -96,7 +96,7 @@ export class AudioEngine {
         this.buffers.set(url, audioBuffer);
         this.loadingStatus.set(url, 'ready');
       } catch (e) {
-        // We warn instead of throwing to prevent the whole app from crashing if one sound is missing
+        // Log warning instead of throwing to prevent blocking the game loop
         console.warn(`AudioEngine: Load failed for ${url}. Error:`, e);
         this.loadingStatus.set(url, 'failed');
       }
@@ -148,7 +148,7 @@ export class AudioEngine {
 
     const buffer = this.buffers.get(url);
     if (!buffer || !this.context || !this.masterGain) {
-      // Emergency preload but don't console.error to avoid overlay
+      // Graceful fallback: don't error, just log warning
       console.warn('AudioEngine: Backing track buffer not ready for URL:', url);
       return;
     }
