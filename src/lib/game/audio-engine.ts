@@ -1,9 +1,10 @@
+
 "use client";
 
 /**
  * AudioEngine handles loading, decoding, and playback.
  * Optimized for CD Quality (44.1kHz).
- * Resilient to individual load failures.
+ * Robust error handling to prevent blocking game state.
  */
 export class AudioEngine {
   private context: AudioContext | null = null;
@@ -14,11 +15,10 @@ export class AudioEngine {
   private startTime: number = 0;
   private loadingStatus: Map<string, 'loading' | 'ready' | 'failed'> = new Map();
   
-  // Public metronome tick URL
   public static readonly METRONOME_URL = 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg';
 
   constructor() {
-    console.log('AudioEngine: CD Quality (44.1kHz) Engine active.');
+    // Initialized only when window is available
   }
 
   async resume(): Promise<boolean> {
@@ -51,20 +51,8 @@ export class AudioEngine {
     this.startTime = t;
   }
 
-  getAudioStatus() {
-    if (!this.context) return { state: 'init', sampleRate: '-' };
-    return {
-      state: this.context.state,
-      sampleRate: `${(this.context.sampleRate / 1000).toFixed(1)}kHz`
-    };
-  }
-
-  getLoadStatus(url: string) {
-    return this.loadingStatus.get(url) || 'idle';
-  }
-
   /**
-   * Preloads audio files. Robust to individual failures to prevent app crashes.
+   * Preloads audio files. Failures are logged as warnings to prevent game crashes.
    */
   async preloadAudio(urls: string[]): Promise<void> {
     if (!this.context) await this.resume();
@@ -87,7 +75,7 @@ export class AudioEngine {
         const proxyUrl = `/api/proxy-audio?url=${encodeURIComponent(url)}`;
         const response = await fetch(proxyUrl);
         
-        if (!response.ok) throw new Error(`Proxy status ${response.status}`);
+        if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
         
         const arrayBuffer = await response.arrayBuffer();
         const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
@@ -95,8 +83,7 @@ export class AudioEngine {
         this.buffers.set(url, audioBuffer);
         this.loadingStatus.set(url, 'ready');
       } catch (e) {
-        // Log warning instead of throwing to prevent blocking the game loop
-        console.warn(`AudioEngine: Load failed for ${url}. Error:`, e);
+        console.warn(`AudioEngine: Non-critical load failure for ${url}`, e);
         this.loadingStatus.set(url, 'failed');
       }
     }));
@@ -104,7 +91,6 @@ export class AudioEngine {
 
   async playOneShot(url: string) {
     await this.resume();
-
     const buffer = this.buffers.get(url);
     if (!buffer) return;
 
@@ -123,7 +109,13 @@ export class AudioEngine {
   async playCountIn(bpm: number, onTick: (beat: number) => void): Promise<void> {
     await this.resume();
     const buffer = this.buffers.get(AudioEngine.METRONOME_URL);
-    if (!buffer || !this.context) return;
+    if (!buffer || !this.context) {
+      // Fallback: silent count-in
+      for (let i = 0; i < 4; i++) {
+        setTimeout(() => onTick(i + 1), i * (60 / bpm) * 1000);
+      }
+      return new Promise(r => setTimeout(r, 4 * (60 / bpm) * 1000));
+    }
 
     const secondsPerBeat = 60 / bpm;
     const now = this.context.currentTime;
@@ -134,7 +126,6 @@ export class AudioEngine {
       source.buffer = buffer;
       source.connect(this.masterGain!);
       source.start(scheduleTime);
-      
       setTimeout(() => onTick(i + 1), i * secondsPerBeat * 1000);
     }
 
@@ -147,8 +138,7 @@ export class AudioEngine {
 
     const buffer = this.buffers.get(url);
     if (!buffer || !this.context || !this.masterGain) {
-      // Graceful fallback: don't error, just log warning
-      console.warn('AudioEngine: Backing track buffer not ready for URL:', url);
+      console.warn('AudioEngine: Backing track buffer not ready. Playing silently for now.');
       return;
     }
 

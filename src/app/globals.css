@@ -34,7 +34,7 @@
   }
   body {
     @apply bg-background text-foreground font-body antialiased;
-    background-image: radial-gradient(circle at 50% 50%, hsla(271, 81%, 58%, 0.03) 0%, transparent 80%);
+    background-image: radial-gradient(circle at 50% 50%, hsla(271, 81%, 58%, 0.05) 0%, transparent 80%);
   }
 }
 
@@ -46,6 +46,12 @@
 @keyframes wave-red {
   0% { transform: scale(1); box-shadow: 0 0 0 0px rgba(255, 61, 0, 0.7); background-color: rgba(255, 61, 0, 0.4); opacity: 1; }
   100% { transform: scale(1.5); box-shadow: 0 0 40px 20px rgba(255, 61, 0, 0); background-color: transparent; opacity: 0; }
+}
+
+@keyframes border-rotate {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .animate-wave-green {
@@ -60,24 +66,36 @@
   position: relative;
   z-index: 0;
   border-radius: var(--radius);
+  overflow: hidden;
 }
 
 .gemini-border::before {
   content: "";
   position: absolute;
   inset: 0;
-  padding: 1px;
+  padding: 2px;
   border-radius: inherit;
-  background: linear-gradient(90deg, #993DEB, #FF3D00, #FFEA00, #993DEB);
+  background: linear-gradient(90deg, #993DEB, #3838FA, #FFEA00, #993DEB);
   background-size: 200% 100%;
+  animation: border-rotate 4s linear infinite;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
   z-index: -1;
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 .gemini-glow {
-  box-shadow: 0 0 15px rgba(153, 61, 235, 0.1);
+  box-shadow: 0 0 25px rgba(153, 61, 235, 0.2);
+}
+
+.gemini-glow-accent {
+  box-shadow: 0 0 25px rgba(56, 56, 250, 0.2);
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #993DEB, #3838FA);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
