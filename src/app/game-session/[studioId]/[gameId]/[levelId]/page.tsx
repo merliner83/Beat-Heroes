@@ -1,3 +1,12 @@
 
 "use client";
-export default function Neutralized() { return null; }
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function RedirectPage() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/');
+  }, [router]);
+  return null;
+}
