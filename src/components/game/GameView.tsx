@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -157,7 +158,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
-              // Wenn die Note das Hit-Window passiert hat, ohne getroffen zu werden -> PASSIVE MISS
+              // Passive Miss Detection
               if (!clearedNotesRef.current.has(noteId) && currentStep > step + tolerance) {
                 clearedNotesRef.current.add(noteId);
                 passiveMissesCount++;

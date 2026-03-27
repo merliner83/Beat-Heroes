@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect } from 'react';
@@ -12,11 +13,11 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { cn } from '@/lib/utils';
 
-// Koordinaten für die Map-Darstellung (verhindert Überlappung)
-const STUDIO_COORDS: Record<string, { x: number, y: number, district: string }> = {
-  'gabriel-beats': { x: 28, y: 32, district: 'MS BANTIGER DISTRICT' },
-  'yoan-beats': { x: 72, y: 68, district: 'MS OBEREMMENTAL' },
-  'noxxos': { x: 50, y: 50, district: 'MS BANTIGER DISTRICT' },
+// Exakte Koordinaten für die Map-Darstellung (keine Überlappung)
+const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
+  'gabriel-beats': { x: 25, y: 35 },
+  'yoan-beats': { x: 75, y: 65 },
+  'noxxos': { x: 50, y: 50 },
 };
 
 export default function HomePage() {
@@ -57,9 +58,9 @@ export default function HomePage() {
     ];
 
     const studios = [
-      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#993DEB', district: 'MS BANTIGER DISTRICT' },
-      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00', district: 'MS OBEREMMENTAL' },
-      { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#EB3D99', district: 'MS BANTIGER DISTRICT' }
+      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#993DEB' },
+      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00' },
+      { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#EB3D99' }
     ];
 
     try {
@@ -109,7 +110,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Rack Synchronized!", description: "All districts and studios are live." });
+      toast({ title: "Rack Synchronized!", description: "All studios and levels are live." });
     } catch (e) {
       toast({ variant: "destructive", title: "Setup Failed" });
     }
@@ -139,12 +140,12 @@ export default function HomePage() {
       </header>
 
       <main className="relative flex-1 w-full overflow-hidden flex flex-col items-center justify-center">
-        {/* Die große Karte im taktischen Rahmen */}
+        {/* Die ursprüngliche Map im taktischen Rahmen */}
         <div className="relative w-full max-w-4xl aspect-[4/3] md:aspect-video gemini-border gemini-glow bg-black/60 mx-4 overflow-hidden">
           {/* Hintergrund Grid */}
           <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
           
-          {/* Distrikt-Labels (Fest positioniert im Rahmen) */}
+          {/* Feste Distrikt-Labels im Rahmen */}
           <div className="absolute top-4 left-6 text-[10px] font-black uppercase tracking-[0.4em] text-white/20 z-10">
             MS BANTIGER DISTRICT
           </div>
@@ -159,7 +160,7 @@ export default function HomePage() {
           ) : (
             <div className="absolute inset-0">
               {allStudios?.map((studio) => {
-                const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50, district: 'UNKNOWN' };
+                const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
                 return (
                   <div 
                     key={studio.id}
