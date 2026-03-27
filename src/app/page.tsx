@@ -15,9 +15,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 // Optimierte Koordinaten für eine weiträumige vertikale Verteilung
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 25, y: 20 }, // Oben Links
-  'yoan-beats': { x: 75, y: 25 },   // Oben Rechts
-  'noxxos': { x: 45, y: 45 },      // Mitte
+  'gabriel-beats': { x: 25, y: 15 }, // Weit oben links
+  'yoan-beats': { x: 75, y: 22 },   // Oben rechts
+  'noxxos': { x: 40, y: 42 },      // Mittig versetzt
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
@@ -31,15 +31,15 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
       />
       
       <svg 
-        className="absolute inset-0 w-full h-full -z-10 transition-all duration-500 group-hover:scale-110 drop-shadow-[0_0_10px_rgba(0,0,0,0.5)]" 
+        className="absolute inset-0 w-full h-full -z-10 transition-all duration-500 group-hover:scale-110 drop-shadow-[0_0_15px_rgba(0,0,0,0.6)]" 
         viewBox="0 0 100 100" 
         preserveAspectRatio="none"
       >
         <path 
-          d="M50 8 L90 40 L90 92 L10 92 L10 40 Z" 
-          fill="rgba(5,5,5,0.95)" 
+          d="M50 8 L92 42 L92 92 L8 92 L8 42 Z" 
+          fill="rgba(5,5,5,0.98)" 
           stroke={color} 
-          strokeWidth="1.2"
+          strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           className="transition-all duration-500 group-hover:stroke-white"
@@ -47,8 +47,8 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
       </svg>
       
       {/* Der Avatar im Haus */}
-      <div className="p-1 rounded-full overflow-hidden transition-transform duration-500 group-hover:scale-105">
-        <Avatar className="w-14 h-14 md:w-20 md:h-20 border-2 border-white/5 bg-black">
+      <div className="p-1 rounded-full overflow-hidden transition-transform duration-500 group-hover:scale-110">
+        <Avatar className="w-14 h-14 md:w-22 md:h-22 border-2 border-white/5 bg-black">
           <AvatarImage src={`https://picsum.photos/seed/${studioName}/400`} />
           <AvatarFallback className="bg-black text-white font-black italic text-lg">{studioName.substring(0,2).toUpperCase()}</AvatarFallback>
         </Avatar>
@@ -56,9 +56,9 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
     </div>
 
     {/* Tactical Label - Rechteckig und prägnant direkt am Icon */}
-    <div className="mt-1 bg-black/90 border-l-2 border-white/20 p-1 md:px-4 py-1 shadow-xl transform transition-all group-hover:border-[#FFEA00] text-center min-w-[100px] border border-white/5 backdrop-blur-md rounded-sm">
-      <h3 className="text-[9px] md:text-xs font-black uppercase italic tracking-tighter whitespace-nowrap leading-tight flex items-center justify-center gap-1.5">
-        <Sparkles className="w-2 h-2 text-[#FFEA00] opacity-0 group-hover:opacity-100 transition-opacity" />
+    <div className="mt-1 bg-black/95 border-l-4 border-white/20 px-3 md:px-5 py-1.5 shadow-2xl transform transition-all group-hover:border-[#FFEA00] text-center min-w-[120px] border border-white/10 backdrop-blur-xl rounded-sm">
+      <h3 className="text-[10px] md:text-sm font-black uppercase italic tracking-tighter whitespace-nowrap leading-tight flex items-center justify-center gap-2">
+        <Sparkles className="w-2.5 h-2.5 text-[#FFEA00] opacity-0 group-hover:opacity-100 transition-opacity" />
         {studioName}
       </h3>
     </div>
@@ -110,8 +110,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none relative">
       {/* Urban Background Elements */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-      <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '200px 200px' }} />
+      <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '150px 150px' }} />
       
       {/* Header mit Titel und Street Credits */}
       <header className="p-6 flex flex-col items-center z-50">
@@ -164,43 +164,43 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Mini Map (Kompakter GTA Style, zentriert am unteren Rand) */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center">
-          <div className="relative w-40 h-40 md:w-64 md:h-64 rounded-xl border-2 border-white/10 bg-black/90 backdrop-blur-lg overflow-hidden gemini-glow shadow-[0_0_30px_rgba(0,0,0,0.8)]">
+        {/* Mini Map (Zentriert am unteren Rand - nun wieder markanter) */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-4">
+          <div className="relative w-56 h-56 md:w-80 md:h-80 rounded-2xl border-2 border-white/20 bg-black/95 backdrop-blur-2xl overflow-hidden gemini-glow shadow-[0_0_50px_rgba(0,0,0,0.9)]">
             {/* Tactical Grid Overlay */}
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+            <div className="absolute inset-0 opacity-15" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '25px 25px' }} />
             
             {/* Pulse Effects */}
             <div className="absolute inset-0 flex items-center justify-center">
-               <div className="w-8 h-8 bg-[#FFEA00] rounded-full animate-ping opacity-20" />
-               <div className="w-3 h-3 bg-[#FFEA00] rounded-full shadow-[0_0_15px_#FFEA00]" />
+               <div className="w-12 h-12 bg-[#FFEA00] rounded-full animate-ping opacity-20" />
+               <div className="w-4 h-4 bg-[#FFEA00] rounded-full shadow-[0_0_20px_#FFEA00]" />
             </div>
 
             {/* Tactical Points */}
-            <div className="absolute inset-0 p-6 flex flex-col justify-between">
-              <div className="flex items-center gap-2 transition-transform hover:scale-105">
-                <div className="w-4 h-4 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676]" />
-                <span className="text-[10px] md:text-sm font-black uppercase tracking-tighter text-[#00E676] drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)]">Bantiger</span>
+            <div className="absolute inset-0 p-8 flex flex-col justify-between">
+              <div className="flex items-center gap-3 transition-transform hover:scale-110">
+                <div className="w-5 h-5 rounded-full bg-[#00E676] shadow-[0_0_20px_#00E676] border-2 border-white/20" />
+                <span className="text-xs md:text-base font-black uppercase tracking-tighter text-[#00E676] drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]">MS BANTIGER</span>
               </div>
-              <div className="flex items-center gap-2 self-end transition-transform hover:scale-105 text-right">
-                <span className="text-[10px] md:text-sm font-black uppercase tracking-tighter text-[#EB3D99] drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)]">Oberemmental</span>
-                <div className="w-4 h-4 rounded-full bg-[#EB3D99] shadow-[0_0_15px_#EB3D99]" />
+              <div className="flex items-center gap-3 self-end transition-transform hover:scale-110 text-right">
+                <span className="text-xs md:text-base font-black uppercase tracking-tighter text-[#EB3D99] drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]">MS OBEREMMENTAL</span>
+                <div className="w-5 h-5 rounded-full bg-[#EB3D99] shadow-[0_0_20px_#EB3D99] border-2 border-white/20" />
               </div>
             </div>
 
             {/* Radar Sweep Animation */}
-            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-[#FFEA00]/5 to-transparent animate-[spin_6s_linear_infinite]" />
+            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-[#FFEA00]/10 to-transparent animate-[spin_5s_linear_infinite]" />
           </div>
           
-          {/* Dezentes GTA-Style Label */}
-          <div className="mt-4 text-3xl md:text-5xl font-black uppercase tracking-[0.3em] text-white/10 text-center drop-shadow-xl italic leading-none pointer-events-none select-none">
+          {/* Markantes GTA-Style Label */}
+          <div className="mt-6 text-5xl md:text-8xl font-black uppercase tracking-[0.4em] text-white/10 text-center drop-shadow-2xl italic leading-none pointer-events-none select-none">
             DISTRICTS
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="p-4 border-t border-white/5 bg-black/90 flex justify-between items-center z-50">
+      <footer className="p-4 border-t border-white/5 bg-black/95 flex justify-between items-center z-50">
         <div className="flex items-center gap-2 opacity-40">
           <MapIcon className="w-3 h-3" />
           <span className="text-[9px] uppercase font-bold tracking-[0.2em]">City Scanner Active</span>
