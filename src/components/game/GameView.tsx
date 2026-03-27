@@ -7,7 +7,6 @@ import { audioEngine } from '@/lib/game/audio-engine';
 import { SamplerPad, FlashType } from './SamplerPad';
 import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Music2, Trophy, Loader2, XCircle, ArrowLeft, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';

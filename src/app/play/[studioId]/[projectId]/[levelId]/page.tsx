@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function RedirectPage() {
+export default function NeutralizeConflict() {
   const router = useRouter();
   useEffect(() => {
     router.replace('/');

@@ -37,7 +37,7 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
 
   return (
     <div className="relative w-full max-w-[110px] aspect-square">
-      {/* Wave Flash Overlay */}
+      {/* Wave Flash Overlay - key ensures animation restarts every time */}
       <div 
         key={flashKey} 
         className={cn(
