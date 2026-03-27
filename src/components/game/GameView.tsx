@@ -85,7 +85,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
     audioEngine.playOneShot(sound.sampleUrl);
     const time = audioEngine.getCurrentTime();
-    const currentStep = (time - SYNC_OFFSET) / ((60 / bpm) / 4);
+    const secondsPerStep = (60 / bpm) / 4;
+    const currentStep = (time - SYNC_OFFSET) / secondsPerStep;
     const tolerance = 1.2; 
     
     let hitNoteId: string | null = null;
@@ -150,14 +151,15 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         if (audioEngine) {
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
-          const currentStep = (t - SYNC_OFFSET) / ((60 / bpm) / 4);
+          const secondsPerStep = (60 / bpm) / 4;
+          const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
           const tolerance = 1.2;
 
           let passiveMissesCount = 0;
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
-              // Passive Miss Detection
+              // Passive Miss Detection: Wenn Note die Trefferzone ungespielt passiert
               if (!clearedNotesRef.current.has(noteId) && currentStep > step + tolerance) {
                 clearedNotesRef.current.add(noteId);
                 passiveMissesCount++;

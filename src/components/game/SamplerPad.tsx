@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -37,7 +36,7 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
 
   return (
     <div className="relative w-full max-w-[100px] aspect-square">
-      {/* Wave Flash Overlay - key forces a new instance/animation on every trigger */}
+      {/* Wave Flash Overlay - flashKey erzwingt eine neue Instanz/Animation bei jedem Trigger */}
       {flash && (
         <div 
           key={flashKey} 

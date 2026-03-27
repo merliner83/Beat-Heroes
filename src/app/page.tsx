@@ -15,9 +15,9 @@ import { cn } from '@/lib/utils';
 
 // Koordinaten für die Avatare im Hauptbereich (keine Überlappung)
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 25, y: 30 },
-  'yoan-beats': { x: 75, y: 60 },
-  'noxxos': { x: 50, y: 45 },
+  'gabriel-beats': { x: 25, y: 35 },
+  'yoan-beats': { x: 75, y: 55 },
+  'noxxos': { x: 45, y: 65 },
 };
 
 export default function HomePage() {
@@ -140,7 +140,7 @@ export default function HomePage() {
 
       <main className="relative flex-1 w-full overflow-hidden flex flex-col items-center justify-center p-4">
         {/* Haupt-Kartenbereich */}
-        <div className="relative w-full max-w-5xl aspect-[4/3] md:aspect-video bg-black/40 rounded-[2rem] overflow-hidden">
+        <div className="relative w-full max-w-5xl aspect-[4/3] md:aspect-video bg-black/40 rounded-[2rem] overflow-hidden border border-white/5">
           {/* Grid Background */}
           <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
           
@@ -186,14 +186,14 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* Kleinerer taktischer Rahmen unten */}
+          {/* Kleinerer taktischer Rahmen unten (Labels) */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6">
-            <div className="gemini-border bg-black/80 backdrop-blur-md p-3 flex justify-between items-center px-8 border-white/5">
+            <div className="gemini-border bg-black/80 backdrop-blur-md p-3 flex justify-between items-center px-8 border-white/5 rounded-xl">
               <div className="flex items-center gap-3">
                 <Target className="w-3 h-3 text-[#00E676]" />
                 <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">MS BANTIGER DISTRICT</span>
               </div>
-              <div className="w-px h-4 bg-white/10" />
+              <div className="w-px h-4 bg-white/10 mx-4" />
               <div className="flex items-center gap-3">
                 <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">MS OBEREMMENTAL</span>
                 <Target className="w-3 h-3 text-[#EB3D99]" />
