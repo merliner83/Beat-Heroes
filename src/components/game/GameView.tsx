@@ -71,6 +71,19 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const bpm = game.bpm || 120;
   const TOTAL_STEPS = 512;
 
+  // Automatischer Preload beim Mounten
+  useEffect(() => {
+    const preload = async () => {
+      if (!audioEngine) return;
+      const urls = [
+        ...sounds.map(s => s.sampleUrl),
+        game.backingTrackUrl || ''
+      ];
+      await audioEngine.preloadAudio(urls);
+    };
+    preload();
+  }, [sounds, game.backingTrackUrl]);
+
   const triggerPadFlash = (type: SoundType, flashType: FlashType) => {
     setPadFlashes(prev => ({
       ...prev,
@@ -125,6 +138,11 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     setIsLoadingAudio(true);
     try {
       await audioEngine.resume();
+      
+      // Zusätzlicher Check: Falls Buffer noch nicht bereit sind, jetzt erzwingen
+      const urlsToLoad = [game.backingTrackUrl || '', ...sounds.map(s => s.sampleUrl)];
+      await audioEngine.preloadAudio(urlsToLoad);
+
       clearedNotesRef.current = new Set();
       setScore({ hits: 0, misses: 0, accuracy: 100 });
       setIsFinished(false);
@@ -159,7 +177,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
-              // Passive Miss Detection: Sink accuracy if note passed hit zone unplayed
               if (!clearedNotesRef.current.has(noteId) && currentStep > step + tolerance) {
                 clearedNotesRef.current.add(noteId);
                 passiveMissesCount++;
@@ -205,7 +222,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 max-w-5xl mx-auto overflow-hidden">
-      {/* Kompakter Header für iPhone */}
       <header className="flex justify-between items-center mb-1 px-2 h-10 md:h-12 shrink-0">
         <div className="flex items-center gap-2">
           <Link href={`/studio/${game.studioId}`}>
@@ -237,7 +253,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           })}
         </div>
 
-        {/* Sampler Pads */}
         <div className="p-2 md:p-8 bg-black/60 border-t border-white/5 shrink-0">
           <div className="grid grid-cols-4 gap-2 md:gap-4 max-w-lg mx-auto">
             {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => (
@@ -254,7 +269,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           </div>
         </div>
 
-        {/* Start Overlay */}
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-50 backdrop-blur-sm">
             <div className="text-center mx-4">
@@ -267,14 +281,12 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           </div>
         )}
 
-        {/* Count In */}
         {countIn !== null && (
           <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
             <div className="text-[8rem] md:text-[14rem] font-black italic text-[#FFEA00] drop-shadow-[0_0_50px_rgba(255,234,0,0.4)] animate-in zoom-in-50 duration-200">{countIn}</div>
           </div>
         )}
 
-        {/* Finish Screen */}
         {isFinished && (
           <div className="absolute inset-0 bg-black/98 flex items-center justify-center p-6 z-50">
             <div className="text-center space-y-6 max-w-sm">

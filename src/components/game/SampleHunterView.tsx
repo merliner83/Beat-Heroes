@@ -69,6 +69,19 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     return { ...sound, triggerSteps: allSteps };
   });
 
+  // Automatischer Preload
+  useEffect(() => {
+    const preload = async () => {
+      if (!audioEngine) return;
+      const urls = [
+        ...sounds.map(s => s.sampleUrl),
+        game.backingTrackUrl || ''
+      ];
+      await audioEngine.preloadAudio(urls);
+    };
+    preload();
+  }, [sounds, game.backingTrackUrl]);
+
   const triggerFlash = (type: 'hit' | 'miss') => {
     setActiveFlashes({ type, key: Date.now() });
   };
@@ -78,6 +91,11 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     setIsLoadingAudio(true);
     try {
       await audioEngine.resume();
+      
+      // Fehler-Prävention: Buffer laden
+      const urlsToLoad = [game.backingTrackUrl || '', ...sounds.map(s => s.sampleUrl)];
+      await audioEngine.preloadAudio(urlsToLoad);
+
       clearedNotesRef.current = new Set();
       setScore({ hits: 0, misses: 0, accuracy: 100 });
       setIsFinished(false);
@@ -166,7 +184,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
-              // Passive Miss Detection
               if (!clearedNotesRef.current.has(noteId) && currentStep > step + tolerance) {
                 clearedNotesRef.current.add(noteId);
                 newMisses++;
@@ -231,7 +248,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </header>
 
       <main className="flex-1 relative gemini-border gemini-glow bg-black/40 overflow-hidden rounded-2xl md:rounded-[2rem]" onClick={handleCatch}>
-        {/* Target Zone */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#3838FA]/20 flex items-center justify-center">
           <div className={cn(
             "w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-white/10 flex items-center justify-center transition-all",
@@ -242,7 +258,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           </div>
         </div>
 
-        {/* Floating Samples */}
         {isPlaying && soundsWithPatterns.map(sound => 
           sound.triggerSteps.map(step => {
             const noteId = `${sound.type}-${step}`;
@@ -278,7 +293,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           })
         )}
 
-        {/* Overlays */}
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
             <Card className="p-6 md:p-8 bg-black border-none gemini-border text-center max-w-xs mx-4">

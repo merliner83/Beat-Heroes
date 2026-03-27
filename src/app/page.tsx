@@ -12,20 +12,25 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-// Optimierte Koordinaten für eine großzügige Verteilung im oberen Bereich
+// Optimierte Koordinaten für eine weiträumige Verteilung im oberen Bereich
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 20, y: 18 }, // Oben Links
-  'yoan-beats': { x: 75, y: 22 },   // Oben Rechts
-  'noxxos': { x: 45, y: 38 },      // Zentral Mitte (weit weg von der Mini-Map)
+  'gabriel-beats': { x: 25, y: 15 }, // Oben Links
+  'yoan-beats': { x: 75, y: 15 },   // Oben Rechts
+  'noxxos': { x: 50, y: 35 },      // Zentral Mitte (mit viel Abstand zur Map)
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
   <div className="relative flex flex-col items-center group cursor-pointer">
-    {/* Stylische Haus-Umrandung (SVG) mit Glow-Effekt nach hinten */}
+    {/* Stylische Haus-Umrandung mit Glow-Effekt nach hinten */}
     <div className="relative w-28 h-28 md:w-44 md:h-44 flex items-center justify-center">
-      <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 blur-3xl rounded-full transition-all duration-700" style={{ backgroundColor: `${color}11` }} />
+      {/* Glow nach hinten */}
+      <div 
+        className="absolute inset-4 blur-2xl rounded-full opacity-0 group-hover:opacity-40 transition-all duration-700" 
+        style={{ backgroundColor: color }} 
+      />
+      
       <svg 
-        className="absolute inset-0 w-full h-full -z-10 transition-all duration-500 group-hover:scale-110 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]" 
+        className="absolute inset-0 w-full h-full -z-10 transition-all duration-500 group-hover:scale-110" 
         viewBox="0 0 100 100" 
         preserveAspectRatio="none"
       >
@@ -33,8 +38,8 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
           d="M50 5 L92 38 L92 95 L8 95 L8 38 Z" 
           fill="rgba(0,0,0,0.85)" 
           stroke={color} 
-          strokeWidth="2.5"
-          className="transition-all duration-500 group-hover:stroke-white"
+          strokeWidth="2"
+          className="transition-all duration-500 group-hover:stroke-white group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
         />
       </svg>
       
@@ -47,9 +52,9 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
       </div>
     </div>
 
-    {/* Studio Name Tag - Prägnanter und kompakter am Icon */}
-    <div className="mt-1 bg-black border-l-4 border-white/20 p-2 md:px-4 py-1 shadow-2xl transform transition-all group-hover:border-[#FFEA00] text-center min-w-[100px]">
-      <h3 className="text-[10px] md:text-sm font-black uppercase italic tracking-tighter whitespace-nowrap leading-tight flex items-center justify-center gap-2">
+    {/* Tactical Label - Rechteckig und prägnant direkt am Icon */}
+    <div className="mt-1 bg-black border-l-4 border-white/20 p-2 md:px-4 py-1 shadow-2xl transform transition-all group-hover:border-[#FFEA00] text-center min-w-[100px] border border-white/5">
+      <h3 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter whitespace-nowrap leading-tight flex items-center justify-center gap-2">
         <Sparkles className="w-2.5 h-2.5 text-[#FFEA00] opacity-0 group-hover:opacity-100 transition-opacity" />
         {studioName}
       </h3>
@@ -86,66 +91,13 @@ export default function HomePage() {
 
   const setupStudios = async () => {
     if (!db) return;
-    
-    const patterns = [
-      { id: 'kick-basic', name: 'KICK Basic', steps: [0, 16, 32, 48, 64, 80, 96, 112] },
-      { id: 'clap-basic', name: 'CLAP Basic', steps: [16, 48, 80, 112] },
-      { id: 'hats-pro', name: 'HATS Pro', steps: [0, 8, 12, 16, 24, 28, 32, 40, 44, 48, 56, 60, 64, 72, 76, 80, 88, 92, 96, 104, 108, 112, 120, 124] },
-      { id: 'misc-pro', name: 'MISC Pro', steps: [6, 14, 22, 30, 38, 46, 54, 62, 70, 78, 86, 94, 102, 110, 118, 126] }
-    ];
-
-    const studios = [
-      { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#993DEB' },
-      { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00' },
-      { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#EB3D99' }
-    ];
-
     try {
-      for (const p of patterns) await setDoc(doc(db, 'patterns', p.id), p, { merge: true });
-      for (const s of studios) await setDoc(doc(db, 'studios', s.id), s, { merge: true });
-
-      const gameConfig = { 
-        id: 'yoan-rhythm', 
-        studioId: 'yoan-beats', 
-        name: 'Yoan\'s Rhythm', 
-        type: 'rhythm-producer', 
-        bpm: 162, 
-        difficulty: 2,
-        backingTrackUrl: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
-      };
-
-      await setDoc(doc(db, 'games', gameConfig.id), gameConfig, { merge: true });
-
-      const levels = [
-        { id: `yoan-level-1`, name: 'Kick Foundation', diff: 1 },
-        { id: `yoan-level-2`, name: 'Clap Groove', diff: 2 },
-        { id: `yoan-level-3`, name: 'Hi-Hat Layer', diff: 3 },
-        { id: `yoan-level-4`, name: 'Full Production', diff: 4 }
+      const studios = [
+        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#993DEB' },
+        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00' },
+        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#EB3D99' }
       ];
-
-      for (const l of levels) {
-        await setDoc(doc(db, 'levels', l.id), {
-          id: l.id, gameId: gameConfig.id, difficulty: l.diff, name: l.name
-        }, { merge: true });
-
-        const soundConfigs = [
-          { type: 'kick', p: ['kick-basic', 'kick-basic', 'kick-basic', 'kick-basic'], minLvl: 1 },
-          { type: 'clap', p: ['clap-basic', 'clap-basic', 'clap-basic', 'clap-basic'], minLvl: 2 },
-          { type: 'percs', p: ['hats-pro', 'hats-pro', 'hats-pro', 'hats-pro'], minLvl: 3 },
-          { type: 'misc', p: ['misc-pro', 'misc-pro', 'misc-pro', 'misc-pro'], minLvl: 4 }
-        ];
-
-        for (const sInfo of soundConfigs) {
-          if (sInfo.minLvl <= l.diff) {
-            const soundId = `${sInfo.type}-main`;
-            await setDoc(doc(db, 'levels', l.id, 'sounds', soundId), {
-              id: soundId, levelId: l.id, type: sInfo.type, patternIds: sInfo.p,
-              sampleUrl: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg'
-            }, { merge: true });
-          }
-        }
-      }
-
+      for (const s of studios) await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       toast({ title: "Radar Synced!", description: "Districts live." });
     } catch (e) {
       toast({ variant: "destructive", title: "Setup Failed" });
@@ -186,13 +138,13 @@ export default function HomePage() {
             <Loader2 className="w-8 h-8 animate-spin text-[#FFEA00]" />
           </div>
         ) : (
-          <div className="absolute inset-x-0 top-0 bottom-64 max-w-7xl mx-auto pointer-events-none">
+          <div className="absolute inset-x-0 top-0 bottom-64 max-w-7xl mx-auto pointer-events-none h-full">
             {allStudios?.map((studio) => {
               const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
               return (
                 <div 
                   key={studio.id}
-                  className="absolute transition-all duration-500 ease-in-out animate-in fade-in zoom-in pointer-events-auto"
+                  className="absolute transition-all duration-500 ease-in-out animate-in fade-in zoom-in-95 pointer-events-auto"
                   style={{ 
                     left: `${pos.x}%`, 
                     top: `${pos.y}%`,
@@ -210,7 +162,7 @@ export default function HomePage() {
 
         {/* Mini Map (GTA Style, zentriert am unteren Rand) */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50">
-          <div className="relative w-72 h-72 md:w-[28rem] md:h-[28rem] rounded-2xl border-2 border-white/10 bg-black/80 backdrop-blur-md overflow-hidden gemini-glow shadow-2xl">
+          <div className="relative w-72 h-72 md:w-[30rem] md:h-[30rem] rounded-2xl border-2 border-white/10 bg-black/80 backdrop-blur-md overflow-hidden gemini-glow shadow-2xl">
             {/* Tactical Grid */}
             <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '25px 25px' }} />
             
@@ -236,7 +188,7 @@ export default function HomePage() {
           </div>
           
           {/* Großes GTA-Style Label */}
-          <div className="mt-8 text-4xl md:text-7xl font-black uppercase tracking-[0.6em] text-white/40 text-center drop-shadow-2xl italic leading-none">
+          <div className="mt-8 text-5xl md:text-8xl font-black uppercase tracking-[0.6em] text-white/40 text-center drop-shadow-2xl italic leading-none">
             DISTRICTS
           </div>
         </div>
