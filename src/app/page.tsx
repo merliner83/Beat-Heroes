@@ -18,8 +18,8 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'noxxos': { x: 50, y: 18 },
   'dave-beats': { x: 25, y: 35 },
   'nintu-music': { x: 75, y: 35 },
-  'dj-avox': { x: 35, y: 58 },
-  'benjamin-beats': { x: 65, y: 58 },
+  'dj-avox': { x: 35, y: 50 },
+  'benjamin-beats': { x: 65, y: 50 },
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
@@ -109,87 +109,76 @@ export default function HomePage() {
         await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
-      // --- PATTERNS (Fixe 32 Takte = 512 Steps) ---
-      // Wir definieren jetzt pro Instrument genau ein fixes 32-Takt-Pattern.
-      const p1Steps = Array.from({ length: 128 }, (_, i) => i * 4); // Kick: Viertel auf alle 512 Steps
-      const p2Steps = Array.from({ length: 64 }, (_, i) => (i * 8) + 4); // Clap: 2 und 4 auf alle 512 Steps
-      const p3Steps = Array.from({ length: 32 }, (_, i) => (i * 16) + 7); // Vocals/Accents
-      const p4Steps = Array.from({ length: 128 }, (_, i) => (i * 4) + 2); // Offbeat Percs
-
+      // --- GLOBAL PATTERNS (32 Bars = 512 Steps) ---
       const patterns = [
-        { id: 'pattern-p1', name: 'Kick 32', steps: p1Steps },
-        { id: 'pattern-p2', name: 'Clap 32', steps: p2Steps },
-        { id: 'pattern-p3', name: 'Vocal 32', steps: p3Steps },
-        { id: 'pattern-p4', name: 'Perc 32', steps: p4Steps },
+        { id: 'pattern-p1', name: 'Kick 32', steps: Array.from({ length: 128 }, (_, i) => i * 4) },
+        { id: 'pattern-p2', name: 'Clap 32', steps: Array.from({ length: 64 }, (_, i) => (i * 8) + 4) },
+        { id: 'pattern-p3', name: 'Vocal 32', steps: Array.from({ length: 32 }, (_, i) => (i * 16) + 7) },
+        { id: 'pattern-p4', name: 'Perc 32', steps: Array.from({ length: 128 }, (_, i) => (i * 4) + 2) },
       ];
 
       for (const p of patterns) {
         await setDoc(doc(db, 'patterns', p.id), p);
       }
 
-      const games = [
-        {
-          id: 'yoan-techno-architect',
-          studioId: 'yoan-beats',
-          name: 'Techno Architect',
-          type: 'rhythm-producer',
-          bpm: 128,
-          difficulty: 1,
-          backingTrackUrl: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
-        },
-        {
-          id: 'yoan-signal-catcher',
-          studioId: 'yoan-beats',
-          name: 'Signal Catcher',
-          type: 'sample-hunter',
-          bpm: 120,
-          difficulty: 2,
-          backingTrackUrl: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
-        },
-        {
-          id: 'beathero-original',
-          studioId: 'gabriel-beats',
-          name: 'Beat Hero',
-          type: 'rhythm-producer',
-          bpm: 120,
-          difficulty: 1,
-          backingTrackUrl: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg'
-        }
+      const backingTracks = [
+        'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg',
+        'https://actions.google.com/sounds/v1/science_fiction/low_power_hum.ogg',
+        'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg',
+        'https://actions.google.com/sounds/v1/science_fiction/deep_space_drone.ogg'
       ];
 
-      for (const g of games) {
-        await setDoc(doc(db, 'games', g.id), g);
-        
-        for (let i = 1; i <= 4; i++) {
-          const levelId = `${g.id}-lvl-${i}`;
-          await setDoc(doc(db, 'levels', levelId), {
-            id: levelId,
-            gameId: g.id,
-            difficulty: i,
-            name: i === 1 ? 'Initiation' : i === 2 ? 'The Pulse' : i === 3 ? 'Modular' : 'Master'
+      for (const studio of studios) {
+        const gameConfigs = [
+          { id: 'beat-hero', name: 'Beat Hero', type: 'rhythm-producer', bpm: 120 },
+          { id: 'sample-catcher', name: 'Sample Catcher', type: 'sample-hunter', bpm: 128 }
+        ];
+
+        for (const config of gameConfigs) {
+          const gameId = `${studio.id}-${config.id}`;
+          const trackIndex = (studios.indexOf(studio) + gameConfigs.indexOf(config)) % backingTracks.length;
+          
+          await setDoc(doc(db, 'games', gameId), {
+            id: gameId,
+            studioId: studio.id,
+            name: config.name,
+            type: config.type,
+            bpm: config.bpm,
+            difficulty: 1,
+            backingTrackUrl: backingTracks[trackIndex]
           });
 
-          const soundSet = [
-            { type: 'kick', sample: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg', p: 'pattern-p1' },
-            { type: 'clap', sample: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg', p: 'pattern-p2' },
-            { type: 'percs', sample: 'https://actions.google.com/sounds/v1/cartoon/clown_horn.ogg', p: 'pattern-p3' },
-            { type: 'misc', sample: 'https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg', p: 'pattern-p4' },
-          ];
-
-          for (let j = 0; j < i; j++) {
-            const s = soundSet[j];
-            await setDoc(doc(db, 'levels', levelId, 'sounds', `sound-${levelId}-${s.type}`), {
-              id: `sound-${levelId}-${s.type}`,
-              levelId: levelId,
-              type: s.type,
-              sampleUrl: s.sample,
-              patternIds: [s.p] // Nur ein fixes 32-Takt-Pattern
+          for (let i = 1; i <= 4; i++) {
+            const levelId = `${gameId}-lvl-${i}`;
+            await setDoc(doc(db, 'levels', levelId), {
+              id: levelId,
+              gameId: gameId,
+              difficulty: i,
+              name: i === 1 ? 'Initiation' : i === 2 ? 'The Pulse' : i === 3 ? 'Modular' : 'Master'
             });
+
+            const soundSet = [
+              { type: 'kick', sample: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg', p: 'pattern-p1' },
+              { type: 'clap', sample: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg', p: 'pattern-p2' },
+              { type: 'percs', sample: 'https://actions.google.com/sounds/v1/cartoon/clown_horn.ogg', p: 'pattern-p3' },
+              { type: 'misc', sample: 'https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg', p: 'pattern-p4' },
+            ];
+
+            for (let j = 0; j < i; j++) {
+              const s = soundSet[j];
+              await setDoc(doc(db, 'levels', levelId, 'sounds', `sound-${levelId}-${s.type}`), {
+                id: `sound-${levelId}-${s.type}`,
+                levelId: levelId,
+                type: s.type,
+                sampleUrl: s.sample,
+                patternIds: [s.p]
+              });
+            }
           }
         }
       }
 
-      toast({ title: "Radar Synced!", description: "Studios and Patterns updated." });
+      toast({ title: "Radar Synced!", description: "All studios updated with Beat Hero and Sample Catcher." });
     } catch (e) {
       toast({ variant: "destructive", title: "Setup Failed" });
     }
@@ -230,13 +219,13 @@ export default function HomePage() {
             <Loader2 className="w-12 h-12 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="absolute inset-0 max-w-full mx-auto pointer-events-none pb-40">
+          <div className="absolute inset-0 max-w-full mx-auto pointer-events-auto pb-40">
             {allStudios?.map((studio) => {
               const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 30 };
               return (
                 <div 
                   key={studio.id}
-                  className="absolute transition-all duration-1000 ease-in-out animate-in fade-in zoom-in-90 pointer-events-auto"
+                  className="absolute transition-all duration-1000 ease-in-out animate-in fade-in zoom-in-90"
                   style={{ 
                     left: `${pos.x}%`, 
                     top: `${pos.y}%`,
@@ -262,14 +251,14 @@ export default function HomePage() {
               <div className="absolute inset-0 w-24 h-24 translate-x-[20%] translate-y-[20%] rounded-full bg-white/10 animate-pulse blur-xl" />
             </div>
 
-            <div className="absolute left-[12%] top-[15%] flex flex-col items-start gap-1 group transition-transform hover:scale-105 z-20">
+            <div className="absolute left-[8%] top-[15%] flex flex-col items-start gap-1 group transition-transform hover:scale-105 z-20">
               <div className="w-3 h-3 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676] border border-white/50 animate-pulse" />
-              <span className="text-xl md:text-3xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)]">BANTIGER</span>
+              <span className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)]">BANTIGER</span>
             </div>
 
-            <div className="absolute right-[12%] bottom-[20%] flex flex-col items-end gap-1 transition-transform hover:scale-105 z-20">
+            <div className="absolute right-[8%] bottom-[20%] flex flex-col items-end gap-1 transition-transform hover:scale-105 z-20">
               <div className="w-3 h-3 rounded-full bg-[#FF3D00] shadow-[0_0_15px_#FF3D00] border border-white/50 animate-pulse" />
-              <span className="text-xl md:text-3xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)] text-right">OBEREMMENTAL</span>
+              <span className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)] text-right">OBEREMMENTAL</span>
             </div>
 
             <div 
