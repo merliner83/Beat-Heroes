@@ -1,3 +1,4 @@
+
 "use client";
 
 /**
@@ -63,7 +64,7 @@ export class AudioEngine {
   }
 
   /**
-   * Preloads audio files. Throws error if a file fails to load.
+   * Preloads audio files. Now more resilient to individual failures.
    */
   async preloadAudio(urls: string[]): Promise<void> {
     if (!this.context) await this.resume();
@@ -95,9 +96,9 @@ export class AudioEngine {
         this.buffers.set(url, audioBuffer);
         this.loadingStatus.set(url, 'ready');
       } catch (e) {
-        console.warn(`AudioEngine: Load failed for ${url}`);
+        console.warn(`AudioEngine: Load failed for ${url}. Error:`, e);
         this.loadingStatus.set(url, 'failed');
-        throw new Error(`Failed to load audio: ${url}`);
+        // Do not throw here to allow other sounds to load and the game to start
       }
     }));
   }
@@ -147,14 +148,10 @@ export class AudioEngine {
 
     const buffer = this.buffers.get(url);
     if (!buffer || !this.context || !this.masterGain) {
-      // Re-try preload once if buffer is missing but requested
-      console.warn('AudioEngine: Backing track buffer not ready. Attempting emergency preload...', url);
-      await this.preloadAudio([url]);
-      const retryBuffer = this.buffers.get(url);
-      if (!retryBuffer) {
-        throw new Error(`Critical Audio Error: Buffer for ${url} still not ready after reload.`);
-      }
-      return this.startBackingTrack(url, when);
+      console.warn('AudioEngine: Backing track buffer not ready for URL:', url);
+      // Attempt emergency preload but don't crash
+      this.preloadAudio([url]).catch(() => {});
+      return;
     }
 
     try {
