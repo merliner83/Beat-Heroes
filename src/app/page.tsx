@@ -16,17 +16,17 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'gabriel-beats': { x: 20, y: 12 },
   'yoan-beats': { x: 80, y: 12 },
   'noxxos': { x: 50, y: 18 },
-  'dave-beats': { x: 25, y: 32 },
-  'nintu-music': { x: 75, y: 32 },
-  'dj-avox': { x: 40, y: 48 },
-  'benjamin-beats': { x: 60, y: 48 },
+  'dave-beats': { x: 25, y: 35 },
+  'nintu-music': { x: 75, y: 35 },
+  'dj-avox': { x: 35, y: 62 },
+  'benjamin-beats': { x: 65, y: 62 },
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
   <div className="relative flex flex-col items-center group cursor-pointer">
     {/* House Shape Container with Colored Dynamic Border */}
     <div 
-      className="relative w-20 h-24 md:w-28 md:h-34 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-1 overflow-hidden"
+      className="relative w-16 h-20 md:w-24 md:h-30 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-1 overflow-hidden"
       style={{ 
         clipPath: 'polygon(50% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%)',
         padding: '2px',
@@ -63,8 +63,8 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
     </div>
 
     {/* Studio Name Label - Smaller */}
-    <div className="mt-2 text-center pointer-events-none">
-      <h3 className="text-sm md:text-base font-black uppercase italic tracking-tighter text-white/90 drop-shadow-[0_4px_10px_rgba(0,0,0,1)] group-hover:text-primary transition-colors leading-none">
+    <div className="mt-1 text-center pointer-events-none">
+      <h3 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-white/90 drop-shadow-[0_4px_10px_rgba(0,0,0,1)] group-hover:text-primary transition-colors leading-none">
         {studioName}
       </h3>
     </div>
@@ -154,7 +154,7 @@ export default function HomePage() {
             <Loader2 className="w-12 h-12 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="absolute inset-0 max-w-full mx-auto pointer-events-none pb-72">
+          <div className="absolute inset-0 max-w-full mx-auto pointer-events-none pb-40">
             {allStudios?.map((studio) => {
               const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 30 };
               return (
@@ -177,26 +177,26 @@ export default function HomePage() {
         )}
 
         {/* Tactical Mini Map - Gemini Themed & Enhanced UI */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[320px] pt-12">
-          <div className="relative w-full h-48 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[420px] pt-4">
+          <div className="relative w-full h-56 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]">
             {/* Grid Overlay */}
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
             
             {/* Central Signal Pulse Circles - Stronger Pulse */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
-              <div className="w-16 h-16 rounded-full border-2 border-primary/60 animate-ping" />
-              <div className="absolute inset-0 w-32 h-32 -translate-x-1/4 -translate-y-1/4 rounded-full border border-white/30 animate-[ping_3s_linear_infinite]" />
-              <div className="absolute inset-0 w-12 h-12 translate-x-1/4 translate-y-1/4 rounded-full bg-primary/20 animate-pulse blur-sm" />
+              <div className="w-20 h-20 rounded-full border-2 border-white/20 animate-ping" />
+              <div className="absolute inset-0 w-40 h-40 -translate-x-1/4 -translate-y-1/4 rounded-full border border-white/10 animate-[ping_3s_linear_infinite]" />
+              <div className="absolute inset-0 w-16 h-16 translate-x-1/4 translate-y-1/4 rounded-full bg-white/5 animate-pulse blur-sm" />
             </div>
 
             {/* Bantiger - Organic position */}
-            <div className="absolute left-[30%] top-[25%] flex flex-col items-center gap-1 group transition-transform hover:scale-110">
+            <div className="absolute left-[35%] top-[35%] flex flex-col items-center gap-1 group transition-transform hover:scale-110">
               <div className="w-2.5 h-2.5 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676] border border-white/50 animate-pulse" />
               <span className="text-[10px] font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_8px_rgba(0,0,0,1)]">BANTIGER</span>
             </div>
 
             {/* Oberemmental - Organic position */}
-            <div className="absolute right-[35%] bottom-[30%] flex flex-col items-center gap-1 transition-transform hover:scale-110">
+            <div className="absolute right-[38%] bottom-[40%] flex flex-col items-center gap-1 transition-transform hover:scale-110">
               <div className="w-2.5 h-2.5 rounded-full bg-[#FF3D00] shadow-[0_0_15px_#FF3D00] border border-white/50 animate-pulse" />
               <span className="text-[10px] font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_8px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
             </div>
