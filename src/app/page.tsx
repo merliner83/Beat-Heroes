@@ -169,29 +169,29 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Tactical Mini Map - Compact & Tighter Distribution */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[800px]">
-          <div className="relative w-full h-40 md:h-48 rounded-[1.5rem] border-2 border-white/10 bg-black/95 backdrop-blur-3xl overflow-hidden gemini-glow shadow-[0_0_100px_rgba(0,0,0,1)]">
+        {/* Tactical Mini Map - Narrower, Taller, Random Positioning */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[600px]">
+          <div className="relative w-full h-48 md:h-56 rounded-[2rem] border-2 border-white/10 bg-black/95 backdrop-blur-3xl overflow-hidden gemini-glow shadow-[0_0_100px_rgba(0,0,0,1)]">
             {/* Grid Overlay */}
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
             
-            {/* Center Area for Districts */}
-            <div className="absolute inset-0 flex items-center justify-around px-20">
-              <div className="flex flex-col items-center gap-2 group">
-                <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-[#00E676] shadow-[0_0_20px_#00E676] border-2 border-white/70 animate-pulse" />
-                <span className="text-xl md:text-3xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">BANTIGER</span>
-              </div>
-              <div className="flex flex-col items-center gap-2 text-right">
-                <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] border-2 border-white/70 animate-pulse" />
-                <span className="text-xl md:text-3xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
-              </div>
+            {/* Bantiger - Offset Position */}
+            <div className="absolute left-[20%] top-[25%] flex flex-col items-center gap-2 group">
+              <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-[#00E676] shadow-[0_0_20px_#00E676] border-2 border-white/70 animate-pulse" />
+              <span className="text-xl md:text-2xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">BANTIGER</span>
+            </div>
+
+            {/* Oberemmental - Offset Position */}
+            <div className="absolute right-[20%] bottom-[25%] flex flex-col items-center gap-2">
+              <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] border-2 border-white/70 animate-pulse" />
+              <span className="text-xl md:text-2xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
             </div>
 
             {/* Radar Sweep FX */}
             <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-primary/5 to-transparent animate-[spin_10s_linear_infinite]" />
           </div>
           
-          <div className="mt-2 text-[8px] font-black uppercase tracking-[1em] text-primary/30 text-center italic leading-none pointer-events-none select-none">
+          <div className="mt-2 text-[7px] font-black uppercase tracking-[1em] text-primary/30 text-center italic leading-none pointer-events-none select-none">
             districts
           </div>
         </div>
