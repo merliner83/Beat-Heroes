@@ -124,7 +124,7 @@ export default function HomePage() {
           <div className="flex items-center gap-4">
             <Radio className="w-8 h-8 text-primary animate-pulse" />
             <div>
-              <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic leading-none text-gradient">BeatHero</h1>
+              <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
               <p className="text-[9px] uppercase tracking-[0.4em] font-black opacity-60 text-[#FF9100]">Urban District Mapper</p>
             </div>
           </div>
@@ -169,9 +169,9 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Tactical Mini Map - Narrower, Taller, Random Positioning */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[600px]">
-          <div className="relative w-full h-48 md:h-56 rounded-[2rem] border-2 border-white/10 bg-black/95 backdrop-blur-3xl overflow-hidden gemini-glow shadow-[0_0_100px_rgba(0,0,0,1)]">
+        {/* Tactical Mini Map - Compact & Strategic Placement */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[800px]">
+          <div className="relative w-full h-56 rounded-[2rem] border-2 border-white/10 bg-black/95 backdrop-blur-3xl overflow-hidden gemini-glow shadow-[0_0_100px_rgba(0,0,0,1)]">
             {/* Grid Overlay */}
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
             
@@ -187,8 +187,8 @@ export default function HomePage() {
               <span className="text-xl md:text-2xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
             </div>
 
-            {/* Radar Sweep FX */}
-            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-primary/15 to-transparent animate-[spin_10s_linear_infinite]" />
+            {/* Radar Sweep FX - Bright & Strategic */}
+            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-white/15 to-transparent animate-[spin_10s_linear_infinite]" />
           </div>
           
           <div className="mt-2 text-[7px] font-black uppercase tracking-[1em] text-primary/30 text-center italic leading-none pointer-events-none select-none">
