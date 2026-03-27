@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect } from 'react';
@@ -164,29 +163,29 @@ export default function HomePage() {
 
         {/* Mini Map (Zentriert am unteren Rand) */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-4">
-          <div className="relative w-48 h-48 md:w-72 md:h-72 rounded-2xl border-2 border-white/20 bg-black/95 backdrop-blur-2xl overflow-hidden gemini-glow shadow-[0_0_50px_rgba(0,0,0,0.9)]">
+          <div className="relative w-72 h-48 md:w-[32rem] md:h-72 rounded-2xl border-2 border-white/20 bg-black/95 backdrop-blur-2xl overflow-hidden gemini-glow shadow-[0_0_50px_rgba(0,0,0,0.9)]">
             <div className="absolute inset-0 opacity-15" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '25px 25px' }} />
             
             <div className="absolute inset-0 flex items-center justify-center">
-               <div className="w-12 h-12 bg-[#FFEA00] rounded-full animate-ping opacity-20" />
-               <div className="w-3 h-3 bg-[#FFEA00] rounded-full shadow-[0_0_20px_#FFEA00]" />
+               <div className="w-16 h-16 bg-[#FFEA00] rounded-full animate-ping opacity-20" />
+               <div className="w-5 h-5 bg-[#FFEA00] rounded-full shadow-[0_0_30px_#FFEA00]" />
             </div>
 
             <div className="absolute inset-0 p-6 flex flex-col justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676] border-2 border-white/20" />
-                <span className="text-[10px] md:text-sm font-black uppercase tracking-tighter text-[#00E676]">BANTIGER</span>
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-[#00E676] shadow-[0_0_20px_#00E676] border-2 border-white/30" />
+                <span className="text-sm md:text-2xl font-black uppercase tracking-tighter text-[#00E676]">BANTIGER</span>
               </div>
-              <div className="flex items-center gap-2 self-end text-right">
-                <span className="text-[10px] md:text-sm font-black uppercase tracking-tighter text-[#EB3D99]">OBEREMMENTAL</span>
-                <div className="w-4 h-4 rounded-full bg-[#EB3D99] shadow-[0_0_15px_#EB3D99] border-2 border-white/20" />
+              <div className="flex items-center gap-3 self-end text-right">
+                <span className="text-sm md:text-2xl font-black uppercase tracking-tighter text-[#EB3D99]">OBEREMMENTAL</span>
+                <div className="w-6 h-6 rounded-full bg-[#EB3D99] shadow-[0_0_20px_#EB3D99] border-2 border-white/30" />
               </div>
             </div>
 
             <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-[#FFEA00]/10 to-transparent animate-[spin_5s_linear_infinite]" />
           </div>
           
-          <div className="mt-4 text-3xl md:text-6xl font-black uppercase tracking-[0.4em] text-white/10 text-center drop-shadow-2xl italic leading-none pointer-events-none select-none">
+          <div className="mt-4 text-[10px] md:text-sm font-black uppercase tracking-[0.5em] text-white/30 text-center italic leading-none pointer-events-none select-none">
             DISTRICTS
           </div>
         </div>
