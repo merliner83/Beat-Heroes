@@ -116,7 +116,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
       setScore(prev => {
         const nextMisses = prev.misses + 1;
         const total = prev.hits + nextMisses;
-        return { hits: prev.hits, misses: nextMisses, accuracy: Math.round((prev.hits / total) * 100) };
+        return { hits: prev.hits, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
       });
     }
   }, [isPlaying, soundsWithPatterns, bpm]);
@@ -155,7 +155,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           const currentStep = (t - SYNC_OFFSET) / ((60 / bpm) / 4);
           const tolerance = 1.2;
 
-          // PASSIVE MISS DETECTION: Check if any notes were missed without pressing
           let passiveMisses = 0;
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
@@ -205,7 +204,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 max-w-5xl mx-auto overflow-hidden">
-      <header className="flex justify-between items-center mb-2 md:mb-4 px-2 h-12 md:h-16">
+      <header className="flex justify-between items-center mb-2 px-2 h-10 md:h-16">
         <div className="flex items-center gap-2 md:gap-4 overflow-hidden">
           <Link href={`/studio/${game.studioId}`}>
             <h1 className="text-sm md:text-2xl font-black uppercase italic tracking-tighter text-white">BeatHero</h1>

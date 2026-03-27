@@ -5,7 +5,7 @@ import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
-import { Radio, Home, RefreshCw } from 'lucide-react';
+import { Radio, Home, RefreshCw, Loader2 } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -16,8 +16,6 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'gabriel-beats': { x: 15, y: 20 },
   'yoan-beats': { x: 45, y: 40 },
   'noxxos': { x: 75, y: 25 },
-  'dave-beats': { x: 25, y: 70 },
-  'nintu-music': { x: 70, y: 70 }
 };
 
 export default function HomePage() {
@@ -45,12 +43,12 @@ export default function HomePage() {
     return query(collection(db, 'studios'));
   }, [db]);
 
-  const { data: allStudios } = useCollection<Studio>(studiosQuery);
+  const { data: allStudios, isLoading: isLoadingStudios } = useCollection<Studio>(studiosQuery);
 
   const setupStudios = async () => {
     if (!db) return;
     
-    // Globale Rhythmus-Vorlagen (erweitert für Level 4)
+    // Globale Rhythmus-Vorlagen
     const patterns = [
       { id: 'kick-basic', name: 'KICK Basic', steps: [0, 16, 32, 48, 64, 80, 96, 112] },
       { id: 'clap-basic', name: 'CLAP Basic', steps: [16, 48, 80, 112] },
@@ -58,7 +56,6 @@ export default function HomePage() {
       { id: 'misc-pro', name: 'MISC Pro', steps: [6, 14, 22, 30, 38, 46, 54, 62, 70, 78, 86, 94, 102, 110, 118, 126] }
     ];
 
-    // Studios definieren
     const studios = [
       { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#993DEB' },
       { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00' },
@@ -142,33 +139,39 @@ export default function HomePage() {
       </header>
 
       <main className="relative flex-1 w-full bg-[#080808]">
-        <div className="absolute inset-0">
-          {allStudios?.map((studio) => {
-            const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
-            return (
-              <div 
-                key={studio.id}
-                className="absolute transition-all duration-500 animate-in fade-in zoom-in group"
-                style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-              >
-                <Link href={`/studio/${studio.id}`}>
-                  <div className="relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
-                    <div className="absolute inset-0 w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-white/20 animate-ping opacity-20" />
-                    <div 
-                      className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-black border-2 border-white/20 flex items-center justify-center shadow-2xl relative z-10 transition-all group-hover:scale-110"
-                      style={{ boxShadow: `0 0 30px ${studio.coverColor}44` }}
-                    >
-                      <Home className="w-6 h-6 md:w-8 md:h-8 text-white" />
+        {isLoadingStudios ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-[#FFEA00]" />
+          </div>
+        ) : (
+          <div className="absolute inset-0">
+            {allStudios?.map((studio) => {
+              const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 50 };
+              return (
+                <div 
+                  key={studio.id}
+                  className="absolute transition-all duration-500 animate-in fade-in zoom-in group"
+                  style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+                >
+                  <Link href={`/studio/${studio.id}`}>
+                    <div className="relative flex flex-col items-center -translate-x-1/2 -translate-y-1/2">
+                      <div className="absolute inset-0 w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-white/20 animate-ping opacity-20" />
+                      <div 
+                        className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-black border-2 border-white/20 flex items-center justify-center shadow-2xl relative z-10 transition-all group-hover:scale-110"
+                        style={{ boxShadow: `0 0 30px ${studio.coverColor}44` }}
+                      >
+                        <Home className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                      </div>
+                      <div className="mt-2 bg-black/90 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-xl">
+                        <h3 className="text-[10px] md:text-xl font-black uppercase italic tracking-tighter whitespace-nowrap leading-none">{studio.name}</h3>
+                      </div>
                     </div>
-                    <div className="mt-2 bg-black/90 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-xl">
-                      <h3 className="text-[10px] md:text-xl font-black uppercase italic tracking-tighter whitespace-nowrap leading-none">{studio.name}</h3>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            );
-          })}
-        </div>
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </main>
 
       <footer className="p-4 border-t border-white/5 flex justify-end opacity-20 hover:opacity-100 transition-opacity">
