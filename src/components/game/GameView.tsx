@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -7,7 +8,7 @@ import { SamplerPad, FlashType } from './SamplerPad';
 import { NoteLane } from './NoteLane';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Music2, Trophy, Loader2, XCircle } from 'lucide-react';
+import { Music2, Trophy, Loader2, XCircle, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -203,19 +204,21 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 max-w-5xl mx-auto overflow-hidden">
-      <header className="flex justify-between items-center mb-2 px-2 h-10 md:h-16">
-        <div className="flex items-center gap-2 md:gap-4 overflow-hidden">
+      <header className="flex justify-between items-center mb-2 px-2 h-10 md:h-14">
+        <div className="flex items-center gap-2 md:gap-4">
           <Link href={`/studio/${game.studioId}`}>
-            <h1 className="text-sm md:text-2xl font-black uppercase italic tracking-tighter text-white">BeatHero</h1>
+            <ArrowLeft className="w-4 h-4 text-white/50 hover:text-white" />
           </Link>
-          <div className="h-4 w-px bg-white/10 hidden md:block" />
-          <p className="text-[7px] md:text-[10px] uppercase font-black opacity-30 tracking-widest line-clamp-1">{game.name} • {level.name}</p>
+          <div className="flex flex-col">
+            <h1 className="text-xs md:text-sm font-black uppercase italic tracking-tighter text-white">BeatHero</h1>
+            <p className="text-[7px] md:text-[8px] uppercase font-black opacity-30 tracking-widest line-clamp-1">{game.name}</p>
+          </div>
         </div>
         
-        <div className="flex items-center gap-3 md:gap-6">
+        <div className="flex items-center gap-3">
           <div className="text-right">
             <p className="text-[7px] md:text-[8px] uppercase font-black opacity-30 mb-0.5">Accuracy</p>
-            <p className={cn("text-base md:text-2xl font-black italic leading-none", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
+            <p className={cn("text-lg md:text-2xl font-black italic leading-none", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
               {score.accuracy}%
             </p>
           </div>
@@ -232,8 +235,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           })}
         </div>
 
-        <div className="p-4 md:p-10 bg-black/60 border-t border-white/5">
-          <div className="flex justify-center gap-2 md:gap-8">
+        <div className="p-3 md:p-8 bg-black/60 border-t border-white/5">
+          <div className="flex justify-center gap-2 md:gap-6">
             {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => (
               <SamplerPad 
                 key={type} 
