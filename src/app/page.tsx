@@ -60,7 +60,7 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
       </div>
     </div>
 
-    {/* Massive Studio Name Label - No Frame */}
+    {/* Studio Name Label */}
     <div className="mt-3 text-center pointer-events-none">
       <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white/90 drop-shadow-[0_4px_10px_rgba(0,0,0,1)] group-hover:text-primary transition-colors leading-none">
         {studioName}
@@ -169,21 +169,21 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Tactical Mini Map - Massively Wide & GTA Style */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[1400px]">
-          <div className="relative w-full h-44 md:h-56 rounded-[2rem] border-2 border-white/10 bg-black/95 backdrop-blur-3xl overflow-hidden gemini-glow shadow-[0_0_100px_rgba(0,0,0,1)]">
-            {/* Grid Overlay - Smaller Grid */}
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+        {/* Tactical Mini Map - Compact & Tighter Distribution */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[800px]">
+          <div className="relative w-full h-40 md:h-48 rounded-[1.5rem] border-2 border-white/10 bg-black/95 backdrop-blur-3xl overflow-hidden gemini-glow shadow-[0_0_100px_rgba(0,0,0,1)]">
+            {/* Grid Overlay */}
+            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
             
-            {/* District Labels - Smaller & Scaled Down */}
-            <div className="absolute inset-0 p-8 flex flex-col justify-between">
-              <div className="flex items-center gap-4 group">
-                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-[#00E676] shadow-[0_0_20px_#00E676] border-2 border-white/70 animate-pulse" />
-                <span className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">BANTIGER</span>
+            {/* Center Area for Districts */}
+            <div className="absolute inset-0 flex items-center justify-around px-20">
+              <div className="flex flex-col items-center gap-2 group">
+                <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-[#00E676] shadow-[0_0_20px_#00E676] border-2 border-white/70 animate-pulse" />
+                <span className="text-xl md:text-3xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">BANTIGER</span>
               </div>
-              <div className="flex items-center gap-4 self-end text-right">
-                <span className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
-                <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] border-2 border-white/70 animate-pulse" />
+              <div className="flex flex-col items-center gap-2 text-right">
+                <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-[#FF3D00] shadow-[0_0_20px_#FF3D00] border-2 border-white/70 animate-pulse" />
+                <span className="text-xl md:text-3xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_2px_10px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
               </div>
             </div>
 
