@@ -12,11 +12,11 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-// Spezifische Koordinaten für die Studios im Hauptbereich (regelmäßige Verteilung)
+// Spezifische Koordinaten für die Studios im Hauptbereich (regelmäßige vertikale und horizontale Verteilung)
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 20, y: 15 },
-  'yoan-beats': { x: 80, y: 30 },
-  'noxxos': { x: 40, y: 55 },
+  'gabriel-beats': { x: 20, y: 15 }, // Oben links
+  'yoan-beats': { x: 80, y: 30 },   // Mitte rechts
+  'noxxos': { x: 40, y: 55 },      // Unten links/mittig (oberhalb der Mini-Map)
 };
 
 export default function HomePage() {
@@ -179,7 +179,7 @@ export default function HomePage() {
                         <div className="absolute top-2 right-2 md:top-4 md:right-4 w-4 h-4 md:w-6 md:h-6 bg-[#00E676] rounded-full border-4 border-black animate-ping" />
                       </div>
 
-                      {/* Studio Name Tag */}
+                      {/* Studio Name Tag (Kein District Label hier, wie gewünscht) */}
                       <div className="mt-6 bg-black/90 backdrop-blur-2xl border border-white/20 p-2 md:p-4 rounded-2xl shadow-2xl transform transition-all group-hover:-translate-y-2 group-hover:border-[#FFEA00] text-center min-w-[140px]">
                         <h3 className="text-sm md:text-lg font-black uppercase italic tracking-tighter whitespace-nowrap leading-none flex items-center justify-center gap-2">
                           <Sparkles className="w-3 h-3 text-[#FFEA00] opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -194,7 +194,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Mini Map (Zentriert am unteren Rand) */}
+        {/* Mini Map (GTA Style, zentriert am unteren Rand) */}
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-50">
           <div className="relative w-64 h-64 md:w-96 md:h-96 rounded-2xl border-2 border-white/10 bg-black/60 backdrop-blur-md overflow-hidden gemini-glow">
             {/* Tactical Grid */}
