@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect } from 'react';
@@ -49,7 +50,7 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     
-    // Globale Rhythmus-Vorlagen
+    // Globale Rhythmus-Vorlagen (erweitert für Level 4)
     const patterns = [
       { id: 'kick-basic', name: 'KICK Basic', steps: [0, 16, 32, 48, 64, 80, 96, 112] },
       { id: 'clap-basic', name: 'CLAP Basic', steps: [16, 48, 80, 112] },
@@ -65,11 +66,9 @@ export default function HomePage() {
     ];
 
     try {
-      // Patterns und Studios speichern
       for (const p of patterns) await setDoc(doc(db, 'patterns', p.id), p, { merge: true });
       for (const s of studios) await setDoc(doc(db, 'studios', s.id), s, { merge: true });
 
-      // Nur ein Beispiel-Projekt bei Yoan Beats (wie gewünscht)
       const gameConfig = { 
         id: 'yoan-rhythm', 
         studioId: 'yoan-beats', 
@@ -115,7 +114,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Re-Linked!", description: "Yoan Beats example ready." });
+      toast({ title: "Database Re-Linked!", description: "Yoan Beats project is ready." });
     } catch (e) {
       toast({ variant: "destructive", title: "Setup Failed" });
     }

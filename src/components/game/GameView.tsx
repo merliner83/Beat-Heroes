@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -154,6 +155,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           const currentStep = (t - SYNC_OFFSET) / ((60 / bpm) / 4);
           const tolerance = 1.2;
 
+          // PASSIVE MISS DETECTION: Check if any notes were missed without pressing
           let passiveMisses = 0;
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
@@ -169,7 +171,11 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
             setScore(prev => {
               const nextMisses = prev.misses + passiveMisses;
               const total = prev.hits + nextMisses;
-              return { hits: prev.hits, misses: nextMisses, accuracy: Math.round((prev.hits / total) * 100) };
+              return { 
+                hits: prev.hits, 
+                misses: nextMisses, 
+                accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) 
+              };
             });
           }
           
@@ -199,10 +205,10 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 max-w-5xl mx-auto overflow-hidden">
-      <header className="flex justify-between items-center mb-2 md:mb-4 px-2">
+      <header className="flex justify-between items-center mb-2 md:mb-4 px-2 h-12 md:h-16">
         <div className="flex items-center gap-2 md:gap-4 overflow-hidden">
           <Link href={`/studio/${game.studioId}`}>
-            <h1 className="text-base md:text-2xl font-black uppercase italic tracking-tighter text-white">BeatHero</h1>
+            <h1 className="text-sm md:text-2xl font-black uppercase italic tracking-tighter text-white">BeatHero</h1>
           </Link>
           <div className="h-4 w-px bg-white/10 hidden md:block" />
           <p className="text-[7px] md:text-[10px] uppercase font-black opacity-30 tracking-widest line-clamp-1">{game.name} • {level.name}</p>
@@ -211,7 +217,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         <div className="flex items-center gap-3 md:gap-6">
           <div className="text-right">
             <p className="text-[7px] md:text-[8px] uppercase font-black opacity-30 mb-0.5">Accuracy</p>
-            <p className={cn("text-lg md:text-2xl font-black italic leading-none", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
+            <p className={cn("text-base md:text-2xl font-black italic leading-none", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
               {score.accuracy}%
             </p>
           </div>
@@ -246,10 +252,10 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-50">
-            <Card className="p-8 md:p-12 bg-black border-none gemini-border text-center">
+            <Card className="p-8 md:p-12 bg-black border-none gemini-border text-center mx-4">
               <Music2 className="w-8 h-8 md:w-12 md:h-12 text-[#993DEB] mx-auto mb-6" />
-              <h2 className="text-xl md:text-3xl font-black mb-8 uppercase italic tracking-tighter">Ready to Produce?</h2>
-              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-40 md:w-56 h-12 md:h-16 text-lg md:text-xl font-black uppercase italic bg-white text-black rounded-2xl hover:scale-105 transition-transform">
+              <h2 className="text-lg md:text-3xl font-black mb-8 uppercase italic tracking-tighter">Ready to Produce?</h2>
+              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-40 md:w-56 h-12 md:h-16 text-base md:text-xl font-black uppercase italic bg-white text-black rounded-2xl hover:scale-105 transition-transform">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Start Session"}
               </Button>
             </Card>
@@ -268,14 +274,14 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
               {score.accuracy >= PASS_THRESHOLD ? (
                 <>
                   <Trophy className="w-12 h-12 md:w-16 md:h-16 text-[#FFEA00] mx-auto" />
-                  <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter">Gold Standard</h2>
-                  <p className="text-[#00E676] font-black text-2xl md:text-3xl italic">{score.accuracy}% Accuracy</p>
+                  <h2 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter">Gold Standard</h2>
+                  <p className="text-[#00E676] font-black text-xl md:text-3xl italic">{score.accuracy}% Accuracy</p>
                 </>
               ) : (
                 <>
                   <XCircle className="w-12 h-12 md:w-16 md:h-16 text-[#FF3D00] mx-auto" />
-                  <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter">Session Rejected</h2>
-                  <p className="text-[#FF3D00] font-black text-2xl md:text-3xl italic">{score.accuracy}% Accuracy</p>
+                  <h2 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter">Session Rejected</h2>
+                  <p className="text-[#FF3D00] font-black text-xl md:text-3xl italic">{score.accuracy}% Accuracy</p>
                 </>
               )}
               <div className="flex gap-4 pt-8 max-w-sm mx-auto">
