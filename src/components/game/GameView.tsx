@@ -209,15 +209,15 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
             <ArrowLeft className="w-4 h-4 text-white/50 hover:text-white" />
           </Link>
           <div className="flex flex-col">
-            <h1 className="text-[10px] md:text-sm font-black uppercase italic tracking-tighter text-white">BeatHero</h1>
+            <h1 className="text-[10px] md:text-sm font-black uppercase italic tracking-tighter text-white leading-none">BeatHero</h1>
             <p className="text-[7px] md:text-[8px] uppercase font-black opacity-30 tracking-widest line-clamp-1">{game.name}</p>
           </div>
         </div>
         
         <div className="flex items-center gap-4">
           <div className="text-right">
-            <p className="text-[7px] md:text-[8px] uppercase font-black opacity-30 mb-0.5">Accuracy</p>
-            <p className={cn("text-sm md:text-2xl font-black italic leading-none", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
+            <p className="text-[7px] md:text-[8px] uppercase font-black opacity-30 mb-0.5 leading-none">Accuracy</p>
+            <p className={cn("text-lg md:text-3xl font-black italic leading-none", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
               {score.accuracy}%
             </p>
           </div>
