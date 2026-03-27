@@ -11,30 +11,36 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 20, y: 20 },
-  'yoan-beats': { x: 80, y: 20 },
-  'noxxos': { x: 50, y: 15 },
-  'dave-beats': { x: 30, y: 45 },
-  'nintu-music': { x: 70, y: 45 },
+  'gabriel-beats': { x: 20, y: 15 },
+  'yoan-beats': { x: 80, y: 15 },
+  'noxxos': { x: 50, y: 30 },
+  'dave-beats': { x: 25, y: 55 },
+  'nintu-music': { x: 75, y: 55 },
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
   <div className="relative flex flex-col items-center group cursor-pointer">
-    {/* Square Image Container with Gemini Border */}
-    <div className="relative w-32 h-32 md:w-44 md:h-44 gemini-border gemini-glow transition-all duration-500 group-hover:scale-105 group-hover:-rotate-1 bg-black overflow-hidden">
-      {/* Dynamic Backglow behind the square */}
+    {/* House Shape Container with Gemini Border */}
+    <div 
+      className="relative w-32 h-36 md:w-44 md:h-52 gemini-border gemini-glow transition-all duration-500 group-hover:scale-110 group-hover:-rotate-1 bg-black overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.5)]"
+      style={{ 
+        clipPath: 'polygon(50% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%)',
+        backgroundColor: color 
+      }}
+    >
+      {/* Background Glow */}
       <div 
-        className="absolute inset-0 blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700" 
+        className="absolute inset-0 blur-2xl opacity-30 group-hover:opacity-60 transition-opacity duration-700" 
         style={{ backgroundColor: color }} 
       />
       
-      {/* Square Image filling the entire area */}
+      {/* Image filling the house shape */}
       <Avatar className="w-full h-full rounded-none border-none bg-black">
         <AvatarImage 
-          src={`https://picsum.photos/seed/${studioName}/600`} 
+          src={`https://picsum.photos/seed/${studioName}/600/800`} 
           className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
         />
         <AvatarFallback className="bg-black text-white font-black italic text-4xl rounded-none">
@@ -43,12 +49,12 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
       </Avatar>
 
       {/* Glossy Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-white/10 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-transparent to-white/10 pointer-events-none" />
     </div>
 
     {/* Massive Studio Name Label - No Frame */}
     <div className="mt-4 text-center pointer-events-none">
-      <h3 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_4px_12px_rgba(0,0,0,1)] group-hover:text-primary transition-colors leading-none">
+      <h3 className="text-2xl md:text-5xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_4px_15px_rgba(0,0,0,1)] group-hover:text-primary transition-colors leading-none">
         {studioName}
       </h3>
     </div>
@@ -102,8 +108,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none relative">
       {/* Background Urban Grid & FX */}
-      <div className="absolute inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#993DEB 1.5px, transparent 1.5px)', backgroundSize: '60px 60px' }} />
-      <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(153,61,235,0.1) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(153,61,235,0.1) 1.5px, transparent 1.5px)', backgroundSize: '180px 180px' }} />
+      <div className="absolute inset-0 opacity-[0.1] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#993DEB 1.5px, transparent 1.5px)', backgroundSize: '60px 60px' }} />
+      <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(153,61,235,0.1) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(153,61,235,0.1) 1.5px, transparent 1.5px)', backgroundSize: '180px 180px' }} />
       
       <header className="p-8 flex flex-col items-center z-50">
         <div className="gemini-border gemini-glow p-5 px-12 inline-block mb-6 bg-black/70 backdrop-blur-xl">
@@ -155,36 +161,36 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Tactical Mini Map - Massive & Wide */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-6xl">
-          <div className="relative w-full h-64 md:h-96 rounded-[3rem] border-[3px] border-white/20 bg-black/95 backdrop-blur-3xl overflow-hidden gemini-glow shadow-[0_0_80px_rgba(0,0,0,1)]">
+        {/* Tactical Mini Map - Massive & Extra Wide */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-7xl">
+          <div className="relative w-full h-72 md:h-[28rem] rounded-[4rem] border-[4px] border-white/20 bg-black/95 backdrop-blur-3xl overflow-hidden gemini-glow shadow-[0_0_100px_rgba(0,0,0,1)]">
             {/* Grid Overlay */}
-            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
             
-            {/* Pulsing Radar Point - Large */}
+            {/* Pulsing Radar Point - Massive */}
             <div className="absolute inset-0 flex items-center justify-center">
-               <div className="w-32 h-32 bg-primary rounded-full animate-ping opacity-20" />
-               <div className="w-10 h-10 bg-primary rounded-full shadow-[0_0_60px_#993DEB] border-[3px] border-white/60" />
+               <div className="w-48 h-48 bg-primary rounded-full animate-ping opacity-10" />
+               <div className="w-14 h-14 bg-primary rounded-full shadow-[0_0_80px_#993DEB] border-[4px] border-white/70" />
             </div>
 
-            {/* District Labels - Large & Bold */}
-            <div className="absolute inset-0 p-12 flex flex-col justify-between">
-              <div className="flex items-center gap-6 group">
-                <div className="w-10 h-10 rounded-full bg-[#00E676] shadow-[0_0_40px_#00E676] border-[3px] border-white/60 animate-pulse" />
-                <span className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]">BANTIGER</span>
+            {/* District Labels - Extra Large & Bold */}
+            <div className="absolute inset-0 p-16 flex flex-col justify-between">
+              <div className="flex items-center gap-10 group">
+                <div className="w-14 h-14 rounded-full bg-[#00E676] shadow-[0_0_60px_#00E676] border-[4px] border-white/70 animate-pulse" />
+                <span className="text-5xl md:text-8xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)]">BANTIGER</span>
               </div>
-              <div className="flex items-center gap-6 self-end text-right">
-                <span className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-[#EB3D99] italic drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]">OBEREMMENTAL</span>
-                <div className="w-10 h-10 rounded-full bg-[#EB3D99] shadow-[0_0_40px_#EB3D99] border-[3px] border-white/60 animate-pulse" />
+              <div className="flex items-center gap-10 self-end text-right">
+                <span className="text-5xl md:text-8xl font-black uppercase tracking-tighter text-[#EB3D99] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)]">OBEREMMENTAL</span>
+                <div className="w-14 h-14 rounded-full bg-[#EB3D99] shadow-[0_0_60px_#EB3D99] border-[4px] border-white/70 animate-pulse" />
               </div>
             </div>
 
             {/* Radar Sweep FX */}
-            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-primary/30 to-transparent animate-[spin_5s_linear_infinite]" />
+            <div className="absolute inset-0 origin-center bg-gradient-to-tr from-transparent via-primary/20 to-transparent animate-[spin_8s_linear_infinite]" />
           </div>
           
-          <div className="mt-4 text-[9px] md:text-xs font-black uppercase tracking-[0.8em] text-primary/50 text-center italic leading-none pointer-events-none select-none opacity-60">
-            RADAR SCANNER ACTIVE
+          <div className="mt-6 text-[8px] md:text-[10px] font-black uppercase tracking-[1em] text-primary/40 text-center italic leading-none pointer-events-none select-none">
+            districts
           </div>
         </div>
       </main>

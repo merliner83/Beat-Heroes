@@ -139,7 +139,7 @@ export class AudioEngine {
 
     const buffer = this.buffers.get(url);
     if (!buffer || !this.context || !this.masterGain) {
-      // Warning instead of error to prevent session block
+      // Use warn instead of error to prevent session block on missing assets
       console.warn('AudioEngine: Backing track buffer not ready for URL:', url);
       return;
     }
