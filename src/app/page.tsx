@@ -15,9 +15,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 // Weiträumige Verteilung über den gesamten Hauptbereich
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 20, y: 15 }, // Oben Links
-  'yoan-beats': { x: 80, y: 22 },   // Oben Rechts
-  'noxxos': { x: 35, y: 45 },      // Mitte Links
+  'gabriel-beats': { x: 15, y: 15 }, // Oben Links
+  'yoan-beats': { x: 85, y: 18 },   // Oben Rechts
+  'noxxos': { x: 50, y: 32 },      // Mitte (weiter oben für Abstand zur Map)
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
@@ -54,8 +54,8 @@ const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: st
     </div>
 
     {/* Prägnante Beschriftung ohne Rahmen, deutlich größer */}
-    <div className="mt-2 text-center pointer-events-none">
-      <h3 className="text-sm md:text-xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] group-hover:text-[#FFEA00] transition-colors leading-none">
+    <div className="mt-4 text-center pointer-events-none">
+      <h3 className="text-lg md:text-3xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] group-hover:text-[#FFEA00] transition-colors leading-none">
         {studioName}
       </h3>
     </div>
