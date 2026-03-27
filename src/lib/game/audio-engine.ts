@@ -1,4 +1,3 @@
-
 "use client";
 
 /**
@@ -63,6 +62,9 @@ export class AudioEngine {
     return this.loadingStatus.get(url) || 'idle';
   }
 
+  /**
+   * Preloads audio files. Throws error if a file fails to load.
+   */
   async preloadAudio(urls: string[]): Promise<void> {
     if (!this.context) await this.resume();
     if (!this.context) return;
@@ -71,7 +73,14 @@ export class AudioEngine {
     const uniqueUrls = Array.from(new Set(allUrls.filter(u => !!u)));
     
     await Promise.all(uniqueUrls.map(async (url) => {
-      if (this.buffers.has(url) || this.loadingStatus.get(url) === 'loading') return;
+      if (this.buffers.has(url)) return;
+      if (this.loadingStatus.get(url) === 'loading') {
+        // Wait if already loading
+        while (this.loadingStatus.get(url) === 'loading') {
+          await new Promise(r => setTimeout(r, 100));
+        }
+        return;
+      }
       
       this.loadingStatus.set(url, 'loading');
       try {
@@ -86,8 +95,9 @@ export class AudioEngine {
         this.buffers.set(url, audioBuffer);
         this.loadingStatus.set(url, 'ready');
       } catch (e) {
-        console.warn(`AudioEngine: Load failed for ${url}. Sample will be silent.`);
+        console.warn(`AudioEngine: Load failed for ${url}`);
         this.loadingStatus.set(url, 'failed');
+        throw new Error(`Failed to load audio: ${url}`);
       }
     }));
   }
@@ -137,8 +147,14 @@ export class AudioEngine {
 
     const buffer = this.buffers.get(url);
     if (!buffer || !this.context || !this.masterGain) {
-      console.error('AudioEngine: Backing track buffer not ready for URL:', url);
-      return;
+      // Re-try preload once if buffer is missing but requested
+      console.warn('AudioEngine: Backing track buffer not ready. Attempting emergency preload...', url);
+      await this.preloadAudio([url]);
+      const retryBuffer = this.buffers.get(url);
+      if (!retryBuffer) {
+        throw new Error(`Critical Audio Error: Buffer for ${url} still not ready after reload.`);
+      }
+      return this.startBackingTrack(url, when);
     }
 
     try {

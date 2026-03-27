@@ -69,15 +69,19 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     return { ...sound, triggerSteps: allSteps };
   });
 
-  // Automatischer Preload
+  // Preload effects
   useEffect(() => {
     const preload = async () => {
       if (!audioEngine) return;
       const urls = [
-        ...sounds.map(s => s.sampleUrl),
-        game.backingTrackUrl || ''
+        game.backingTrackUrl || '',
+        ...sounds.map(s => s.sampleUrl)
       ];
-      await audioEngine.preloadAudio(urls);
+      try {
+        await audioEngine.preloadAudio(urls);
+      } catch (e) {
+        console.error('Initial preload failed', e);
+      }
     };
     preload();
   }, [sounds, game.backingTrackUrl]);
@@ -92,7 +96,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     try {
       await audioEngine.resume();
       
-      // Fehler-Prävention: Buffer laden
+      // Force reload check to ensure buffers are really there
       const urlsToLoad = [game.backingTrackUrl || '', ...sounds.map(s => s.sampleUrl)];
       await audioEngine.preloadAudio(urlsToLoad);
 
@@ -105,13 +109,17 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       const now = audioEngine.getContextTime();
       const actualStartTime = now + (4 * secondsPerBeat);
       audioEngine.setStartTime(actualStartTime);
-      setIsPlaying(true);
 
       await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
       setCountIn(null);
+      setIsPlaying(true);
       await audioEngine.startBackingTrack(game.backingTrackUrl || '', actualStartTime);
-    } catch (e) {
-      toast({ variant: "destructive", title: "Error", description: "Audio engine failed." });
+    } catch (e: any) {
+      toast({ 
+        variant: "destructive", 
+        title: "Audio Link Failed", 
+        description: e.message || "Failed to establish sync pulse." 
+      });
     } finally {
       setIsLoadingAudio(false);
     }
@@ -199,7 +207,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             });
           }
 
-          if (t >= (TOTAL_STEPS / 4) * (60 / bpm)) {
+          if (t >= (TOTAL_STEPS / 4) * (60 / bpm) + 1) {
             setIsPlaying(false);
             setIsFinished(true);
             audioEngine.stop();
@@ -298,7 +306,9 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             <Card className="p-6 md:p-8 bg-black border-none gemini-border text-center max-w-xs mx-4">
               <Sparkles className="w-10 h-10 md:w-12 md:h-12 text-[#3838FA] mx-auto mb-4 md:mb-6" />
               <h2 className="text-xl md:text-2xl font-black mb-4 uppercase italic tracking-tighter">Hunter Mode</h2>
-              <Button onClick={startLevel} className="w-full h-14 bg-white text-black font-black uppercase rounded-xl">Hunt Samples</Button>
+              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-14 bg-white text-black font-black uppercase rounded-xl">
+                {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Hunt Samples"}
+              </Button>
             </Card>
           </div>
         )}

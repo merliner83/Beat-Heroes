@@ -12,11 +12,11 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-// Optimierte Koordinaten für eine weiträumige Verteilung im oberen Bereich
+// Optimierte Koordinaten für eine weiträumige vertikale Verteilung
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 25, y: 15 }, // Oben Links
-  'yoan-beats': { x: 75, y: 15 },   // Oben Rechts
-  'noxxos': { x: 50, y: 35 },      // Zentral Mitte (mit viel Abstand zur Map)
+  'gabriel-beats': { x: 20, y: 12 }, // Oben Links
+  'yoan-beats': { x: 80, y: 25 },   // Oben Rechts (versetzt)
+  'noxxos': { x: 35, y: 45 },      // Mitte Links (viel Abstand zur Map)
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
