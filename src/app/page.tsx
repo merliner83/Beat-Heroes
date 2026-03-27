@@ -11,7 +11,6 @@ import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
 
 // Spezifische Koordinaten für die Studios im Hauptbereich (keine Überlappung)
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
@@ -186,7 +185,6 @@ export default function HomePage() {
                           <Sparkles className="w-3 h-3 text-[#FFEA00] opacity-0 group-hover:opacity-100 transition-opacity" />
                           {studio.name}
                         </h3>
-                        <div className="text-[8px] uppercase font-bold tracking-widest opacity-40 mt-1">District Studio</div>
                       </div>
                     </div>
                   </Link>
