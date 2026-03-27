@@ -13,11 +13,11 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-// Optimierte Koordinaten für eine weiträumige vertikale Verteilung
+// Weiträumige vertikale und horizontale Verteilung zur Vermeidung von Überlappungen
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'gabriel-beats': { x: 25, y: 15 }, // Weit oben links
   'yoan-beats': { x: 75, y: 22 },   // Oben rechts
-  'noxxos': { x: 40, y: 42 },      // Mittig versetzt
+  'noxxos': { x: 40, y: 42 },      // Mittig versetzt, weit weg von der Mini-Map
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
@@ -164,7 +164,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Mini Map (Zentriert am unteren Rand - nun wieder markanter) */}
+        {/* Mini Map (Zentriert am unteren Rand) */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-4">
           <div className="relative w-56 h-56 md:w-80 md:h-80 rounded-2xl border-2 border-white/20 bg-black/95 backdrop-blur-2xl overflow-hidden gemini-glow shadow-[0_0_50px_rgba(0,0,0,0.9)]">
             {/* Tactical Grid Overlay */}
