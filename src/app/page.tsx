@@ -19,8 +19,8 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'noxxos': { x: 50, y: 18 },
   'dave-beats': { x: 25, y: 35 },
   'nintu-music': { x: 75, y: 35 },
-  'dj-avox': { x: 35, y: 62 },
-  'benjamin-beats': { x: 65, y: 62 },
+  'dj-avox': { x: 35, y: 55 },
+  'benjamin-beats': { x: 65, y: 55 },
 };
 
 const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
