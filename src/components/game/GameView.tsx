@@ -235,7 +235,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         </div>
 
         <div className="p-2 md:p-8 bg-black/60 border-t border-white/5 shrink-0">
-          <div className="flex justify-center gap-2 md:gap-6">
+          <div className="flex justify-center gap-2 md:gap-4">
             {(['kick', 'clap', 'percs', 'misc'] as SoundType[]).map((type) => (
               <SamplerPad 
                 key={type} 

@@ -1,12 +1,14 @@
 
 "use client";
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
-export default function Neutralize() {
+export default function RedirectPage() {
   const router = useRouter();
+  const { levelId } = useParams();
   useEffect(() => {
-    router.replace('/');
-  }, [router]);
+    if (levelId) router.replace(`/session/${levelId}`);
+    else router.replace('/');
+  }, [router, levelId]);
   return null;
 }

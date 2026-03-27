@@ -36,13 +36,13 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
   }, [shortcut, handlePress]);
 
   return (
-    <div className="relative w-full max-w-[110px] aspect-square">
-      {/* Wave Flash Overlay - flashKey restarts animation */}
+    <div className="relative w-full max-w-[100px] aspect-square">
+      {/* Wave Flash Overlay */}
       {flash && (
         <div 
           key={flashKey} 
           className={cn(
-            "absolute inset-0 rounded-2xl pointer-events-none z-0 opacity-0",
+            "absolute inset-0 rounded-2xl pointer-events-none z-0",
             flash === 'hit' && "animate-wave-green",
             flash === 'miss' && "animate-wave-red"
           )} 
@@ -53,12 +53,12 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
         onPointerDown={(e) => handlePress(e)}
         className={cn(
           "relative z-10 flex flex-col items-center justify-center w-full h-full rounded-2xl border-2 transition-all duration-75 select-none touch-none",
-          isPressed ? "scale-95 brightness-125" : "scale-100 hover:brightness-110 active:scale-95"
+          isPressed ? "scale-90 brightness-125" : "scale-100 hover:brightness-110 active:scale-90"
         )}
         style={{
           borderColor: color,
-          backgroundColor: isPressed ? color : 'rgba(0,0,0,0.5)',
-          boxShadow: `0 0 15px ${color}33`,
+          backgroundColor: isPressed ? color : 'rgba(0,0,0,0.6)',
+          boxShadow: isPressed ? `0 0 20px ${color}` : `0 0 10px ${color}33`,
         }}
       >
         <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest opacity-40 mb-1">{shortcut}</span>
