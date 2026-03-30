@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
 import { Radio, RefreshCw, Loader2, Map as MapIcon, Zap } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
@@ -13,55 +13,50 @@ import { useAuth } from '@/firebase/provider';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 20, y: 12 },
-  'yoan-beats': { x: 80, y: 12 },
-  'noxxos': { x: 50, y: 18 },
-  'dave-beats': { x: 25, y: 35 },
-  'nintu-music': { x: 75, y: 35 },
-  'dj-avox': { x: 35, y: 50 },
-  'benjamin-beats': { x: 65, y: 50 },
+  'gabriel-beats': { x: 20, y: 15 },
+  'yoan-beats': { x: 80, y: 15 },
+  'noxxos': { x: 50, y: 22 },
+  'dave-beats': { x: 25, y: 40 },
+  'nintu-music': { x: 75, y: 40 },
+  'dj-avox': { x: 35, y: 58 },
+  'benjamin-beats': { x: 65, y: 58 },
 };
 
-const StudioHouseFrame = ({ color, studioName }: { color: string, studioName: string }) => (
-  <div className="relative flex flex-col items-center group cursor-pointer">
+const StudioCard = ({ color, studioName }: { color: string, studioName: string }) => (
+  <div className="relative group cursor-pointer">
+    {/* Main Square Container */}
     <div 
-      className="relative w-28 h-28 md:w-32 md:h-32 transition-all duration-500 group-hover:scale-110 group-hover:-rotate-1 overflow-hidden"
-      style={{ 
-        clipPath: 'polygon(50% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%)',
-        padding: '2px',
-        backgroundImage: `linear-gradient(90deg, ${color}, #222, ${color}, #222, ${color})`,
-        backgroundSize: '200% 100%',
-        animation: 'border-rotate 4s linear infinite'
-      }}
+      className="relative w-32 h-32 md:w-40 md:h-40 rounded-2xl border-4 transition-all duration-500 group-hover:scale-105 group-hover:-rotate-1 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+      style={{ borderColor: color }}
     >
-      <div 
-        className="w-full h-full bg-[#0a0a0a] overflow-hidden relative"
-        style={{ clipPath: 'polygon(50% 0%, 100% 35%, 100% 100%, 0% 100%, 0% 35%)' }}
-      >
-        <div 
-          className="absolute inset-0 blur-2xl opacity-10 group-hover:opacity-40 transition-opacity duration-700" 
-          style={{ backgroundColor: color }} 
-        />
-        
-        <Avatar className="w-full h-full rounded-none border-none bg-black">
+      <div className="w-full h-full bg-black relative">
+        <Avatar className="w-full h-full rounded-none border-none">
           <AvatarImage 
-            src={`https://picsum.photos/seed/${studioName}-dark/600/800`} 
-            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110 brightness-[0.3] contrast-[1.1] grayscale-[0.5]"
-            data-ai-hint="dark building"
+            src={`https://picsum.photos/seed/${studioName}/800/800`} 
+            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110 brightness-75 contrast-125"
+            data-ai-hint="studio building"
           />
-          <AvatarFallback className="bg-black text-white/10 font-black italic text-2xl rounded-none">
+          <AvatarFallback className="bg-muted text-white/10 font-black italic text-4xl">
             {studioName.substring(0,1).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
+        
+        {/* Overlay Sign / Shield */}
+        <div className="absolute inset-0 flex items-center justify-center p-4">
+          <div className="bg-black/80 backdrop-blur-md border-2 border-white/20 px-4 py-2 rounded-lg shadow-2xl transform -rotate-1 group-hover:rotate-0 transition-transform">
+            <h3 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-white text-center leading-none whitespace-nowrap">
+              {studioName}
+            </h3>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div className="mt-3 text-center pointer-events-none">
-      <h3 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-white/90 drop-shadow-[0_4px_10px_rgba(0,0,0,1)] group-hover:text-primary transition-colors leading-none">
-        {studioName}
-      </h3>
-    </div>
+    
+    {/* Subtle Glow Effect */}
+    <div 
+      className="absolute -inset-1 rounded-2xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500 pointer-events-none"
+      style={{ backgroundColor: color }}
+    />
   </div>
 );
 
@@ -186,30 +181,24 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none relative">
+      {/* Background Ambience */}
       <div className="absolute inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '60px 60px' }} />
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,51,153,0.1) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(255,51,153,0.1) 1.5px, transparent 1.5px)', backgroundSize: '180px 180px' }} />
       
-      <div className="absolute top-[20%] left-[10%] w-[40rem] h-[40rem] rounded-full border border-primary/5 animate-[ping_8s_linear_infinite] pointer-events-none" />
-      <div className="absolute bottom-[10%] right-[10%] w-[30rem] h-[30rem] rounded-full border border-accent/5 animate-[ping_12s_linear_infinite] pointer-events-none" />
-
       <header className="p-6 md:p-8 flex flex-col items-center z-50">
         <div className="gemini-border gemini-glow p-4 px-10 inline-block mb-4 bg-black/80 backdrop-blur-2xl">
           <div className="flex items-center gap-4">
             <Radio className="w-8 h-8 text-white animate-pulse" />
-            <div>
-              <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
-            </div>
+            <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
           </div>
         </div>
 
-        <div className="flex gap-4">
-          <div className="gemini-border gemini-glow-accent p-3 px-10 text-center bg-black/80 backdrop-blur-2xl border border-white/5">
-            <div className="text-white font-black text-2xl md:text-3xl leading-none tracking-tighter flex items-center gap-2">
-              <Zap className="w-5 h-5 text-[#FFEA00]" fill="currentColor" />
-              {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
-            </div>
-            <div className="text-[9px] uppercase opacity-50 mt-1 font-black tracking-[0.3em]">Street Credibility</div>
+        <div className="gemini-border gemini-glow-accent p-3 px-10 text-center bg-black/80 backdrop-blur-2xl border border-white/5">
+          <div className="text-white font-black text-2xl md:text-3xl leading-none tracking-tighter flex items-center gap-2">
+            <Zap className="w-5 h-5 text-[#FFEA00]" fill="currentColor" />
+            {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
           </div>
+          <div className="text-[9px] uppercase opacity-50 mt-1 font-black tracking-[0.3em]">Street Credibility</div>
         </div>
       </header>
 
@@ -233,7 +222,7 @@ export default function HomePage() {
                   }}
                 >
                   <Link href={`/studio/${studio.id}`}>
-                    <StudioHouseFrame color={studio.coverColor || '#FF3399'} studioName={studio.name} />
+                    <StudioCard color={studio.coverColor || '#FF3399'} studioName={studio.name} />
                   </Link>
                 </div>
               );
@@ -241,26 +230,29 @@ export default function HomePage() {
           </div>
         )}
 
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[480px] pt-4">
+        {/* Tactic Map (Mini-Map) at the bottom */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-6 max-w-[420px] pt-4">
           <div className="relative w-full h-56 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]">
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
             
+            {/* Pulsing Radar Visuals */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
               <div className="w-32 h-32 rounded-full border-4 border-white/40 animate-[ping_4s_linear_infinite]" />
               <div className="absolute inset-0 w-48 h-48 -translate-x-[15%] -translate-y-[15%] rounded-full border border-white/20 animate-[ping_6s_linear_infinite]" />
-              <div className="absolute inset-0 w-24 h-24 translate-x-[20%] translate-y-[20%] rounded-full bg-white/10 animate-pulse blur-xl" />
             </div>
 
-            <div className="absolute left-[8%] top-[15%] flex flex-col items-start gap-1 group transition-transform hover:scale-105 z-20">
-              <div className="w-3 h-3 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676] border border-white/50 animate-pulse" />
-              <span className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)]">BANTIGER</span>
+            {/* Massive District Labels */}
+            <div className="absolute left-[8%] top-[15%] flex flex-col items-start gap-1 z-20">
+              <div className="w-3 h-3 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676] animate-pulse" />
+              <span className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)]">BANTIGER</span>
             </div>
 
-            <div className="absolute right-[8%] bottom-[20%] flex flex-col items-end gap-1 transition-transform hover:scale-105 z-20">
-              <div className="w-3 h-3 rounded-full bg-[#FF3D00] shadow-[0_0_15px_#FF3D00] border border-white/50 animate-pulse" />
-              <span className="text-2xl md:text-5xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)] text-right">OBEREMMENTAL</span>
+            <div className="absolute right-[8%] bottom-[20%] flex flex-col items-end gap-1 z-20">
+              <div className="w-3 h-3 rounded-full bg-[#FF3D00] shadow-[0_0_15px_#FF3D00] animate-pulse" />
+              <span className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)] text-right">OBEREMMENTAL</span>
             </div>
 
+            {/* Scanner Sweep */}
             <div 
               className="absolute inset-0 origin-center animate-[spin_15s_linear_infinite] opacity-40 pointer-events-none" 
               style={{ 
@@ -268,7 +260,6 @@ export default function HomePage() {
               }}
             />
           </div>
-          
           <div className="mt-2 text-[8px] font-black uppercase tracking-[1em] text-primary/30 text-center italic leading-none pointer-events-none select-none">
             districts
           </div>
