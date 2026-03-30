@@ -192,14 +192,16 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     allPossible.sort((a, b) => a.step - b.step);
 
     if (level.difficulty === 1) {
-      const nextActiveNote = allPossible.find(n => !clearedNotesRef.current.has(n.noteId));
+      // Find the absolute next note that is not handled
+      const nextActiveNote = allPossible.find(n => !capturedNotes.has(n.noteId) && !missedNotes.has(n.noteId));
       const items = [];
-      if (nextActiveNote && nextActiveNote.relativeTime <= 1.5 && nextActiveNote.relativeTime >= -1.2) {
+      if (nextActiveNote && nextActiveNote.relativeTime <= 2.0 && nextActiveNote.relativeTime >= -1.2) {
         items.push(nextActiveNote);
       }
+      // Handled notes disappear very quickly for better flow
       const feedbackNotes = allPossible.filter(n => 
         (capturedNotes.has(n.noteId) || missedNotes.has(n.noteId)) && 
-        n.relativeTime > -0.3
+        n.relativeTime > -0.2
       );
       return [...items, ...feedbackNotes];
     }
@@ -281,7 +283,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           const isCaptured = capturedNotes.has(noteId);
           const isMissed = missedNotes.has(noteId);
           const feedbackColor = isCaptured ? '#00FF66' : isMissed ? '#FF3D00' : baseColor;
-          const pos = getPosition(`catcher-v11-${game.id}-${sound.id}-${step}`);
+          const pos = getPosition(`catcher-v12-${game.id}-${sound.id}-${step}`);
 
           return (
             <div
@@ -292,15 +294,15 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 handleCatch(noteId, sound); 
               }}
               className={cn(
-                "absolute z-30 pointer-events-auto cursor-pointer select-none touch-none flex items-center justify-center bg-transparent",
-                (isCaptured || isMissed) && "animate-out fade-out duration-300"
+                "absolute z-30 pointer-events-auto cursor-pointer select-none touch-none flex items-center justify-center bg-black/0",
+                (isCaptured || isMissed) && "animate-out fade-out duration-200"
               )}
               style={{ 
                 left: `${pos.x}%`, 
                 top: `${pos.y}%`,
                 transform: 'translate(-50%, -50%)',
-                width: '160px',
-                height: '160px',
+                width: '180px',
+                height: '180px',
               }}
             >
               <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
@@ -378,7 +380,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </main>
 
       <footer className="p-3 text-center shrink-0 z-50 bg-black/40 backdrop-blur-sm border-t border-white/5">
-        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Urban Sequential Interface v11.0</p>
+        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Urban Sequential Interface v12.0</p>
       </footer>
     </div>
   );
