@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Wir setzen einen neutralen User-Agent, um Blockaden durch Storage-Provider zu vermeiden
     const response = await fetch(url, {
       method: 'GET',
       headers: {

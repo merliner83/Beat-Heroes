@@ -31,15 +31,11 @@ const OBJECT_COLORS: Record<SoundType, string> = {
   misc: '#3838FA',
 };
 
-/**
- * Generates a stable random position based on a string seed.
- */
 const getPosition = (seed: string) => {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);
   }
-  // Stable fixed area (15% - 85% width, 20% - 75% height)
   const x = Math.abs((hash % 70) + 15); 
   const y = Math.abs(((hash >> 8) % 55) + 20); 
   return { x, y };
@@ -140,13 +136,9 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const handleCatch = useCallback((noteId: string, sound: Sound) => {
     if (!audioEngine || !isPlaying || clearedNotesRef.current.has(noteId)) return;
 
-    // Mark as captured for visual feedback
     setCapturedNotes(prev => new Set(prev).add(noteId));
-    
-    // Play sound immediately
     audioEngine.playOneShot(sound.sampleUrl);
     
-    // Fast feedback before clearing
     setTimeout(() => {
       clearedNotesRef.current.add(noteId);
       setScore(prev => {
@@ -165,7 +157,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           setCurrentTime(t);
           const secondsPerStep = (60 / bpm) / 4;
           const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
-          const missTolerance = 0.5;
+          const missTolerance = 0.4;
 
           let newMisses = 0;
           soundsWithPatterns.forEach(sound => {
@@ -245,8 +237,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             const noteTime = step * ((60 / bpm) / 4);
             const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
             
-            // Pop-up window: icons appear 0.8s before the beat and disappear 0.3s after
-            const isVisible = relativeTime < 0.8 && relativeTime > -0.2;
+            // Fixed display window - no movement
+            const isVisible = relativeTime < 0.8 && relativeTime > -0.15;
             if (!isVisible) return null;
 
             const Icon = OBJECT_ICONS[sound.type];
@@ -259,10 +251,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 key={noteId}
                 onClick={(e) => { e.stopPropagation(); handleCatch(noteId, sound); }}
                 className={cn(
-                  "absolute z-20 outline-none cursor-pointer transition-all duration-300 ease-out",
-                  isCaptured ? "scale-125 brightness-150" : "scale-100 active:scale-90 hover:scale-105",
-                  // Fast entrance animation via class
-                  relativeTime > 0.72 ? "opacity-0 scale-50" : "opacity-100 scale-100"
+                  "absolute z-20 outline-none cursor-pointer transition-none",
+                  "animate-in zoom-in duration-200" // Quick pop-up animation once
                 )}
                 style={{ 
                   left: `${pos.x}%`, 
@@ -271,31 +261,30 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 }}
               >
                 <div className="relative p-6">
-                  {/* Stable plastic Glow Effect */}
+                  {/* Stable Glow */}
                   <div 
                     className={cn(
-                      "absolute inset-0 rounded-full blur-2xl opacity-10 transition-all duration-300",
-                      isCaptured && "opacity-80 blur-3xl scale-125"
+                      "absolute inset-0 rounded-full blur-2xl opacity-10 transition-opacity duration-200",
+                      isCaptured && "opacity-80 scale-110"
                     )} 
                     style={{ backgroundColor: color }} 
                   />
                   
-                  {/* Icon with stable 3D depth */}
+                  {/* Plastic Icon */}
                   <div className="relative">
                     <Icon 
                       className={cn(
-                        "w-14 h-14 md:w-24 md:h-24",
-                        "filter drop-shadow-[0_12px_12px_rgba(0,0,0,0.9)]",
-                        "drop-shadow-[0_0_15px_var(--glow-color)]"
+                        "w-14 h-14 md:w-24 md:h-24 transition-colors duration-150",
+                        "filter drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)]"
                       )}
-                      style={{ 
-                        color: color,
-                        '--glow-color': isCaptured ? '#00E676' : `${color}33` 
-                      } as any} 
+                      style={{ color: color }} 
                     />
                     
-                    {/* Inner highlight for "polished plastic" look */}
-                    <div className="absolute top-2 left-2 w-1/4 h-1/4 bg-white/30 rounded-full blur-md pointer-events-none" />
+                    {/* Glossy Plastic Highlight - Fixed position */}
+                    <div className="absolute top-2 left-2 w-1/4 h-1/4 bg-white/40 rounded-full blur-md pointer-events-none" />
+                    
+                    {/* Inner Shadow Simulation */}
+                    <div className="absolute inset-0 bg-black/5 rounded-full blur-xl pointer-events-none" />
                   </div>
                 </div>
               </button>
