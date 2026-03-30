@@ -31,14 +31,14 @@ const OBJECT_COLORS: Record<SoundType, string> = {
   misc: '#3838FA',
 };
 
-// Generates a stable position based on a seed string
+// Generates a stable position based on a seed string, expanded to full screen range
 const getPosition = (seed: string) => {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const x = Math.abs((hash % 70) + 15); 
-  const y = Math.abs(((hash >> 8) % 55) + 20); 
+  const x = Math.abs((hash % 80) + 10); 
+  const y = Math.abs(((hash >> 8) % 80) + 10); 
   return { x, y };
 };
 
@@ -137,21 +137,22 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     }
   };
 
-  const handleCatch = useCallback((noteId: string, sound: Sound) => {
+  const handleCatch = useCallback((noteId: string, sound: Sound, relativeTime: number) => {
+    // Only allow hit if within the 1-second visibility window (0.5s before to 0.5s after)
     if (!audioEngine || !isPlaying || clearedNotesRef.current.has(noteId) || missedNotes.has(noteId) || capturedNotes.has(noteId)) return;
+    
+    if (Math.abs(relativeTime) > 0.5) return;
 
     setCapturedNotes(prev => new Set(prev).add(noteId));
     audioEngine.playOneShot(sound.sampleUrl);
     
-    // Finalize hit after brief success glow
-    setTimeout(() => {
-      clearedNotesRef.current.add(noteId);
-      setScore(prev => {
-        const nextHits = prev.hits + 1;
-        const total = nextHits + prev.misses;
-        return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
-      });
-    }, 200);
+    // Immediate state update for responsiveness
+    clearedNotesRef.current.add(noteId);
+    setScore(prev => {
+      const nextHits = prev.hits + 1;
+      const total = nextHits + prev.misses;
+      return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
+    });
   }, [isPlaying, missedNotes, capturedNotes]);
 
   useEffect(() => {
@@ -161,12 +162,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           const t = audioEngine.getCurrentTime();
           setCurrentTime(t);
           const secondsPerStep = (60 / bpm) / 4;
-          const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
           
-          // Icon is visible for exactly 1 second (0.5s before hit, 0.5s after)
-          const lookAhead = 0.5;
-          const lookBehind = -0.5;
-
           let newMissesCount = 0;
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
@@ -174,18 +170,11 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               const noteTime = step * secondsPerStep;
               const relativeTime = noteTime - (t - SYNC_OFFSET);
 
-              if (!clearedNotesRef.current.has(noteId) && !capturedNotes.has(noteId) && !missedNotes.has(noteId) && relativeTime < lookBehind) {
+              // Exactly 1 second window: vanishes at -0.5s
+              if (!clearedNotesRef.current.has(noteId) && !capturedNotes.has(noteId) && !missedNotes.has(noteId) && relativeTime < -0.5) {
                 setMissedNotes(prev => new Set(prev).add(noteId));
                 newMissesCount++;
-                
-                // Finalize miss after fade animation
-                setTimeout(() => {
-                  clearedNotesRef.current.add(noteId);
-                  setScore(prev => {
-                    const total = prev.hits + prev.misses;
-                    return { hits: prev.hits, misses: prev.misses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
-                  });
-                }, 400);
+                clearedNotesRef.current.add(noteId);
               }
             });
           });
@@ -252,32 +241,32 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         {isPlaying && soundsWithPatterns.map(sound => 
           sound.triggerSteps.map(step => {
             const noteId = `${sound.type}-${step}`;
-            if (clearedNotesRef.current.has(noteId)) return null;
+            if (clearedNotesRef.current.has(noteId) && !capturedNotes.has(noteId) && !missedNotes.has(noteId)) return null;
 
             const secondsPerStep = (60 / bpm) / 4;
             const noteTime = step * secondsPerStep;
             const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
             
-            // Exactly 1 second visibility window
+            // 1 second visibility window
             const isVisible = relativeTime < 0.5 && relativeTime > -0.5;
-            if (!isVisible) return null;
-
-            const Icon = OBJECT_ICONS[sound.type];
             const isCaptured = capturedNotes.has(noteId);
             const isMissed = missedNotes.has(noteId);
-            
+
+            // Hide if it's neither visible nor has a feedback state
+            if (!isVisible && !isCaptured && !isMissed) return null;
+
+            const Icon = OBJECT_ICONS[sound.type];
             const color = isCaptured ? '#00E676' : isMissed ? '#FF3D00' : OBJECT_COLORS[sound.type];
             const pos = getPosition(noteId);
             
             return (
               <button
                 key={noteId}
-                onPointerDown={(e) => { e.stopPropagation(); handleCatch(noteId, sound); }}
+                onPointerDown={(e) => { e.stopPropagation(); handleCatch(noteId, sound, relativeTime); }}
                 disabled={isCaptured || isMissed}
                 className={cn(
-                  "absolute z-20 outline-none cursor-pointer",
-                  "animate-in fade-in zoom-in-75 duration-200", // Fast pop-in, no slide
-                  isMissed && "opacity-0 scale-90 duration-300"
+                  "absolute z-20 outline-none cursor-pointer p-0 m-0 border-none bg-transparent",
+                  isMissed && "opacity-0 transition-opacity duration-300"
                 )}
                 style={{ 
                   left: `${pos.x}%`, 
@@ -285,33 +274,34 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                   transform: 'translate(-50%, -50%)',
                 }}
               >
-                <div className="relative p-6 md:p-10">
-                  {/* Stable Glow */}
+                <div className="relative p-6 md:p-10 flex items-center justify-center">
+                  {/* Stable Glow Shadow */}
                   <div 
                     className={cn(
                       "absolute inset-0 rounded-full blur-3xl",
-                      isCaptured ? "opacity-100 scale-125 bg-[#00E676]" : isMissed ? "opacity-60 scale-90 bg-[#FF3D00]" : "opacity-30"
+                      isCaptured ? "opacity-100 bg-[#00E676]" : "opacity-30"
                     )} 
-                    style={{ backgroundColor: !isCaptured && !isMissed ? color : undefined }} 
+                    style={{ backgroundColor: !isCaptured ? color : undefined }} 
                   />
                   
                   {/* Plastic 3D Icon Container */}
-                  <div className="relative pointer-events-none">
+                  <div className="relative flex items-center justify-center">
                     <Icon 
                       className={cn(
                         "w-16 h-16 md:w-32 md:h-32",
-                        "filter drop-shadow-[0_15px_15px_rgba(0,0,0,0.7)]"
+                        "filter drop-shadow-[0_12px_10px_rgba(0,0,0,0.8)]"
                       )}
                       style={{ color: color }} 
                     />
                     
-                    {/* Glossy Highlights & Shading */}
+                    {/* Glossy Plastic Highlights - Absolutely Still */}
                     {!isCaptured && !isMissed && (
-                      <>
-                        <div className="absolute top-[10%] left-[15%] w-[40%] h-[30%] bg-white/40 rounded-full blur-md opacity-70" />
-                        <div className="absolute bottom-[10%] right-[15%] w-[35%] h-[25%] bg-black/40 rounded-full blur-lg" />
-                        <div className="absolute inset-0 border-[3px] border-white/10 rounded-full pointer-events-none" />
-                      </>
+                      <div className="absolute inset-0 pointer-events-none">
+                        {/* Upper Highlight */}
+                        <div className="absolute top-[10%] left-[20%] w-[35%] h-[20%] bg-white/40 rounded-full blur-md" />
+                        {/* Inner Rim Light */}
+                        <div className="absolute inset-2 border-[2px] border-white/5 rounded-full" />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -337,7 +327,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
         {countIn !== null && (
           <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
-            <div className="text-[10rem] md:text-[15rem] font-black italic text-[#FFEA00] animate-in zoom-in-50 duration-200 drop-shadow-[0_0_60px_rgba(255,234,0,0.5)]">{countIn}</div>
+            <div className="text-[10rem] md:text-[15rem] font-black italic text-[#FFEA00] drop-shadow-[0_0_60px_rgba(255,234,0,0.5)]">{countIn}</div>
           </div>
         )}
 
