@@ -32,15 +32,15 @@ const OBJECT_COLORS: Record<SoundType, string> = {
 };
 
 /**
- * Generiert eine stabile Position über den gesamten Bildschirmbereich (10% bis 90%).
+ * Generiert eine stabile Position über den gesamten Bildschirmbereich (5% bis 95%).
  */
 const getPosition = (seed: string) => {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const x = Math.abs((hash % 80) + 10); 
-  const y = Math.abs(((hash >> 8) % 85) + 8); // Nutzt auch den unteren Bereich
+  const x = Math.abs((hash % 85) + 7); 
+  const y = Math.abs(((hash >> 8) % 85) + 7); 
   return { x, y };
 };
 
@@ -223,12 +223,11 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       });
     });
 
-    // Level 1: Streng sequenziell - Nur EIN Icon gleichzeitig
+    // Strenge sequenzielle Anzeige für Level 1: Nur EINE Note gleichzeitig
     if (level.difficulty === 1) {
       const activeNotes = allCandidates.filter(n => !n.isCaptured && !n.isMissed && n.isVisible);
       if (activeNotes.length > 0) {
-        // Zeige nur das aktuellste aktive Note + Fading-Notes
-        const currentTarget = activeNotes.sort((a, b) => Math.abs(a.relativeTime) - Math.abs(b.relativeTime))[0];
+        const currentTarget = activeNotes.sort((a, b) => a.relativeTime - b.relativeTime)[0];
         return allCandidates.filter(n => n.noteId === currentTarget.noteId || n.isCaptured || n.isMissed);
       }
       return allCandidates.filter(n => n.isCaptured || n.isMissed);
@@ -259,7 +258,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         </div>
       </header>
 
-      <main className="flex-1 relative gemini-border gemini-glow bg-black/40 overflow-hidden rounded-2xl md:rounded-[3rem]">
+      <main className="flex-1 relative bg-black/40 overflow-hidden rounded-2xl md:rounded-[3rem] perspective-[1000px]">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         {visibleNotes.map(({ noteId, sound, relativeTime, isVisible, isCaptured, isMissed }) => {
@@ -267,52 +266,59 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           const color = isCaptured ? '#00E676' : isMissed ? '#FF3D00' : OBJECT_COLORS[sound.type];
           const pos = getPosition(noteId);
           
+          // 3D-Skalierungs-Logik:
+          // relativeTime: 0.5 (klein, hinten) -> 0 (groß, vorne) -> -0.5 (wieder kleiner/weg)
+          const scale = isCaptured 
+            ? 1.4 // Treffer-Zoom
+            : 0.5 + (1 - Math.abs(relativeTime * 2)) * 0.7; // Fly-Through Animation
+          
+          const opacity = isCaptured || isMissed 
+            ? 0 
+            : Math.max(0, 1 - Math.abs(relativeTime * 2));
+
           return (
             <div
               key={noteId}
               className={cn(
-                "absolute z-20 pointer-events-auto transition-opacity duration-500",
-                isCaptured && "opacity-0",
+                "absolute z-20 pointer-events-auto transition-all duration-300 ease-out",
+                isCaptured && "scale-150 opacity-0",
                 isMissed && "opacity-0"
               )}
               style={{ 
                 left: `${pos.x}%`, 
                 top: `${pos.y}%`,
-                transform: 'translate(-50%, -50%)',
+                transform: `translate(-50%, -50%) scale(${scale})`,
+                opacity: isVisible ? opacity : 0,
               }}
             >
               <button
                 onPointerDown={(e) => { e.stopPropagation(); handleCatch(noteId, sound, relativeTime); }}
                 disabled={isCaptured || isMissed || !isVisible}
-                className={cn(
-                  "relative p-6 md:p-12 flex items-center justify-center outline-none border-none bg-transparent group cursor-pointer",
-                  !isCaptured && !isMissed && "animate-in zoom-in-75 duration-200"
-                )}
+                className="relative p-6 md:p-12 flex items-center justify-center outline-none border-none bg-transparent group cursor-pointer"
               >
-                {/* 3D Glossy Layer */}
+                {/* 3D Glossy Shadow & Glow */}
                 <div 
                   className={cn(
-                    "absolute inset-0 rounded-full blur-2xl opacity-20 transition-all duration-300",
-                    isCaptured && "bg-[#00E676] opacity-60 blur-3xl",
-                    isMissed && "bg-[#FF3D00] opacity-40 blur-xl"
+                    "absolute inset-0 rounded-full blur-2xl opacity-30 transition-all duration-300",
+                    isCaptured && "bg-[#00E676] opacity-80 blur-3xl"
                   )} 
-                  style={{ backgroundColor: (!isCaptured && !isMissed) ? color : undefined }} 
+                  style={{ backgroundColor: color }} 
                 />
                 
                 <div className="relative flex items-center justify-center">
                   <Icon 
                     className={cn(
-                      "w-20 h-20 md:w-32 md:h-32 transition-colors duration-200",
-                      "filter drop-shadow-[0_15px_15px_rgba(0,0,0,0.7)]"
+                      "w-24 h-24 md:w-40 md:h-40 transition-colors duration-200",
+                      "filter drop-shadow-[0_20px_25px_rgba(0,0,0,0.8)]"
                     )}
                     style={{ color: color }} 
                   />
                   
-                  {/* Haptic Highlight (Glossy Rim) */}
+                  {/* Haptische Highlights (Glossy) */}
                   {!isCaptured && !isMissed && (
                     <div className="absolute inset-0 pointer-events-none">
-                      <div className="absolute top-[15%] left-[20%] w-[25%] h-[15%] bg-white/40 rounded-full blur-md" />
-                      <div className="absolute bottom-[20%] right-[25%] w-[10%] h-[10%] bg-white/10 rounded-full blur-sm" />
+                      <div className="absolute top-[10%] left-[20%] w-[35%] h-[20%] bg-white/50 rounded-full blur-lg" />
+                      <div className="absolute bottom-[25%] right-[25%] w-[15%] h-[15%] bg-white/20 rounded-full blur-md" />
                     </div>
                   )}
                 </div>
@@ -328,7 +334,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 <Zap className="w-10 h-10 text-primary" />
               </div>
               <h2 className="text-2xl md:text-3xl font-black mb-2 uppercase italic tracking-tighter">Sample Catcher</h2>
-              <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40 mb-8">Catch the samples as they appear. One by one.</p>
+              <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40 mb-8">Catch the flying samples. Focus on the timing.</p>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-16 bg-white text-black font-black uppercase rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)]">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Sync"}
               </Button>
@@ -370,7 +376,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </main>
 
       <footer className="p-3 text-center shrink-0">
-        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10">Sequential Sample Sync active...</p>
+        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10">3D Sequential Sync active...</p>
       </footer>
     </div>
   );
