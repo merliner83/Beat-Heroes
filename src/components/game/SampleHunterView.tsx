@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -24,24 +25,20 @@ const OBJECT_ICONS: Record<SoundType, any> = {
 };
 
 const OBJECT_COLORS: Record<SoundType, string> = {
-  kick: '#FF3399', // Neon Magenta
-  clap: '#00FFFF', // Cyan
-  percs: '#FFEA00', // Neon Yellow
-  misc: '#3838FA', // Electric Blue
+  kick: '#FF3399',
+  clap: '#00FFFF',
+  percs: '#FFEA00',
+  misc: '#3838FA',
 };
 
-/**
- * Generiert eine absolut stabile Zufallsposition über den gesamten Bildschirm.
- */
 const getPosition = (seed: string) => {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = (hash << 5) - hash + seed.charCodeAt(i);
     hash |= 0;
   }
-  // Bereich: 10% bis 90% für volle Bildschirmabdeckung
   const x = Math.abs((hash % 80) + 10); 
-  const y = Math.abs(((hash >> 14) % 85) + 5); 
+  const y = Math.abs(((hash >> 14) % 80) + 10); 
   return { x, y };
 };
 
@@ -97,42 +94,15 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     preload();
   }, [sounds, game.backingTrackUrl]);
 
-  const startLevel = async () => {
-    if (!audioEngine) return;
-    setIsLoadingAudio(true);
-    try {
-      await audioEngine.resume();
-      await audioEngine.preloadAudio([game.backingTrackUrl || '', ...sounds.map(s => s.sampleUrl)]);
-
-      clearedNotesRef.current = new Set();
-      setCapturedNotes(new Set());
-      setMissedNotes(new Set());
-      setScore({ hits: 0, misses: 0, accuracy: 100 });
-      setIsFinished(false);
-      setHasAwardedPoints(false);
-      
-      const secondsPerBeat = 60 / bpm;
-      const now = audioEngine.getContextTime();
-      const actualStartTime = now + (4 * secondsPerBeat);
-      audioEngine.setStartTime(actualStartTime);
-
-      await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
-      setCountIn(null);
-      setIsPlaying(true);
-      await audioEngine.startBackingTrack(game.backingTrackUrl || '', actualStartTime);
-    } catch (e: any) {
-      toast({ variant: "destructive", title: "Audio Sync Failed" });
-    } finally {
-      setIsLoadingAudio(false);
-    }
-  };
-
   const handleCatch = useCallback((noteId: string, sound: Sound) => {
-    // Verhindere Mehrfachtreffer auf dasselbe Icon
     if (clearedNotesRef.current.has(noteId)) return;
     
     clearedNotesRef.current.add(noteId);
-    setCapturedNotes(prev => new Set(prev).add(noteId));
+    setCapturedNotes(prev => {
+      const next = new Set(prev);
+      next.add(noteId);
+      return next;
+    });
     
     if (audioEngine) {
       audioEngine.playOneShot(sound.sampleUrl);
@@ -160,10 +130,13 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               const noteTime = step * secondsPerStep;
               const relativeTime = noteTime - (t - SYNC_OFFSET);
 
-              // Wenn das Zeitfenster abgelaufen ist und nicht gefangen wurde
               if (!clearedNotesRef.current.has(noteId) && relativeTime < -0.8) {
                 clearedNotesRef.current.add(noteId);
-                setMissedNotes(prev => new Set(prev).add(noteId));
+                setMissedNotes(prev => {
+                  const next = new Set(prev);
+                  next.add(noteId);
+                  return next;
+                });
                 newMissesCount++;
               }
             });
@@ -219,25 +192,18 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     allPossible.sort((a, b) => a.step - b.step);
 
     if (level.difficulty === 1) {
-      // Level 1: Zeige IMMER NUR GENAU EIN Icon zur Zeit
       const nextActiveNote = allPossible.find(n => !clearedNotesRef.current.has(n.noteId));
-      
       const items = [];
-      // Zeige das nächste verfügbare Note, sobald es in sein Zeitfenster kommt
       if (nextActiveNote && nextActiveNote.relativeTime <= 1.2 && nextActiveNote.relativeTime >= -0.8) {
         items.push(nextActiveNote);
       }
-      
-      // Feedback-Icons (Hit/Miss) für einen kurzen Moment anzeigen
       const feedbackNotes = allPossible.filter(n => 
         (capturedNotes.has(n.noteId) || missedNotes.has(n.noteId)) && 
         n.relativeTime > -0.4
       );
-      
       return [...items, ...feedbackNotes];
     }
 
-    // Höhere Level: Mehrere Icons gleichzeitig möglich
     return allPossible.filter(n => {
       const isHandled = capturedNotes.has(n.noteId) || missedNotes.has(n.noteId);
       const isVisible = n.relativeTime <= 1.0 && n.relativeTime >= -0.6;
@@ -247,9 +213,35 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
   const bgUrl = game.backgroundImageUrl || 'https://picsum.photos/seed/beathero-boombox/1080/1920';
 
+  const startLevel = async () => {
+    if (!audioEngine) return;
+    setIsLoadingAudio(true);
+    try {
+      await audioEngine.resume();
+      await audioEngine.preloadAudio([game.backingTrackUrl || '', ...sounds.map(s => s.sampleUrl)]);
+      clearedNotesRef.current = new Set();
+      setCapturedNotes(new Set());
+      setMissedNotes(new Set());
+      setScore({ hits: 0, misses: 0, accuracy: 100 });
+      setIsFinished(false);
+      setHasAwardedPoints(false);
+      const secondsPerBeat = 60 / bpm;
+      const now = audioEngine.getContextTime();
+      const actualStartTime = now + (4 * secondsPerBeat);
+      audioEngine.setStartTime(actualStartTime);
+      await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
+      setCountIn(null);
+      setIsPlaying(true);
+      await audioEngine.startBackingTrack(game.backingTrackUrl || '', actualStartTime);
+    } catch (e) {
+      toast({ variant: "destructive", title: "Audio Sync Failed" });
+    } finally {
+      setIsLoadingAudio(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
-      {/* Immersiver Background-Fade */}
       <div 
         className="absolute inset-0 opacity-40 pointer-events-none bg-center bg-no-repeat transition-opacity duration-1000 z-10"
         style={{ 
@@ -263,7 +255,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       <header className="flex justify-between items-center mb-1 px-2 h-10 md:h-12 shrink-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center gap-2">
           <Link href={`/studio/${game.studioId}`}>
-            <ArrowLeft className="w-4 h-4 text-white/50 hover:text-white transition-colors" />
+            <ArrowLeft className="w-4 h-4 text-white/50 hover:text-white" />
           </Link>
           <div>
             <h1 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-primary leading-none">Sample Catcher</h1>
@@ -289,8 +281,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           const isCaptured = capturedNotes.has(noteId);
           const isMissed = missedNotes.has(noteId);
           const feedbackColor = isCaptured ? '#00FF66' : isMissed ? '#FF3D00' : baseColor;
-          
-          const pos = getPosition(`catcher-v9-${game.id}-${sound.id}-${step}`);
+          const pos = getPosition(`catcher-v10-${game.id}-${sound.id}-${step}`);
 
           return (
             <div
@@ -301,42 +292,35 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 handleCatch(noteId, sound); 
               }}
               className={cn(
-                "absolute z-30 pointer-events-auto cursor-pointer group select-none touch-none",
+                "absolute z-30 pointer-events-auto cursor-pointer select-none touch-none flex items-center justify-center",
                 (isCaptured || isMissed) && "animate-out fade-out duration-300"
               )}
               style={{ 
                 left: `${pos.x}%`, 
                 top: `${pos.y}%`,
                 transform: 'translate(-50%, -50%)',
+                width: '160px',
+                height: '160px',
               }}
             >
-              <div className="relative p-12 md:p-16 flex items-center justify-center bg-transparent">
-                {/* 3D Core Glow */}
+              <div className="relative w-full h-full flex items-center justify-center">
                 <div 
                   className={cn(
-                    "absolute inset-10 rounded-full blur-[30px] opacity-20 transition-all",
-                    isCaptured ? "bg-[#00FF66] opacity-80" : isMissed ? "bg-[#FF3D00] opacity-60" : ""
+                    "absolute inset-4 rounded-full blur-[40px] opacity-20 transition-all duration-75",
+                    isCaptured ? "bg-[#00FF66] opacity-100" : isMissed ? "bg-[#FF3D00] opacity-80" : ""
                   )} 
                   style={{ backgroundColor: isCaptured || isMissed ? undefined : baseColor }} 
                 />
                 
-                {/* Die plastische Icon-Hülle */}
                 <div className="relative flex items-center justify-center">
                   <Icon 
-                    className={cn(
-                      "w-24 h-24 md:w-36 md:h-36 transition-colors duration-100",
-                      "filter drop-shadow-[0_12px_30px_rgba(0,0,0,0.9)]"
-                    )}
+                    className="w-24 h-24 md:w-32 md:h-32 transition-colors duration-75"
                     strokeWidth={0.8}
-                    style={{ color: feedbackColor }} 
+                    style={{ color: feedbackColor, filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.8))' }} 
                   />
-                  
-                  {/* Statische Glanzlichter für haptischen Kunststoff-Effekt */}
                   {!isCaptured && !isMissed && (
-                    <div className="absolute inset-[-4px] pointer-events-none rounded-full overflow-hidden opacity-30">
-                      {/* Rim Light am oberen Rand */}
-                      <div className="absolute top-[8%] left-[25%] w-[50%] h-[20%] bg-gradient-to-b from-white/60 to-transparent rounded-full blur-[2px]" />
-                      <div className="absolute inset-0 border-[0.5px] border-white/20 rounded-full" />
+                    <div className="absolute inset-0 pointer-events-none opacity-40">
+                      <div className="absolute top-[10%] left-[20%] w-[60%] h-[25%] bg-gradient-to-b from-white/60 to-transparent rounded-full blur-[2px]" />
                     </div>
                   )}
                 </div>
@@ -394,7 +378,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </main>
 
       <footer className="p-3 text-center shrink-0 z-50 bg-black/40 backdrop-blur-sm border-t border-white/5">
-        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Urban Sequential Interface v9.0</p>
+        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Urban Sequential Interface v10.0</p>
       </footer>
     </div>
   );
