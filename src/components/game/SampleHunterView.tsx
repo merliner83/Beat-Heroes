@@ -1,8 +1,8 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Game, Level, Sound, GameScore, SoundType, TriggerPattern } from '@/lib/game/types';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Game, Level, Sound, GameScore, SoundType } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -13,7 +13,6 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
-const SYNC_OFFSET = 0.08;
 const PASS_THRESHOLD = 80;
 const DIFFICULTY_REWARDS: Record<number, number> = { 1: 50, 2: 100, 3: 200, 4: 1000 };
 
@@ -31,25 +30,19 @@ const OBJECT_COLORS: Record<SoundType, string> = {
   misc: '#3838FA',
 };
 
-const getPosition = (seed: string) => {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash << 5) - hash + seed.charCodeAt(i);
-    hash |= 0;
-  }
-  const x = Math.abs((hash % 80) + 10); 
-  const y = Math.abs(((hash >> 14) % 80) + 10); 
-  return { x, y };
-};
+interface GameNote {
+  id: string;
+  sound: Sound;
+  pos: { x: number, y: number };
+}
 
 interface SampleHunterViewProps {
   game: Game;
   level: Level;
   sounds: Sound[];
-  patterns: TriggerPattern[];
 }
 
-export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level, sounds, patterns }) => {
+export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level, sounds }) => {
   const db = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
@@ -57,33 +50,15 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [countIn, setCountIn] = useState<number | null>(null);
-  const [currentTime, setCurrentTime] = useState(0);
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
   const [hasAwardedPoints, setHasAwardedPoints] = useState(false);
   
-  const [capturedNotes, setCapturedNotes] = useState<Set<string>>(new Set());
-  const [missedNotes, setMissedNotes] = useState<Set<string>>(new Set());
+  const [activeNote, setActiveNote] = useState<GameNote | null>(null);
+  const [hitNotes, setHitNotes] = useState<Set<string>>(new Set());
+  const [sessionStartTime, setSessionStartTime] = useState<number>(0);
 
-  const frameRef = useRef<number>(null);
-  const clearedNotesRef = useRef<Set<string>>(new Set());
-
-  const bpm = game.bpm || 120;
-  const TOTAL_STEPS = 512;
-
-  const soundsWithPatterns = useMemo(() => {
-    return sounds.map(sound => {
-      const uniqueSteps = new Set<number>();
-      sound.patternIds?.forEach((pId, index) => {
-        const pattern = patterns.find(p => p.id === pId);
-        if (pattern) {
-          const offset = index * 128;
-          pattern.steps.forEach(s => uniqueSteps.add(s + offset));
-        }
-      });
-      return { ...sound, triggerSteps: Array.from(uniqueSteps).sort((a, b) => a - b) };
-    });
-  }, [sounds, patterns]);
+  const TOTAL_NOTES = 20; // Number of items to catch in one session
 
   useEffect(() => {
     const preload = async () => {
@@ -94,80 +69,76 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     preload();
   }, [sounds, game.backingTrackUrl]);
 
-  const handleCatch = useCallback((noteId: string, sound: Sound) => {
-    if (clearedNotesRef.current.has(noteId)) return;
-    
-    // Sofort als erledigt markieren
-    clearedNotesRef.current.add(noteId);
-    
-    // Visuelles Feedback
-    setCapturedNotes(prev => {
-      const next = new Set(prev);
-      next.add(noteId);
-      return next;
-    });
-    
-    // Audio Hit
-    if (audioEngine) {
-      audioEngine.playOneShot(sound.sampleUrl);
+  const spawnNextNote = useCallback(() => {
+    const totalHandled = score.hits + score.misses;
+    if (totalHandled >= TOTAL_NOTES) {
+      setIsPlaying(false);
+      setIsFinished(true);
+      audioEngine?.stop();
+      return;
     }
+
+    const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
+    const newNote: GameNote = {
+      id: `note-${Date.now()}-${Math.random()}`,
+      sound: randomSound,
+      pos: {
+        x: Math.random() * 80 + 10,
+        y: Math.random() * 80 + 10
+      }
+    };
+    setActiveNote(newNote);
+  }, [sounds, score.hits, score.misses]);
+
+  const handleCatch = useCallback((note: GameNote) => {
+    if (hitNotes.has(note.id)) return;
     
-    // Score
+    setHitNotes(prev => new Set(prev).add(note.id));
+    audioEngine?.playOneShot(note.sound.sampleUrl);
+    
     setScore(prev => {
       const nextHits = prev.hits + 1;
       const total = nextHits + prev.misses;
       return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
     });
-  }, []);
 
-  useEffect(() => {
-    if (isPlaying) {
-      const update = () => {
-        if (audioEngine) {
-          const t = audioEngine.getCurrentTime();
-          setCurrentTime(t);
-          const secondsPerStep = (60 / bpm) / 4;
-          
-          let newMissesCount = 0;
-          soundsWithPatterns.forEach(sound => {
-            sound.triggerSteps.forEach(step => {
-              const noteId = `${sound.type}-${step}`;
-              const noteTime = step * secondsPerStep;
-              const relativeTime = noteTime - (t - SYNC_OFFSET);
+    // Sofort das nächste spawnen
+    setTimeout(() => {
+      spawnNextNote();
+    }, 150);
+  }, [hitNotes, spawnNextNote]);
 
-              // Missed: Wenn die Zeit abgelaufen ist und noch nicht gecleared
-              if (!clearedNotesRef.current.has(noteId) && relativeTime < -1.0) {
-                clearedNotesRef.current.add(noteId);
-                setMissedNotes(prev => {
-                  const next = new Set(prev);
-                  next.add(noteId);
-                  return next;
-                });
-                newMissesCount++;
-              }
-            });
-          });
-
-          if (newMissesCount > 0) {
-            setScore(prev => {
-              const nextMisses = prev.misses + newMissesCount;
-              const total = prev.hits + nextMisses;
-              return { hits: prev.hits, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
-            });
-          }
-
-          if (t >= (TOTAL_STEPS / 4) * (60 / bpm) + 1.0) {
-            setIsPlaying(false);
-            setIsFinished(true);
-            audioEngine.stop();
-          }
-        }
-        frameRef.current = requestAnimationFrame(update);
-      };
-      frameRef.current = requestAnimationFrame(update);
+  const startLevel = async () => {
+    if (!audioEngine) return;
+    setIsLoadingAudio(true);
+    try {
+      await audioEngine.resume();
+      await audioEngine.preloadAudio([game.backingTrackUrl || '', ...sounds.map(s => s.sampleUrl)]);
+      
+      setHitNotes(new Set());
+      setScore({ hits: 0, misses: 0, accuracy: 100 });
+      setIsFinished(false);
+      setHasAwardedPoints(false);
+      
+      const bpm = game.bpm || 120;
+      const secondsPerBeat = 60 / bpm;
+      const now = audioEngine.getContextTime();
+      const actualStartTime = now + (4 * secondsPerBeat);
+      audioEngine.setStartTime(actualStartTime);
+      
+      await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
+      setCountIn(null);
+      setIsPlaying(true);
+      setSessionStartTime(Date.now());
+      
+      await audioEngine.startBackingTrack(game.backingTrackUrl || '', actualStartTime);
+      spawnNextNote();
+    } catch (e) {
+      toast({ variant: "destructive", title: "Audio Sync Failed" });
+    } finally {
+      setIsLoadingAudio(false);
     }
-    return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
-  }, [isPlaying, bpm, soundsWithPatterns]);
+  };
 
   useEffect(() => {
     if (isFinished && score.accuracy >= PASS_THRESHOLD && !hasAwardedPoints && user && db) {
@@ -182,86 +153,18 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     }
   }, [isFinished, score.accuracy, hasAwardedPoints, user, db, level]);
 
-  const visibleNotes = useMemo(() => {
-    if (!isPlaying) return [];
-    
-    const secondsPerStep = (60 / bpm) / 4;
-    const allPossible = [];
-    for (const sound of soundsWithPatterns) {
-      for (const step of sound.triggerSteps) {
-        const noteId = `${sound.type}-${step}`;
-        const noteTime = step * secondsPerStep;
-        const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
-        
-        allPossible.push({ noteId, sound, relativeTime, step });
-      }
-    }
-    allPossible.sort((a, b) => a.step - b.step);
-
-    // Level 1: Streng nacheinander
-    if (level.difficulty === 1) {
-      const nextActiveNote = allPossible.find(n => !capturedNotes.has(n.noteId) && !missedNotes.has(n.noteId));
-      const items = [];
-      
-      if (nextActiveNote && nextActiveNote.relativeTime <= 2.0 && nextActiveNote.relativeTime >= -1.0) {
-        items.push(nextActiveNote);
-      }
-      
-      // Feedback-Icons (kurz grün leuchten lassen)
-      const feedbackNotes = allPossible.filter(n => 
-        (capturedNotes.has(n.noteId) || missedNotes.has(n.noteId)) && 
-        n.relativeTime > -0.2 // Sehr schnelles Ausblenden nach Hit
-      );
-      
-      return [...items, ...feedbackNotes];
-    }
-
-    // Höhere Level: Mehrere gleichzeitig
-    return allPossible.filter(n => {
-      const isHandled = capturedNotes.has(n.noteId) || missedNotes.has(n.noteId);
-      const isVisibleWindow = n.relativeTime <= 1.2 && n.relativeTime >= -0.8;
-      return isVisibleWindow || (isHandled && n.relativeTime > -0.2);
-    });
-  }, [isPlaying, soundsWithPatterns, currentTime, bpm, capturedNotes, missedNotes, level.difficulty]);
-
-  const startLevel = async () => {
-    if (!audioEngine) return;
-    setIsLoadingAudio(true);
-    try {
-      await audioEngine.resume();
-      await audioEngine.preloadAudio([game.backingTrackUrl || '', ...sounds.map(s => s.sampleUrl)]);
-      clearedNotesRef.current = new Set();
-      setCapturedNotes(new Set());
-      setMissedNotes(new Set());
-      setScore({ hits: 0, misses: 0, accuracy: 100 });
-      setIsFinished(false);
-      setHasAwardedPoints(false);
-      const secondsPerBeat = 60 / bpm;
-      const now = audioEngine.getContextTime();
-      const actualStartTime = now + (4 * secondsPerBeat);
-      audioEngine.setStartTime(actualStartTime);
-      await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
-      setCountIn(null);
-      setIsPlaying(true);
-      await audioEngine.startBackingTrack(game.backingTrackUrl || '', actualStartTime);
-    } catch (e) {
-      toast({ variant: "destructive", title: "Audio Sync Failed" });
-    } finally {
-      setIsLoadingAudio(false);
-    }
-  };
-
   const bgUrl = game.backgroundImageUrl || 'https://picsum.photos/seed/beathero-boombox/1080/1920';
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
+      {/* Background with Vignette Fade */}
       <div 
         className="absolute inset-0 opacity-30 pointer-events-none bg-center bg-no-repeat z-10"
         style={{ 
           backgroundImage: `url(${bgUrl})`,
           backgroundSize: 'contain',
-          maskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 80%)',
-          WebkitMaskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 80%)'
+          maskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)',
+          WebkitMaskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)'
         }}
       />
       
@@ -286,69 +189,58 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </header>
 
       <main className="flex-1 relative overflow-hidden rounded-2xl md:rounded-[3rem] border border-white/5 z-20 pointer-events-auto">
-        {visibleNotes.map(({ noteId, sound, step }) => {
-          const Icon = OBJECT_ICONS[sound.type];
-          const baseColor = OBJECT_COLORS[sound.type];
-          const isCaptured = capturedNotes.has(noteId);
-          const isMissed = missedNotes.has(noteId);
-          
-          const feedbackColor = isCaptured ? '#00FF66' : isMissed ? '#FF3D00' : baseColor;
-          const pos = getPosition(`v15-${game.id}-${sound.id}-${step}`);
-
-          return (
-            <div
-              key={noteId}
-              onPointerDown={(e) => { 
-                e.preventDefault(); 
-                e.stopPropagation(); 
-                handleCatch(noteId, sound); 
-              }}
-              className={cn(
-                "absolute z-30 pointer-events-auto cursor-pointer select-none touch-none flex items-center justify-center transition-all duration-150",
-                (isCaptured || isMissed) && "scale-110 opacity-0"
-              )}
-              style={{ 
-                left: `${pos.x}%`, 
-                top: `${pos.y}%`,
-                transform: 'translate(-50%, -50%)',
-                width: '180px',
-                height: '180px',
-                // Ein unsichtbarer, massiver Hintergrund, damit der Klick überall greift
-                backgroundColor: 'rgba(255,255,255,0.01)'
-              }}
-            >
-              <div className="relative pointer-events-none flex items-center justify-center w-full h-full">
-                {/* Glow Background */}
-                <div 
-                  className={cn(
-                    "absolute inset-8 rounded-full blur-[40px] opacity-20 transition-all",
-                    isCaptured ? "bg-[#00FF66] opacity-100" : isMissed ? "bg-[#FF3D00] opacity-80" : ""
-                  )} 
-                  style={{ backgroundColor: isCaptured || isMissed ? undefined : baseColor }} 
-                />
+        {isPlaying && activeNote && (
+          <div
+            key={activeNote.id}
+            onPointerDown={(e) => { 
+              e.preventDefault(); 
+              e.stopPropagation(); 
+              handleCatch(activeNote); 
+            }}
+            className={cn(
+              "absolute z-30 pointer-events-auto cursor-pointer select-none touch-none flex items-center justify-center transition-all duration-150",
+              hitNotes.has(activeNote.id) && "scale-110 opacity-0"
+            )}
+            style={{ 
+              left: `${activeNote.pos.x}%`, 
+              top: `${activeNote.pos.y}%`,
+              transform: 'translate(-50%, -50%)',
+              width: '180px',
+              height: '180px',
+              backgroundColor: 'rgba(255,255,255,0.01)' // Transparent but solid for hit detection
+            }}
+          >
+            <div className="relative pointer-events-none flex items-center justify-center w-full h-full">
+              {/* Hit Highlight Glow */}
+              <div 
+                className={cn(
+                  "absolute inset-8 rounded-full blur-[40px] opacity-20 transition-all",
+                  hitNotes.has(activeNote.id) ? "bg-[#00FF66] opacity-100" : ""
+                )} 
+                style={{ backgroundColor: hitNotes.has(activeNote.id) ? undefined : OBJECT_COLORS[activeNote.sound.type] }} 
+              />
+              
+              {/* Glossy Icon Rendering */}
+              <div className="relative flex items-center justify-center">
+                {React.createElement(OBJECT_ICONS[activeNote.sound.type], {
+                  className: "w-24 h-24 md:w-32 md:h-32 transition-colors duration-75",
+                  strokeWidth: 0.8,
+                  style: { 
+                    color: hitNotes.has(activeNote.id) ? '#00FF66' : OBJECT_COLORS[activeNote.sound.type],
+                    filter: `drop-shadow(0 0 10px ${hitNotes.has(activeNote.id) ? '#00FF66' : OBJECT_COLORS[activeNote.sound.type]}44)`
+                  }
+                })}
                 
-                {/* 3D Icon Rendering */}
-                <div className="relative flex items-center justify-center">
-                  <Icon 
-                    className="w-24 h-24 md:w-32 md:h-32 transition-colors duration-75"
-                    strokeWidth={0.8}
-                    style={{ 
-                      color: feedbackColor, 
-                      filter: `drop-shadow(0 0 10px ${feedbackColor}44) drop-shadow(0 8px 16px rgba(0,0,0,0.8))` 
-                    }} 
-                  />
-                  
-                  {/* Glossy Rim Light Overlay */}
-                  {!isCaptured && !isMissed && (
-                    <div className="absolute inset-0 pointer-events-none opacity-40">
-                      <div className="absolute top-[5%] left-[15%] w-[70%] h-[30%] bg-gradient-to-b from-white/60 to-transparent rounded-full blur-[2px]" />
-                    </div>
-                  )}
-                </div>
+                {/* Static Glossy Rim Light */}
+                {!hitNotes.has(activeNote.id) && (
+                  <div className="absolute inset-0 pointer-events-none opacity-40">
+                    <div className="absolute top-[5%] left-[15%] w-[70%] h-[30%] bg-gradient-to-b from-white/60 to-transparent rounded-full blur-[1px]" />
+                  </div>
+                )}
               </div>
             </div>
-          );
-        })}
+          </div>
+        )}
 
         {/* HUD: Start Screen */}
         {!isPlaying && !isFinished && countIn === null && (
