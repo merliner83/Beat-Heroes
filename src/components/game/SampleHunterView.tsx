@@ -24,7 +24,6 @@ const OBJECT_ICONS: Record<SoundType, any> = {
   misc: Sparkles,
 };
 
-// Urban Neon Colors
 const OBJECT_COLORS: Record<SoundType, string> = {
   kick: '#FF00FF', // Neon Magenta
   clap: '#00FFFF', // Cyan
@@ -34,6 +33,7 @@ const OBJECT_COLORS: Record<SoundType, string> = {
 
 /**
  * Generates a stable random position across the entire screen area.
+ * Focus on avoiding repeated same-spot spawns.
  */
 const getPosition = (seed: string) => {
   let hash = 0;
@@ -41,8 +41,9 @@ const getPosition = (seed: string) => {
     hash = (hash << 5) - hash + seed.charCodeAt(i);
     hash |= 0;
   }
-  const x = Math.abs((hash % 85) + 7.5); 
-  const y = Math.abs(((hash >> 16) % 80) + 10); 
+  // Use bitwise ops to get distinct X and Y from one hash
+  const x = Math.abs((hash % 80) + 10); 
+  const y = Math.abs(((hash >> 16) % 85) + 7.5); 
   return { x, y };
 };
 
@@ -155,11 +156,11 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
               const noteTime = step * secondsPerStep;
-              // Larger window: 1.5 seconds visibility
+              // Larger window: 1.2 seconds visibility
               const relativeTime = noteTime - (t - SYNC_OFFSET);
 
-              // Count as miss if it's passed the 0.75s visibility window after the hit point
-              if (!clearedNotesRef.current.has(noteId) && relativeTime < -0.75) {
+              // Count as miss if it's passed the 0.6s visibility window after the hit point
+              if (!clearedNotesRef.current.has(noteId) && relativeTime < -0.6) {
                 setMissedNotes(prev => new Set(prev).add(noteId));
                 newMissesCount++;
                 clearedNotesRef.current.add(noteId);
@@ -175,7 +176,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             });
           }
 
-          if (t >= (TOTAL_STEPS / 4) * (60 / bpm) + 1.5) {
+          if (t >= (TOTAL_STEPS / 4) * (60 / bpm) + 1.2) {
             setIsPlaying(false);
             setIsFinished(true);
             audioEngine.stop();
@@ -207,8 +208,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     const secondsPerStep = (60 / bpm) / 4;
     const allNotes: any[] = [];
     
-    // Total visibility duration: 1.5 seconds (0.75s before, 0.75s after hit point)
-    const WINDOW_SIZE = 0.75;
+    // Total visibility duration: approx 1.2 seconds
+    const WINDOW_SIZE = 0.6;
 
     soundsWithPatterns.forEach(sound => {
       sound.triggerSteps.forEach(step => {
@@ -226,14 +227,13 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       });
     });
 
-    // Stricter sequential logic for Level 1
+    // Stricter sequential logic for Level 1: Find the NEXT available note
     if (level.difficulty === 1) {
       allNotes.sort((a, b) => a.step - b.step);
       
-      // Find the absolute first unhandled or recently handled note
       const firstActive = allNotes.find(n => {
         const isActive = !n.isCaptured && !n.isMissed && n.isWithinWindow;
-        const isShowingFeedback = (n.isCaptured || n.isMissed) && n.relativeTime > -0.5;
+        const isShowingFeedback = (n.isCaptured || n.isMissed) && n.relativeTime > -0.4;
         return isActive || isShowingFeedback;
       });
 
@@ -243,14 +243,16 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     return allNotes;
   }, [isPlaying, soundsWithPatterns, currentTime, bpm, capturedNotes, missedNotes, level.difficulty]);
 
+  const bgUrl = game.backgroundImageUrl || 'https://picsum.photos/seed/beathero-boombox/1080/1920';
+
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
-      {/* Background Image - Urban Graffiti Boombox (Not zoomed in) */}
+      {/* Dynamic Background Image - Urban Graffiti Boombox */}
       <div 
-        className="absolute inset-0 opacity-25 pointer-events-none bg-contain bg-center bg-no-repeat"
+        className="absolute inset-0 opacity-30 pointer-events-none bg-center bg-no-repeat transition-opacity duration-1000"
         style={{ 
-          backgroundImage: 'url(https://picsum.photos/seed/beathero-boombox/1080/1920)',
-          backgroundSize: 'contain'
+          backgroundImage: `url(${bgUrl})`,
+          backgroundSize: '85% auto' // Prevent zoom effect by containing but centered
         }}
         data-ai-hint="urban boombox"
       />
@@ -268,7 +270,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 bg-black/60 px-3 py-1 rounded-full border border-white/10 h-8 md:h-10 backdrop-blur-md">
             <Percent className="w-3 h-3 text-[#FFEA00]" />
-            <p className={cn("text-sm md:text-2xl font-black italic", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
+            <p className={cn("text-sm md:text-2xl font-black italic", score.accuracy >= PASS_THRESHOLD ? "text-[#00FF66]" : "text-[#FF3D00]")}>
               {score.accuracy}
             </p>
           </div>
@@ -282,7 +284,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           const Icon = OBJECT_ICONS[sound.type];
           const baseColor = OBJECT_COLORS[sound.type];
           const feedbackColor = isCaptured ? '#00FF66' : isMissed ? '#FF3D00' : baseColor;
-          const pos = getPosition(`${game.id}-${sound.id}-${step}`);
+          // Seed needs to be very distinct to ensure position jumps
+          const pos = getPosition(`hunter-${game.id}-${sound.id}-${step}`);
 
           return (
             <div
@@ -300,12 +303,12 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               <button
                 onPointerDown={(e) => { e.stopPropagation(); handleCatch(noteId, sound); }}
                 disabled={isCaptured || isMissed || !isWithinWindow}
-                className="relative p-10 md:p-14 flex items-center justify-center outline-none border-none bg-transparent group cursor-pointer"
+                className="relative p-12 md:p-16 flex items-center justify-center outline-none border-none bg-transparent group cursor-pointer"
               >
                 {/* 3D Static Glow Base */}
                 <div 
                   className={cn(
-                    "absolute inset-0 rounded-full blur-3xl transition-all duration-300",
+                    "absolute inset-4 rounded-full blur-3xl",
                     isCaptured ? "bg-[#00FF66] opacity-70" : isMissed ? "bg-[#FF3D00] opacity-70" : "bg-white/5 opacity-10"
                   )} 
                   style={{ backgroundColor: isCaptured || isMissed ? undefined : baseColor }} 
@@ -314,17 +317,17 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 <div className="relative flex items-center justify-center">
                   <Icon 
                     className={cn(
-                      "w-24 h-24 md:w-36 md:h-36 transition-colors duration-200",
+                      "w-24 h-24 md:w-40 md:h-40",
                       "filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)]"
                     )}
                     style={{ color: feedbackColor }} 
                   />
                   
-                  {/* Haptic Glossy Plastic Highlights */}
+                  {/* Haptic Glossy Highlights */}
                   {!isCaptured && !isMissed && (
                     <div className="absolute inset-0 pointer-events-none rounded-full overflow-hidden">
-                      <div className="absolute top-[5%] left-[15%] w-[70%] h-[35%] bg-gradient-to-b from-white/30 to-transparent rounded-full blur-[2px]" />
-                      <div className="absolute inset-0 border-[3px] border-white/10 rounded-full" />
+                      <div className="absolute top-[5%] left-[20%] w-[60%] h-[40%] bg-gradient-to-b from-white/40 to-transparent rounded-full blur-[3px]" />
+                      <div className="absolute inset-0 border-[4px] border-white/15 rounded-full" />
                     </div>
                   )}
                 </div>
@@ -382,7 +385,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </main>
 
       <footer className="p-3 text-center shrink-0 z-50 bg-black/40 backdrop-blur-sm border-t border-white/5">
-        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Urban Sequential Interface v3.0</p>
+        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Urban Sequential Interface v4.0</p>
       </footer>
     </div>
   );

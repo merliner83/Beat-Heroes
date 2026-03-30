@@ -87,7 +87,6 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     try {
-      // NOTE: We removed imageUrl from this list to prevent overwriting user-uploaded images.
       const studios = [
         { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#FF3399' },
         { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00' },
@@ -99,7 +98,6 @@ export default function HomePage() {
       ];
 
       for (const s of studios) {
-        // merge: true ensures we update name/desc but keep imageUrl if it already exists
         await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
@@ -124,7 +122,7 @@ export default function HomePage() {
       for (const studio of studios) {
         const gameConfigs = [
           { id: 'beat-hero', name: 'Beat Hero', type: 'rhythm-producer', bpm: 120 },
-          { id: 'sample-catcher', name: 'Sample Catcher', type: 'sample-hunter', bpm: 128 }
+          { id: 'sample-catcher', name: 'Sample Catcher', type: 'sample-hunter', bpm: 128, bg: 'https://picsum.photos/seed/beathero-boombox/1080/1920' }
         ];
 
         for (const config of gameConfigs) {
@@ -138,8 +136,9 @@ export default function HomePage() {
             type: config.type,
             bpm: config.bpm,
             difficulty: 1,
-            backingTrackUrl: backingTracks[trackIndex]
-          });
+            backingTrackUrl: backingTracks[trackIndex],
+            backgroundImageUrl: config.bg || null
+          }, { merge: true });
 
           for (let i = 1; i <= 4; i++) {
             const levelId = `${gameId}-lvl-${i}`;
@@ -148,7 +147,7 @@ export default function HomePage() {
               gameId: gameId,
               difficulty: i,
               name: i === 1 ? 'Initiation' : i === 2 ? 'The Pulse' : i === 3 ? 'Modular' : 'Master'
-            });
+            }, { merge: true });
 
             const soundSet = [
               { type: 'kick', sample: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg', p: 'pattern-p1' },
@@ -165,7 +164,7 @@ export default function HomePage() {
                 type: s.type,
                 sampleUrl: s.sample,
                 patternIds: [s.p]
-              });
+              }, { merge: true });
             }
           }
         }
