@@ -37,7 +37,6 @@ const getPosition = (seed: string) => {
     hash = (hash << 5) - hash + seed.charCodeAt(i);
     hash |= 0;
   }
-  // Höhere Varianz für die Verteilung über den gesamten Rack-Screen
   const x = Math.abs((hash % 80) + 10); 
   const y = Math.abs(((hash >> 14) % 80) + 10); 
   return { x, y };
@@ -129,10 +128,9 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
               const noteTime = step * secondsPerStep;
-              // Zeitfenster, wie lange ein Icon sichtbar bleibt (ca. 1.2s)
               const relativeTime = noteTime - (t - SYNC_OFFSET);
 
-              if (!clearedNotesRef.current.has(noteId) && relativeTime < -0.8) {
+              if (!clearedNotesRef.current.has(noteId) && relativeTime < -1.2) {
                 clearedNotesRef.current.add(noteId);
                 setMissedNotes(prev => {
                   const next = new Set(prev);
@@ -193,26 +191,23 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     }
     allPossible.sort((a, b) => a.step - b.step);
 
-    // Level 1: Streng sequenziell - immer nur EIN Icon anzeigen
     if (level.difficulty === 1) {
       const nextActiveNote = allPossible.find(n => !clearedNotesRef.current.has(n.noteId));
       const items = [];
-      if (nextActiveNote && nextActiveNote.relativeTime <= 1.2 && nextActiveNote.relativeTime >= -0.8) {
+      if (nextActiveNote && nextActiveNote.relativeTime <= 1.5 && nextActiveNote.relativeTime >= -1.2) {
         items.push(nextActiveNote);
       }
-      // Feedback-Icons (Hit/Miss) kurz stehen lassen
       const feedbackNotes = allPossible.filter(n => 
         (capturedNotes.has(n.noteId) || missedNotes.has(n.noteId)) && 
-        n.relativeTime > -0.4
+        n.relativeTime > -0.3
       );
       return [...items, ...feedbackNotes];
     }
 
-    // Höhere Level: Mehrere Icons gleichzeitig möglich
     return allPossible.filter(n => {
       const isHandled = capturedNotes.has(n.noteId) || missedNotes.has(n.noteId);
-      const isVisible = n.relativeTime <= 1.0 && n.relativeTime >= -0.6;
-      return isVisible || (isHandled && n.relativeTime > -0.3);
+      const isVisible = n.relativeTime <= 1.2 && n.relativeTime >= -0.8;
+      return isVisible || (isHandled && n.relativeTime > -0.2);
     });
   }, [isPlaying, soundsWithPatterns, currentTime, bpm, capturedNotes, missedNotes, level.difficulty]);
 
@@ -247,7 +242,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
-      {/* Immersiver Background-Fade */}
       <div 
         className="absolute inset-0 opacity-40 pointer-events-none bg-center bg-no-repeat transition-opacity duration-1000 z-10"
         style={{ 
@@ -287,7 +281,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           const isCaptured = capturedNotes.has(noteId);
           const isMissed = missedNotes.has(noteId);
           const feedbackColor = isCaptured ? '#00FF66' : isMissed ? '#FF3D00' : baseColor;
-          const pos = getPosition(`catcher-v10-${game.id}-${sound.id}-${step}`);
+          const pos = getPosition(`catcher-v11-${game.id}-${sound.id}-${step}`);
 
           return (
             <div
@@ -298,20 +292,18 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 handleCatch(noteId, sound); 
               }}
               className={cn(
-                "absolute z-30 pointer-events-auto cursor-pointer select-none touch-none flex items-center justify-center",
+                "absolute z-30 pointer-events-auto cursor-pointer select-none touch-none flex items-center justify-center bg-transparent",
                 (isCaptured || isMissed) && "animate-out fade-out duration-300"
               )}
               style={{ 
                 left: `${pos.x}%`, 
                 top: `${pos.y}%`,
                 transform: 'translate(-50%, -50%)',
-                // Massive Hitbox: Das gesamte 160x160 Quadrat ist klickbar
                 width: '160px',
                 height: '160px',
               }}
             >
-              <div className="relative w-full h-full flex items-center justify-center bg-transparent">
-                {/* Statische Glanz-Effekte & Haptischer Schatten */}
+              <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
                 <div 
                   className={cn(
                     "absolute inset-4 rounded-full blur-[40px] opacity-20 transition-all duration-75",
@@ -320,8 +312,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                   style={{ backgroundColor: isCaptured || isMissed ? undefined : baseColor }} 
                 />
                 
-                {/* Plastisches Icon-Design mit feinerem Strich */}
-                <div className="relative flex items-center justify-center pointer-events-none">
+                <div className="relative flex items-center justify-center">
                   <Icon 
                     className="w-24 h-24 md:w-32 md:h-32 transition-colors duration-75"
                     strokeWidth={0.8}
@@ -329,7 +320,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                   />
                   {!isCaptured && !isMissed && (
                     <div className="absolute inset-0 pointer-events-none opacity-40">
-                      {/* Statisches Glossy-Finish */}
                       <div className="absolute top-[10%] left-[20%] w-[60%] h-[25%] bg-gradient-to-b from-white/60 to-transparent rounded-full blur-[2px]" />
                     </div>
                   )}
@@ -388,7 +378,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </main>
 
       <footer className="p-3 text-center shrink-0 z-50 bg-black/40 backdrop-blur-sm border-t border-white/5">
-        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Urban Sequential Interface v10.0</p>
+        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Urban Sequential Interface v11.0</p>
       </footer>
     </div>
   );
