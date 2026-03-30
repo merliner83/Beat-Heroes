@@ -61,6 +61,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
   const [hasAwardedPoints, setHasAwardedPoints] = useState(false);
+  const [capturedNotes, setCapturedNotes] = useState<Set<string>>(new Set());
 
   const frameRef = useRef<number>(null);
   const clearedNotesRef = useRef<Set<string>>(new Set());
@@ -108,6 +109,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       await audioEngine.preloadAudio(urlsToLoad);
 
       clearedNotesRef.current = new Set();
+      setCapturedNotes(new Set());
       setScore({ hits: 0, misses: 0, accuracy: 100 });
       setIsFinished(false);
       setHasAwardedPoints(false);
@@ -135,14 +137,21 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const handleCatch = useCallback((noteId: string, sound: Sound) => {
     if (!audioEngine || !isPlaying || clearedNotesRef.current.has(noteId)) return;
 
-    clearedNotesRef.current.add(noteId);
+    // Mark as captured for visual feedback
+    setCapturedNotes(prev => new Set(prev).add(noteId));
+    
+    // Play sound immediately
     audioEngine.playOneShot(sound.sampleUrl);
     
-    setScore(prev => {
-      const nextHits = prev.hits + 1;
-      const total = nextHits + prev.misses;
-      return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
-    });
+    // Small delay before removing from screen for the green effect
+    setTimeout(() => {
+      clearedNotesRef.current.add(noteId);
+      setScore(prev => {
+        const nextHits = prev.hits + 1;
+        const total = nextHits + prev.misses;
+        return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
+      });
+    }, 100);
   }, [isPlaying]);
 
   useEffect(() => {
@@ -159,7 +168,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
-              if (!clearedNotesRef.current.has(noteId) && currentStep > step + missTolerance) {
+              if (!clearedNotesRef.current.has(noteId) && !capturedNotes.has(noteId) && currentStep > step + missTolerance) {
                 clearedNotesRef.current.add(noteId);
                 newMisses++;
               }
@@ -185,7 +194,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       frameRef.current = requestAnimationFrame(update);
     }
     return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
-  }, [isPlaying, bpm, soundsWithPatterns]);
+  }, [isPlaying, bpm, soundsWithPatterns, capturedNotes]);
 
   useEffect(() => {
     if (isFinished && score.accuracy >= PASS_THRESHOLD && !hasAwardedPoints && user && db) {
@@ -223,7 +232,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </header>
 
       <main className="flex-1 relative gemini-border gemini-glow bg-black/40 overflow-hidden rounded-2xl md:rounded-[2rem]">
-        {/* Background Grid for visual context */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         {isPlaying && soundsWithPatterns.map(sound => 
@@ -234,40 +242,51 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             const noteTime = step * ((60 / bpm) / 4);
             const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
             
-            // Show icon shortly before it's "due" and for a short window after
             if (relativeTime < -0.3 || relativeTime > 0.8) return null;
 
             const Icon = OBJECT_ICONS[sound.type];
-            const color = OBJECT_COLORS[sound.type];
+            const isCaptured = capturedNotes.has(noteId);
+            const color = isCaptured ? '#00E676' : OBJECT_COLORS[sound.type];
             const pos = getPosition(noteId);
             
-            // Opacity and scale based on timing
-            const scale = relativeTime > 0 ? 1 + (relativeTime * 0.5) : 1;
+            // Smoother scale
+            const scale = relativeTime > 0 ? 1 + (relativeTime * 0.2) : 1;
             const opacity = relativeTime < 0 ? 1 + relativeTime * 3 : 1;
 
             return (
               <button
                 key={noteId}
                 onClick={(e) => { e.stopPropagation(); handleCatch(noteId, sound); }}
-                className="absolute transition-transform duration-75 active:scale-75 cursor-pointer z-20 group"
+                className={cn(
+                  "absolute transition-all duration-150 active:scale-95 cursor-pointer z-20 group",
+                  isCaptured && "scale-125 brightness-150"
+                )}
                 style={{ 
                   left: `${pos.x}%`, 
                   top: `${pos.y}%`,
-                  transform: `translate(-50%, -50%) scale(${scale})`,
-                  opacity: Math.max(0, opacity),
+                  transform: `translate(-50%, -50%) scale(${isCaptured ? 1.5 : scale})`,
+                  opacity: isCaptured ? 1 : Math.max(0, opacity),
                   color: color,
                 }}
               >
                 <div className="relative">
                   <div 
-                    className="absolute inset-0 blur-xl opacity-30 group-hover:opacity-100 transition-opacity" 
+                    className={cn(
+                      "absolute inset-0 blur-xl opacity-30 group-hover:opacity-100 transition-opacity",
+                      isCaptured && "opacity-100 blur-2xl"
+                    )} 
                     style={{ backgroundColor: color }} 
                   />
-                  <Icon className="w-12 h-12 md:w-20 md:h-20 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" />
-                  {/* Visual Hint for timing */}
+                  <Icon className={cn(
+                    "w-12 h-12 md:w-20 md:h-20 transition-all drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]",
+                    isCaptured && "drop-shadow-[0_0_30px_#00E676]"
+                  )} />
                   <div 
-                    className="absolute inset-0 rounded-full border-2 animate-ping" 
-                    style={{ borderColor: color, opacity: 0.3 }} 
+                    className={cn(
+                      "absolute inset-0 rounded-full border-2",
+                      isCaptured ? "animate-none opacity-100 scale-150 border-[#00E676]" : "animate-ping opacity-30"
+                    )} 
+                    style={{ borderColor: isCaptured ? '#00E676' : color }} 
                   />
                 </div>
               </button>
