@@ -138,12 +138,12 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   };
 
   const handleCatch = useCallback((noteId: string, sound: Sound) => {
-    if (!audioEngine || !isPlaying || clearedNotesRef.current.has(noteId)) return;
+    if (!audioEngine || !isPlaying || clearedNotesRef.current.has(noteId) || missedNotes.has(noteId)) return;
 
     setCapturedNotes(prev => new Set(prev).add(noteId));
     audioEngine.playOneShot(sound.sampleUrl);
     
-    // Let the green flash stay for a moment before clearing
+    // Clear after a short delay for green flash
     setTimeout(() => {
       clearedNotesRef.current.add(noteId);
       setScore(prev => {
@@ -151,8 +151,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         const total = nextHits + prev.misses;
         return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
       });
-    }, 200);
-  }, [isPlaying]);
+    }, 150);
+  }, [isPlaying, missedNotes]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -162,13 +162,15 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           setCurrentTime(t);
           const secondsPerStep = (60 / bpm) / 4;
           const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
-          const missTolerance = 0.8; // Icons are available for roughly 1 second
+          
+          // Icons are visible for a shorter time to ensure sequential feeling
+          const missThreshold = 0.55; 
 
           let newMissesCount = 0;
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
-              if (!clearedNotesRef.current.has(noteId) && !capturedNotes.has(noteId) && !missedNotes.has(noteId) && currentStep > step + missTolerance) {
+              if (!clearedNotesRef.current.has(noteId) && !capturedNotes.has(noteId) && !missedNotes.has(noteId) && currentStep > step + missThreshold) {
                 // Trigger red fade out
                 setMissedNotes(prev => new Set(prev).add(noteId));
                 newMissesCount++;
@@ -252,8 +254,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             const noteTime = step * ((60 / bpm) / 4);
             const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
             
-            // Fixed display window: Icon appears roughly 0.15s before hit and stays for ~0.8s
-            const isVisible = relativeTime < 0.8 && relativeTime > -0.15;
+            // Tight visibility window: icons appear 0.15s before hit and vanish 0.5s after hit or if missed
+            const isVisible = relativeTime < 0.5 && relativeTime > -0.15;
             if (!isVisible) return null;
 
             const Icon = OBJECT_ICONS[sound.type];
@@ -271,7 +273,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 className={cn(
                   "absolute z-20 outline-none cursor-pointer transition-all duration-300",
                   "animate-in zoom-in-50 fade-in duration-150",
-                  isMissed && "scale-90 opacity-0"
+                  isMissed && "scale-90 opacity-0 bg-[#FF3D00]/20 rounded-full"
                 )}
                 style={{ 
                   left: `${pos.x}%`, 
@@ -279,18 +281,18 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                   transform: 'translate(-50%, -50%)',
                 }}
               >
-                <div className="relative p-8">
+                <div className="relative p-6 md:p-10">
                   {/* Stable Glow */}
                   <div 
                     className={cn(
                       "absolute inset-0 rounded-full blur-3xl transition-all duration-300",
-                      isCaptured ? "opacity-100 scale-125" : isMissed ? "opacity-40 scale-90" : "opacity-20"
+                      isCaptured ? "opacity-100 scale-125 bg-[#00E676]" : isMissed ? "opacity-60 scale-90 bg-[#FF3D00]" : "opacity-20"
                     )} 
-                    style={{ backgroundColor: color }} 
+                    style={{ backgroundColor: !isCaptured && !isMissed ? color : undefined }} 
                   />
                   
                   {/* Plastic 3D Icon Container */}
-                  <div className="relative">
+                  <div className="relative group">
                     <Icon 
                       className={cn(
                         "w-16 h-16 md:w-28 md:h-28 transition-colors duration-200",
@@ -299,11 +301,11 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                       style={{ color: color }} 
                     />
                     
-                    {/* Glossy Plastic Highlight (rim light) */}
-                    <div className="absolute top-2 left-2 w-1/3 h-1/3 bg-white/30 rounded-full blur-lg pointer-events-none" />
+                    {/* Glossy Rim Light Highlight */}
+                    <div className="absolute top-2 left-2 w-[40%] h-[40%] bg-white/40 rounded-full blur-md pointer-events-none" />
                     
-                    {/* Subtle internal depth */}
-                    <div className="absolute inset-0 bg-black/10 rounded-full blur-xl pointer-events-none" />
+                    {/* Bottom shading for depth */}
+                    <div className="absolute bottom-2 right-2 w-[30%] h-[30%] bg-black/30 rounded-full blur-lg pointer-events-none" />
                   </div>
                 </div>
               </button>
@@ -318,7 +320,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 <Zap className="w-10 h-10 text-primary animate-pulse" />
               </div>
               <h2 className="text-2xl md:text-3xl font-black mb-2 uppercase italic tracking-tighter">Sample Catcher</h2>
-              <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40 mb-8">Tap icons as they pop up to sync the groove</p>
+              <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40 mb-8">Catch one sample after another to sync the groove</p>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-16 bg-white text-black font-black uppercase rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)]">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Sync"}
               </Button>
