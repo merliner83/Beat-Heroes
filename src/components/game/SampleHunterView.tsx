@@ -36,8 +36,8 @@ const getPosition = (seed: string) => {
   for (let i = 0; i < seed.length; i++) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const x = Math.abs((hash % 80) + 10); // 10% to 90%
-  const y = Math.abs(((hash >> 8) % 70) + 15); // 15% to 85%
+  const x = Math.abs((hash % 70) + 15); // 15% to 85%
+  const y = Math.abs(((hash >> 8) % 60) + 20); // 20% to 80%
   return { x, y };
 };
 
@@ -150,7 +150,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         const total = nextHits + prev.misses;
         return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
       });
-    }, 150);
+    }, 200);
   }, [isPlaying]);
 
   useEffect(() => {
@@ -161,7 +161,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           setCurrentTime(t);
           const secondsPerStep = (60 / bpm) / 4;
           const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
-          const missTolerance = 1.0;
+          const missTolerance = 0.8; // Tightened tolerance for more challenge
 
           let newMisses = 0;
           soundsWithPatterns.forEach(sound => {
@@ -221,7 +221,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-full border border-white/10 h-8 md:h-10 backdrop-blur-md">
+          <div className="flex items-center gap-1.5 bg-black/60 px-3 py-1 rounded-full border border-white/10 h-8 md:h-10 backdrop-blur-md">
             <Percent className="w-3 h-3 text-[#FFEA00]" />
             <p className={cn("text-sm md:text-2xl font-black italic", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
               {score.accuracy}
@@ -230,8 +230,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         </div>
       </header>
 
-      <main className="flex-1 relative gemini-border gemini-glow bg-black/40 overflow-hidden rounded-2xl md:rounded-[2rem]">
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      <main className="flex-1 relative gemini-border gemini-glow bg-black/40 overflow-hidden rounded-2xl md:rounded-[3rem]">
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         {isPlaying && soundsWithPatterns.map(sound => 
           sound.triggerSteps.map(step => {
@@ -241,43 +241,60 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             const noteTime = step * ((60 / bpm) / 4);
             const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
             
-            if (relativeTime < -0.3 || relativeTime > 0.8) return null;
+            // Appearance window: show a bit earlier, hide a bit later
+            if (relativeTime < -0.2 || relativeTime > 0.6) return null;
 
             const Icon = OBJECT_ICONS[sound.type];
             const isCaptured = capturedNotes.has(noteId);
             const color = isCaptured ? '#00E676' : OBJECT_COLORS[sound.type];
             const pos = getPosition(noteId);
             
-            const opacity = relativeTime < 0 ? 1 + relativeTime * 3 : 1;
+            // Smooth fade in based on relative time
+            const opacity = relativeTime > 0.4 ? (0.6 - relativeTime) * 5 : relativeTime < 0 ? (0.2 + relativeTime) * 5 : 1;
 
             return (
               <button
                 key={noteId}
                 onClick={(e) => { e.stopPropagation(); handleCatch(noteId, sound); }}
                 className={cn(
-                  "absolute transition-all duration-150 active:scale-95 cursor-pointer z-20 group",
-                  isCaptured && "scale-110 brightness-150"
+                  "absolute transition-all duration-300 active:scale-95 cursor-pointer z-20 group outline-none",
+                  isCaptured ? "scale-110 brightness-150" : "hover:scale-105"
                 )}
                 style={{ 
                   left: `${pos.x}%`, 
                   top: `${pos.y}%`,
                   transform: 'translate(-50%, -50%)',
-                  opacity: isCaptured ? 1 : Math.max(0, opacity),
-                  color: color,
+                  opacity: isCaptured ? 1 : Math.min(1, Math.max(0, opacity)),
                 }}
               >
-                <div className="relative">
+                <div className="relative p-4">
+                  {/* Plastic Glow Effect */}
                   <div 
                     className={cn(
-                      "absolute inset-0 blur-xl opacity-20 group-hover:opacity-100 transition-opacity",
-                      isCaptured && "opacity-100 blur-2xl"
+                      "absolute inset-0 rounded-full blur-2xl opacity-10 transition-opacity duration-500",
+                      !isCaptured && "group-hover:opacity-40",
+                      isCaptured && "opacity-80 blur-3xl scale-125"
                     )} 
                     style={{ backgroundColor: color }} 
                   />
-                  <Icon className={cn(
-                    "w-12 h-12 md:w-20 md:h-20 transition-all drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]",
-                    isCaptured && "drop-shadow-[0_0_30px_#00E676]"
-                  )} />
+                  
+                  {/* Icon with 3D shadow depth */}
+                  <div className="relative">
+                    <Icon 
+                      className={cn(
+                        "w-12 h-12 md:w-20 md:h-20 transition-colors duration-200",
+                        "drop-shadow-[0_10px_10px_rgba(0,0,0,0.8)]", // Deep base shadow
+                        "filter drop-shadow-[0_0_15px_var(--glow-color)]" // Outer glow
+                      )}
+                      style={{ 
+                        color: color,
+                        '--glow-color': isCaptured ? '#00E676' : `${color}44` 
+                      } as any} 
+                    />
+                    
+                    {/* Inner highlight for "plastic" look */}
+                    <div className="absolute top-1 left-1 w-1/3 h-1/3 bg-white/20 rounded-full blur-md pointer-events-none" />
+                  </div>
                 </div>
               </button>
             );
@@ -287,12 +304,12 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-50 backdrop-blur-md">
             <Card className="p-8 bg-black/50 border-none gemini-border text-center max-w-sm mx-4 shadow-2xl">
-              <div className="bg-primary/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/30">
+              <div className="bg-primary/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/30 shadow-[0_0_30px_rgba(255,51,153,0.3)]">
                 <Zap className="w-10 h-10 text-primary animate-pulse" />
               </div>
               <h2 className="text-2xl md:text-3xl font-black mb-2 uppercase italic tracking-tighter">Sample Catcher</h2>
-              <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40 mb-8">Tap the icons to sync your session</p>
-              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-16 bg-white text-black font-black uppercase rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+              <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40 mb-8">Tap icons to capture the groove</p>
+              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-16 bg-white text-black font-black uppercase rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)]">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Sync"}
               </Button>
             </Card>
@@ -301,31 +318,31 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
         {countIn !== null && (
           <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
-            <div className="text-[10rem] md:text-[15rem] font-black italic text-[#FFEA00] animate-in zoom-in-50 duration-200 drop-shadow-[0_0_50px_rgba(255,234,0,0.3)]">{countIn}</div>
+            <div className="text-[10rem] md:text-[15rem] font-black italic text-[#FFEA00] animate-in zoom-in-50 duration-200 drop-shadow-[0_0_60px_rgba(255,234,0,0.5)]">{countIn}</div>
           </div>
         )}
 
         {isFinished && (
-          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-50 p-6 backdrop-blur-xl">
+          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-50 p-6 backdrop-blur-2xl">
             <div className="text-center space-y-8 max-w-sm">
               {score.accuracy >= PASS_THRESHOLD ? (
                 <>
                   <div className="relative inline-block">
-                    <Trophy className="w-24 h-24 text-[#FFEA00] mx-auto drop-shadow-[0_0_30px_rgba(255,234,0,0.5)]" />
+                    <Trophy className="w-24 h-24 text-[#FFEA00] mx-auto drop-shadow-[0_0_40px_rgba(255,234,0,0.6)]" />
                     <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-primary animate-bounce" />
                   </div>
                   <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">Session Synced</h2>
-                  <p className="text-3xl text-[#00E676] font-black italic">{score.accuracy}% Accuracy</p>
+                  <p className="text-3xl text-[#00E676] font-black italic">{score.accuracy}% Sync</p>
                 </>
               ) : (
                 <>
-                  <XCircle className="w-24 h-24 text-[#FF3D00] mx-auto drop-shadow-[0_0_30px_rgba(255,61,0,0.5)]" />
+                  <XCircle className="w-24 h-24 text-[#FF3D00] mx-auto drop-shadow-[0_0_40px_rgba(255,61,0,0.6)]" />
                   <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">Desynced</h2>
-                  <p className="text-xl opacity-60 uppercase tracking-[0.3em] font-black">Sync failed</p>
+                  <p className="text-xl opacity-60 uppercase tracking-[0.3em] font-black">Sync failure</p>
                 </>
               )}
               <div className="flex gap-4 pt-8">
-                <Button onClick={startLevel} variant="outline" className="flex-1 h-14 border-white/10 bg-white/5 hover:bg-white/10 text-xs md:text-sm uppercase font-black italic rounded-2xl transition-all">Retry</Button>
+                <Button onClick={startLevel} variant="outline" className="flex-1 h-14 border-white/10 bg-white/5 hover:bg-white/10 text-xs md:text-sm uppercase font-black italic rounded-2xl">Retry</Button>
                 <Link href={`/studio/${game.studioId}`} className="flex-1">
                   <Button className="w-full h-14 bg-white text-black font-black uppercase italic rounded-2xl hover:scale-105 active:scale-95 transition-all">Return</Button>
                 </Link>
@@ -336,7 +353,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </main>
 
       <footer className="p-3 text-center shrink-0">
-        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Press the samples to capture the groove</p>
+        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10">Synchronizing urban rhythm patterns...</p>
       </footer>
     </div>
   );
