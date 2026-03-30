@@ -29,18 +29,16 @@ const StudioCard = ({ color, studioName, imageUrl }: { color: string, studioName
       className="relative w-32 h-32 md:w-56 md:h-56 transition-all duration-700 ease-out group-hover:scale-110 group-hover:-translate-y-2 overflow-visible"
     >
       <div className="w-full h-full relative bg-transparent overflow-visible flex items-center justify-center">
-        {imageUrl ? (
+        {imageUrl && imageUrl.length > 0 ? (
           <img 
             src={imageUrl} 
             alt={studioName}
             className="object-contain w-full h-full transition-all duration-700 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] bg-transparent"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-transparent">
-             {/* Fallback visual if no image is provided - fully transparent */}
-             <div className="w-24 h-24 md:w-40 md:h-40 border-2 border-dashed border-white/5 rounded-full flex items-center justify-center">
-                <span className="text-white/10 font-black italic text-4xl">{studioName.substring(0,1).toUpperCase()}</span>
-             </div>
+          <div className="w-full h-full flex items-center justify-center bg-white/5 border-2 border-dashed border-white/10 rounded-3xl">
+             {/* Fallback visual if no image is provided */}
+             <span className="text-white/10 font-black italic text-4xl">{studioName.substring(0,1).toUpperCase()}</span>
           </div>
         )}
         
@@ -94,13 +92,13 @@ export default function HomePage() {
     if (!db) return;
     try {
       const studios = [
-        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#FF3399', imageUrl: '' },
-        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00', imageUrl: '' },
-        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#FF3D00', imageUrl: '' },
-        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap.', coverColor: '#FF9100', imageUrl: '' },
-        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep house and tech vibes.', coverColor: '#00E676', imageUrl: '' },
-        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', coverColor: '#00B0FF', imageUrl: '' },
-        { id: 'benjamin-beats', name: 'Benjamin Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00', imageUrl: '' }
+        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#FF3399', imageUrl: 'https://picsum.photos/seed/gab1/400/400' },
+        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00', imageUrl: 'https://picsum.photos/seed/yoan1/400/400' },
+        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#FF3D00', imageUrl: 'https://picsum.photos/seed/nox1/400/400' },
+        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap.', coverColor: '#FF9100', imageUrl: 'https://picsum.photos/seed/dave1/400/400' },
+        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep house and tech vibes.', coverColor: '#00E676', imageUrl: 'https://picsum.photos/seed/nintu1/400/400' },
+        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', coverColor: '#00B0FF', imageUrl: 'https://picsum.photos/seed/avox1/400/400' },
+        { id: 'benjamin-beats', name: 'Benjamin Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00', imageUrl: 'https://picsum.photos/seed/ben1/400/400' }
       ];
 
       for (const s of studios) {
