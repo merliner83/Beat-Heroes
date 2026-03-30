@@ -24,27 +24,26 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
 
 const StudioCard = ({ color, studioName }: { color: string, studioName: string }) => (
   <div className="relative group cursor-pointer">
-    {/* Main Square Container */}
+    {/* Main Image Container - Transparent and borderless */}
     <div 
-      className="relative w-32 h-32 md:w-40 md:h-40 rounded-2xl border-4 transition-all duration-500 group-hover:scale-105 group-hover:-rotate-1 overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
-      style={{ borderColor: color }}
+      className="relative w-32 h-32 md:w-44 md:h-44 transition-all duration-700 ease-out group-hover:scale-110 group-hover:-translate-y-2 overflow-visible"
     >
-      <div className="w-full h-full bg-black relative">
-        <Avatar className="w-full h-full rounded-none border-none">
+      <div className="w-full h-full relative">
+        <Avatar className="w-full h-full rounded-none border-none bg-transparent">
           <AvatarImage 
             src={`https://picsum.photos/seed/${studioName}/800/800`} 
-            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110 brightness-75 contrast-125"
+            className="object-contain w-full h-full transition-all duration-700 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
             data-ai-hint="studio building"
           />
-          <AvatarFallback className="bg-muted text-white/10 font-black italic text-4xl">
+          <AvatarFallback className="bg-transparent text-white/5 font-black italic text-4xl flex items-center justify-center">
             {studioName.substring(0,1).toUpperCase()}
           </AvatarFallback>
         </Avatar>
         
-        {/* Overlay Sign / Shield */}
-        <div className="absolute inset-0 flex items-center justify-center p-4">
-          <div className="bg-black/80 backdrop-blur-md border-2 border-white/20 px-4 py-2 rounded-lg shadow-2xl transform -rotate-1 group-hover:rotate-0 transition-transform">
-            <h3 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-white text-center leading-none whitespace-nowrap">
+        {/* Simple Centered Sign */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 p-2">
+          <div className="bg-white/95 backdrop-blur-md px-4 py-2 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.4)] border border-black/5 transform -rotate-1 group-hover:rotate-0 group-hover:scale-105 transition-all duration-500">
+            <h3 className="text-[10px] md:text-sm font-bold uppercase tracking-tight text-black text-center leading-none whitespace-nowrap">
               {studioName}
             </h3>
           </div>
@@ -52,9 +51,9 @@ const StudioCard = ({ color, studioName }: { color: string, studioName: string }
       </div>
     </div>
     
-    {/* Subtle Glow Effect */}
+    {/* Subtle Glow Effect centered under the "house" */}
     <div 
-      className="absolute -inset-1 rounded-2xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500 pointer-events-none"
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full blur-[60px] opacity-0 group-hover:opacity-20 transition-opacity duration-1000 pointer-events-none -z-10"
       style={{ backgroundColor: color }}
     />
   </div>
