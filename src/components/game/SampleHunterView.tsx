@@ -32,7 +32,7 @@ const OBJECT_COLORS: Record<SoundType, string> = {
 };
 
 /**
- * Generiert eine stabile Zufallsposition über den gesamten Bildschirmbereich (5% bis 95%).
+ * Generiert eine stabile Zufallsposition über den gesamten Bildschirmbereich (5% bis 92%).
  */
 const getPosition = (seed: string) => {
   let hash = 0;
@@ -40,9 +40,9 @@ const getPosition = (seed: string) => {
     hash = (hash << 5) - hash + seed.charCodeAt(i);
     hash |= 0;
   }
-  // X von 10% bis 90%, Y von 10% bis 92% (um den gesamten Screen zu füllen)
+  // X von 10% bis 90%, Y von 10% bis 90% (um den gesamten Screen zu füllen)
   const x = Math.abs((hash % 80) + 10); 
-  const y = Math.abs(((hash >> 16) % 82) + 8); 
+  const y = Math.abs(((hash >> 16) % 80) + 10); 
   return { x, y };
 };
 
@@ -155,10 +155,10 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
               const noteTime = step * secondsPerStep;
-              // Ein etwas größeres Fenster für entspanntes Gameplay (ca. 1.2s Gesamtdauer)
               const relativeTime = noteTime - (t - SYNC_OFFSET);
 
-              if (!clearedNotesRef.current.has(noteId) && relativeTime < -0.6) {
+              // 0.8s Zeitfenster nach dem Hit-Zeitpunkt bevor es als Miss zählt
+              if (!clearedNotesRef.current.has(noteId) && relativeTime < -0.8) {
                 setMissedNotes(prev => new Set(prev).add(noteId));
                 newMissesCount++;
                 clearedNotesRef.current.add(noteId);
@@ -212,7 +212,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         const noteTime = step * secondsPerStep;
         const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
         
-        // Sichtbarkeitsfenster von ca. 1.2 Sekunden
+        // Sichtbarkeitsfenster von ca. 1,2 Sekunden (0.6s vorher bis 0.6s nachher)
         const isWithinWindow = relativeTime <= 0.6 && relativeTime >= -0.6;
         const isCaptured = capturedNotes.has(noteId);
         const isMissed = missedNotes.has(noteId);
@@ -223,20 +223,19 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       });
     });
 
-    // Sortiere nach Zeitpunkt
     allNotes.sort((a, b) => a.step - b.step);
 
     if (level.difficulty === 1) {
-      // In Level 1: Zeige nur das ERSTE unbearbeitete Icon, das gerade im Fenster ist
-      const firstActive = allNotes.find(n => !n.isCaptured && !n.isMissed && n.isWithinWindow);
-      // Oder zeige das eine, das gerade als Feedback (Hit/Miss) angezeigt wird
-      const feedbackNote = allNotes.find(n => (n.isCaptured || n.isMissed));
+      // Level 1: Zeige IMMER NUR das nächste unbearbeitete Sample oder das aktuelle Feedback
+      // Priorität 1: Aktuelles Feedback (Hit/Miss) das gerade erst passiert ist
+      const feedbackNote = allNotes.find(n => (n.isCaptured || n.isMissed) && n.relativeTime > -0.5);
+      if (feedbackNote) return [feedbackNote];
+
+      // Priorität 2: Das nächste anstehende Sample
+      const firstNext = allNotes.find(n => !n.isCaptured && !n.isMissed && n.relativeTime <= 0.8 && n.relativeTime >= -0.6);
+      if (firstNext) return [firstNext];
       
-      const filtered = [];
-      if (feedbackNote) filtered.push(feedbackNote);
-      else if (firstActive) filtered.push(firstActive);
-      
-      return filtered;
+      return [];
     }
     
     return allNotes;
@@ -264,13 +263,12 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         </div>
       </header>
 
-      <main className="flex-1 relative bg-black/40 overflow-hidden rounded-2xl md:rounded-[3rem]">
+      <main className="flex-1 relative bg-black/40 overflow-hidden rounded-2xl md:rounded-[3rem] border border-white/5">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
 
         {visibleNotes.map(({ noteId, sound, isWithinWindow, isCaptured, isMissed, step }) => {
           const Icon = OBJECT_ICONS[sound.type];
           const color = isCaptured ? '#00E676' : isMissed ? '#FF3D00' : OBJECT_COLORS[sound.type];
-          // Stable Position pro Note
           const pos = getPosition(`${game.id}-${sound.id}-${step}`);
 
           return (
@@ -278,7 +276,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               key={noteId}
               className={cn(
                 "absolute z-20 pointer-events-auto",
-                // ABSOLUT KEINE Bewegung oder Skalierung während der Anzeige
                 (isCaptured || isMissed) && "animate-out fade-out duration-500 fill-mode-forwards"
               )}
               style={{ 
@@ -290,14 +287,14 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               <button
                 onPointerDown={(e) => { e.stopPropagation(); handleCatch(noteId, sound); }}
                 disabled={isCaptured || isMissed || !isWithinWindow}
-                className="relative p-8 md:p-12 flex items-center justify-center outline-none border-none bg-transparent group cursor-pointer"
+                className="relative p-10 md:p-14 flex items-center justify-center outline-none border-none bg-transparent group cursor-pointer"
               >
                 {/* Plastische Base-Schattierung (Statisch) */}
                 <div 
                   className={cn(
                     "absolute inset-0 rounded-full blur-3xl opacity-20 transition-all",
-                    isCaptured && "bg-[#00E676] opacity-70 scale-110",
-                    isMissed && "bg-[#FF3D00] opacity-70"
+                    isCaptured && "bg-[#00E676] opacity-60",
+                    isMissed && "bg-[#FF3D00] opacity-60"
                   )} 
                   style={{ backgroundColor: isCaptured || isMissed ? undefined : color }} 
                 />
@@ -305,19 +302,17 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 <div className="relative flex items-center justify-center">
                   <Icon 
                     className={cn(
-                      "w-32 h-32 md:w-44 md:h-44 transition-colors duration-150",
-                      "filter drop-shadow-[0_25px_50px_rgba(0,0,0,1)]"
+                      "w-24 h-24 md:w-36 md:h-36 transition-colors duration-150",
+                      "filter drop-shadow-[0_20px_40px_rgba(0,0,0,1)]"
                     )}
                     style={{ color: color }} 
                   />
                   
-                  {/* Glossy Kunststoff-Overlay (Statisch für 3D Look) */}
+                  {/* Glossy Kunststoff-Look: High-Gloss Highlight oben links */}
                   {!isCaptured && !isMissed && (
                     <div className="absolute inset-0 pointer-events-none rounded-full overflow-hidden">
-                      {/* Lichtreflex oben */}
-                      <div className="absolute top-[5%] left-[15%] w-[70%] h-[30%] bg-gradient-to-b from-white/40 to-transparent rounded-full blur-md" />
-                      {/* Seitliches Rim-Light */}
-                      <div className="absolute inset-0 border-[6px] border-white/5 rounded-full" />
+                      <div className="absolute top-[8%] left-[18%] w-[60%] h-[30%] bg-gradient-to-b from-white/30 to-transparent rounded-full blur-sm" />
+                      <div className="absolute inset-0 border-[4px] border-white/10 rounded-full" />
                     </div>
                   )}
                 </div>
@@ -328,7 +323,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-50 backdrop-blur-md">
-            <Card className="p-10 bg-black/50 border-none gemini-border text-center max-w-sm mx-4">
+            <Card className="p-10 bg-black/50 border-none gemini-border text-center max-w-sm mx-4 shadow-2xl">
               <div className="bg-primary/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/30">
                 <Zap className="w-8 h-8 text-primary" />
               </div>
@@ -375,7 +370,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </main>
 
       <footer className="p-3 text-center shrink-0">
-        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10">Zero Motion Interface • Sequential Sync</p>
+        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10">Full Screen Sequential Interface</p>
       </footer>
     </div>
   );
