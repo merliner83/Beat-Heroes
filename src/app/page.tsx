@@ -18,8 +18,8 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'noxxos': { x: 50, y: 22 },
   'dave-beats': { x: 25, y: 40 },
   'nintu-music': { x: 75, y: 40 },
-  'dj-avox': { x: 35, y: 55 },
-  'benjamin-beats': { x: 65, y: 55 },
+  'dj-avox': { x: 35, y: 62 },
+  'benjamin-beats': { x: 65, y: 62 },
 };
 
 const StudioCard = ({ color, studioName, imageUrl }: { color: string, studioName: string, imageUrl?: string }) => (
@@ -41,10 +41,10 @@ const StudioCard = ({ color, studioName, imageUrl }: { color: string, studioName
           </div>
         )}
         
-        {/* Simple Centered Sign */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 p-2 bg-transparent">
-          <div className="bg-white/95 backdrop-blur-md px-4 py-2 rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.6)] border border-black/5 transform -rotate-1 group-hover:rotate-0 group-hover:scale-105 transition-all duration-500">
-            <h3 className="text-[10px] md:text-sm font-bold uppercase tracking-tight text-black text-center leading-none whitespace-nowrap">
+        {/* Tag Label at the bottom - No background, white tag font */}
+        <div className="absolute inset-0 flex items-end justify-center pointer-events-none z-20 pb-4 bg-transparent">
+          <div className="transform transition-all duration-500 group-hover:scale-110">
+            <h3 className="text-xs md:text-xl font-black uppercase italic tracking-tighter text-white text-center leading-none whitespace-nowrap drop-shadow-[0_4px_12px_rgba(0,0,0,1)]">
               {studioName}
             </h3>
           </div>
