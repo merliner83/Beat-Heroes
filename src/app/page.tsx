@@ -87,17 +87,19 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     try {
+      // NOTE: We removed imageUrl from this list to prevent overwriting user-uploaded images.
       const studios = [
-        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#FF3399', imageUrl: 'https://picsum.photos/seed/gab1/400/400' },
-        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00', imageUrl: 'https://picsum.photos/seed/yoan1/400/400' },
-        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#FF3D00', imageUrl: 'https://picsum.photos/seed/nox1/400/400' },
-        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap.', coverColor: '#FF9100', imageUrl: 'https://picsum.photos/seed/dave1/400/400' },
-        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep house and tech vibes.', coverColor: '#00E676', imageUrl: 'https://picsum.photos/seed/nintu1/400/400' },
-        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', coverColor: '#00B0FF', imageUrl: 'https://picsum.photos/seed/avox1/400/400' },
-        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00', imageUrl: 'https://picsum.photos/seed/ben1/400/400' }
+        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#FF3399' },
+        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00' },
+        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#FF3D00' },
+        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap.', coverColor: '#FF9100' },
+        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep house and tech vibes.', coverColor: '#00E676' },
+        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', coverColor: '#00B0FF' },
+        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00' }
       ];
 
       for (const s of studios) {
+        // merge: true ensures we update name/desc but keep imageUrl if it already exists
         await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
@@ -228,7 +230,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Smaller Mini-Map */}
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-4 max-w-[280px] pt-2">
           <div className="relative w-full h-32 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden shadow-[0_0_60px_rgba(0,0,0,1)]">
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
