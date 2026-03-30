@@ -1,11 +1,12 @@
+
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Game, Level, Sound, GameScore, SoundType, TriggerPattern } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Trophy, Loader2, Sparkles, XCircle, Disc, Mic, Speaker, ArrowLeft, Percent } from 'lucide-react';
+import { Trophy, Loader2, Sparkles, XCircle, Disc, Mic, Speaker, ArrowLeft, Percent, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -30,6 +31,17 @@ const OBJECT_COLORS: Record<SoundType, string> = {
   misc: '#3838FA',
 };
 
+// Helper to generate a stable random position based on a string seed
+const getPosition = (seed: string) => {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const x = Math.abs((hash % 80) + 10); // 10% to 90%
+  const y = Math.abs(((hash >> 8) % 70) + 15); // 15% to 85%
+  return { x, y };
+};
+
 interface SampleHunterViewProps {
   game: Game;
   level: Level;
@@ -49,7 +61,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
   const [hasAwardedPoints, setHasAwardedPoints] = useState(false);
-  const [activeFlashes, setActiveFlashes] = useState<{ type: 'hit' | 'miss', key: number } | null>(null);
 
   const frameRef = useRef<number>(null);
   const clearedNotesRef = useRef<Set<string>>(new Set());
@@ -57,17 +68,19 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const bpm = game.bpm || 120;
   const TOTAL_STEPS = 512;
 
-  const soundsWithPatterns = sounds.map(sound => {
-    const uniqueSteps = new Set<number>();
-    sound.patternIds?.forEach((pId, index) => {
-      const pattern = patterns.find(p => p.id === pId);
-      if (pattern) {
-        const offset = index * 128;
-        pattern.steps.forEach(s => uniqueSteps.add(s + offset));
-      }
+  const soundsWithPatterns = useMemo(() => {
+    return sounds.map(sound => {
+      const uniqueSteps = new Set<number>();
+      sound.patternIds?.forEach((pId, index) => {
+        const pattern = patterns.find(p => p.id === pId);
+        if (pattern) {
+          const offset = index * 128;
+          pattern.steps.forEach(s => uniqueSteps.add(s + offset));
+        }
+      });
+      return { ...sound, triggerSteps: Array.from(uniqueSteps).sort((a, b) => a - b) };
     });
-    return { ...sound, triggerSteps: Array.from(uniqueSteps).sort((a, b) => a - b) };
-  });
+  }, [sounds, patterns]);
 
   useEffect(() => {
     const preload = async () => {
@@ -84,10 +97,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     };
     preload();
   }, [sounds, game.backingTrackUrl]);
-
-  const triggerFlash = (type: 'hit' | 'miss') => {
-    setActiveFlashes({ type, key: Date.now() });
-  };
 
   const startLevel = async () => {
     if (!audioEngine) return;
@@ -123,58 +132,18 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     }
   };
 
-  const handleCatch = useCallback(() => {
-    if (!audioEngine || !isPlaying) return;
-    const time = audioEngine.getCurrentTime();
-    const adjustedTime = time - SYNC_OFFSET;
-    const secondsPerStep = (60 / bpm) / 4;
-    const currentStep = adjustedTime / secondsPerStep;
-    const tolerance = 1.2;
+  const handleCatch = useCallback((noteId: string, sound: Sound) => {
+    if (!audioEngine || !isPlaying || clearedNotesRef.current.has(noteId)) return;
 
-    let closestNote: { id: string, sound: Sound } | null = null;
-    let minDiff = Infinity;
-
-    soundsWithPatterns.forEach(sound => {
-      sound.triggerSteps.forEach(step => {
-        const noteId = `${sound.type}-${step}`;
-        if (clearedNotesRef.current.has(noteId)) return;
-        const diff = Math.abs(currentStep - step);
-        if (diff <= tolerance && diff < minDiff) {
-          minDiff = diff;
-          closestNote = { id: noteId, sound };
-        }
-      });
+    clearedNotesRef.current.add(noteId);
+    audioEngine.playOneShot(sound.sampleUrl);
+    
+    setScore(prev => {
+      const nextHits = prev.hits + 1;
+      const total = nextHits + prev.misses;
+      return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
     });
-
-    if (closestNote) {
-      clearedNotesRef.current.add((closestNote as any).id);
-      audioEngine.playOneShot((closestNote as any).sound.sampleUrl);
-      triggerFlash('hit');
-      setScore(prev => {
-        const nextHits = prev.hits + 1;
-        const total = nextHits + prev.misses;
-        return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
-      });
-    } else {
-      triggerFlash('miss');
-      setScore(prev => {
-        const nextMisses = prev.misses + 1;
-        const total = prev.hits + nextMisses;
-        return { hits: prev.hits, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
-      });
-    }
-  }, [isPlaying, soundsWithPatterns, bpm]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space') {
-        e.preventDefault();
-        handleCatch();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleCatch]);
+  }, [isPlaying]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -184,13 +153,13 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           setCurrentTime(t);
           const secondsPerStep = (60 / bpm) / 4;
           const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
-          const tolerance = 1.2;
+          const missTolerance = 1.0;
 
           let newMisses = 0;
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
-              if (!clearedNotesRef.current.has(noteId) && currentStep > step + tolerance) {
+              if (!clearedNotesRef.current.has(noteId) && currentStep > step + missTolerance) {
                 clearedNotesRef.current.add(noteId);
                 newMisses++;
               }
@@ -232,19 +201,19 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   }, [isFinished, score.accuracy, hasAwardedPoints, user, db, level]);
 
   return (
-    <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none">
-      <header className="flex justify-between items-center mb-1 px-2 h-10 md:h-12 shrink-0">
+    <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body">
+      <header className="flex justify-between items-center mb-1 px-2 h-10 md:h-12 shrink-0 z-50">
         <div className="flex items-center gap-2">
           <Link href={`/studio/${game.studioId}`}>
-            <ArrowLeft className="w-4 h-4 text-white/50" />
+            <ArrowLeft className="w-4 h-4 text-white/50 hover:text-white transition-colors" />
           </Link>
           <div>
-            <h1 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-[#3838FA] leading-none">Hunter</h1>
+            <h1 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-primary leading-none">Sample Catcher</h1>
             <p className="text-[7px] md:text-[8px] opacity-40 uppercase font-bold tracking-widest line-clamp-1">{game.name}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-full border border-white/10 h-8 md:h-10">
+          <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-full border border-white/10 h-8 md:h-10 backdrop-blur-md">
             <Percent className="w-3 h-3 text-[#FFEA00]" />
             <p className={cn("text-sm md:text-2xl font-black italic", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
               {score.accuracy}
@@ -253,59 +222,69 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         </div>
       </header>
 
-      <main className="flex-1 relative gemini-border gemini-glow bg-black/40 overflow-hidden rounded-2xl md:rounded-[2rem]" onClick={handleCatch}>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#3838FA]/20 flex items-center justify-center">
-          <div className={cn(
-            "w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-white/10 flex items-center justify-center transition-all",
-            activeFlashes?.type === 'hit' && "bg-[#00E676]/20 border-[#00E676] scale-110",
-            activeFlashes?.type === 'miss' && "bg-[#FF3D00]/20 border-[#FF3D00] scale-90"
-          )}>
-            <div className="text-[8px] md:text-[10px] font-black uppercase tracking-widest opacity-40">Catch</div>
-          </div>
-        </div>
+      <main className="flex-1 relative gemini-border gemini-glow bg-black/40 overflow-hidden rounded-2xl md:rounded-[2rem]">
+        {/* Background Grid for visual context */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
         {isPlaying && soundsWithPatterns.map(sound => 
           sound.triggerSteps.map(step => {
-            const noteId = `hunter-${sound.type}-${step}`;
-            if (clearedNotesRef.current.has(`${sound.type}-${step}`)) return null;
+            const noteId = `${sound.type}-${step}`;
+            if (clearedNotesRef.current.has(noteId)) return null;
 
             const noteTime = step * ((60 / bpm) / 4);
             const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
-            if (relativeTime < -0.5 || relativeTime > 2.5) return null;
+            
+            // Show icon shortly before it's "due" and for a short window after
+            if (relativeTime < -0.3 || relativeTime > 0.8) return null;
 
             const Icon = OBJECT_ICONS[sound.type];
             const color = OBJECT_COLORS[sound.type];
+            const pos = getPosition(noteId);
             
-            const progress = relativeTime / 2.5; 
-            const angle = step * 137.5 + (1 - progress) * 360; 
-            const radius = progress * 400; 
-            
-            const x = Math.cos(angle * Math.PI / 180) * radius;
-            const y = Math.sin(angle * Math.PI / 180) * radius;
+            // Opacity and scale based on timing
+            const scale = relativeTime > 0 ? 1 + (relativeTime * 0.5) : 1;
+            const opacity = relativeTime < 0 ? 1 + relativeTime * 3 : 1;
 
             return (
-              <div
+              <button
                 key={noteId}
-                className="absolute top-1/2 left-1/2 transition-transform duration-75"
+                onClick={(e) => { e.stopPropagation(); handleCatch(noteId, sound); }}
+                className="absolute transition-transform duration-75 active:scale-75 cursor-pointer z-20 group"
                 style={{ 
-                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(${1 - progress * 0.5})`,
+                  left: `${pos.x}%`, 
+                  top: `${pos.y}%`,
+                  transform: `translate(-50%, -50%) scale(${scale})`,
+                  opacity: Math.max(0, opacity),
                   color: color,
-                  filter: `drop-shadow(0 0 10px ${color})`
                 }}
               >
-                <Icon className="w-8 h-8 md:w-12 md:h-12" />
-              </div>
+                <div className="relative">
+                  <div 
+                    className="absolute inset-0 blur-xl opacity-30 group-hover:opacity-100 transition-opacity" 
+                    style={{ backgroundColor: color }} 
+                  />
+                  <Icon className="w-12 h-12 md:w-20 md:h-20 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]" />
+                  {/* Visual Hint for timing */}
+                  <div 
+                    className="absolute inset-0 rounded-full border-2 animate-ping" 
+                    style={{ borderColor: color, opacity: 0.3 }} 
+                  />
+                </div>
+              </button>
             );
           })
         )}
 
         {!isPlaying && !isFinished && countIn === null && (
-          <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50">
-            <Card className="p-6 md:p-8 bg-black border-none gemini-border text-center max-w-xs mx-4">
-              <Sparkles className="w-10 h-10 md:w-12 md:h-12 text-[#3838FA] mx-auto mb-4 md:mb-6" />
-              <h2 className="text-xl md:text-2xl font-black mb-4 uppercase italic tracking-tighter">Hunter Mode</h2>
-              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-14 bg-white text-black font-black uppercase rounded-xl">
-                {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Hunt Samples"}
+          <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-50 backdrop-blur-md">
+            <Card className="p-8 bg-black/50 border-none gemini-border text-center max-w-sm mx-4 shadow-2xl">
+              <div className="bg-primary/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/30">
+                <Zap className="w-10 h-10 text-primary animate-pulse" />
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black mb-2 uppercase italic tracking-tighter">Sample Catcher</h2>
+              <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40 mb-8">Tap the icons to sync your session</p>
+              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-16 bg-white text-black font-black uppercase rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Sync"}
               </Button>
             </Card>
           </div>
@@ -313,30 +292,33 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
         {countIn !== null && (
           <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
-            <div className="text-[6rem] md:text-[10rem] font-black italic text-white/50">{countIn}</div>
+            <div className="text-[10rem] md:text-[15rem] font-black italic text-[#FFEA00] animate-in zoom-in-50 duration-200 drop-shadow-[0_0_50px_rgba(255,234,0,0.3)]">{countIn}</div>
           </div>
         )}
 
         {isFinished && (
-          <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-50 p-6">
-            <div className="text-center space-y-6">
+          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-50 p-6 backdrop-blur-xl">
+            <div className="text-center space-y-8 max-w-sm">
               {score.accuracy >= PASS_THRESHOLD ? (
                 <>
-                  <Trophy className="w-16 h-16 text-[#FFEA00] mx-auto" />
-                  <h2 className="text-3xl md:text-4xl font-black uppercase italic">Collected</h2>
-                  <p className="text-2xl text-[#00E676] font-black">{score.accuracy}% Sync</p>
+                  <div className="relative inline-block">
+                    <Trophy className="w-24 h-24 text-[#FFEA00] mx-auto drop-shadow-[0_0_30px_rgba(255,234,0,0.5)]" />
+                    <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-primary animate-bounce" />
+                  </div>
+                  <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">Session Synced</h2>
+                  <p className="text-3xl text-[#00E676] font-black italic">{score.accuracy}% Accuracy</p>
                 </>
               ) : (
                 <>
-                  <XCircle className="w-16 h-16 text-[#FF3D00] mx-auto" />
-                  <h2 className="text-3xl md:text-4xl font-black uppercase italic">Failed</h2>
-                  <p className="text-xl opacity-60 uppercase tracking-widest">Desynced</p>
+                  <XCircle className="w-24 h-24 text-[#FF3D00] mx-auto drop-shadow-[0_0_30px_rgba(255,61,0,0.5)]" />
+                  <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">Desynced</h2>
+                  <p className="text-xl opacity-60 uppercase tracking-[0.3em] font-black">Sync failed</p>
                 </>
               )}
               <div className="flex gap-4 pt-8">
-                <Button onClick={startLevel} variant="outline" className="flex-1 h-12 border-white/20">Retry</Button>
+                <Button onClick={startLevel} variant="outline" className="flex-1 h-14 border-white/10 bg-white/5 hover:bg-white/10 text-xs md:text-sm uppercase font-black italic rounded-2xl transition-all">Retry</Button>
                 <Link href={`/studio/${game.studioId}`} className="flex-1">
-                  <Button className="w-full h-12 bg-white text-black font-black">Return</Button>
+                  <Button className="w-full h-14 bg-white text-black font-black uppercase italic rounded-2xl hover:scale-105 active:scale-95 transition-all">Return</Button>
                 </Link>
               </div>
             </div>
@@ -344,8 +326,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         )}
       </main>
 
-      <footer className="p-2 text-center shrink-0">
-        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] opacity-20">Tap the center zone on beat</p>
+      <footer className="p-3 text-center shrink-0">
+        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/20">Press the samples to capture the groove</p>
       </footer>
     </div>
   );
