@@ -19,7 +19,7 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'dave-beats': { x: 25, y: 40 },
   'nintu-music': { x: 75, y: 40 },
   'dj-avox': { x: 35, y: 62 },
-  'benjamin-beats': { x: 65, y: 62 },
+  'nelio-beats': { x: 65, y: 62 },
 };
 
 const StudioCard = ({ color, studioName, imageUrl }: { color: string, studioName: string, imageUrl?: string }) => (
@@ -94,7 +94,7 @@ export default function HomePage() {
         { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap.', coverColor: '#FF9100', imageUrl: 'https://picsum.photos/seed/dave1/400/400' },
         { id: 'nintu-music', name: 'Nintu Music', description: 'Deep house and tech vibes.', coverColor: '#00E676', imageUrl: 'https://picsum.photos/seed/nintu1/400/400' },
         { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', coverColor: '#00B0FF', imageUrl: 'https://picsum.photos/seed/avox1/400/400' },
-        { id: 'benjamin-beats', name: 'Benjamin Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00', imageUrl: 'https://picsum.photos/seed/ben1/400/400' }
+        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00', imageUrl: 'https://picsum.photos/seed/ben1/400/400' }
       ];
 
       for (const s of studios) {
