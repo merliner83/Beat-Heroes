@@ -35,10 +35,10 @@ export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isA
       {/* Falling Notes */}
       {notes.map((step, idx) => {
         const noteTime = step * secondsPerStep;
-        // Visualisierung synchronisiert mit dem SYNC_OFFSET aus GameView
+        // Synchronisierte relative Zeit unter Einbeziehung des Latenz-Offsets
         const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
         
-        // Optimierte Culling-Distanz
+        // Culling: Verhindert das Rendern von Noten weit außerhalb des Sichtfelds
         if (relativeTime < -0.5 || relativeTime > 2.5) return null;
 
         const top = hitPosition - (relativeTime * speed) - 6;

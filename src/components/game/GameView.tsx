@@ -14,8 +14,8 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// Konstante für den Zeitversatz (Audio-Latenz-Korrektur) - 100ms für Web Audio optimiert
-export const SYNC_OFFSET = 0.1;
+// Konstante für den Zeitversatz - Auf 0.0 reduziert, da die Anzeige zuvor "zu spät" war
+export const SYNC_OFFSET = 0.0;
 
 const PAD_COLORS: Record<SoundType, string> = {
   kick: '#993DEB',
@@ -120,9 +120,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     const time = audioEngine.getCurrentTime();
     const secondsPerStep = (60 / bpm) / 4;
     
-    // Hit detection mit Berücksichtigung des Offsets
     const currentStep = (time - SYNC_OFFSET) / secondsPerStep;
-    const tolerance = 1.4; // Etwas großzügiger für besseren Flow
+    const tolerance = 1.4; 
     
     let hitNoteId: string | null = null;
     let minDiff = Infinity;
@@ -170,7 +169,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
       
       const secondsPerBeat = 60 / bpm;
       const now = audioEngine.getContextTime();
-      // Exakter Start nach dem Count-In
       const actualStartTime = now + (4 * secondsPerBeat);
       audioEngine.setStartTime(actualStartTime);
       

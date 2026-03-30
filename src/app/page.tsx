@@ -101,7 +101,7 @@ export default function HomePage() {
         await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
-      // Patterns mit 16 Steps Vorlauf (1 Takt)
+      // Patterns mit 16 Steps Vorlauf (1 Takt) für bessere Spielbarkeit
       const patterns = [
         { id: 'pattern-p1', name: 'Kick 32', steps: Array.from({ length: 112 }, (_, i) => (i * 4) + 16) },
         { id: 'pattern-p2', name: 'Clap 32', steps: Array.from({ length: 56 }, (_, i) => (i * 8) + 20) },
@@ -144,8 +144,11 @@ export default function HomePage() {
             backgroundImageUrl: config.bg || null
           };
 
+          // Nur überschreiben, wenn noch keine URL vorhanden ist
           if (!gameSnap.exists() || !gameSnap.data()?.backingTrackUrl) {
             gameData.backingTrackUrl = defaultBackingTrack;
+          } else {
+            gameData.backingTrackUrl = gameSnap.data()?.backingTrackUrl;
           }
 
           await setDoc(gameDocRef, gameData, { merge: true });
@@ -179,8 +182,11 @@ export default function HomePage() {
                 patternIds: [s.p]
               };
 
+              // Nur überschreiben, wenn noch keine URL vorhanden ist
               if (!soundSnap.exists() || !soundSnap.data()?.sampleUrl) {
                 soundData.sampleUrl = s.sample;
+              } else {
+                soundData.sampleUrl = soundSnap.data()?.sampleUrl;
               }
 
               await setDoc(soundDocRef, soundData, { merge: true });
