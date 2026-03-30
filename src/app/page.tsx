@@ -4,7 +4,7 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from '@/firebase';
-import { collection, query, doc, setDoc } from 'firebase/firestore';
+import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
 import { Radio, RefreshCw, Loader2, Map as MapIcon, Zap } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
@@ -109,7 +109,7 @@ export default function HomePage() {
       ];
 
       for (const p of patterns) {
-        await setDoc(doc(db, 'patterns', p.id), p);
+        await setDoc(doc(db, 'patterns', p.id), p, { merge: true });
       }
 
       const backingTracks = [
@@ -127,18 +127,28 @@ export default function HomePage() {
 
         for (const config of gameConfigs) {
           const gameId = `${studio.id}-${config.id}`;
-          const trackIndex = (studios.indexOf(studio) + gameConfigs.indexOf(config)) % backingTracks.length;
+          const gameDocRef = doc(db, 'games', gameId);
+          const gameSnap = await getDoc(gameDocRef);
           
-          await setDoc(doc(db, 'games', gameId), {
+          const trackIndex = (studios.indexOf(studio) + gameConfigs.indexOf(config)) % backingTracks.length;
+          const defaultBackingTrack = backingTracks[trackIndex];
+
+          const gameData: any = {
             id: gameId,
             studioId: studio.id,
             name: config.name,
             type: config.type,
             bpm: config.bpm,
             difficulty: 1,
-            backingTrackUrl: backingTracks[trackIndex],
             backgroundImageUrl: config.bg || null
-          }, { merge: true });
+          };
+
+          // Nur überschreiben, wenn noch kein backingTrackUrl vorhanden ist
+          if (!gameSnap.exists() || !gameSnap.data()?.backingTrackUrl) {
+            gameData.backingTrackUrl = defaultBackingTrack;
+          }
+
+          await setDoc(gameDocRef, gameData, { merge: true });
 
           for (let i = 1; i <= 4; i++) {
             const levelId = `${gameId}-lvl-${i}`;
@@ -158,20 +168,31 @@ export default function HomePage() {
 
             for (let j = 0; j < i; j++) {
               const s = soundSet[j];
-              await setDoc(doc(db, 'levels', levelId, 'sounds', `sound-${levelId}-${s.type}`), {
-                id: `sound-${levelId}-${s.type}`,
+              const soundId = `sound-${levelId}-${s.type}`;
+              const soundDocRef = doc(db, 'levels', levelId, 'sounds', soundId);
+              const soundSnap = await getDoc(soundDocRef);
+
+              const soundData: any = {
+                id: soundId,
                 levelId: levelId,
                 type: s.type,
-                sampleUrl: s.sample,
                 patternIds: [s.p]
-              }, { merge: true });
+              };
+
+              // Nur überschreiben, wenn noch kein sampleUrl vorhanden ist
+              if (!soundSnap.exists() || !soundSnap.data()?.sampleUrl) {
+                soundData.sampleUrl = s.sample;
+              }
+
+              await setDoc(soundDocRef, soundData, { merge: true });
             }
           }
         }
       }
 
-      toast({ title: "Radar Synced!", description: "All studios updated." });
+      toast({ title: "Radar Synced!", description: "All modules online. Audio paths preserved." });
     } catch (e) {
+      console.error(e);
       toast({ variant: "destructive", title: "Setup Failed" });
     }
   };

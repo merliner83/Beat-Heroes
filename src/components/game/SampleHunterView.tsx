@@ -37,8 +37,8 @@ const getPosition = (seed: string) => {
     hash = (hash << 5) - hash + seed.charCodeAt(i);
     hash |= 0;
   }
-  const x = Math.abs((hash % 85) + 7.5); 
-  const y = Math.abs(((hash >> 14) % 85) + 7.5); 
+  const x = Math.abs((hash % 80) + 10); 
+  const y = Math.abs(((hash >> 14) % 80) + 10); 
   return { x, y };
 };
 
@@ -97,22 +97,22 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const handleCatch = useCallback((noteId: string, sound: Sound) => {
     if (clearedNotesRef.current.has(noteId)) return;
     
-    // Mark as handled immediately to prevent double-hits
+    // Sofort als erledigt markieren
     clearedNotesRef.current.add(noteId);
     
-    // UI Feedback: Set as captured
+    // Visuelles Feedback
     setCapturedNotes(prev => {
       const next = new Set(prev);
       next.add(noteId);
       return next;
     });
     
-    // Audio: Play hit sound
+    // Audio Hit
     if (audioEngine) {
       audioEngine.playOneShot(sound.sampleUrl);
     }
     
-    // Update Score
+    // Score
     setScore(prev => {
       const nextHits = prev.hits + 1;
       const total = nextHits + prev.misses;
@@ -135,8 +135,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               const noteTime = step * secondsPerStep;
               const relativeTime = noteTime - (t - SYNC_OFFSET);
 
-              // If a note is too far in the past and hasn't been handled, mark as missed
-              if (!clearedNotesRef.current.has(noteId) && relativeTime < -1.2) {
+              // Missed: Wenn die Zeit abgelaufen ist und noch nicht gecleared
+              if (!clearedNotesRef.current.has(noteId) && relativeTime < -1.0) {
                 clearedNotesRef.current.add(noteId);
                 setMissedNotes(prev => {
                   const next = new Set(prev);
@@ -198,30 +198,29 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     }
     allPossible.sort((a, b) => a.step - b.step);
 
-    // In Level 1: Find only the NEXT unhandled note within the display window
+    // Level 1: Streng nacheinander
     if (level.difficulty === 1) {
       const nextActiveNote = allPossible.find(n => !capturedNotes.has(n.noteId) && !missedNotes.has(n.noteId));
       const items = [];
       
-      // Only show if it's within 2 seconds of the playhead
-      if (nextActiveNote && nextActiveNote.relativeTime <= 2.0 && nextActiveNote.relativeTime >= -1.2) {
+      if (nextActiveNote && nextActiveNote.relativeTime <= 2.0 && nextActiveNote.relativeTime >= -1.0) {
         items.push(nextActiveNote);
       }
       
-      // Also show recently captured/missed notes briefly for visual feedback
+      // Feedback-Icons (kurz grün leuchten lassen)
       const feedbackNotes = allPossible.filter(n => 
         (capturedNotes.has(n.noteId) || missedNotes.has(n.noteId)) && 
-        n.relativeTime > -0.3 // Disappear quickly after interaction
+        n.relativeTime > -0.2 // Sehr schnelles Ausblenden nach Hit
       );
       
       return [...items, ...feedbackNotes];
     }
 
-    // In higher levels: Show all notes within the window
+    // Höhere Level: Mehrere gleichzeitig
     return allPossible.filter(n => {
       const isHandled = capturedNotes.has(n.noteId) || missedNotes.has(n.noteId);
       const isVisibleWindow = n.relativeTime <= 1.2 && n.relativeTime >= -0.8;
-      return isVisibleWindow || (isHandled && n.relativeTime > -0.3);
+      return isVisibleWindow || (isHandled && n.relativeTime > -0.2);
     });
   }, [isPlaying, soundsWithPatterns, currentTime, bpm, capturedNotes, missedNotes, level.difficulty]);
 
@@ -261,8 +260,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         style={{ 
           backgroundImage: `url(${bgUrl})`,
           backgroundSize: 'contain',
-          maskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)',
-          WebkitMaskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)'
+          maskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 80%)',
+          WebkitMaskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 80%)'
         }}
       />
       
@@ -293,9 +292,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           const isCaptured = capturedNotes.has(noteId);
           const isMissed = missedNotes.has(noteId);
           
-          // feedbackColor is neon green on capture
           const feedbackColor = isCaptured ? '#00FF66' : isMissed ? '#FF3D00' : baseColor;
-          const pos = getPosition(`catcher-v12-${game.id}-${sound.id}-${step}`);
+          const pos = getPosition(`v15-${game.id}-${sound.id}-${step}`);
 
           return (
             <div
@@ -306,22 +304,24 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 handleCatch(noteId, sound); 
               }}
               className={cn(
-                "absolute z-30 pointer-events-auto cursor-pointer select-none touch-none flex items-center justify-center transition-opacity duration-200 bg-white/0",
-                (isCaptured || isMissed) && "animate-out fade-out duration-300"
+                "absolute z-30 pointer-events-auto cursor-pointer select-none touch-none flex items-center justify-center transition-all duration-150",
+                (isCaptured || isMissed) && "scale-110 opacity-0"
               )}
               style={{ 
                 left: `${pos.x}%`, 
                 top: `${pos.y}%`,
                 transform: 'translate(-50%, -50%)',
-                width: '200px', // Large hit area
-                height: '200px',
+                width: '180px',
+                height: '180px',
+                // Ein unsichtbarer, massiver Hintergrund, damit der Klick überall greift
+                backgroundColor: 'rgba(255,255,255,0.01)'
               }}
             >
-              <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
+              <div className="relative pointer-events-none flex items-center justify-center w-full h-full">
                 {/* Glow Background */}
                 <div 
                   className={cn(
-                    "absolute inset-4 rounded-full blur-[40px] opacity-20 transition-all duration-75",
+                    "absolute inset-8 rounded-full blur-[40px] opacity-20 transition-all",
                     isCaptured ? "bg-[#00FF66] opacity-100" : isMissed ? "bg-[#FF3D00] opacity-80" : ""
                   )} 
                   style={{ backgroundColor: isCaptured || isMissed ? undefined : baseColor }} 
@@ -331,8 +331,11 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 <div className="relative flex items-center justify-center">
                   <Icon 
                     className="w-24 h-24 md:w-32 md:h-32 transition-colors duration-75"
-                    strokeWidth={0.8} // Fine lines
-                    style={{ color: feedbackColor, filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.8))' }} 
+                    strokeWidth={0.8}
+                    style={{ 
+                      color: feedbackColor, 
+                      filter: `drop-shadow(0 0 10px ${feedbackColor}44) drop-shadow(0 8px 16px rgba(0,0,0,0.8))` 
+                    }} 
                   />
                   
                   {/* Glossy Rim Light Overlay */}
@@ -399,7 +402,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </main>
 
       <footer className="p-3 text-center shrink-0 z-50 bg-black/40 backdrop-blur-sm border-t border-white/5">
-        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Urban Sequential Interface v12.0</p>
+        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Urban Sequential Interface v15.0</p>
       </footer>
     </div>
   );
