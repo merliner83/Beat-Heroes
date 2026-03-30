@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -31,19 +32,16 @@ const OBJECT_COLORS: Record<SoundType, string> = {
 };
 
 /**
- * Generiert eine stabile, gut verteilte Position über den gesamten Bildschirmbereich (5% bis 95%).
- * Nutzt einen verbesserten Hash, um Clusterbildung bei sequenziellen IDs zu vermeiden.
+ * Generiert eine absolut stabile Position über den gesamten Bildschirmbereich (10% bis 90%).
  */
 const getPosition = (seed: string) => {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
-    // FNV-1a ähnlicher Hash für bessere Verteilung
-    hash = (hash ^ seed.charCodeAt(i)) * 16777619;
+    hash = (hash << 5) - hash + seed.charCodeAt(i);
+    hash |= 0;
   }
-  
-  // X und Y aus verschiedenen Bits des Hashes ableiten
-  const x = Math.abs((hash % 90) + 5); 
-  const y = Math.abs(((hash >> 16) % 85) + 10); // Etwas mehr Platz oben für den Header lassen
+  const x = Math.abs((hash % 80) + 10); 
+  const y = Math.abs(((hash >> 16) % 75) + 15); 
   return { x, y };
 };
 
@@ -129,12 +127,9 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     }
   };
 
-  const handleCatch = useCallback((noteId: string, sound: Sound, relativeTime: number) => {
+  const handleCatch = useCallback((noteId: string, sound: Sound) => {
     if (!audioEngine || !isPlaying || clearedNotesRef.current.has(noteId)) return;
     
-    // Trefferfenster: Während das Icon sichtbar ist
-    if (Math.abs(relativeTime) > 0.5) return;
-
     setCapturedNotes(prev => new Set(prev).add(noteId));
     audioEngine.playOneShot(sound.sampleUrl);
     
@@ -216,6 +211,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         const noteTime = step * secondsPerStep;
         const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
         
+        // 1 Sekunde Sichtbarkeit (0.5s vorher bis 0.5s nachher)
         const isVisible = relativeTime <= 0.5 && relativeTime >= -0.5;
         const isCaptured = capturedNotes.has(noteId);
         const isMissed = missedNotes.has(noteId);
@@ -261,67 +257,58 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         </div>
       </header>
 
-      <main className="flex-1 relative bg-black/40 overflow-hidden rounded-2xl md:rounded-[3rem] perspective-[1000px]">
+      <main className="flex-1 relative bg-black/40 overflow-hidden rounded-2xl md:rounded-[3rem]">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
-        {visibleNotes.map(({ noteId, sound, relativeTime, isVisible, isCaptured, isMissed }) => {
+        {visibleNotes.map(({ noteId, sound, isVisible, isCaptured, isMissed }) => {
           const Icon = OBJECT_ICONS[sound.type];
           const color = isCaptured ? '#00E676' : isMissed ? '#FF3D00' : OBJECT_COLORS[sound.type];
-          // game.id in den Seed einbeziehen für mehr Varianz zwischen Spielen
           const pos = getPosition(`${game.id}-${noteId}`);
-          
-          // 3D-Fly-Through Animation:
-          // Startet klein im Hintergrund (0.5s davor), wird groß beim Hit (0s), verschwindet wieder
-          const scale = isCaptured 
-            ? 1.4 // Treffer-Highlight-Zoom
-            : 0.5 + (1 - Math.abs(relativeTime * 2)) * 0.7; // Heranfliegen
-          
-          const opacity = isCaptured || isMissed 
-            ? 0 
-            : Math.max(0, 1 - Math.abs(relativeTime * 2));
 
           return (
             <div
               key={noteId}
               className={cn(
                 "absolute z-20 pointer-events-auto transition-all duration-300 ease-out",
-                isCaptured && "scale-150 opacity-0",
+                isCaptured && "scale-110 opacity-0",
                 isMissed && "opacity-0"
               )}
               style={{ 
                 left: `${pos.x}%`, 
                 top: `${pos.y}%`,
-                transform: `translate(-50%, -50%) scale(${scale})`,
-                opacity: isVisible ? opacity : 0,
+                transform: 'translate(-50%, -50%)',
+                opacity: isVisible ? 1 : 0,
               }}
             >
               <button
-                onPointerDown={(e) => { e.stopPropagation(); handleCatch(noteId, sound, relativeTime); }}
+                onPointerDown={(e) => { e.stopPropagation(); handleCatch(noteId, sound); }}
                 disabled={isCaptured || isMissed || !isVisible}
-                className="relative p-6 md:p-12 flex items-center justify-center outline-none border-none bg-transparent group cursor-pointer"
+                className="relative p-4 md:p-8 flex items-center justify-center outline-none border-none bg-transparent group cursor-pointer"
               >
-                {/* 3D Glossy Glow */}
+                {/* Plastischer Glow */}
                 <div 
                   className={cn(
-                    "absolute inset-0 rounded-full blur-2xl opacity-30 transition-all duration-300",
-                    isCaptured && "bg-[#00E676] opacity-80 blur-3xl"
+                    "absolute inset-0 rounded-full blur-2xl opacity-20 transition-all duration-300",
+                    isCaptured && "bg-[#00E676] opacity-60 blur-3xl",
+                    isMissed && "bg-[#FF3D00] opacity-60"
                   )} 
-                  style={{ backgroundColor: color }} 
+                  style={{ backgroundColor: isCaptured || isMissed ? undefined : color }} 
                 />
                 
                 <div className="relative flex items-center justify-center">
                   <Icon 
                     className={cn(
-                      "w-24 h-24 md:w-40 md:h-40 transition-colors duration-200",
-                      "filter drop-shadow-[0_20px_25px_rgba(0,0,0,0.8)]"
+                      "w-20 h-20 md:w-32 md:h-32 transition-colors duration-200",
+                      "filter drop-shadow-[0_15px_20px_rgba(0,0,0,0.6)]"
                     )}
                     style={{ color: color }} 
                   />
                   
-                  {/* Glossy Highlights für Plastik-Look */}
+                  {/* Plastisches Glossy Highlight */}
                   {!isCaptured && !isMissed && (
                     <div className="absolute inset-0 pointer-events-none">
-                      <div className="absolute top-[10%] left-[20%] w-[35%] h-[20%] bg-white/40 rounded-full blur-lg" />
+                      <div className="absolute top-[10%] left-[20%] w-[40%] h-[20%] bg-white/30 rounded-full blur-md" />
+                      <div className="absolute bottom-[10%] right-[10%] w-[20%] h-[10%] bg-white/10 rounded-full blur-sm" />
                     </div>
                   )}
                 </div>
@@ -332,12 +319,12 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-50 backdrop-blur-md">
-            <Card className="p-8 bg-black/50 border-none gemini-border text-center max-w-sm mx-4 shadow-2xl">
-              <div className="bg-primary/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/30">
-                <Zap className="w-10 h-10 text-primary" />
+            <Card className="p-8 bg-black/50 border-none gemini-border text-center max-w-sm mx-4">
+              <div className="bg-primary/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/30">
+                <Zap className="w-8 h-8 text-primary" />
               </div>
               <h2 className="text-2xl md:text-3xl font-black mb-2 uppercase italic tracking-tighter">Sample Catcher</h2>
-              <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40 mb-8">Catch the flying samples. Focus on the timing.</p>
+              <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40 mb-8">Catch the static samples. 1 second per hit.</p>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-16 bg-white text-black font-black uppercase rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)]">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Sync"}
               </Button>
@@ -356,14 +343,14 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             <div className="text-center space-y-8 max-w-sm">
               {score.accuracy >= PASS_THRESHOLD ? (
                 <>
-                  <Trophy className="w-24 h-24 text-[#FFEA00] mx-auto drop-shadow-[0_0_40px_rgba(255,234,0,0.6)]" />
-                  <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">Session Synced</h2>
+                  <Trophy className="w-20 h-20 text-[#FFEA00] mx-auto drop-shadow-[0_0_40px_rgba(255,234,0,0.4)]" />
+                  <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">Session Synced</h2>
                   <p className="text-3xl text-[#00E676] font-black italic">{score.accuracy}% Sync</p>
                 </>
               ) : (
                 <>
-                  <XCircle className="w-24 h-24 text-[#FF3D00] mx-auto drop-shadow-[0_0_40px_rgba(255,61,0,0.6)]" />
-                  <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">Desynced</h2>
+                  <XCircle className="w-20 h-20 text-[#FF3D00] mx-auto drop-shadow-[0_0_40px_rgba(255,61,0,0.4)]" />
+                  <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">Desynced</h2>
                   <p className="text-xl opacity-60 uppercase tracking-[0.3em] font-black">Sync failure</p>
                 </>
               )}
@@ -379,7 +366,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </main>
 
       <footer className="p-3 text-center shrink-0">
-        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10">Random 3D Fly-Through active...</p>
+        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10">Static Sequential Sync Active</p>
       </footer>
     </div>
   );
