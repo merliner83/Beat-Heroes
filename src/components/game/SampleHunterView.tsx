@@ -37,8 +37,9 @@ const getPosition = (seed: string) => {
   for (let i = 0; i < seed.length; i++) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const x = Math.abs((hash % 80) + 10); 
-  const y = Math.abs(((hash >> 8) % 80) + 10); 
+  // Full screen spread from 5% to 95%
+  const x = Math.abs((hash % 90) + 5); 
+  const y = Math.abs(((hash >> 8) % 90) + 5); 
   return { x, y };
 };
 
@@ -213,7 +214,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     }
   }, [isFinished, score.accuracy, hasAwardedPoints, user, db, level]);
 
-  // Logic to prevent multiple icons in Level 1
+  // Logic to prevent multiple icons in Level 1 and manage one-at-a-time flow
   const visibleNotes = useMemo(() => {
     if (!isPlaying) return [];
     
@@ -237,13 +238,17 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       });
     });
 
-    // Level 1: Only show the one closest to the hit point (relativeTime near 0)
+    // Level 1: Strictly show only one icon at a time
     if (level.difficulty === 1) {
       const activeNotes = notes.filter(n => !n.isCaptured && !n.isMissed);
-      if (activeNotes.length > 1) {
+      if (activeNotes.length > 0) {
+        // Find the one closest to its "now" moment
         const closest = activeNotes.sort((a, b) => Math.abs(a.relativeTime) - Math.abs(b.relativeTime))[0];
+        // Only return this one active note + any that are currently in their fade-out state
         return notes.filter(n => n.noteId === closest.noteId || n.isCaptured || n.isMissed);
       }
+      // If no active note is in its window, we still show the ones fading out
+      return notes.filter(n => n.isCaptured || n.isMissed);
     }
     
     return notes;
@@ -287,8 +292,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               onPointerDown={(e) => { e.stopPropagation(); handleCatch(noteId, sound, relativeTime); }}
               disabled={isCaptured || isMissed || !isVisible}
               className={cn(
-                "absolute z-20 outline-none cursor-pointer p-0 m-0 border-none bg-transparent",
-                isMissed && "opacity-0 transition-opacity duration-300"
+                "absolute z-20 outline-none cursor-pointer p-0 m-0 border-none bg-transparent transition-opacity duration-500",
+                (isCaptured || isMissed) ? "opacity-0" : "opacity-100"
               )}
               style={{ 
                 left: `${pos.x}%`, 
@@ -296,33 +301,34 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 transform: 'translate(-50%, -50%)',
               }}
             >
-              <div className="relative p-6 md:p-10 flex items-center justify-center">
-                {/* Glow Shadow */}
+              <div className="relative p-6 md:p-12 flex items-center justify-center">
+                {/* 3D Glow / Shadow Layer */}
                 <div 
                   className={cn(
-                    "absolute inset-0 rounded-full blur-3xl",
-                    isCaptured ? "opacity-100 bg-[#00E676]" : isMissed ? "opacity-40 bg-[#FF3D00]" : "opacity-30"
+                    "absolute inset-0 rounded-full blur-3xl opacity-30",
+                    isCaptured && "opacity-60 bg-[#00E676]",
+                    isMissed && "opacity-40 bg-[#FF3D00]"
                   )} 
                   style={{ backgroundColor: (!isCaptured && !isMissed) ? color : undefined }} 
                 />
                 
-                {/* 3D Icon Container */}
+                {/* Plastic Icon Container */}
                 <div className="relative flex items-center justify-center">
                   <Icon 
                     className={cn(
-                      "w-16 h-16 md:w-32 md:h-32",
-                      "filter drop-shadow-[0_12px_10px_rgba(0,0,0,0.8)]"
+                      "w-20 h-20 md:w-40 md:h-40",
+                      "filter drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)]"
                     )}
                     style={{ color: color }} 
                   />
                   
-                  {/* Glossy Plastic Highlights */}
+                  {/* Glossy Plastic Highlights (Static) */}
                   {!isCaptured && !isMissed && (
                     <div className="absolute inset-0 pointer-events-none">
-                      {/* Upper Rim Light */}
-                      <div className="absolute top-[5%] left-[15%] w-[40%] h-[25%] bg-white/30 rounded-full blur-md" />
-                      {/* Inner Shine */}
-                      <div className="absolute inset-4 border-[2px] border-white/5 rounded-full" />
+                      {/* Top Rim Highlight */}
+                      <div className="absolute top-[8%] left-[20%] w-[30%] h-[20%] bg-white/40 rounded-full blur-md" />
+                      {/* Secondary Side Reflection */}
+                      <div className="absolute top-[40%] right-[10%] w-[10%] h-[30%] bg-white/10 rounded-full blur-sm" />
                     </div>
                   )}
                 </div>
