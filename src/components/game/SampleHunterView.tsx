@@ -58,7 +58,14 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const [hitNotes, setHitNotes] = useState<Set<string>>(new Set());
   const [sessionStartTime, setSessionStartTime] = useState<number>(0);
 
-  const TOTAL_NOTES = 20; // Number of items to catch in one session
+  const TOTAL_NOTES = 20; 
+
+  // Stoppt den Sound beim Verlassen der Komponente
+  useEffect(() => {
+    return () => {
+      audioEngine?.stop();
+    };
+  }, []);
 
   useEffect(() => {
     const preload = async () => {
@@ -102,7 +109,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
     });
 
-    // Sofort das nächste spawnen
     setTimeout(() => {
       spawnNextNote();
     }, 150);
@@ -157,7 +163,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
-      {/* Background with Vignette Fade */}
       <div 
         className="absolute inset-0 opacity-30 pointer-events-none bg-center bg-no-repeat z-10"
         style={{ 
@@ -207,11 +212,10 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               transform: 'translate(-50%, -50%)',
               width: '180px',
               height: '180px',
-              backgroundColor: 'rgba(255,255,255,0.01)' // Transparent but solid for hit detection
+              backgroundColor: 'rgba(255,255,255,0.01)'
             }}
           >
             <div className="relative pointer-events-none flex items-center justify-center w-full h-full">
-              {/* Hit Highlight Glow */}
               <div 
                 className={cn(
                   "absolute inset-8 rounded-full blur-[40px] opacity-20 transition-all",
@@ -220,7 +224,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 style={{ backgroundColor: hitNotes.has(activeNote.id) ? undefined : OBJECT_COLORS[activeNote.sound.type] }} 
               />
               
-              {/* Glossy Icon Rendering */}
               <div className="relative flex items-center justify-center">
                 {React.createElement(OBJECT_ICONS[activeNote.sound.type], {
                   className: "w-24 h-24 md:w-32 md:h-32 transition-colors duration-75",
@@ -231,7 +234,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                   }
                 })}
                 
-                {/* Static Glossy Rim Light */}
                 {!hitNotes.has(activeNote.id) && (
                   <div className="absolute inset-0 pointer-events-none opacity-40">
                     <div className="absolute top-[5%] left-[15%] w-[70%] h-[30%] bg-gradient-to-b from-white/60 to-transparent rounded-full blur-[1px]" />
@@ -242,7 +244,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           </div>
         )}
 
-        {/* HUD: Start Screen */}
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-50 backdrop-blur-md">
             <Card className="p-10 bg-black/50 border-none gemini-border text-center max-w-sm mx-4 shadow-2xl">
@@ -258,14 +259,12 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           </div>
         )}
 
-        {/* HUD: Count In */}
         {countIn !== null && (
           <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
             <div className="text-[10rem] md:text-[15rem] font-black italic text-[#FFEA00] drop-shadow-[0_0_60px_rgba(255,234,0,0.5)]">{countIn}</div>
           </div>
         )}
 
-        {/* HUD: Finished Screen */}
         {isFinished && (
           <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-50 p-6 backdrop-blur-2xl">
             <div className="text-center space-y-8 max-w-sm">

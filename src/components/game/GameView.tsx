@@ -90,6 +90,13 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const bpm = game.bpm || 120;
   const TOTAL_STEPS = 512;
 
+  // Stoppt den Sound beim Verlassen der Komponente
+  useEffect(() => {
+    return () => {
+      audioEngine?.stop();
+    };
+  }, []);
+
   useEffect(() => {
     const preload = async () => {
       if (!audioEngine) return;
