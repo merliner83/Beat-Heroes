@@ -237,20 +237,20 @@ export default function HomePage() {
               <div className="w-16 h-16 rounded-full border-2 border-white/40 animate-[ping_4s_linear_infinite]" />
             </div>
 
-            <div className="absolute left-[8%] top-[15%] flex flex-col items-start gap-0.5 z-20">
+            <div className="absolute left-[8%] top-[15%] flex flex-col items-start gap-1 z-20">
               <div className="w-2 h-2 rounded-full bg-[#00E676] shadow-[0_0_10px_#00E676] animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_8px_rgba(0,0,0,1)]">BANTIGER</span>
+              <span className="text-sm font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_8px_rgba(0,0,0,1)]">BANTIGER</span>
             </div>
 
-            <div className="absolute right-[8%] bottom-[20%] flex flex-col items-end gap-0.5 z-20">
+            <div className="absolute right-[8%] bottom-[20%] flex flex-col items-end gap-1 z-20">
               <div className="w-2 h-2 rounded-full bg-[#FF3D00] shadow-[0_0_10px_#FF3D00] animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_4px_8px_rgba(0,0,0,1)] text-right">OBEREMMENTAL</span>
+              <span className="text-sm font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_4px_8px_rgba(0,0,0,1)] text-right">OBEREMMENTAL</span>
             </div>
 
             <div 
               className="absolute inset-0 origin-center animate-[spin_15s_linear_infinite] opacity-40 pointer-events-none" 
               style={{ 
-                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 51, 153, 0.4) 120deg, rgba(255, 234, 0, 0.5) 330deg, rgba(255, 255, 255, 0.7) 360deg)' 
+                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.2) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.7) 360deg)' 
               }}
             />
           </div>
