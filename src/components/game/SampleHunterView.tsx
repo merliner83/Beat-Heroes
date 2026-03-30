@@ -143,7 +143,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     setCapturedNotes(prev => new Set(prev).add(noteId));
     audioEngine.playOneShot(sound.sampleUrl);
     
-    // Clear after a short delay for green flash
+    // Fade out success
     setTimeout(() => {
       clearedNotesRef.current.add(noteId);
       setScore(prev => {
@@ -163,14 +163,14 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           const secondsPerStep = (60 / bpm) / 4;
           const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
           
-          // Icons are visible for a shorter time to ensure sequential feeling
-          const missThreshold = 0.55; 
+          // Icon is visible for roughly 1 second
+          const visibilityDuration = 1.0; 
 
           let newMissesCount = 0;
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
-              if (!clearedNotesRef.current.has(noteId) && !capturedNotes.has(noteId) && !missedNotes.has(noteId) && currentStep > step + missThreshold) {
+              if (!clearedNotesRef.current.has(noteId) && !capturedNotes.has(noteId) && !missedNotes.has(noteId) && currentStep > step + visibilityDuration) {
                 // Trigger red fade out
                 setMissedNotes(prev => new Set(prev).add(noteId));
                 newMissesCount++;
@@ -195,7 +195,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             });
           }
 
-          if (t >= (TOTAL_STEPS / 4) * (60 / bpm) + 1) {
+          if (t >= (TOTAL_STEPS / 4) * (60 / bpm) + 1.5) {
             setIsPlaying(false);
             setIsFinished(true);
             audioEngine.stop();
@@ -254,8 +254,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             const noteTime = step * ((60 / bpm) / 4);
             const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
             
-            // Tight visibility window: icons appear 0.15s before hit and vanish 0.5s after hit or if missed
-            const isVisible = relativeTime < 0.5 && relativeTime > -0.15;
+            // Icon appears 0.1s before hit and stays for 1s
+            const isVisible = relativeTime < 0.1 && relativeTime > -0.9;
             if (!isVisible) return null;
 
             const Icon = OBJECT_ICONS[sound.type];
@@ -272,8 +272,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 disabled={isCaptured || isMissed}
                 className={cn(
                   "absolute z-20 outline-none cursor-pointer transition-all duration-300",
-                  "animate-in zoom-in-50 fade-in duration-150",
-                  isMissed && "scale-90 opacity-0 bg-[#FF3D00]/20 rounded-full"
+                  "animate-in fade-in duration-300",
+                  isMissed && "opacity-0 bg-[#FF3D00]/20 rounded-full scale-90"
                 )}
                 style={{ 
                   left: `${pos.x}%`, 
@@ -286,26 +286,26 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                   <div 
                     className={cn(
                       "absolute inset-0 rounded-full blur-3xl transition-all duration-300",
-                      isCaptured ? "opacity-100 scale-125 bg-[#00E676]" : isMissed ? "opacity-60 scale-90 bg-[#FF3D00]" : "opacity-20"
+                      isCaptured ? "opacity-100 scale-125 bg-[#00E676]" : isMissed ? "opacity-60 scale-90 bg-[#FF3D00]" : "opacity-30"
                     )} 
                     style={{ backgroundColor: !isCaptured && !isMissed ? color : undefined }} 
                   />
                   
                   {/* Plastic 3D Icon Container */}
-                  <div className="relative group">
+                  <div className="relative">
                     <Icon 
                       className={cn(
-                        "w-16 h-16 md:w-28 md:h-28 transition-colors duration-200",
+                        "w-16 h-16 md:w-32 md:h-32 transition-colors duration-200",
                         "filter drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)]"
                       )}
                       style={{ color: color }} 
                     />
                     
                     {/* Glossy Rim Light Highlight */}
-                    <div className="absolute top-2 left-2 w-[40%] h-[40%] bg-white/40 rounded-full blur-md pointer-events-none" />
+                    <div className="absolute top-2 left-2 w-[45%] h-[45%] bg-white/30 rounded-full blur-md pointer-events-none" />
                     
                     {/* Bottom shading for depth */}
-                    <div className="absolute bottom-2 right-2 w-[30%] h-[30%] bg-black/30 rounded-full blur-lg pointer-events-none" />
+                    <div className="absolute bottom-2 right-2 w-[35%] h-[35%] bg-black/40 rounded-full blur-lg pointer-events-none" />
                   </div>
                 </div>
               </button>
