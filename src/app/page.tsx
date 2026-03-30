@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect } from 'react';
@@ -10,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'gabriel-beats': { x: 20, y: 15 },
@@ -24,25 +24,29 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
 
 const StudioCard = ({ color, studioName, imageUrl }: { color: string, studioName: string, imageUrl?: string }) => (
   <div className="relative group cursor-pointer">
-    {/* Main Image Container - Transparent and borderless */}
+    {/* Main Image Container - No Background, No Border */}
     <div 
       className="relative w-32 h-32 md:w-56 md:h-56 transition-all duration-700 ease-out group-hover:scale-110 group-hover:-translate-y-2 overflow-visible"
     >
-      <div className="w-full h-full relative">
-        <Avatar className="w-full h-full rounded-none border-none bg-transparent">
-          <AvatarImage 
-            src={imageUrl || `https://picsum.photos/seed/${studioName}/800/800`} 
-            className="object-contain w-full h-full transition-all duration-700 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
-            data-ai-hint="studio building"
+      <div className="w-full h-full relative bg-transparent overflow-visible flex items-center justify-center">
+        {imageUrl ? (
+          <img 
+            src={imageUrl} 
+            alt={studioName}
+            className="object-contain w-full h-full transition-all duration-700 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] bg-transparent"
           />
-          <AvatarFallback className="bg-transparent text-white/5 font-black italic text-4xl flex items-center justify-center">
-            {studioName.substring(0,1).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-transparent">
+             {/* Fallback visual if no image is provided - fully transparent */}
+             <div className="w-24 h-24 md:w-40 md:h-40 border-2 border-dashed border-white/5 rounded-full flex items-center justify-center">
+                <span className="text-white/10 font-black italic text-4xl">{studioName.substring(0,1).toUpperCase()}</span>
+             </div>
+          </div>
+        )}
         
-        {/* Simple Centered Sign - Always exactly in the middle of the quadratic image */}
+        {/* Simple Centered Sign - Exactly in the middle of the house image */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 p-2">
-          <div className="bg-white/95 backdrop-blur-md px-4 py-2 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.4)] border border-black/5 transform -rotate-1 group-hover:rotate-0 group-hover:scale-105 transition-all duration-500">
+          <div className="bg-white/95 backdrop-blur-md px-4 py-2 rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.6)] border border-black/5 transform -rotate-1 group-hover:rotate-0 group-hover:scale-105 transition-all duration-500">
             <h3 className="text-[10px] md:text-sm font-bold uppercase tracking-tight text-black text-center leading-none whitespace-nowrap">
               {studioName}
             </h3>
@@ -53,7 +57,7 @@ const StudioCard = ({ color, studioName, imageUrl }: { color: string, studioName
     
     {/* Subtle Glow Effect centered under the "house" */}
     <div 
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-[70px] opacity-0 group-hover:opacity-20 transition-opacity duration-1000 pointer-events-none -z-10"
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-[80px] opacity-0 group-hover:opacity-30 transition-opacity duration-1000 pointer-events-none -z-10"
       style={{ backgroundColor: color }}
     />
   </div>
@@ -158,6 +162,7 @@ export default function HomePage() {
               { type: 'misc', sample: 'https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg', p: 'pattern-p4' },
             ];
 
+            // Filter soundSet based on level difficulty (1: Kick, 2: +Clap, 3: +Percs, 4: +Misc)
             for (let j = 0; j < i; j++) {
               const s = soundSet[j];
               await setDoc(doc(db, 'levels', levelId, 'sounds', `sound-${levelId}-${s.type}`), {
@@ -172,7 +177,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Radar Synced!", description: "All studios updated with Beat Hero and Sample Catcher." });
+      toast({ title: "Radar Synced!", description: "All studios updated with standard 32-bar sessions." });
     } catch (e) {
       toast({ variant: "destructive", title: "Setup Failed" });
     }
@@ -247,12 +252,12 @@ export default function HomePage() {
             {/* Massive District Labels */}
             <div className="absolute left-[8%] top-[15%] flex flex-col items-start gap-1 z-20">
               <div className="w-3 h-3 rounded-full bg-[#00E676] shadow-[0_0_15px_#00E676] animate-pulse" />
-              <span className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)]">BANTIGER</span>
+              <span className="text-[12px] md:text-2xl font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)]">BANTIGER</span>
             </div>
 
             <div className="absolute right-[8%] bottom-[20%] flex flex-col items-end gap-1 z-20">
               <div className="w-3 h-3 rounded-full bg-[#FF3D00] shadow-[0_0_15px_#FF3D00] animate-pulse" />
-              <span className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)] text-right">OBEREMMENTAL</span>
+              <span className="text-[12px] md:text-2xl font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_4px_12px_rgba(0,0,0,1)] text-right">OBEREMMENTAL</span>
             </div>
 
             {/* Scanner Sweep */}
