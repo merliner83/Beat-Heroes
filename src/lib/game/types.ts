@@ -7,6 +7,7 @@ export interface Studio {
   name: string;
   description: string;
   coverColor: string;
+  imageUrl?: string;
   district?: string;
   linkUrl?: string;
   linkLabel?: string;

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect } from 'react';
@@ -18,20 +19,20 @@ const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
   'noxxos': { x: 50, y: 22 },
   'dave-beats': { x: 25, y: 40 },
   'nintu-music': { x: 75, y: 40 },
-  'dj-avox': { x: 35, y: 58 },
-  'benjamin-beats': { x: 65, y: 58 },
+  'dj-avox': { x: 35, y: 62 },
+  'benjamin-beats': { x: 65, y: 62 },
 };
 
-const StudioCard = ({ color, studioName }: { color: string, studioName: string }) => (
+const StudioCard = ({ color, studioName, imageUrl }: { color: string, studioName: string, imageUrl?: string }) => (
   <div className="relative group cursor-pointer">
     {/* Main Image Container - Transparent and borderless */}
     <div 
-      className="relative w-32 h-32 md:w-44 md:h-44 transition-all duration-700 ease-out group-hover:scale-110 group-hover:-translate-y-2 overflow-visible"
+      className="relative w-32 h-32 md:w-56 md:h-56 transition-all duration-700 ease-out group-hover:scale-110 group-hover:-translate-y-2 overflow-visible"
     >
       <div className="w-full h-full relative">
         <Avatar className="w-full h-full rounded-none border-none bg-transparent">
           <AvatarImage 
-            src={`https://picsum.photos/seed/${studioName}/800/800`} 
+            src={imageUrl || `https://picsum.photos/seed/${studioName}/800/800`} 
             className="object-contain w-full h-full transition-all duration-700 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]"
             data-ai-hint="studio building"
           />
@@ -40,7 +41,7 @@ const StudioCard = ({ color, studioName }: { color: string, studioName: string }
           </AvatarFallback>
         </Avatar>
         
-        {/* Simple Centered Sign */}
+        {/* Simple Centered Sign - Always exactly in the middle of the quadratic image */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 p-2">
           <div className="bg-white/95 backdrop-blur-md px-4 py-2 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.4)] border border-black/5 transform -rotate-1 group-hover:rotate-0 group-hover:scale-105 transition-all duration-500">
             <h3 className="text-[10px] md:text-sm font-bold uppercase tracking-tight text-black text-center leading-none whitespace-nowrap">
@@ -53,7 +54,7 @@ const StudioCard = ({ color, studioName }: { color: string, studioName: string }
     
     {/* Subtle Glow Effect centered under the "house" */}
     <div 
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full blur-[60px] opacity-0 group-hover:opacity-20 transition-opacity duration-1000 pointer-events-none -z-10"
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-[70px] opacity-0 group-hover:opacity-20 transition-opacity duration-1000 pointer-events-none -z-10"
       style={{ backgroundColor: color }}
     />
   </div>
@@ -90,13 +91,13 @@ export default function HomePage() {
     if (!db) return;
     try {
       const studios = [
-        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#FF3399' },
-        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00' },
-        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#FF3D00' },
-        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap.', coverColor: '#FF9100' },
-        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep house and tech vibes.', coverColor: '#00E676' },
-        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', coverColor: '#00B0FF' },
-        { id: 'benjamin-beats', name: 'Benjamin Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00' }
+        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#FF3399', imageUrl: '' },
+        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00', imageUrl: '' },
+        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#FF3D00', imageUrl: '' },
+        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap.', coverColor: '#FF9100', imageUrl: '' },
+        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep house and tech vibes.', coverColor: '#00E676', imageUrl: '' },
+        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', coverColor: '#00B0FF', imageUrl: '' },
+        { id: 'benjamin-beats', name: 'Benjamin Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00', imageUrl: '' }
       ];
 
       for (const s of studios) {
@@ -221,7 +222,11 @@ export default function HomePage() {
                   }}
                 >
                   <Link href={`/studio/${studio.id}`}>
-                    <StudioCard color={studio.coverColor || '#FF3399'} studioName={studio.name} />
+                    <StudioCard 
+                      color={studio.coverColor || '#FF3399'} 
+                      studioName={studio.name} 
+                      imageUrl={studio.imageUrl} 
+                    />
                   </Link>
                 </div>
               );
