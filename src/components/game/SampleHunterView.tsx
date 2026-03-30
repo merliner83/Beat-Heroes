@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -151,7 +150,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         const total = nextHits + prev.misses;
         return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
       });
-    }, 100);
+    }, 150);
   }, [isPlaying]);
 
   useEffect(() => {
@@ -249,8 +248,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             const color = isCaptured ? '#00E676' : OBJECT_COLORS[sound.type];
             const pos = getPosition(noteId);
             
-            // Smoother scale
-            const scale = relativeTime > 0 ? 1 + (relativeTime * 0.2) : 1;
             const opacity = relativeTime < 0 ? 1 + relativeTime * 3 : 1;
 
             return (
@@ -259,12 +256,12 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 onClick={(e) => { e.stopPropagation(); handleCatch(noteId, sound); }}
                 className={cn(
                   "absolute transition-all duration-150 active:scale-95 cursor-pointer z-20 group",
-                  isCaptured && "scale-125 brightness-150"
+                  isCaptured && "scale-110 brightness-150"
                 )}
                 style={{ 
                   left: `${pos.x}%`, 
                   top: `${pos.y}%`,
-                  transform: `translate(-50%, -50%) scale(${isCaptured ? 1.5 : scale})`,
+                  transform: 'translate(-50%, -50%)',
                   opacity: isCaptured ? 1 : Math.max(0, opacity),
                   color: color,
                 }}
@@ -272,22 +269,15 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 <div className="relative">
                   <div 
                     className={cn(
-                      "absolute inset-0 blur-xl opacity-30 group-hover:opacity-100 transition-opacity",
+                      "absolute inset-0 blur-xl opacity-20 group-hover:opacity-100 transition-opacity",
                       isCaptured && "opacity-100 blur-2xl"
                     )} 
                     style={{ backgroundColor: color }} 
                   />
                   <Icon className={cn(
-                    "w-12 h-12 md:w-20 md:h-20 transition-all drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]",
+                    "w-12 h-12 md:w-20 md:h-20 transition-all drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]",
                     isCaptured && "drop-shadow-[0_0_30px_#00E676]"
                   )} />
-                  <div 
-                    className={cn(
-                      "absolute inset-0 rounded-full border-2",
-                      isCaptured ? "animate-none opacity-100 scale-150 border-[#00E676]" : "animate-ping opacity-30"
-                    )} 
-                    style={{ borderColor: isCaptured ? '#00E676' : color }} 
-                  />
                 </div>
               </button>
             );
