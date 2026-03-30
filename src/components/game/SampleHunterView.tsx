@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -32,14 +33,13 @@ const OBJECT_COLORS: Record<SoundType, string> = {
 
 /**
  * Generates a stable random position based on a string seed.
- * The positions are kept within a safe central area to avoid overlap with UI.
  */
 const getPosition = (seed: string) => {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);
   }
-  // Ensure icons stay in the play area (15% - 85% width, 20% - 75% height)
+  // Stable fixed area (15% - 85% width, 20% - 75% height)
   const x = Math.abs((hash % 70) + 15); 
   const y = Math.abs(((hash >> 8) % 55) + 20); 
   return { x, y };
@@ -146,7 +146,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     // Play sound immediately
     audioEngine.playOneShot(sound.sampleUrl);
     
-    // Tiny delay for the green feedback before clearing
+    // Fast feedback before clearing
     setTimeout(() => {
       clearedNotesRef.current.add(noteId);
       setScore(prev => {
@@ -165,7 +165,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           setCurrentTime(t);
           const secondsPerStep = (60 / bpm) / 4;
           const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
-          const missTolerance = 0.5; // Stricter window for disappearance
+          const missTolerance = 0.5;
 
           let newMisses = 0;
           soundsWithPatterns.forEach(sound => {
@@ -245,62 +245,48 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             const noteTime = step * ((60 / bpm) / 4);
             const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
             
-            // Pop-up window: icons start appearing 0.8s before the beat and disappear 0.3s after
-            if (relativeTime < -0.3 || relativeTime > 0.8) return null;
+            // Pop-up window: icons appear 0.8s before the beat and disappear 0.3s after
+            const isVisible = relativeTime < 0.8 && relativeTime > -0.2;
+            if (!isVisible) return null;
 
             const Icon = OBJECT_ICONS[sound.type];
             const isCaptured = capturedNotes.has(noteId);
             const color = isCaptured ? '#00E676' : OBJECT_COLORS[sound.type];
             const pos = getPosition(noteId);
             
-            // Smooth pop-up scaling and fading
-            // - In (relativeTime 0.8 to 0.4): scale 0 to 1, opacity 0 to 1
-            // - Out (relativeTime 0 to -0.3): scale 1 to 0, opacity 1 to 0
-            let scale = 1;
-            let opacity = 1;
-            
-            if (relativeTime > 0.4) {
-              const factor = (0.8 - relativeTime) / 0.4; // 0 to 1
-              scale = factor;
-              opacity = factor;
-            } else if (relativeTime < 0) {
-              const factor = (relativeTime + 0.3) / 0.3; // 1 to 0
-              scale = factor;
-              opacity = factor;
-            }
-
             return (
               <button
                 key={noteId}
                 onClick={(e) => { e.stopPropagation(); handleCatch(noteId, sound); }}
                 className={cn(
-                  "absolute z-20 outline-none transition-none cursor-pointer",
-                  isCaptured && "scale-110 brightness-150 transition-all duration-150"
+                  "absolute z-20 outline-none cursor-pointer transition-all duration-300 ease-out",
+                  isCaptured ? "scale-125 brightness-150" : "scale-100 active:scale-90 hover:scale-105",
+                  // Fast entrance animation via class
+                  relativeTime > 0.72 ? "opacity-0 scale-50" : "opacity-100 scale-100"
                 )}
                 style={{ 
                   left: `${pos.x}%`, 
                   top: `${pos.y}%`,
-                  transform: `translate(-50%, -50%) scale(${isCaptured ? 1.2 : scale})`,
-                  opacity: isCaptured ? 1 : opacity,
+                  transform: 'translate(-50%, -50%)',
                 }}
               >
                 <div className="relative p-6">
-                  {/* Plastic Glow Effect Background */}
+                  {/* Stable plastic Glow Effect */}
                   <div 
                     className={cn(
-                      "absolute inset-0 rounded-full blur-2xl opacity-10 transition-opacity duration-300",
+                      "absolute inset-0 rounded-full blur-2xl opacity-10 transition-all duration-300",
                       isCaptured && "opacity-80 blur-3xl scale-125"
                     )} 
                     style={{ backgroundColor: color }} 
                   />
                   
-                  {/* Icon with pronounced 3D depth */}
+                  {/* Icon with stable 3D depth */}
                   <div className="relative">
                     <Icon 
                       className={cn(
                         "w-14 h-14 md:w-24 md:h-24",
-                        "filter drop-shadow-[0_12px_12px_rgba(0,0,0,0.9)]", // Deep shadow for plastic feel
-                        "drop-shadow-[0_0_15px_var(--glow-color)]" // Outer glow
+                        "filter drop-shadow-[0_12px_12px_rgba(0,0,0,0.9)]",
+                        "drop-shadow-[0_0_15px_var(--glow-color)]"
                       )}
                       style={{ 
                         color: color,
