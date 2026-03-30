@@ -42,7 +42,7 @@ const getPosition = (seed: string) => {
     hash |= 0;
   }
   // Use bitwise ops to get distinct X and Y from one hash
-  const x = Math.abs((hash % 80) + 10); 
+  const x = Math.abs((hash % 85) + 7.5); 
   const y = Math.abs(((hash >> 16) % 85) + 7.5); 
   return { x, y };
 };
@@ -156,10 +156,10 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             sound.triggerSteps.forEach(step => {
               const noteId = `${sound.type}-${step}`;
               const noteTime = step * secondsPerStep;
-              // Larger window: 1.2 seconds visibility
+              // Visibility window: 0.6 seconds before and after the hit point
               const relativeTime = noteTime - (t - SYNC_OFFSET);
 
-              // Count as miss if it's passed the 0.6s visibility window after the hit point
+              // Count as miss if it's passed the visibility window
               if (!clearedNotesRef.current.has(noteId) && relativeTime < -0.6) {
                 setMissedNotes(prev => new Set(prev).add(noteId));
                 newMissesCount++;
@@ -208,7 +208,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     const secondsPerStep = (60 / bpm) / 4;
     const allNotes: any[] = [];
     
-    // Total visibility duration: approx 1.2 seconds
     const WINDOW_SIZE = 0.6;
 
     soundsWithPatterns.forEach(sound => {
@@ -247,12 +246,14 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
-      {/* Dynamic Background Image - Urban Graffiti Boombox */}
+      {/* Immersive Urban Background with Radial Fade */}
       <div 
-        className="absolute inset-0 opacity-30 pointer-events-none bg-center bg-no-repeat transition-opacity duration-1000"
+        className="absolute inset-0 opacity-25 pointer-events-none bg-center bg-no-repeat transition-opacity duration-1000"
         style={{ 
           backgroundImage: `url(${bgUrl})`,
-          backgroundSize: '85% auto' // Prevent zoom effect by containing but centered
+          backgroundSize: '85% auto',
+          maskImage: 'radial-gradient(circle at center, black 30%, transparent 85%)',
+          WebkitMaskImage: 'radial-gradient(circle at center, black 30%, transparent 85%)'
         }}
         data-ai-hint="urban boombox"
       />
@@ -284,14 +285,15 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           const Icon = OBJECT_ICONS[sound.type];
           const baseColor = OBJECT_COLORS[sound.type];
           const feedbackColor = isCaptured ? '#00FF66' : isMissed ? '#FF3D00' : baseColor;
-          // Seed needs to be very distinct to ensure position jumps
+          
+          // Seed needs to be distinct to ensure position jumps
           const pos = getPosition(`hunter-${game.id}-${sound.id}-${step}`);
 
           return (
             <div
               key={noteId}
               className={cn(
-                "absolute z-20 pointer-events-auto",
+                "absolute z-20 pointer-events-auto transition-opacity duration-300",
                 (isCaptured || isMissed) && "animate-out fade-out duration-500 fill-mode-forwards"
               )}
               style={{ 
@@ -305,11 +307,11 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 disabled={isCaptured || isMissed || !isWithinWindow}
                 className="relative p-12 md:p-16 flex items-center justify-center outline-none border-none bg-transparent group cursor-pointer"
               >
-                {/* 3D Static Glow Base */}
+                {/* 3D Static Plastic Body with High-Gloss Highlights */}
                 <div 
                   className={cn(
-                    "absolute inset-4 rounded-full blur-3xl",
-                    isCaptured ? "bg-[#00FF66] opacity-70" : isMissed ? "bg-[#FF3D00] opacity-70" : "bg-white/5 opacity-10"
+                    "absolute inset-4 rounded-full blur-3xl transition-colors duration-200",
+                    isCaptured ? "bg-[#00FF66] opacity-60" : isMissed ? "bg-[#FF3D00] opacity-60" : "bg-white/5 opacity-10"
                   )} 
                   style={{ backgroundColor: isCaptured || isMissed ? undefined : baseColor }} 
                 />
@@ -317,17 +319,17 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 <div className="relative flex items-center justify-center">
                   <Icon 
                     className={cn(
-                      "w-24 h-24 md:w-40 md:h-40",
-                      "filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)]"
+                      "w-24 h-24 md:w-40 md:h-40 transition-colors duration-200",
+                      "filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.9)]"
                     )}
                     style={{ color: feedbackColor }} 
                   />
                   
-                  {/* Haptic Glossy Highlights */}
+                  {/* Glossy Plastic Rim-Light Highlights */}
                   {!isCaptured && !isMissed && (
-                    <div className="absolute inset-0 pointer-events-none rounded-full overflow-hidden">
-                      <div className="absolute top-[5%] left-[20%] w-[60%] h-[40%] bg-gradient-to-b from-white/40 to-transparent rounded-full blur-[3px]" />
-                      <div className="absolute inset-0 border-[4px] border-white/15 rounded-full" />
+                    <div className="absolute inset-0 pointer-events-none rounded-full overflow-hidden opacity-60">
+                      <div className="absolute top-[2%] left-[25%] w-[50%] h-[30%] bg-gradient-to-b from-white/60 to-transparent rounded-full blur-[2px]" />
+                      <div className="absolute inset-0 border-[5px] border-white/20 rounded-full" />
                     </div>
                   )}
                 </div>
@@ -385,7 +387,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </main>
 
       <footer className="p-3 text-center shrink-0 z-50 bg-black/40 backdrop-blur-sm border-t border-white/5">
-        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Urban Sequential Interface v4.0</p>
+        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Urban Sequential Interface v5.0</p>
       </footer>
     </div>
   );
