@@ -101,11 +101,12 @@ export default function HomePage() {
         await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
+      // Patterns mit 16 Steps Vorlauf (1 Takt)
       const patterns = [
-        { id: 'pattern-p1', name: 'Kick 32', steps: Array.from({ length: 128 }, (_, i) => i * 4) },
-        { id: 'pattern-p2', name: 'Clap 32', steps: Array.from({ length: 64 }, (_, i) => (i * 8) + 4) },
-        { id: 'pattern-p3', name: 'Vocal 32', steps: Array.from({ length: 32 }, (_, i) => (i * 16) + 7) },
-        { id: 'pattern-p4', name: 'Perc 32', steps: Array.from({ length: 128 }, (_, i) => (i * 4) + 2) },
+        { id: 'pattern-p1', name: 'Kick 32', steps: Array.from({ length: 112 }, (_, i) => (i * 4) + 16) },
+        { id: 'pattern-p2', name: 'Clap 32', steps: Array.from({ length: 56 }, (_, i) => (i * 8) + 20) },
+        { id: 'pattern-p3', name: 'Vocal 32', steps: Array.from({ length: 28 }, (_, i) => (i * 16) + 23) },
+        { id: 'pattern-p4', name: 'Perc 32', steps: Array.from({ length: 112 }, (_, i) => (i * 4) + 18) },
       ];
 
       for (const p of patterns) {
@@ -143,7 +144,6 @@ export default function HomePage() {
             backgroundImageUrl: config.bg || null
           };
 
-          // Nur überschreiben, wenn noch kein backingTrackUrl vorhanden ist
           if (!gameSnap.exists() || !gameSnap.data()?.backingTrackUrl) {
             gameData.backingTrackUrl = defaultBackingTrack;
           }
@@ -179,7 +179,6 @@ export default function HomePage() {
                 patternIds: [s.p]
               };
 
-              // Nur überschreiben, wenn noch kein sampleUrl vorhanden ist
               if (!soundSnap.exists() || !soundSnap.data()?.sampleUrl) {
                 soundData.sampleUrl = s.sample;
               }

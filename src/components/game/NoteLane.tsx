@@ -3,9 +3,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-
-// Globaler Latenz-Ausgleich in Sekunden (80ms) - muss mit GameView übereinstimmen
-const SYNC_OFFSET = 0.08;
+import { SYNC_OFFSET } from './GameView';
 
 interface NoteLaneProps {
   notes: number[];
@@ -37,10 +35,10 @@ export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isA
       {/* Falling Notes */}
       {notes.map((step, idx) => {
         const noteTime = step * secondsPerStep;
-        // currentTime wird um den SYNC_OFFSET korrigiert, damit Noten später eintreffen
+        // Visualisierung synchronisiert mit dem SYNC_OFFSET aus GameView
         const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
         
-        // Culling notes far off screen
+        // Optimierte Culling-Distanz
         if (relativeTime < -0.5 || relativeTime > 2.5) return null;
 
         const top = hitPosition - (relativeTime * speed) - 6;
