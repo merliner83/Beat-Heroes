@@ -6,7 +6,7 @@ import { Game, Level, Sound, GameScore, SoundType } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Trophy, Loader2, Sparkles, XCircle, Disc, Mic, Speaker, ArrowLeft, Percent, Zap, MoveUp } from 'lucide-react';
+import { Trophy, Loader2, Sparkles, XCircle, Disc, Mic, Speaker, ArrowLeft, Percent, Zap, LayoutGrid } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -16,7 +16,6 @@ import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/fir
 const PASS_THRESHOLD = 80;
 const DIFFICULTY_REWARDS: Record<number, number> = { 1: 50, 2: 100, 3: 200, 4: 1000 };
 const SAMPLE_LIFETIME = 1500;
-const PROJECTILE_SPEED = 15;
 
 const OBJECT_ICONS: Record<SoundType, any> = {
   kick: Disc,
@@ -123,7 +122,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           const dx = p.x - activeNote.pos.x;
           const dy = p.y - activeNote.pos.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          return distance < 8;
+          return distance < 10;
         });
 
         if (hitProjectile) {
@@ -190,9 +189,9 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     const dy = dragStart.y - dragCurrent.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (dist > 20) {
+    if (dist > 30) {
       const angle = Math.atan2(dy, dx);
-      const power = Math.min(dist / 8, 30);
+      const power = Math.min(dist / 8, 35);
       
       const newProjectile: Projectile = {
         id: `p-${Date.now()}`,
@@ -249,20 +248,18 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     }
   }, [isFinished, score.accuracy, user, db, level]);
 
-  const bgUrl = game.backgroundImageUrl || 'https://picsum.photos/seed/beathero-boombox/1080/1920';
-
-  // Slingshot Visual Calcs
   const getPullVisuals = () => {
     if (!isDragging) return null;
     const dx = (dragStart.x - dragCurrent.x) / 5;
     const dy = (dragStart.y - dragCurrent.y) / 5;
-    const limit = 20;
+    const limit = 25;
     const dist = Math.sqrt(dx * dx + dy * dy);
     const scale = dist > limit ? limit / dist : 1;
     return { x: dx * scale, y: dy * scale };
   };
 
   const pull = getPullVisuals();
+  const bgUrl = game.backgroundImageUrl || 'https://picsum.photos/seed/beathero-boombox/1080/1920';
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
@@ -331,7 +328,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               
               {React.createElement(OBJECT_ICONS[activeNote.sound.type], {
                 className: "w-16 h-16 md:w-20 md:h-20 transition-all duration-200 drop-shadow-[0_0_20px_rgba(0,0,0,0.8)]",
-                strokeWidth: 0.8,
+                strokeWidth: 1.0,
                 style: { 
                   color: activeNote.status === 'hit' ? '#00FF66' : 
                          activeNote.status === 'missed' ? '#FF3D00' : 
@@ -347,7 +344,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           </div>
         )}
 
-        {/* Flying Vinyls */}
+        {/* Flying Projectiles */}
         {projectiles.map(p => (
           <div
             key={p.id}
@@ -365,69 +362,89 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           </div>
         ))}
 
-        {/* Elaborate Slingshot Visuals */}
+        {/* Slingshot Visuals */}
         <div className="absolute inset-0 pointer-events-none z-50">
           <svg className="w-full h-full">
-            {/* Sling Base Anchors */}
-            <circle cx="42%" cy="75%" r="4" fill="#333" />
-            <circle cx="58%" cy="75%" r="4" fill="#333" />
+            {/* MPC Anchor Points */}
+            <circle cx="43%" cy="75%" r="3" fill="#333" />
+            <circle cx="57%" cy="75%" r="3" fill="#333" />
             
             {isDragging && pull && (
               <>
                 {/* Elastic Bands */}
                 <line 
-                  x1="42%" y1="75%" 
+                  x1="43%" y1="75%" 
                   x2={`${50 + pull.x}%`} y2={`${75 + pull.y}%`} 
-                  stroke="#00FF66" strokeWidth="3" opacity="0.6"
+                  stroke="#00FF66" strokeWidth="2.5" opacity="0.6"
                 />
                 <line 
-                  x1="58%" y1="75%" 
+                  x1="57%" y1="75%" 
                   x2={`${50 + pull.x}%`} y2={`${75 + pull.y}%`} 
-                  stroke="#00FF66" strokeWidth="3" opacity="0.6"
+                  stroke="#00FF66" strokeWidth="2.5" opacity="0.6"
                 />
                 {/* Trajectory Guide */}
                 <line 
                   x1="50%" y1="75%" 
                   x2={`${50 - pull.x * 3}%`} y2={`${75 - pull.y * 3}%`} 
-                  stroke="white" strokeWidth="1" strokeDasharray="4,8" opacity="0.2"
+                  stroke="white" strokeWidth="1" strokeDasharray="4,8" opacity="0.15"
                 />
               </>
             )}
           </svg>
         </div>
 
-        {/* Slingshot Launcher UI */}
+        {/* MPC Drum Machine Launcher UI */}
         {isPlaying && (
           <div 
             className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50"
             style={{
-              transform: `translate(-50%, ${isDragging && pull ? pull.y * 2 : 0}px) translateX(${isDragging && pull ? pull.x * 2 : 0}px)`
+              transform: `translate(-50%, ${isDragging && pull ? pull.y * 1.5 : 0}px) translateX(${isDragging && pull ? pull.x * 1.5 : 0}px)`
             }}
           >
             <div className="relative flex flex-col items-center">
-              {/* Launcher Base */}
-              <div className="absolute -bottom-4 w-24 h-4 bg-gradient-to-t from-black to-white/10 rounded-full blur-md opacity-50" />
-              
+              {/* MPC Body */}
               <div className={cn(
-                "p-4 rounded-full border-2 transition-all duration-75 shadow-2xl",
-                isDragging ? "border-[#00FF66] bg-black/40 scale-90" : "border-white/20 bg-black/80 hover:scale-105 active:scale-95"
+                "relative w-32 h-28 md:w-40 md:h-36 bg-neutral-900 border-2 rounded-xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-all duration-75",
+                isDragging ? "border-[#00FF66] bg-neutral-900/90 scale-95" : "border-white/10"
               )}>
-                <div className="relative">
-                  <Disc className={cn(
-                    "w-14 h-14 md:w-20 md:h-20 transition-all",
-                    isDragging ? "text-[#00FF66] opacity-100" : "text-white/80 opacity-60"
-                  )} />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-white/40" />
-                  </div>
+                {/* MPC Display Area */}
+                <div className="w-full h-1/4 bg-black/60 rounded border border-white/5 mb-3 flex items-center justify-center overflow-hidden">
+                   <div className="w-full h-[2px] bg-[#00FF66]/20 animate-pulse" />
+                </div>
+                
+                {/* 4x4 Pads Grid */}
+                <div className="grid grid-cols-4 gap-1.5 h-3/5">
+                  {Array.from({ length: 16 }).map((_, i) => (
+                    <div 
+                      key={i} 
+                      className={cn(
+                        "rounded-sm border border-white/5 transition-all duration-75",
+                        isDragging ? "bg-[#00FF66]/20 shadow-[0_0_5px_#00FF6622]" : "bg-neutral-800"
+                      )} 
+                    />
+                  ))}
+                </div>
+
+                {/* Side Knobs */}
+                <div className="absolute -right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3">
+                  <div className="w-2.5 h-2.5 rounded-full bg-neutral-800 border border-white/10" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-neutral-800 border border-white/10" />
                 </div>
               </div>
+
+              {/* Fired / Loaded Vinyl Disc */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                <Disc className={cn(
+                  "w-12 h-12 md:w-16 md:h-16 transition-all",
+                  isDragging ? "text-[#00FF66] opacity-100 scale-110 drop-shadow-[0_0_15px_#00FF66]" : "text-white/40 opacity-0"
+                )} />
+              </div>
               
-              {/* Angle Indicator */}
-              <div className="mt-4 flex gap-1 opacity-20">
-                <div className="w-1 h-3 rounded-full bg-white" />
-                <div className="w-1 h-3 rounded-full bg-white" />
-                <div className="w-1 h-3 rounded-full bg-white" />
+              {/* Pull Handle Indicator */}
+              <div className="mt-4 flex gap-1.5 opacity-10">
+                <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                <div className="w-1.5 h-1.5 rounded-full bg-white" />
               </div>
             </div>
           </div>
@@ -437,12 +454,12 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[100] backdrop-blur-3xl">
             <Card className="p-12 bg-black/50 border-none gemini-border text-center max-w-sm mx-4 shadow-[0_0_100px_rgba(255,51,153,0.1)]">
               <div className="bg-primary/20 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 border border-primary/30 shadow-[0_0_40px_rgba(255,51,153,0.2)]">
-                <Disc className="w-12 h-12 text-primary animate-spin" />
+                <LayoutGrid className="w-12 h-12 text-primary animate-pulse" />
               </div>
               <h2 className="text-3xl md:text-4xl font-black mb-3 uppercase italic tracking-tighter">Vinyl Hunter</h2>
-              <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 mb-10 leading-relaxed">Pull the record & release<br/>to sync the samples</p>
+              <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 mb-10 leading-relaxed">Pull the MPC Pads & release<br/>to launch the vinyls</p>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-18 bg-white text-black font-black uppercase italic rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.1)]">
-                {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Sync"}
+                {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate MPC"}
               </Button>
             </Card>
           </div>
@@ -489,7 +506,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       <footer className="p-4 text-center shrink-0 z-50 bg-black/40 backdrop-blur-md border-t border-white/5 rounded-b-[2.5rem]">
         <div className="flex items-center justify-center gap-4 opacity-20">
           <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.5em] italic">Vinyl Projectile Engine v2.0 • Pull to Launch</p>
+          <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.5em] italic">MPC Slingshot v3.0 • Release to Fire</p>
           <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
         </div>
       </footer>
