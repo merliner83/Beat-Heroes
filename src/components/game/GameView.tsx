@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -12,9 +11,9 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// Konstante für den Zeitversatz - Auf 0.0 reduziert für exakten Sync
+// Konstante für den Zeitversatz
 export const SYNC_OFFSET = 0.0;
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -127,7 +126,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     const secondsPerStep = (60 / bpm) / 4;
     
     const currentStep = (time - SYNC_OFFSET) / secondsPerStep;
-    // Schwierigkeit: Höhere Toleranz für Level 1 & 2
     const tolerance = level.difficulty <= 2 ? 1.8 : 1.4; 
     
     let hitNoteId: string | null = null;
@@ -238,7 +236,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   useEffect(() => {
     if (isFinished && score.accuracy >= PASS_THRESHOLD && user && db) {
-      updateDoc(doc(db, 'users', user.uid), { streetCred: increment(100) });
+      setDoc(doc(db, 'users', user.uid), { streetCred: increment(100) }, { merge: true });
       setDoc(doc(db, 'users', user.uid, 'progress', level.id), { 
         levelId: level.id, 
         accuracy: score.accuracy, 

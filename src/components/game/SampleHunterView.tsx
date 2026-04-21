@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -11,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const PASS_THRESHOLD = 80;
 const DIFFICULTY_REWARDS: Record<number, number> = { 1: 50, 2: 100, 3: 200, 4: 1000 };
@@ -74,7 +73,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const containerRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>(null);
 
-  // Dynamische Schwierigkeit basierend auf Level
   const SAMPLE_LIFETIME = level.difficulty === 1 ? 3000 : level.difficulty === 2 ? 2200 : level.difficulty === 3 ? 1600 : 1000;
   const TOTAL_NOTES = level.difficulty === 1 ? 8 : level.difficulty === 2 ? 12 : level.difficulty === 3 ? 16 : 20;
 
@@ -241,7 +239,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   useEffect(() => {
     if (isFinished && score.accuracy >= PASS_THRESHOLD && user && db) {
       const reward = DIFFICULTY_REWARDS[level.difficulty] || 0;
-      updateDoc(doc(db, 'users', user.uid), { streetCred: increment(reward) });
+      setDoc(doc(db, 'users', user.uid), { streetCred: increment(reward) }, { merge: true });
       setDoc(doc(db, 'users', user.uid, 'progress', level.id), { 
         levelId: level.id, 
         accuracy: score.accuracy, 

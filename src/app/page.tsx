@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect } from 'react';
@@ -69,6 +68,17 @@ export default function HomePage() {
     }
   }, [user, auth]);
 
+  useEffect(() => {
+    if (user && db) {
+      const userRef = doc(db, 'users', user.uid);
+      getDoc(userRef).then(snap => {
+        if (!snap.exists()) {
+          setDoc(userRef, { uid: user.uid, streetCred: 0 }, { merge: true });
+        }
+      });
+    }
+  }, [user, db]);
+
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
     return doc(db, 'users', user.uid);
@@ -101,10 +111,9 @@ export default function HomePage() {
         await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
-      // Patterns mit 16 Steps Vorlauf (1 Takt) für bessere Spielbarkeit
       const patterns = [
-        { id: 'pattern-p1', name: 'Kick Basic', steps: Array.from({ length: 56 }, (_, i) => (i * 8) + 16) }, // Alle 2 Beats
-        { id: 'pattern-p2', name: 'Clap Basic', steps: Array.from({ length: 28 }, (_, i) => (i * 16) + 24) }, // Alle 4 Beats
+        { id: 'pattern-p1', name: 'Kick Basic', steps: Array.from({ length: 56 }, (_, i) => (i * 8) + 16) }, 
+        { id: 'pattern-p2', name: 'Clap Basic', steps: Array.from({ length: 28 }, (_, i) => (i * 16) + 24) }, 
         { id: 'pattern-p3', name: 'Vocal Mid', steps: Array.from({ length: 56 }, (_, i) => (i * 8) + 20) },
         { id: 'pattern-p4', name: 'Perc Mid', steps: Array.from({ length: 112 }, (_, i) => (i * 4) + 18) },
       ];
