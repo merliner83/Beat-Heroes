@@ -6,7 +6,7 @@ import { Game, Level, Sound, GameScore, SoundType } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Trophy, Loader2, Sparkles, XCircle, Disc, Mic, Speaker, ArrowLeft, Percent, Zap } from 'lucide-react';
+import { Trophy, Loader2, Sparkles, XCircle, Disc, Mic, Speaker, ArrowLeft, Percent, Zap, MoveUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -15,7 +15,8 @@ import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/fir
 
 const PASS_THRESHOLD = 80;
 const DIFFICULTY_REWARDS: Record<number, number> = { 1: 50, 2: 100, 3: 200, 4: 1000 };
-const SAMPLE_LIFETIME = 1000; // 1 Sekunde Zeit zum Catchen
+const SAMPLE_LIFETIME = 1500; // Etwas mehr Zeit für Flugzeit-Kompensation
+const PROJECTILE_SPEED = 15;
 
 const OBJECT_ICONS: Record<SoundType, any> = {
   kick: Disc,
@@ -36,6 +37,16 @@ interface GameNote {
   sound: Sound;
   pos: { x: number, y: number };
   status: 'active' | 'hit' | 'missed';
+  spawnTime: number;
+}
+
+interface Projectile {
+  id: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  rotation: number;
 }
 
 interface SampleHunterViewProps {
@@ -54,24 +65,28 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const [countIn, setCountIn] = useState<number | null>(null);
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
-  const [hasAwardedPoints, setHasAwardedPoints] = useState(false);
   
   const [activeNote, setActiveNote] = useState<GameNote | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [projectiles, setProjectiles] = useState<Projectile[]>([]);
+  
+  // Slingshot State
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [dragCurrent, setDragCurrent] = useState({ x: 0, y: 0 });
 
-  const TOTAL_NOTES = 20; 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const requestRef = useRef<number>(null);
+  const TOTAL_NOTES = 20;
 
-  // Stoppt den Sound beim Verlassen der Komponente
   useEffect(() => {
     return () => {
       audioEngine?.stop();
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
   }, []);
 
   const spawnNextNote = useCallback(() => {
     const totalHandled = score.hits + score.misses;
-    
     if (totalHandled >= TOTAL_NOTES) {
       setIsPlaying(false);
       setIsFinished(true);
@@ -84,99 +99,145 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       id: `note-${Date.now()}-${Math.random()}`,
       sound: randomSound,
       pos: {
-        x: Math.random() * 80 + 10,
-        y: Math.random() * 80 + 10
+        x: Math.random() * 70 + 15,
+        y: Math.random() * 50 + 10 // Eher oberer Bereich für Slingshot-Gameplay
       },
-      status: 'active'
+      status: 'active',
+      spawnTime: Date.now()
     };
-    
     setActiveNote(newNote);
-
-    // Timer für das automatische Verschwinden setzen
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      handleMiss(newNote.id);
-    }, SAMPLE_LIFETIME);
-
   }, [sounds, score.hits, score.misses]);
 
-  const handleMiss = useCallback((noteId: string) => {
-    setActiveNote(prev => {
-      if (!prev || prev.id !== noteId || prev.status !== 'active') return prev;
-      return { ...prev, status: 'missed' };
+  // Game Loop für Projektile und Kollisionen
+  const updateGame = useCallback(() => {
+    if (!isPlaying) return;
+
+    setProjectiles(prev => {
+      const next = prev.map(p => ({
+        ...p,
+        x: p.x + p.vx,
+        y: p.y + p.vy,
+        rotation: p.rotation + 15
+      })).filter(p => p.y > -50 && p.x > -50 && p.x < 110); // Off-screen culling
+
+      // Collision Detection
+      if (activeNote && activeNote.status === 'active') {
+        const hitProjectile = next.find(p => {
+          const dx = p.x - activeNote.pos.x;
+          const dy = p.y - activeNote.pos.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          return distance < 8; // Hit-Radius
+        });
+
+        if (hitProjectile) {
+          handleHit(activeNote);
+        } else if (Date.now() - activeNote.spawnTime > SAMPLE_LIFETIME) {
+          handleMiss(activeNote.id);
+        }
+      }
+
+      return next;
     });
 
-    setScore(prev => {
-      const nextMisses = prev.misses + 1;
-      const total = prev.hits + nextMisses;
-      return { 
-        hits: prev.hits, 
-        misses: nextMisses, 
-        accuracy: Math.round((prev.hits / total) * 100) 
-      };
-    });
+    requestRef.current = requestAnimationFrame(updateGame);
+  }, [isPlaying, activeNote]);
 
-    // Kurz warten für visuelles Feedback, dann nächstes Note
-    setTimeout(() => {
-      spawnNextNote();
-    }, 200);
-  }, [spawnNextNote]);
+  useEffect(() => {
+    if (isPlaying) {
+      requestRef.current = requestAnimationFrame(updateGame);
+    } else if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+    }
+    return () => { if (requestRef.current) cancelAnimationFrame(requestRef.current); };
+  }, [isPlaying, updateGame]);
 
-  const handleCatch = useCallback((note: GameNote) => {
-    if (note.status !== 'active') return;
-    
-    if (timerRef.current) clearTimeout(timerRef.current);
-    
+  const handleHit = (note: GameNote) => {
     setActiveNote(prev => prev ? { ...prev, status: 'hit' } : null);
     audioEngine?.playOneShot(note.sound.sampleUrl);
-    
     setScore(prev => {
       const nextHits = prev.hits + 1;
       const total = nextHits + prev.misses;
-      return { 
-        hits: nextHits, 
-        misses: prev.misses, 
-        accuracy: Math.round((nextHits / total) * 100) 
-      };
+      return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
     });
+    setTimeout(spawnNextNote, 200);
+  };
 
-    setTimeout(() => {
-      spawnNextNote();
-    }, 150);
-  }, [spawnNextNote]);
+  const handleMiss = (noteId: string) => {
+    setActiveNote(prev => (prev?.id === noteId ? { ...prev, status: 'missed' } : prev));
+    setScore(prev => {
+      const nextMisses = prev.misses + 1;
+      const total = prev.hits + nextMisses;
+      return { hits: prev.hits, misses: nextMisses, accuracy: Math.round((prev.hits / total) * 100) };
+    });
+    setTimeout(spawnNextNote, 300);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (!isPlaying) return;
+    setIsDragging(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+    setDragCurrent({ x: e.clientX, y: e.clientY });
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (isDragging) {
+      setDragCurrent({ x: e.clientX, y: e.clientY });
+    }
+  };
+
+  const handlePointerUp = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+
+    const dx = dragStart.x - dragCurrent.x;
+    const dy = dragStart.y - dragCurrent.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist > 10) {
+      const angle = Math.atan2(dy, dx);
+      const power = Math.min(dist / 10, 25);
+      
+      const newProjectile: Projectile = {
+        id: `p-${Date.now()}`,
+        x: 50, // Mitte unten
+        y: 90,
+        vx: (Math.cos(angle) * power) / 3, // Skalierung für CSS % Einheiten
+        vy: (Math.sin(angle) * power) / 3,
+        rotation: 0
+      };
+      
+      setProjectiles(prev => [...prev, newProjectile]);
+      audioEngine?.playOneShot('https://actions.google.com/sounds/v1/swishes/fast_swish.ogg');
+    }
+  };
 
   const startLevel = async () => {
     if (!audioEngine) return;
     setIsLoadingAudio(true);
     try {
       await audioEngine.resume();
-      await audioEngine.preloadAudio([game.backingTrackUrl || '', ...sounds.map(s => s.sampleUrl)]);
-      
+      await audioEngine.preloadAudio([game.backingTrackUrl || '', ...sounds.map(s => s.sampleUrl), 'https://actions.google.com/sounds/v1/swishes/fast_swish.ogg']);
       setScore({ hits: 0, misses: 0, accuracy: 100 });
       setIsFinished(false);
-      setHasAwardedPoints(false);
-      
       const bpm = game.bpm || 120;
       const secondsPerBeat = 60 / bpm;
       const now = audioEngine.getContextTime();
       const actualStartTime = now + (4 * secondsPerBeat);
       audioEngine.setStartTime(actualStartTime);
-      
       await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
       setCountIn(null);
       setIsPlaying(true);
-      
       await audioEngine.startBackingTrack(game.backingTrackUrl || '', actualStartTime);
       spawnNextNote();
     } catch (e) {
-      toast({ variant: "destructive", title: "Audio Sync Failed" });
+      toast({ variant: "destructive", title: "Sync Failed" });
     } finally {
       setIsLoadingAudio(false);
     }
   };
 
   useEffect(() => {
-    if (isFinished && score.accuracy >= PASS_THRESHOLD && !hasAwardedPoints && user && db) {
+    if (isFinished && score.accuracy >= PASS_THRESHOLD && user && db) {
       const reward = DIFFICULTY_REWARDS[level.difficulty] || 0;
       updateDoc(doc(db, 'users', user.uid), { streetCred: increment(reward) });
       setDoc(doc(db, 'users', user.uid, 'progress', level.id), { 
@@ -184,16 +245,15 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         accuracy: score.accuracy, 
         completedAt: serverTimestamp() 
       }, { merge: true });
-      setHasAwardedPoints(true);
     }
-  }, [isFinished, score.accuracy, hasAwardedPoints, user, db, level]);
+  }, [isFinished, score.accuracy, user, db, level]);
 
   const bgUrl = game.backgroundImageUrl || 'https://picsum.photos/seed/beathero-boombox/1080/1920';
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
       <div 
-        className="absolute inset-0 opacity-30 pointer-events-none bg-center bg-no-repeat z-10"
+        className="absolute inset-0 opacity-20 pointer-events-none bg-center bg-no-repeat z-10"
         style={{ 
           backgroundImage: `url(${bgUrl})`,
           backgroundSize: 'contain',
@@ -202,92 +262,137 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         }}
       />
       
-      <header className="flex justify-between items-center mb-1 px-2 h-10 md:h-12 shrink-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/5">
-        <div className="flex items-center gap-2">
+      <header className="flex justify-between items-center mb-1 px-4 h-12 shrink-0 z-50 bg-black/40 backdrop-blur-xl border-b border-white/5 rounded-t-3xl">
+        <div className="flex items-center gap-3">
           <Link href={`/studio/${game.studioId}`}>
-            <ArrowLeft className="w-4 h-4 text-white/50 hover:text-white" />
+            <ArrowLeft className="w-5 h-5 text-white/50 hover:text-white transition-colors" />
           </Link>
           <div>
-            <h1 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-primary leading-none">Sample Catcher</h1>
+            <h1 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-primary leading-none">Vinyl Hunter</h1>
             <p className="text-[7px] md:text-[8px] opacity-40 uppercase font-bold tracking-widest">{game.name}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-black/60 px-3 py-1 rounded-full border border-white/10 h-8 md:h-10 backdrop-blur-md">
-            <Percent className="w-3 h-3 text-[#FFEA00]" />
-            <p className={cn("text-sm md:text-2xl font-black italic", score.accuracy >= PASS_THRESHOLD ? "text-[#00FF66]" : "text-[#FF3D00]")}>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 bg-black/60 px-4 py-1.5 rounded-full border border-white/10 h-10 backdrop-blur-md">
+            <Percent className="w-4 h-4 text-[#FFEA00]" />
+            <p className={cn("text-xl md:text-2xl font-black italic", score.accuracy >= PASS_THRESHOLD ? "text-[#00FF66]" : "text-[#FF3D00]")}>
               {score.accuracy}
             </p>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 relative overflow-hidden rounded-2xl md:rounded-[3rem] border border-white/5 z-20 pointer-events-auto">
+      <main 
+        ref={containerRef}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        className="flex-1 relative overflow-hidden rounded-b-3xl border-x border-b border-white/5 z-20 pointer-events-auto touch-none"
+      >
+        {/* Active Sample Target */}
         {isPlaying && activeNote && (
           <div
-            key={activeNote.id}
-            onPointerDown={(e) => { 
-              e.preventDefault(); 
-              e.stopPropagation(); 
-              handleCatch(activeNote); 
-            }}
             className={cn(
-              "absolute z-30 pointer-events-auto cursor-pointer select-none touch-none flex items-center justify-center transition-all duration-150",
-              activeNote.status !== 'active' && "scale-110 opacity-0"
+              "absolute z-30 flex items-center justify-center transition-all duration-300",
+              activeNote.status === 'hit' && "scale-150 opacity-0 blur-xl",
+              activeNote.status === 'missed' && "scale-90 opacity-0 bg-red-500/20"
             )}
             style={{ 
               left: `${activeNote.pos.x}%`, 
               top: `${activeNote.pos.y}%`,
               transform: 'translate(-50%, -50%)',
-              width: '180px',
-              height: '180px',
-              backgroundColor: 'rgba(255,255,255,0.01)'
+              width: '120px',
+              height: '120px'
             }}
           >
-            <div className="relative pointer-events-none flex items-center justify-center w-full h-full">
+            <div className="relative flex items-center justify-center w-full h-full">
               <div 
                 className={cn(
-                  "absolute inset-8 rounded-full blur-[40px] opacity-20 transition-all",
+                  "absolute inset-4 rounded-full blur-[30px] opacity-20 transition-all",
                   activeNote.status === 'hit' ? "bg-[#00FF66] opacity-100" : 
                   activeNote.status === 'missed' ? "bg-[#FF3D00] opacity-100" : ""
                 )} 
                 style={{ backgroundColor: activeNote.status === 'active' ? OBJECT_COLORS[activeNote.sound.type] : undefined }} 
               />
               
-              <div className="relative flex items-center justify-center">
-                {React.createElement(OBJECT_ICONS[activeNote.sound.type], {
-                  className: "w-24 h-24 md:w-32 md:h-32 transition-colors duration-75",
-                  strokeWidth: 1.0,
-                  style: { 
-                    color: activeNote.status === 'hit' ? '#00FF66' : 
-                           activeNote.status === 'missed' ? '#FF3D00' : 
-                           OBJECT_COLORS[activeNote.sound.type],
-                    filter: `drop-shadow(0 0 10px ${
-                      activeNote.status === 'hit' ? '#00FF66' : 
-                      activeNote.status === 'missed' ? '#FF3D00' : 
-                      OBJECT_COLORS[activeNote.sound.type]
-                    }44)`
-                  }
-                })}
-                
-                {activeNote.status === 'active' && (
-                  <div className="absolute inset-0 pointer-events-none opacity-40">
-                    <div className="absolute top-[5%] left-[15%] w-[70%] h-[30%] bg-gradient-to-b from-white/60 to-transparent rounded-full blur-[1px]" />
-                  </div>
-                )}
-              </div>
+              {React.createElement(OBJECT_ICONS[activeNote.sound.type], {
+                className: "w-16 h-16 md:w-20 md:h-20 transition-colors duration-150",
+                strokeWidth: 1.0,
+                style: { 
+                  color: activeNote.status === 'hit' ? '#00FF66' : 
+                         activeNote.status === 'missed' ? '#FF3D00' : 
+                         OBJECT_COLORS[activeNote.sound.type],
+                  filter: `drop-shadow(0 0 15px ${
+                    activeNote.status === 'hit' ? '#00FF66' : 
+                    activeNote.status === 'missed' ? '#FF3D00' : 
+                    OBJECT_COLORS[activeNote.sound.type]
+                  }66)`
+                }
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Flying Projectiles */}
+        {projectiles.map(p => (
+          <div
+            key={p.id}
+            className="absolute z-40 text-white/90 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+            style={{
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              transform: `translate(-50%, -50%) rotate(${p.rotation}deg)`
+            }}
+          >
+            <Disc className="w-10 h-10 md:w-12 md:h-12" strokeWidth={1.5} />
+          </div>
+        ))}
+
+        {/* Slingshot Visuals */}
+        {isDragging && (
+          <div className="absolute inset-0 pointer-events-none z-50">
+            <svg className="w-full h-full">
+              <line 
+                x1="50%" 
+                y1="90%" 
+                x2={50 - (dragStart.x - dragCurrent.x) / 5 + '%'} 
+                y2={90 - (dragStart.y - dragCurrent.y) / 5 + '%'} 
+                stroke="white" 
+                strokeWidth="2" 
+                strokeDasharray="5,5" 
+                className="opacity-40"
+              />
+              <circle 
+                cx={50 - (dragStart.x - dragCurrent.x) / 5 + '%'} 
+                cy={90 - (dragStart.y - dragCurrent.y) / 5 + '%'} 
+                r="4" 
+                fill="white" 
+                className="opacity-60"
+              />
+            </svg>
+          </div>
+        )}
+
+        {/* Launcher UI */}
+        {isPlaying && (
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50">
+            <div className={cn(
+              "p-4 rounded-full bg-white/5 border-2 border-white/20 transition-all",
+              isDragging ? "scale-90 opacity-40" : "scale-100 animate-pulse-neon"
+            )}>
+              <Disc className="w-12 h-12 text-white/80" />
             </div>
           </div>
         )}
 
         {!isPlaying && !isFinished && countIn === null && (
-          <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-50 backdrop-blur-md">
+          <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-[100] backdrop-blur-md">
             <Card className="p-10 bg-black/50 border-none gemini-border text-center max-w-sm mx-4 shadow-2xl">
               <div className="bg-primary/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/30">
-                <Zap className="w-8 h-8 text-primary" />
+                <Disc className="w-8 h-8 text-primary animate-spin" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-black mb-2 uppercase italic tracking-tighter">Sample Catcher</h2>
-              <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40 mb-8">Urban Precision Interface</p>
+              <h2 className="text-2xl md:text-3xl font-black mb-2 uppercase italic tracking-tighter">Vinyl Hunter</h2>
+              <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40 mb-8">Pull back & release to fire</p>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-16 bg-white text-black font-black uppercase rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)]">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Sync"}
               </Button>
@@ -302,19 +407,19 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         )}
 
         {isFinished && (
-          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-50 p-6 backdrop-blur-2xl">
+          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[100] p-6 backdrop-blur-2xl">
             <div className="text-center space-y-8 max-w-sm">
               {score.accuracy >= PASS_THRESHOLD ? (
                 <>
                   <Trophy className="w-20 h-20 text-[#FFEA00] mx-auto drop-shadow-[0_0_40px_rgba(255,234,0,0.4)]" />
-                  <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">Session Synced</h2>
+                  <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">Gold Mastered</h2>
                   <p className="text-3xl text-[#00FF66] font-black italic">{score.accuracy}% Sync</p>
                 </>
               ) : (
                 <>
                   <XCircle className="w-20 h-20 text-[#FF3D00] mx-auto drop-shadow-[0_0_40px_rgba(255,61,0,0.4)]" />
                   <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">Desynced</h2>
-                  <p className="text-xl opacity-60 uppercase tracking-[0.3em] font-black">Sync failure</p>
+                  <p className="text-xl opacity-60 uppercase tracking-[0.3em] font-black">Accuracy failure</p>
                 </>
               )}
               <div className="flex gap-4 pt-8">
@@ -329,7 +434,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       </main>
 
       <footer className="p-3 text-center shrink-0 z-50 bg-black/40 backdrop-blur-sm border-t border-white/5">
-        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Urban Sequential Interface v15.0</p>
+        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Slingshot Engine v1.0 • Drag Down to Aim</p>
       </footer>
     </div>
   );
