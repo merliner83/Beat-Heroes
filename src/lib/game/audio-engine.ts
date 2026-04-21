@@ -1,3 +1,4 @@
+
 "use client";
 
 /**
@@ -11,6 +12,7 @@ export class AudioEngine {
   private sources: Set<AudioBufferSourceNode> = new Set();
   private backingSource: AudioBufferSourceNode | null = null;
   private masterGain: GainNode | null = null;
+  private backingGain: GainNode | null = null;
   private startTime: number = 0;
   private loadingStatus: Map<string, 'loading' | 'ready' | 'failed'> = new Map();
   
@@ -27,8 +29,12 @@ export class AudioEngine {
       try {
         const AudioContextClass = (window as any).AudioContext || (window as any).webkitAutoContext;
         this.context = new AudioContextClass({ sampleRate: 44100 });
+        
         this.masterGain = this.context.createGain();
         this.masterGain.connect(this.context.destination);
+
+        this.backingGain = this.context.createGain();
+        this.backingGain.connect(this.masterGain);
       } catch (e) {
         console.warn('AudioEngine: Context creation failed', e);
         return false;
@@ -50,9 +56,6 @@ export class AudioEngine {
     this.startTime = t;
   }
 
-  /**
-   * Preloads audio files. Failures are logged as warnings to prevent game crashes.
-   */
   async preloadAudio(urls: string[]): Promise<void> {
     if (!this.context) await this.resume();
     if (!this.context) return;
@@ -82,7 +85,6 @@ export class AudioEngine {
         this.buffers.set(url, audioBuffer);
         this.loadingStatus.set(url, 'ready');
       } catch (e) {
-        // Robust handling: Log as warning, don't throw to prevent blocking the game loop
         console.warn(`AudioEngine: Non-critical load failure for ${url}`, e);
         this.loadingStatus.set(url, 'failed');
       }
@@ -110,7 +112,6 @@ export class AudioEngine {
     await this.resume();
     const buffer = this.buffers.get(AudioEngine.METRONOME_URL);
     if (!buffer || !this.context) {
-      // Fallback: silent count-in
       for (let i = 0; i < 4; i++) {
         setTimeout(() => onTick(i + 1), i * (60 / bpm) * 1000);
       }
@@ -137,22 +138,31 @@ export class AudioEngine {
     this.stopBackingTrack();
 
     const buffer = this.buffers.get(url);
-    if (!buffer || !this.context || !this.masterGain) {
-      // Use warn instead of error to prevent session block on missing assets
+    if (!buffer || !this.context || !this.backingGain) {
       console.warn('AudioEngine: Backing track buffer not ready for URL:', url);
       return;
     }
 
     try {
+      // Reset gain to full volume
+      this.backingGain.gain.cancelScheduledValues(this.context.currentTime);
+      this.backingGain.gain.setValueAtTime(1, this.context.currentTime);
+
       const source = this.context.createBufferSource();
       source.buffer = buffer;
       source.loop = true;
-      source.connect(this.masterGain);
+      source.connect(this.backingGain);
       source.start(when);
       this.backingSource = source;
     } catch (e) {
       console.warn('AudioEngine: Backing track start failed', e);
     }
+  }
+
+  async fadeBackingTrack(duration: number = 2) {
+    if (!this.context || !this.backingGain) return;
+    const now = this.context.currentTime;
+    this.backingGain.gain.exponentialRampToValueAtTime(0.01, now + duration);
   }
 
   stopBackingTrack() {

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -5,7 +6,7 @@ import { Game, Level, Sound, GameScore, SoundType } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Trophy, Loader2, Sparkles, XCircle, Disc, Mic, Speaker, ArrowLeft, Percent, Zap, LayoutGrid } from 'lucide-react';
+import { Trophy, Loader2, Sparkles, XCircle, Disc, Mic, Speaker, ArrowLeft, Percent, LayoutGrid } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -69,12 +70,17 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [dragCurrent, setDragCurrent] = useState({ x: 0, y: 0 });
+  const [hasStartedFade, setHasStartedFade] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>(null);
 
-  const SAMPLE_LIFETIME = level.difficulty === 1 ? 3000 : level.difficulty === 2 ? 2200 : level.difficulty === 3 ? 1600 : 1000;
-  const TOTAL_NOTES = level.difficulty === 1 ? 8 : level.difficulty === 2 ? 12 : level.difficulty === 3 ? 16 : 20;
+  const bpm = game.bpm || 120;
+  // 16 bars session = 16 * 4 beats = 64 beats
+  const SESSION_DURATION = (64 * 60) / bpm;
+  const FADE_DURATION = 2; // Fade out in the last 2 seconds
+
+  const SAMPLE_LIFETIME = 1000; // Standard 1s lifetime as requested
 
   useEffect(() => {
     return () => {
@@ -84,13 +90,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   }, []);
 
   const spawnNextNote = useCallback(() => {
-    const totalHandled = score.hits + score.misses;
-    if (totalHandled >= TOTAL_NOTES) {
-      setIsPlaying(false);
-      setIsFinished(true);
-      audioEngine?.stop();
-      return;
-    }
+    if (!isPlaying) return;
 
     const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
     const newNote: GameNote = {
@@ -104,10 +104,26 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       spawnTime: Date.now()
     };
     setActiveNote(newNote);
-  }, [sounds, score.hits, score.misses, TOTAL_NOTES]);
+  }, [sounds, isPlaying]);
 
   const updateGame = useCallback(() => {
     if (!isPlaying) return;
+
+    const currentTime = audioEngine?.getCurrentTime() || 0;
+
+    // Handle session end
+    if (currentTime >= SESSION_DURATION) {
+      setIsPlaying(false);
+      setIsFinished(true);
+      audioEngine?.stop();
+      return;
+    }
+
+    // Handle fade out
+    if (currentTime >= SESSION_DURATION - FADE_DURATION && !hasStartedFade) {
+      setHasStartedFade(true);
+      audioEngine?.fadeBackingTrack(FADE_DURATION);
+    }
 
     setProjectiles(prev => {
       const next = prev.map(p => ({
@@ -136,7 +152,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     });
 
     requestRef.current = requestAnimationFrame(updateGame);
-  }, [isPlaying, activeNote, SAMPLE_LIFETIME]);
+  }, [isPlaying, activeNote, SESSION_DURATION, hasStartedFade, SAMPLE_LIFETIME]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -210,6 +226,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const startLevel = async () => {
     if (!audioEngine) return;
     setIsLoadingAudio(true);
+    setHasStartedFade(false);
     try {
       await audioEngine.resume();
       await audioEngine.preloadAudio([
@@ -219,14 +236,16 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       ]);
       setScore({ hits: 0, misses: 0, accuracy: 100 });
       setIsFinished(false);
-      const bpm = game.bpm || 120;
+      
       const secondsPerBeat = 60 / bpm;
       const now = audioEngine.getContextTime();
       const actualStartTime = now + (4 * secondsPerBeat);
       audioEngine.setStartTime(actualStartTime);
+      
       await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
       setCountIn(null);
       setIsPlaying(true);
+      
       await audioEngine.startBackingTrack(game.backingTrackUrl || '', actualStartTime);
       spawnNextNote();
     } catch (e) {
@@ -305,7 +324,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             className={cn(
               "absolute z-30 flex items-center justify-center transition-all duration-300",
               activeNote.status === 'hit' && "scale-150 opacity-0 blur-xl",
-              activeNote.status === 'missed' && "scale-90 opacity-0"
+              activeNote.status === 'missed' && "scale-90 opacity-0 bg-[#FF3D00]/20 rounded-full"
             )}
             style={{ 
               left: `${activeNote.pos.x}%`, 
@@ -414,11 +433,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                     />
                   ))}
                 </div>
-
-                <div className="absolute -right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3">
-                  <div className="w-2.5 h-2.5 rounded-full bg-neutral-800 border border-white/10" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-neutral-800 border border-white/10" />
-                </div>
               </div>
 
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
@@ -426,12 +440,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                   "w-12 h-12 md:w-16 md:h-16 transition-all",
                   isDragging ? "text-[#00FF66] opacity-100 scale-110 drop-shadow-[0_0_15px_#00FF66]" : "text-white/40 opacity-0"
                 )} />
-              </div>
-              
-              <div className="mt-4 flex gap-1.5 opacity-10">
-                <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                <div className="w-1.5 h-1.5 rounded-full bg-white" />
               </div>
             </div>
           </div>
@@ -444,7 +452,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 <LayoutGrid className="w-12 h-12 text-primary animate-pulse" />
               </div>
               <h2 className="text-3xl md:text-4xl font-black mb-3 uppercase italic tracking-tighter">Vinyl Hunter</h2>
-              <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 mb-10 leading-relaxed">Pull the MPC Pads & release<br/>to launch the vinyls</p>
+              <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 mb-6 leading-relaxed">16 Bars Session<br/>Capture as many as you can</p>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-18 bg-white text-black font-black uppercase italic rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.1)]">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate MPC"}
               </Button>
