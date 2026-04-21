@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -13,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// Konstante für den Zeitversatz
+// Constant for sync offset
 export const SYNC_OFFSET = 0.0;
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -55,6 +56,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const [currentTime, setCurrentTime] = useState(0);
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
+  const [hasStartedFade, setHasStartedFade] = useState(false);
   
   const [padFlashes, setPadFlashes] = useState<Record<SoundType, { type: FlashType, key: number }>>({
     kick: { type: null, key: 0 },
@@ -66,6 +68,11 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const frameRef = useRef<number>(null);
   const clearedNotesRef = useRef<Set<string>>(new Set());
   const { toast } = useToast();
+
+  const bpm = game.bpm || 120;
+  const TOTAL_STEPS = 256; // 16 Bars * 16 steps
+  const SESSION_DURATION = (16 * 4 * 60) / bpm; // 16 Bars
+  const FADE_DURATION = 2;
 
   const activeSoundTypes: SoundType[] = ['kick'];
   if (level.difficulty >= 2) activeSoundTypes.push('clap');
@@ -80,14 +87,16 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
       const pattern = patterns.find(p => p.id === pId);
       if (pattern) {
         const offset = index * 128; 
-        pattern.steps.forEach(s => uniqueSteps.add(s + offset));
+        pattern.steps.forEach(s => {
+          const actualStep = s + offset;
+          if (actualStep < TOTAL_STEPS) {
+            uniqueSteps.add(actualStep);
+          }
+        });
       }
     });
     return { ...sound, triggerSteps: Array.from(uniqueSteps).sort((a, b) => a - b) };
   });
-
-  const bpm = game.bpm || 120;
-  const TOTAL_STEPS = 512;
 
   useEffect(() => {
     return () => {
@@ -162,6 +171,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const startLevel = async () => {
     if (!audioEngine) return;
     setIsLoadingAudio(true);
+    setHasStartedFade(false);
     try {
       await audioEngine.resume();
       
@@ -198,6 +208,11 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
           const tolerance = level.difficulty <= 2 ? 1.8 : 1.4;
 
+          if (t >= SESSION_DURATION - FADE_DURATION && !hasStartedFade) {
+            setHasStartedFade(true);
+            audioEngine.fadeBackingTrack(FADE_DURATION);
+          }
+
           let passiveMissesCount = 0;
           soundsWithPatterns.forEach(sound => {
             sound.triggerSteps.forEach(step => {
@@ -221,7 +236,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
             });
           }
           
-          if (t >= (TOTAL_STEPS / 4) * (60 / bpm) + 2) { 
+          if (t >= SESSION_DURATION + 1) { 
             setIsPlaying(false);
             setIsFinished(true);
             audioEngine.stop();
@@ -232,7 +247,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
       frameRef.current = requestAnimationFrame(update);
     }
     return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
-  }, [isPlaying, bpm, soundsWithPatterns, level.difficulty]);
+  }, [isPlaying, bpm, soundsWithPatterns, level.difficulty, SESSION_DURATION, hasStartedFade]);
 
   useEffect(() => {
     if (isFinished && score.accuracy >= PASS_THRESHOLD && user && db) {

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect } from 'react';
@@ -112,10 +113,18 @@ export default function HomePage() {
       }
 
       const patterns = [
-        { id: 'pattern-p1', name: 'Kick Basic', steps: Array.from({ length: 56 }, (_, i) => (i * 8) + 16) }, 
-        { id: 'pattern-p2', name: 'Clap Basic', steps: Array.from({ length: 28 }, (_, i) => (i * 16) + 24) }, 
-        { id: 'pattern-p3', name: 'Vocal Mid', steps: Array.from({ length: 56 }, (_, i) => (i * 8) + 20) },
-        { id: 'pattern-p4', name: 'Perc Mid', steps: Array.from({ length: 112 }, (_, i) => (i * 4) + 18) },
+        // Kick Patterns (8 Bars each)
+        { id: 'kick-p1', name: 'Kick Intro (1/Bar)', steps: [16, 32, 48, 64, 80, 96, 112, 114, 126] }, 
+        { id: 'kick-p2', name: 'Kick Main (1/4 Notes)', steps: Array.from({ length: 32 }, (_, i) => i * 4) }, 
+        // Clap Patterns
+        { id: 'clap-p1', name: 'Clap Basic (2 & 4)', steps: [20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
+        { id: 'clap-p2', name: 'Clap Var (Double)', steps: [4, 12, 14, 20, 28, 30, 36, 44, 46, 52, 60, 62, 68, 76, 78, 84, 92, 94, 100, 108, 110, 116, 124, 126] },
+        // Percs
+        { id: 'perc-p1', name: 'Perc Basic', steps: [18, 22, 50, 54, 82, 86, 114, 118] },
+        { id: 'perc-p2', name: 'Perc Active', steps: Array.from({ length: 16 }, (_, i) => (i * 8) + 18) },
+        // Misc
+        { id: 'misc-p1', name: 'Misc Ambience', steps: [0, 64] },
+        { id: 'misc-p2', name: 'Misc Accents', steps: [16, 48, 80, 112] },
       ];
 
       for (const p of patterns) {
@@ -170,39 +179,62 @@ export default function HomePage() {
               name: i === 1 ? 'Initiation' : i === 2 ? 'The Pulse' : i === 3 ? 'Modular' : 'Master'
             }, { merge: true });
 
-            const soundSet = [
-              { type: 'kick', sample: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg', p: 'pattern-p1' },
-              { type: 'clap', sample: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg', p: 'pattern-p2' },
-              { type: 'percs', sample: 'https://actions.google.com/sounds/v1/cartoon/clown_horn.ogg', p: 'pattern-p3' },
-              { type: 'misc', sample: 'https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg', p: 'pattern-p4' },
-            ];
+            if (config.type === 'rhythm-producer') {
+              const soundSet = [
+                { type: 'kick', sample: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg', pIds: ['kick-p1', 'kick-p2'] },
+                { type: 'clap', sample: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg', pIds: ['clap-p1', 'clap-p2'] },
+                { type: 'percs', sample: 'https://actions.google.com/sounds/v1/cartoon/clown_horn.ogg', pIds: ['perc-p1', 'perc-p2'] },
+                { type: 'misc', sample: 'https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg', pIds: ['misc-p1', 'misc-p2'] },
+              ];
 
-            for (let j = 0; j < i; j++) {
-              const s = soundSet[j];
-              const soundId = `sound-${levelId}-${s.type}`;
-              const soundDocRef = doc(db, 'levels', levelId, 'sounds', soundId);
-              const soundSnap = await getDoc(soundDocRef);
+              for (let j = 0; j < i; j++) {
+                const s = soundSet[j];
+                const soundId = `sound-${levelId}-${s.type}`;
+                const soundDocRef = doc(db, 'levels', levelId, 'sounds', soundId);
+                const soundSnap = await getDoc(soundDocRef);
 
-              const soundData: any = {
-                id: soundId,
-                levelId: levelId,
-                type: s.type,
-                patternIds: [s.p]
-              };
+                const soundData: any = {
+                  id: soundId,
+                  levelId: levelId,
+                  type: s.type,
+                  patternIds: s.pIds
+                };
 
-              if (!soundSnap.exists() || !soundSnap.data()?.sampleUrl) {
-                soundData.sampleUrl = s.sample;
-              } else {
-                soundData.sampleUrl = soundSnap.data()?.sampleUrl;
+                if (!soundSnap.exists() || !soundSnap.data()?.sampleUrl) {
+                  soundData.sampleUrl = s.sample;
+                } else {
+                  soundData.sampleUrl = soundSnap.data()?.sampleUrl;
+                }
+
+                await setDoc(soundDocRef, soundData, { merge: true });
               }
-
-              await setDoc(soundDocRef, soundData, { merge: true });
+            } else {
+              // Sample Hunter Sounds (No patterns needed)
+              const hunterSounds = [
+                { type: 'kick', sample: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg' },
+                { type: 'clap', sample: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg' },
+                { type: 'percs', sample: 'https://actions.google.com/sounds/v1/cartoon/clown_horn.ogg' },
+                { type: 'misc', sample: 'https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg' },
+              ];
+              for (let j = 0; j < i; j++) {
+                const s = hunterSounds[j];
+                const soundId = `sound-${levelId}-${s.type}`;
+                const soundDocRef = doc(db, 'levels', levelId, 'sounds', soundId);
+                const soundSnap = await getDoc(soundDocRef);
+                const soundData: any = { id: soundId, levelId: levelId, type: s.type, patternIds: [] };
+                if (!soundSnap.exists() || !soundSnap.data()?.sampleUrl) {
+                  soundData.sampleUrl = s.sample;
+                } else {
+                  soundData.sampleUrl = soundSnap.data()?.sampleUrl;
+                }
+                await setDoc(soundDocRef, soundData, { merge: true });
+              }
             }
           }
         }
       }
 
-      toast({ title: "Radar Synced!", description: "Difficulty curve recalibrated. Audio paths preserved." });
+      toast({ title: "Radar Synced!", description: "Rhythm progression updated. 16 bars session active." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Setup Failed" });
