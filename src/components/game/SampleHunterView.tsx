@@ -76,12 +76,14 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const requestRef = useRef<number>(null);
 
   const bpm = game.bpm || 120;
-  // 16 Bars = 64 Beats
-  const SESSION_DURATION = (64 * 60) / bpm;
+  const SESSION_DURATION = (64 * 60) / bpm; // 16 Bars
   const FADE_DURATION = 2;
 
   // Difficulty scaling for note lifetime
-  const SAMPLE_LIFETIME = level.difficulty === 1 ? 3000 : level.difficulty === 2 ? 2200 : 1500;
+  const SAMPLE_LIFETIME = 
+    level.difficulty === 1 ? 3000 : 
+    level.difficulty === 2 ? 2200 : 
+    level.difficulty === 3 ? 1500 : 900; // Level 4 is now "Hero Mode" with 0.9s
 
   useEffect(() => {
     return () => {
@@ -133,7 +135,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
     const currentTime = audioEngine?.getCurrentTime() || 0;
 
-    // Session end
     if (currentTime >= SESSION_DURATION) {
       setIsPlaying(false);
       setIsFinished(true);
@@ -141,7 +142,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       return;
     }
 
-    // Fade out backing track towards the end
     if (currentTime >= SESSION_DURATION - FADE_DURATION && !hasStartedFade) {
       setHasStartedFade(true);
       audioEngine?.fadeBackingTrack(FADE_DURATION);
@@ -155,13 +155,12 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         rotation: p.rotation + 15
       })).filter(p => p.y > -10 && p.x > -10 && p.x < 110);
 
-      // Collision detection with projectiles
       if (activeNote && activeNote.status === 'active') {
         const hitProjectile = next.find(p => {
           const dx = p.x - activeNote.pos.x;
           const dy = p.y - activeNote.pos.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          return distance < 12; // Collision radius
+          return distance < 12;
         });
 
         if (hitProjectile) {
@@ -247,7 +246,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
       setCountIn(null);
       
-      // Order matters here for the spawnNextNote dependency
       setIsPlaying(true);
       await audioEngine.startBackingTrack(game.backingTrackUrl || '', actualStartTime);
       spawnNextNote();
