@@ -103,10 +103,10 @@ export default function HomePage() {
 
       // Patterns mit 16 Steps Vorlauf (1 Takt) für bessere Spielbarkeit
       const patterns = [
-        { id: 'pattern-p1', name: 'Kick 32', steps: Array.from({ length: 112 }, (_, i) => (i * 4) + 16) },
-        { id: 'pattern-p2', name: 'Clap 32', steps: Array.from({ length: 56 }, (_, i) => (i * 8) + 20) },
-        { id: 'pattern-p3', name: 'Vocal 32', steps: Array.from({ length: 28 }, (_, i) => (i * 16) + 23) },
-        { id: 'pattern-p4', name: 'Perc 32', steps: Array.from({ length: 112 }, (_, i) => (i * 4) + 18) },
+        { id: 'pattern-p1', name: 'Kick Basic', steps: Array.from({ length: 56 }, (_, i) => (i * 8) + 16) }, // Alle 2 Beats
+        { id: 'pattern-p2', name: 'Clap Basic', steps: Array.from({ length: 28 }, (_, i) => (i * 16) + 24) }, // Alle 4 Beats
+        { id: 'pattern-p3', name: 'Vocal Mid', steps: Array.from({ length: 56 }, (_, i) => (i * 8) + 20) },
+        { id: 'pattern-p4', name: 'Perc Mid', steps: Array.from({ length: 112 }, (_, i) => (i * 4) + 18) },
       ];
 
       for (const p of patterns) {
@@ -144,7 +144,6 @@ export default function HomePage() {
             backgroundImageUrl: config.bg || null
           };
 
-          // Nur überschreiben, wenn noch keine URL vorhanden ist
           if (!gameSnap.exists() || !gameSnap.data()?.backingTrackUrl) {
             gameData.backingTrackUrl = defaultBackingTrack;
           } else {
@@ -182,7 +181,6 @@ export default function HomePage() {
                 patternIds: [s.p]
               };
 
-              // Nur überschreiben, wenn noch keine URL vorhanden ist
               if (!soundSnap.exists() || !soundSnap.data()?.sampleUrl) {
                 soundData.sampleUrl = s.sample;
               } else {
@@ -195,7 +193,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Radar Synced!", description: "All modules online. Audio paths preserved." });
+      toast({ title: "Radar Synced!", description: "Difficulty curve recalibrated. Audio paths preserved." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Setup Failed" });

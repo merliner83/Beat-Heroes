@@ -15,7 +15,6 @@ import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/fir
 
 const PASS_THRESHOLD = 80;
 const DIFFICULTY_REWARDS: Record<number, number> = { 1: 50, 2: 100, 3: 200, 4: 1000 };
-const SAMPLE_LIFETIME = 1500;
 
 const OBJECT_ICONS: Record<SoundType, any> = {
   kick: Disc,
@@ -74,7 +73,10 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
   const containerRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>(null);
-  const TOTAL_NOTES = 20;
+
+  // Dynamische Schwierigkeit basierend auf Level
+  const SAMPLE_LIFETIME = level.difficulty === 1 ? 3000 : level.difficulty === 2 ? 2200 : level.difficulty === 3 ? 1600 : 1000;
+  const TOTAL_NOTES = level.difficulty === 1 ? 8 : level.difficulty === 2 ? 12 : level.difficulty === 3 ? 16 : 20;
 
   useEffect(() => {
     return () => {
@@ -104,7 +106,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       spawnTime: Date.now()
     };
     setActiveNote(newNote);
-  }, [sounds, score.hits, score.misses]);
+  }, [sounds, score.hits, score.misses, TOTAL_NOTES]);
 
   const updateGame = useCallback(() => {
     if (!isPlaying) return;
@@ -136,7 +138,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     });
 
     requestRef.current = requestAnimationFrame(updateGame);
-  }, [isPlaying, activeNote]);
+  }, [isPlaying, activeNote, SAMPLE_LIFETIME]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -163,7 +165,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     setScore(prev => {
       const nextMisses = prev.misses + 1;
       const total = prev.hits + nextMisses;
-      return { hits: prev.hits, misses: nextMisses, accuracy: Math.round((prev.hits / total) * 100) };
+      return { hits: prev.hits, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
     });
     setTimeout(spawnNextNote, 300);
   };
@@ -300,7 +302,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         onPointerUp={handlePointerUp}
         className="flex-1 relative overflow-hidden rounded-b-[2.5rem] border-x border-b border-white/5 z-20 pointer-events-auto touch-none bg-gradient-to-b from-transparent to-black/40"
       >
-        {/* Active Sample Target */}
         {isPlaying && activeNote && (
           <div
             className={cn(
@@ -344,7 +345,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           </div>
         )}
 
-        {/* Flying Projectiles */}
         {projectiles.map(p => (
           <div
             key={p.id}
@@ -362,16 +362,13 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           </div>
         ))}
 
-        {/* Slingshot Visuals */}
         <div className="absolute inset-0 pointer-events-none z-50">
           <svg className="w-full h-full">
-            {/* MPC Anchor Points */}
             <circle cx="43%" cy="75%" r="3" fill="#333" />
             <circle cx="57%" cy="75%" r="3" fill="#333" />
             
             {isDragging && pull && (
               <>
-                {/* Elastic Bands */}
                 <line 
                   x1="43%" y1="75%" 
                   x2={`${50 + pull.x}%`} y2={`${75 + pull.y}%`} 
@@ -382,7 +379,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                   x2={`${50 + pull.x}%`} y2={`${75 + pull.y}%`} 
                   stroke="#00FF66" strokeWidth="2.5" opacity="0.6"
                 />
-                {/* Trajectory Guide */}
                 <line 
                   x1="50%" y1="75%" 
                   x2={`${50 - pull.x * 3}%`} y2={`${75 - pull.y * 3}%`} 
@@ -393,7 +389,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           </svg>
         </div>
 
-        {/* MPC Drum Machine Launcher UI */}
         {isPlaying && (
           <div 
             className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50"
@@ -402,17 +397,14 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             }}
           >
             <div className="relative flex flex-col items-center">
-              {/* MPC Body */}
               <div className={cn(
                 "relative w-32 h-28 md:w-40 md:h-36 bg-neutral-900 border-2 rounded-xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-all duration-75",
                 isDragging ? "border-[#00FF66] bg-neutral-900/90 scale-95" : "border-white/10"
               )}>
-                {/* MPC Display Area */}
                 <div className="w-full h-1/4 bg-black/60 rounded border border-white/5 mb-3 flex items-center justify-center overflow-hidden">
                    <div className="w-full h-[2px] bg-[#00FF66]/20 animate-pulse" />
                 </div>
                 
-                {/* 4x4 Pads Grid */}
                 <div className="grid grid-cols-4 gap-1.5 h-3/5">
                   {Array.from({ length: 16 }).map((_, i) => (
                     <div 
@@ -425,14 +417,12 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                   ))}
                 </div>
 
-                {/* Side Knobs */}
                 <div className="absolute -right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3">
                   <div className="w-2.5 h-2.5 rounded-full bg-neutral-800 border border-white/10" />
                   <div className="w-2.5 h-2.5 rounded-full bg-neutral-800 border border-white/10" />
                 </div>
               </div>
 
-              {/* Fired / Loaded Vinyl Disc */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
                 <Disc className={cn(
                   "w-12 h-12 md:w-16 md:h-16 transition-all",
@@ -440,7 +430,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 )} />
               </div>
               
-              {/* Pull Handle Indicator */}
               <div className="mt-4 flex gap-1.5 opacity-10">
                 <div className="w-1.5 h-1.5 rounded-full bg-white" />
                 <div className="w-1.5 h-1.5 rounded-full bg-white" />

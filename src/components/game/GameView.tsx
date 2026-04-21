@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// Konstante für den Zeitversatz - Auf 0.0 reduziert, da die Anzeige zuvor "zu spät" war
+// Konstante für den Zeitversatz - Auf 0.0 reduziert für exakten Sync
 export const SYNC_OFFSET = 0.0;
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -90,7 +90,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const bpm = game.bpm || 120;
   const TOTAL_STEPS = 512;
 
-  // Stoppt den Sound beim Verlassen der Komponente
   useEffect(() => {
     return () => {
       audioEngine?.stop();
@@ -128,7 +127,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     const secondsPerStep = (60 / bpm) / 4;
     
     const currentStep = (time - SYNC_OFFSET) / secondsPerStep;
-    const tolerance = 1.4; 
+    // Schwierigkeit: Höhere Toleranz für Level 1 & 2
+    const tolerance = level.difficulty <= 2 ? 1.8 : 1.4; 
     
     let hitNoteId: string | null = null;
     let minDiff = Infinity;
@@ -159,7 +159,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         return { hits: prev.hits, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
       });
     }
-  }, [isPlaying, soundsWithPatterns, bpm, activeSoundTypes]);
+  }, [isPlaying, soundsWithPatterns, bpm, activeSoundTypes, level.difficulty]);
 
   const startLevel = async () => {
     if (!audioEngine) return;
@@ -198,7 +198,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           setCurrentTime(t);
           const secondsPerStep = (60 / bpm) / 4;
           const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
-          const tolerance = 1.4;
+          const tolerance = level.difficulty <= 2 ? 1.8 : 1.4;
 
           let passiveMissesCount = 0;
           soundsWithPatterns.forEach(sound => {
@@ -234,7 +234,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
       frameRef.current = requestAnimationFrame(update);
     }
     return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
-  }, [isPlaying, bpm, soundsWithPatterns]);
+  }, [isPlaying, bpm, soundsWithPatterns, level.difficulty]);
 
   useEffect(() => {
     if (isFinished && score.accuracy >= PASS_THRESHOLD && user && db) {
