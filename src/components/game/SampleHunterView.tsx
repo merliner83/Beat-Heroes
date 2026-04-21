@@ -76,14 +76,14 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const requestRef = useRef<number>(null);
 
   const bpm = game.bpm || 120;
-  const SESSION_DURATION = (64 * 60) / bpm; // 16 Bars
+  const SESSION_DURATION = (16 * 4 * 60) / bpm; // 16 Bars
   const FADE_DURATION = 2;
 
   // Difficulty scaling for note lifetime
   const SAMPLE_LIFETIME = 
     level.difficulty === 1 ? 3000 : 
     level.difficulty === 2 ? 2200 : 
-    level.difficulty === 3 ? 1500 : 900; // Level 4 is now "Hero Mode" with 0.9s
+    level.difficulty === 3 ? 1500 : 900; 
 
   useEffect(() => {
     return () => {
@@ -135,16 +135,18 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
     const currentTime = audioEngine?.getCurrentTime() || 0;
 
-    if (currentTime >= SESSION_DURATION) {
+    // Trigger fade AFTER 16 bars
+    if (currentTime >= SESSION_DURATION && !hasStartedFade) {
+      setHasStartedFade(true);
+      audioEngine?.fadeBackingTrack(FADE_DURATION);
+    }
+
+    // End session AFTER fade
+    if (currentTime >= SESSION_DURATION + FADE_DURATION) {
       setIsPlaying(false);
       setIsFinished(true);
       audioEngine?.stop();
       return;
-    }
-
-    if (currentTime >= SESSION_DURATION - FADE_DURATION && !hasStartedFade) {
-      setHasStartedFade(true);
-      audioEngine?.fadeBackingTrack(FADE_DURATION);
     }
 
     setProjectiles(prev => {
@@ -155,7 +157,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         rotation: p.rotation + 15
       })).filter(p => p.y > -10 && p.x > -10 && p.x < 110);
 
-      if (activeNote && activeNote.status === 'active') {
+      // Stop spawning and processing samples once the main session is over
+      if (currentTime < SESSION_DURATION && activeNote && activeNote.status === 'active') {
         const hitProjectile = next.find(p => {
           const dx = p.x - activeNote.pos.x;
           const dy = p.y - activeNote.pos.y;
@@ -186,7 +189,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   }, [isPlaying, updateGame]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (!isPlaying) return;
+    if (!isPlaying || currentTime >= SESSION_DURATION) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     setDragCurrent({ x: e.clientX, y: e.clientY });
@@ -255,6 +258,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       setIsLoadingAudio(false);
     }
   };
+
+  const currentTime = audioEngine?.getCurrentTime() || 0;
 
   useEffect(() => {
     if (isFinished && score.accuracy >= PASS_THRESHOLD && user && db) {

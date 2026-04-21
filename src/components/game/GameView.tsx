@@ -208,7 +208,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
           const tolerance = level.difficulty <= 2 ? 1.8 : 1.4;
 
-          if (t >= SESSION_DURATION - FADE_DURATION && !hasStartedFade) {
+          // Fade starts AFTER 16 bars
+          if (t >= SESSION_DURATION && !hasStartedFade) {
             setHasStartedFade(true);
             audioEngine.fadeBackingTrack(FADE_DURATION);
           }
@@ -236,7 +237,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
             });
           }
           
-          if (t >= SESSION_DURATION + 1) { 
+          // End session AFTER fade
+          if (t >= SESSION_DURATION + FADE_DURATION) { 
             setIsPlaying(false);
             setIsFinished(true);
             audioEngine.stop();
