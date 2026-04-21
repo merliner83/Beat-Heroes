@@ -76,11 +76,12 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const requestRef = useRef<number>(null);
 
   const bpm = game.bpm || 120;
-  // 16 bars session = 16 * 4 beats = 64 beats
+  // 16 Bars = 64 Beats
   const SESSION_DURATION = (64 * 60) / bpm;
-  const FADE_DURATION = 2; // Fade out in the last 2 seconds
+  const FADE_DURATION = 2;
 
-  const SAMPLE_LIFETIME = 1000; // Standard 1s lifetime as requested
+  // Difficulty scaling for note lifetime
+  const SAMPLE_LIFETIME = level.difficulty === 1 ? 3000 : level.difficulty === 2 ? 2200 : 1500;
 
   useEffect(() => {
     return () => {
@@ -90,7 +91,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   }, []);
 
   const spawnNextNote = useCallback(() => {
-    if (!isPlaying) return;
+    if (sounds.length === 0) return;
 
     const randomSound = sounds[Math.floor(Math.random() * sounds.length)];
     const newNote: GameNote = {
@@ -98,20 +99,41 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       sound: randomSound,
       pos: {
         x: Math.random() * 80 + 10,
-        y: Math.random() * 40 + 10
+        y: Math.random() * 45 + 10
       },
       status: 'active',
       spawnTime: Date.now()
     };
     setActiveNote(newNote);
-  }, [sounds, isPlaying]);
+  }, [sounds]);
+
+  const handleHit = useCallback((note: GameNote) => {
+    setActiveNote(prev => prev ? { ...prev, status: 'hit' } : null);
+    audioEngine?.playOneShot(note.sound.sampleUrl);
+    setScore(prev => {
+      const nextHits = prev.hits + 1;
+      const total = nextHits + prev.misses;
+      return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
+    });
+    setTimeout(spawnNextNote, 200);
+  }, [spawnNextNote]);
+
+  const handleMiss = useCallback((noteId: string) => {
+    setActiveNote(prev => (prev?.id === noteId ? { ...prev, status: 'missed' } : prev));
+    setScore(prev => {
+      const nextMisses = prev.misses + 1;
+      const total = prev.hits + nextMisses;
+      return { hits: prev.hits, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
+    });
+    setTimeout(spawnNextNote, 300);
+  }, [spawnNextNote]);
 
   const updateGame = useCallback(() => {
     if (!isPlaying) return;
 
     const currentTime = audioEngine?.getCurrentTime() || 0;
 
-    // Handle session end
+    // Session end
     if (currentTime >= SESSION_DURATION) {
       setIsPlaying(false);
       setIsFinished(true);
@@ -119,7 +141,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       return;
     }
 
-    // Handle fade out
+    // Fade out backing track towards the end
     if (currentTime >= SESSION_DURATION - FADE_DURATION && !hasStartedFade) {
       setHasStartedFade(true);
       audioEngine?.fadeBackingTrack(FADE_DURATION);
@@ -131,14 +153,15 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         x: p.x + p.vx,
         y: p.y + p.vy,
         rotation: p.rotation + 15
-      })).filter(p => p.y > -50 && p.x > -50 && p.x < 110);
+      })).filter(p => p.y > -10 && p.x > -10 && p.x < 110);
 
+      // Collision detection with projectiles
       if (activeNote && activeNote.status === 'active') {
         const hitProjectile = next.find(p => {
           const dx = p.x - activeNote.pos.x;
           const dy = p.y - activeNote.pos.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          return distance < 10;
+          return distance < 12; // Collision radius
         });
 
         if (hitProjectile) {
@@ -152,7 +175,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     });
 
     requestRef.current = requestAnimationFrame(updateGame);
-  }, [isPlaying, activeNote, SESSION_DURATION, hasStartedFade, SAMPLE_LIFETIME]);
+  }, [isPlaying, activeNote, SESSION_DURATION, hasStartedFade, SAMPLE_LIFETIME, handleHit, handleMiss]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -162,27 +185,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     }
     return () => { if (requestRef.current) cancelAnimationFrame(requestRef.current); };
   }, [isPlaying, updateGame]);
-
-  const handleHit = (note: GameNote) => {
-    setActiveNote(prev => prev ? { ...prev, status: 'hit' } : null);
-    audioEngine?.playOneShot(note.sound.sampleUrl);
-    setScore(prev => {
-      const nextHits = prev.hits + 1;
-      const total = nextHits + prev.misses;
-      return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
-    });
-    setTimeout(spawnNextNote, 200);
-  };
-
-  const handleMiss = (noteId: string) => {
-    setActiveNote(prev => (prev?.id === noteId ? { ...prev, status: 'missed' } : prev));
-    setScore(prev => {
-      const nextMisses = prev.misses + 1;
-      const total = prev.hits + nextMisses;
-      return { hits: prev.hits, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
-    });
-    setTimeout(spawnNextNote, 300);
-  };
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (!isPlaying) return;
@@ -244,8 +246,9 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       
       await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
       setCountIn(null);
-      setIsPlaying(true);
       
+      // Order matters here for the spawnNextNote dependency
+      setIsPlaying(true);
       await audioEngine.startBackingTrack(game.backingTrackUrl || '', actualStartTime);
       spawnNextNote();
     } catch (e) {
