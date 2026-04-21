@@ -109,16 +109,27 @@ export default function HomePage() {
       ];
 
       for (const s of studios) {
-        await setDoc(doc(db, 'studios', s.id), s, { merge: true });
+        const studioRef = doc(db, 'studios', s.id);
+        const studioSnap = await getDoc(studioRef);
+        const studioData: any = { ...s };
+        
+        // Protect existing imageUrl
+        if (studioSnap.exists() && studioSnap.data()?.imageUrl) {
+          studioData.imageUrl = studioSnap.data()?.imageUrl;
+        }
+        
+        await setDoc(studioRef, studioData, { merge: true });
       }
 
       const patterns = [
         // Kick Patterns (8 Bars each)
-        { id: 'kick-p1', name: 'Kick Intro (1/Bar)', steps: [16, 32, 48, 64, 80, 96, 112, 114, 126] }, 
-        { id: 'kick-p2', name: 'Kick Main (1/4 Notes)', steps: Array.from({ length: 32 }, (_, i) => i * 4) }, 
+        // p1: 1 kick per bar (Intro phase) + fills
+        { id: 'kick-p1', name: 'Kick Intro', steps: [0, 16, 32, 48, 64, 80, 96, 112, 114, 126] }, 
+        // p2: 1/4 notes (Four to the floor - Energy phase)
+        { id: 'kick-p2', name: 'Kick Main', steps: Array.from({ length: 32 }, (_, i) => i * 4) }, 
         // Clap Patterns
-        { id: 'clap-p1', name: 'Clap Basic (2 & 4)', steps: [20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
-        { id: 'clap-p2', name: 'Clap Var (Double)', steps: [4, 12, 14, 20, 28, 30, 36, 44, 46, 52, 60, 62, 68, 76, 78, 84, 92, 94, 100, 108, 110, 116, 124, 126] },
+        { id: 'clap-p1', name: 'Clap Basic', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
+        { id: 'clap-p2', name: 'Clap Var', steps: [4, 12, 14, 20, 28, 30, 36, 44, 46, 52, 60, 62, 68, 76, 78, 84, 92, 94, 100, 108, 110, 116, 124, 126] },
         // Percs
         { id: 'perc-p1', name: 'Perc Basic', steps: [18, 22, 50, 54, 82, 86, 114, 118] },
         { id: 'perc-p2', name: 'Perc Active', steps: Array.from({ length: 16 }, (_, i) => (i * 8) + 18) },
@@ -158,14 +169,21 @@ export default function HomePage() {
             name: config.name,
             type: config.type,
             bpm: config.bpm,
-            difficulty: 1,
-            backgroundImageUrl: config.bg || null
+            difficulty: 1
           };
 
-          if (!gameSnap.exists() || !gameSnap.data()?.backingTrackUrl) {
-            gameData.backingTrackUrl = defaultBackingTrack;
-          } else {
+          // Protect existing backingTrackUrl
+          if (gameSnap.exists() && gameSnap.data()?.backingTrackUrl) {
             gameData.backingTrackUrl = gameSnap.data()?.backingTrackUrl;
+          } else {
+            gameData.backingTrackUrl = defaultBackingTrack;
+          }
+
+          // Protect existing backgroundImageUrl
+          if (gameSnap.exists() && gameSnap.data()?.backgroundImageUrl) {
+            gameData.backgroundImageUrl = gameSnap.data()?.backgroundImageUrl;
+          } else {
+            gameData.backgroundImageUrl = config.bg || null;
           }
 
           await setDoc(gameDocRef, gameData, { merge: true });
@@ -200,16 +218,17 @@ export default function HomePage() {
                   patternIds: s.pIds
                 };
 
-                if (!soundSnap.exists() || !soundSnap.data()?.sampleUrl) {
-                  soundData.sampleUrl = s.sample;
-                } else {
+                // Protect existing sampleUrl
+                if (soundSnap.exists() && soundSnap.data()?.sampleUrl) {
                   soundData.sampleUrl = soundSnap.data()?.sampleUrl;
+                } else {
+                  soundData.sampleUrl = s.sample;
                 }
 
                 await setDoc(soundDocRef, soundData, { merge: true });
               }
             } else {
-              // Sample Hunter Sounds (No patterns needed)
+              // Sample Hunter Sounds
               const hunterSounds = [
                 { type: 'kick', sample: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg' },
                 { type: 'clap', sample: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg' },
@@ -222,11 +241,14 @@ export default function HomePage() {
                 const soundDocRef = doc(db, 'levels', levelId, 'sounds', soundId);
                 const soundSnap = await getDoc(soundDocRef);
                 const soundData: any = { id: soundId, levelId: levelId, type: s.type, patternIds: [] };
-                if (!soundSnap.exists() || !soundSnap.data()?.sampleUrl) {
-                  soundData.sampleUrl = s.sample;
-                } else {
+                
+                // Protect existing sampleUrl
+                if (soundSnap.exists() && soundSnap.data()?.sampleUrl) {
                   soundData.sampleUrl = soundSnap.data()?.sampleUrl;
+                } else {
+                  soundData.sampleUrl = s.sample;
                 }
+                
                 await setDoc(soundDocRef, soundData, { merge: true });
               }
             }
