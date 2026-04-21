@@ -15,7 +15,7 @@ import { doc, updateDoc, increment, setDoc, serverTimestamp } from 'firebase/fir
 
 const PASS_THRESHOLD = 80;
 const DIFFICULTY_REWARDS: Record<number, number> = { 1: 50, 2: 100, 3: 200, 4: 1000 };
-const SAMPLE_LIFETIME = 1500; // Etwas mehr Zeit für Flugzeit-Kompensation
+const SAMPLE_LIFETIME = 1500;
 const PROJECTILE_SPEED = 15;
 
 const OBJECT_ICONS: Record<SoundType, any> = {
@@ -69,7 +69,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const [activeNote, setActiveNote] = useState<GameNote | null>(null);
   const [projectiles, setProjectiles] = useState<Projectile[]>([]);
   
-  // Slingshot State
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [dragCurrent, setDragCurrent] = useState({ x: 0, y: 0 });
@@ -99,8 +98,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       id: `note-${Date.now()}-${Math.random()}`,
       sound: randomSound,
       pos: {
-        x: Math.random() * 70 + 15,
-        y: Math.random() * 50 + 10 // Eher oberer Bereich für Slingshot-Gameplay
+        x: Math.random() * 80 + 10,
+        y: Math.random() * 40 + 10
       },
       status: 'active',
       spawnTime: Date.now()
@@ -108,7 +107,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     setActiveNote(newNote);
   }, [sounds, score.hits, score.misses]);
 
-  // Game Loop für Projektile und Kollisionen
   const updateGame = useCallback(() => {
     if (!isPlaying) return;
 
@@ -118,15 +116,14 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         x: p.x + p.vx,
         y: p.y + p.vy,
         rotation: p.rotation + 15
-      })).filter(p => p.y > -50 && p.x > -50 && p.x < 110); // Off-screen culling
+      })).filter(p => p.y > -50 && p.x > -50 && p.x < 110);
 
-      // Collision Detection
       if (activeNote && activeNote.status === 'active') {
         const hitProjectile = next.find(p => {
           const dx = p.x - activeNote.pos.x;
           const dy = p.y - activeNote.pos.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          return distance < 8; // Hit-Radius
+          return distance < 8;
         });
 
         if (hitProjectile) {
@@ -193,16 +190,16 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     const dy = dragStart.y - dragCurrent.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (dist > 10) {
+    if (dist > 20) {
       const angle = Math.atan2(dy, dx);
-      const power = Math.min(dist / 10, 25);
+      const power = Math.min(dist / 8, 30);
       
       const newProjectile: Projectile = {
         id: `p-${Date.now()}`,
-        x: 50, // Mitte unten
-        y: 90,
-        vx: (Math.cos(angle) * power) / 3, // Skalierung für CSS % Einheiten
-        vy: (Math.sin(angle) * power) / 3,
+        x: 50,
+        y: 75,
+        vx: (Math.cos(angle) * power) / 2.5,
+        vy: (Math.sin(angle) * power) / 2.5,
         rotation: 0
       };
       
@@ -216,7 +213,11 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     setIsLoadingAudio(true);
     try {
       await audioEngine.resume();
-      await audioEngine.preloadAudio([game.backingTrackUrl || '', ...sounds.map(s => s.sampleUrl), 'https://actions.google.com/sounds/v1/swishes/fast_swish.ogg']);
+      await audioEngine.preloadAudio([
+        game.backingTrackUrl || '', 
+        ...sounds.map(s => s.sampleUrl), 
+        'https://actions.google.com/sounds/v1/swishes/fast_swish.ogg'
+      ]);
       setScore({ hits: 0, misses: 0, accuracy: 100 });
       setIsFinished(false);
       const bpm = game.bpm || 120;
@@ -250,10 +251,23 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
   const bgUrl = game.backgroundImageUrl || 'https://picsum.photos/seed/beathero-boombox/1080/1920';
 
+  // Slingshot Visual Calcs
+  const getPullVisuals = () => {
+    if (!isDragging) return null;
+    const dx = (dragStart.x - dragCurrent.x) / 5;
+    const dy = (dragStart.y - dragCurrent.y) / 5;
+    const limit = 20;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const scale = dist > limit ? limit / dist : 1;
+    return { x: dx * scale, y: dy * scale };
+  };
+
+  const pull = getPullVisuals();
+
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
       <div 
-        className="absolute inset-0 opacity-20 pointer-events-none bg-center bg-no-repeat z-10"
+        className="absolute inset-0 opacity-15 pointer-events-none bg-center bg-no-repeat z-10"
         style={{ 
           backgroundImage: `url(${bgUrl})`,
           backgroundSize: 'contain',
@@ -262,20 +276,20 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         }}
       />
       
-      <header className="flex justify-between items-center mb-1 px-4 h-12 shrink-0 z-50 bg-black/40 backdrop-blur-xl border-b border-white/5 rounded-t-3xl">
-        <div className="flex items-center gap-3">
+      <header className="flex justify-between items-center mb-1 px-6 h-14 shrink-0 z-50 bg-black/60 backdrop-blur-2xl border-b border-white/5 rounded-t-[2.5rem]">
+        <div className="flex items-center gap-4">
           <Link href={`/studio/${game.studioId}`}>
-            <ArrowLeft className="w-5 h-5 text-white/50 hover:text-white transition-colors" />
+            <ArrowLeft className="w-5 h-5 text-white/40 hover:text-white transition-all hover:scale-110" />
           </Link>
           <div>
             <h1 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-primary leading-none">Vinyl Hunter</h1>
-            <p className="text-[7px] md:text-[8px] opacity-40 uppercase font-bold tracking-widest">{game.name}</p>
+            <p className="text-[7px] md:text-[8px] opacity-30 uppercase font-black tracking-widest">{game.name}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-black/60 px-4 py-1.5 rounded-full border border-white/10 h-10 backdrop-blur-md">
+          <div className="flex items-center gap-2 bg-black/80 px-5 py-2 rounded-full border border-white/10 h-10 backdrop-blur-md shadow-2xl">
             <Percent className="w-4 h-4 text-[#FFEA00]" />
-            <p className={cn("text-xl md:text-2xl font-black italic", score.accuracy >= PASS_THRESHOLD ? "text-[#00FF66]" : "text-[#FF3D00]")}>
+            <p className={cn("text-xl md:text-2xl font-black italic tracking-tighter", score.accuracy >= PASS_THRESHOLD ? "text-[#00FF66]" : "text-[#FF3D00]")}>
               {score.accuracy}
             </p>
           </div>
@@ -287,7 +301,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        className="flex-1 relative overflow-hidden rounded-b-3xl border-x border-b border-white/5 z-20 pointer-events-auto touch-none"
+        className="flex-1 relative overflow-hidden rounded-b-[2.5rem] border-x border-b border-white/5 z-20 pointer-events-auto touch-none bg-gradient-to-b from-transparent to-black/40"
       >
         {/* Active Sample Target */}
         {isPlaying && activeNote && (
@@ -295,7 +309,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             className={cn(
               "absolute z-30 flex items-center justify-center transition-all duration-300",
               activeNote.status === 'hit' && "scale-150 opacity-0 blur-xl",
-              activeNote.status === 'missed' && "scale-90 opacity-0 bg-red-500/20"
+              activeNote.status === 'missed' && "scale-90 opacity-0"
             )}
             style={{ 
               left: `${activeNote.pos.x}%`, 
@@ -308,7 +322,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             <div className="relative flex items-center justify-center w-full h-full">
               <div 
                 className={cn(
-                  "absolute inset-4 rounded-full blur-[30px] opacity-20 transition-all",
+                  "absolute inset-0 rounded-full blur-[40px] opacity-20 transition-all duration-500 animate-pulse",
                   activeNote.status === 'hit' ? "bg-[#00FF66] opacity-100" : 
                   activeNote.status === 'missed' ? "bg-[#FF3D00] opacity-100" : ""
                 )} 
@@ -316,84 +330,118 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               />
               
               {React.createElement(OBJECT_ICONS[activeNote.sound.type], {
-                className: "w-16 h-16 md:w-20 md:h-20 transition-colors duration-150",
-                strokeWidth: 1.0,
+                className: "w-16 h-16 md:w-20 md:h-20 transition-all duration-200 drop-shadow-[0_0_20px_rgba(0,0,0,0.8)]",
+                strokeWidth: 0.8,
                 style: { 
                   color: activeNote.status === 'hit' ? '#00FF66' : 
                          activeNote.status === 'missed' ? '#FF3D00' : 
                          OBJECT_COLORS[activeNote.sound.type],
-                  filter: `drop-shadow(0 0 15px ${
+                  filter: `drop-shadow(0 0 25px ${
                     activeNote.status === 'hit' ? '#00FF66' : 
                     activeNote.status === 'missed' ? '#FF3D00' : 
                     OBJECT_COLORS[activeNote.sound.type]
-                  }66)`
+                  }88)`
                 }
               })}
             </div>
           </div>
         )}
 
-        {/* Flying Projectiles */}
+        {/* Flying Vinyls */}
         {projectiles.map(p => (
           <div
             key={p.id}
-            className="absolute z-40 text-white/90 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+            className="absolute z-40 text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.6)]"
             style={{
               left: `${p.x}%`,
               top: `${p.y}%`,
               transform: `translate(-50%, -50%) rotate(${p.rotation}deg)`
             }}
           >
-            <Disc className="w-10 h-10 md:w-12 md:h-12" strokeWidth={1.5} />
+            <div className="relative">
+              <Disc className="w-12 h-12 md:w-16 md:h-16" strokeWidth={1.2} />
+              <div className="absolute inset-2 rounded-full border border-white/20 animate-spin-slow" />
+            </div>
           </div>
         ))}
 
-        {/* Slingshot Visuals */}
-        {isDragging && (
-          <div className="absolute inset-0 pointer-events-none z-50">
-            <svg className="w-full h-full">
-              <line 
-                x1="50%" 
-                y1="90%" 
-                x2={50 - (dragStart.x - dragCurrent.x) / 5 + '%'} 
-                y2={90 - (dragStart.y - dragCurrent.y) / 5 + '%'} 
-                stroke="white" 
-                strokeWidth="2" 
-                strokeDasharray="5,5" 
-                className="opacity-40"
-              />
-              <circle 
-                cx={50 - (dragStart.x - dragCurrent.x) / 5 + '%'} 
-                cy={90 - (dragStart.y - dragCurrent.y) / 5 + '%'} 
-                r="4" 
-                fill="white" 
-                className="opacity-60"
-              />
-            </svg>
-          </div>
-        )}
+        {/* Elaborate Slingshot Visuals */}
+        <div className="absolute inset-0 pointer-events-none z-50">
+          <svg className="w-full h-full">
+            {/* Sling Base Anchors */}
+            <circle cx="42%" cy="75%" r="4" fill="#333" />
+            <circle cx="58%" cy="75%" r="4" fill="#333" />
+            
+            {isDragging && pull && (
+              <>
+                {/* Elastic Bands */}
+                <line 
+                  x1="42%" y1="75%" 
+                  x2={`${50 + pull.x}%`} y2={`${75 + pull.y}%`} 
+                  stroke="#00FF66" strokeWidth="3" opacity="0.6"
+                />
+                <line 
+                  x1="58%" y1="75%" 
+                  x2={`${50 + pull.x}%`} y2={`${75 + pull.y}%`} 
+                  stroke="#00FF66" strokeWidth="3" opacity="0.6"
+                />
+                {/* Trajectory Guide */}
+                <line 
+                  x1="50%" y1="75%" 
+                  x2={`${50 - pull.x * 3}%`} y2={`${75 - pull.y * 3}%`} 
+                  stroke="white" strokeWidth="1" strokeDasharray="4,8" opacity="0.2"
+                />
+              </>
+            )}
+          </svg>
+        </div>
 
-        {/* Launcher UI */}
+        {/* Slingshot Launcher UI */}
         {isPlaying && (
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50">
-            <div className={cn(
-              "p-4 rounded-full bg-white/5 border-2 border-white/20 transition-all",
-              isDragging ? "scale-90 opacity-40" : "scale-100 animate-pulse-neon"
-            )}>
-              <Disc className="w-12 h-12 text-white/80" />
+          <div 
+            className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50"
+            style={{
+              transform: `translate(-50%, ${isDragging && pull ? pull.y * 2 : 0}px) translateX(${isDragging && pull ? pull.x * 2 : 0}px)`
+            }}
+          >
+            <div className="relative flex flex-col items-center">
+              {/* Launcher Base */}
+              <div className="absolute -bottom-4 w-24 h-4 bg-gradient-to-t from-black to-white/10 rounded-full blur-md opacity-50" />
+              
+              <div className={cn(
+                "p-4 rounded-full border-2 transition-all duration-75 shadow-2xl",
+                isDragging ? "border-[#00FF66] bg-black/40 scale-90" : "border-white/20 bg-black/80 hover:scale-105 active:scale-95"
+              )}>
+                <div className="relative">
+                  <Disc className={cn(
+                    "w-14 h-14 md:w-20 md:h-20 transition-all",
+                    isDragging ? "text-[#00FF66] opacity-100" : "text-white/80 opacity-60"
+                  )} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white/40" />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Angle Indicator */}
+              <div className="mt-4 flex gap-1 opacity-20">
+                <div className="w-1 h-3 rounded-full bg-white" />
+                <div className="w-1 h-3 rounded-full bg-white" />
+                <div className="w-1 h-3 rounded-full bg-white" />
+              </div>
             </div>
           </div>
         )}
 
         {!isPlaying && !isFinished && countIn === null && (
-          <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-[100] backdrop-blur-md">
-            <Card className="p-10 bg-black/50 border-none gemini-border text-center max-w-sm mx-4 shadow-2xl">
-              <div className="bg-primary/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/30">
-                <Disc className="w-8 h-8 text-primary animate-spin" />
+          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[100] backdrop-blur-3xl">
+            <Card className="p-12 bg-black/50 border-none gemini-border text-center max-w-sm mx-4 shadow-[0_0_100px_rgba(255,51,153,0.1)]">
+              <div className="bg-primary/20 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 border border-primary/30 shadow-[0_0_40px_rgba(255,51,153,0.2)]">
+                <Disc className="w-12 h-12 text-primary animate-spin" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-black mb-2 uppercase italic tracking-tighter">Vinyl Hunter</h2>
-              <p className="text-[10px] uppercase font-bold tracking-[0.2em] opacity-40 mb-8">Pull back & release to fire</p>
-              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-16 bg-white text-black font-black uppercase rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,255,0.1)]">
+              <h2 className="text-3xl md:text-4xl font-black mb-3 uppercase italic tracking-tighter">Vinyl Hunter</h2>
+              <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 mb-10 leading-relaxed">Pull the record & release<br/>to sync the samples</p>
+              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-18 bg-white text-black font-black uppercase italic rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.1)]">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Sync"}
               </Button>
             </Card>
@@ -402,30 +450,35 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
         {countIn !== null && (
           <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
-            <div className="text-[10rem] md:text-[15rem] font-black italic text-[#FFEA00] drop-shadow-[0_0_60px_rgba(255,234,0,0.5)]">{countIn}</div>
+            <div className="text-[12rem] md:text-[20rem] font-black italic text-[#FFEA00] drop-shadow-[0_0_80px_rgba(255,234,0,0.6)] animate-pulse">
+              {countIn}
+            </div>
           </div>
         )}
 
         {isFinished && (
-          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[100] p-6 backdrop-blur-2xl">
-            <div className="text-center space-y-8 max-w-sm">
+          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[110] p-6 backdrop-blur-3xl">
+            <div className="text-center space-y-10 max-w-sm">
               {score.accuracy >= PASS_THRESHOLD ? (
                 <>
-                  <Trophy className="w-20 h-20 text-[#FFEA00] mx-auto drop-shadow-[0_0_40px_rgba(255,234,0,0.4)]" />
-                  <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">Gold Mastered</h2>
-                  <p className="text-3xl text-[#00FF66] font-black italic">{score.accuracy}% Sync</p>
+                  <div className="relative inline-block">
+                    <Trophy className="w-24 h-24 text-[#FFEA00] mx-auto drop-shadow-[0_0_50px_rgba(255,234,0,0.5)]" />
+                    <Sparkles className="absolute -top-4 -right-4 w-8 h-8 text-[#FFEA00] animate-pulse" />
+                  </div>
+                  <h2 className="text-5xl md:text-6xl font-black uppercase italic tracking-tighter">Gold Mastered</h2>
+                  <p className="text-4xl text-[#00FF66] font-black italic">{score.accuracy}% Sync</p>
                 </>
               ) : (
                 <>
-                  <XCircle className="w-20 h-20 text-[#FF3D00] mx-auto drop-shadow-[0_0_40px_rgba(255,61,0,0.4)]" />
-                  <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">Desynced</h2>
-                  <p className="text-xl opacity-60 uppercase tracking-[0.3em] font-black">Accuracy failure</p>
+                  <XCircle className="w-24 h-24 text-[#FF3D00] mx-auto drop-shadow-[0_0_50px_rgba(255,61,0,0.5)]" />
+                  <h2 className="text-5xl md:text-6xl font-black uppercase italic tracking-tighter">Desynced</h2>
+                  <p className="text-xl opacity-40 uppercase tracking-[0.4em] font-black italic">Accuracy failure</p>
                 </>
               )}
-              <div className="flex gap-4 pt-8">
-                <Button onClick={startLevel} variant="outline" className="flex-1 h-14 bg-white/5 hover:bg-white/10 text-xs md:text-sm uppercase font-black italic rounded-2xl">Retry</Button>
+              <div className="flex gap-4 pt-4">
+                <Button onClick={startLevel} variant="outline" className="flex-1 h-16 bg-white/5 hover:bg-white/10 text-xs md:text-sm uppercase font-black italic rounded-[1.5rem] border-white/10">Retry</Button>
                 <Link href={`/studio/${game.studioId}`} className="flex-1">
-                  <Button className="w-full h-14 bg-white text-black font-black uppercase italic rounded-2xl">Return</Button>
+                  <Button className="w-full h-16 bg-white text-black font-black uppercase italic rounded-[1.5rem]">Return</Button>
                 </Link>
               </div>
             </div>
@@ -433,8 +486,12 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         )}
       </main>
 
-      <footer className="p-3 text-center shrink-0 z-50 bg-black/40 backdrop-blur-sm border-t border-white/5">
-        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">Slingshot Engine v1.0 • Drag Down to Aim</p>
+      <footer className="p-4 text-center shrink-0 z-50 bg-black/40 backdrop-blur-md border-t border-white/5 rounded-b-[2.5rem]">
+        <div className="flex items-center justify-center gap-4 opacity-20">
+          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+          <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.5em] italic">Vinyl Projectile Engine v2.0 • Pull to Launch</p>
+          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+        </div>
       </footer>
     </div>
   );
