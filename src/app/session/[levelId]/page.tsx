@@ -8,6 +8,7 @@ import { doc, collection, query } from 'firebase/firestore';
 import { Game, Level, Sound, TriggerPattern } from '@/lib/game/types';
 import { GameView } from '@/components/game/GameView';
 import { SampleHunterView } from '@/components/game/SampleHunterView';
+import { DiskDashView } from '@/components/game/DiskDashView';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -60,11 +61,13 @@ export default function GameSessionPage() {
 
   return (
     <div className="h-screen bg-[#050505] overflow-hidden">
-      {sounds && patterns && (
+      {sounds && (
         game.type === 'sample-hunter' ? (
           <SampleHunterView game={game} level={level} sounds={sounds} />
+        ) : game.type === 'disk-dash' ? (
+          <DiskDashView game={game} level={level} sounds={sounds} />
         ) : (
-          <GameView game={game} level={level} sounds={sounds} patterns={patterns} />
+          <GameView game={game} level={level} sounds={sounds} patterns={patterns || []} />
         )
       )}
     </div>

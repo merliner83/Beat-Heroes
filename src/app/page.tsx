@@ -112,28 +112,19 @@ export default function HomePage() {
         const studioRef = doc(db, 'studios', s.id);
         const studioSnap = await getDoc(studioRef);
         const studioData: any = { ...s };
-        
-        // Protect existing imageUrl
         if (studioSnap.exists() && studioSnap.data()?.imageUrl) {
           studioData.imageUrl = studioSnap.data()?.imageUrl;
         }
-        
         await setDoc(studioRef, studioData, { merge: true });
       }
 
       const patterns = [
-        // Kick Patterns (8 Bars each)
-        // p1: 1 kick per bar (Intro phase) + fills
         { id: 'kick-p1', name: 'Kick Intro', steps: [0, 16, 32, 48, 64, 80, 96, 112, 114, 126] }, 
-        // p2: 1/4 notes (Four to the floor - Energy phase)
         { id: 'kick-p2', name: 'Kick Main', steps: Array.from({ length: 32 }, (_, i) => i * 4) }, 
-        // Clap Patterns
         { id: 'clap-p1', name: 'Clap Basic', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
         { id: 'clap-p2', name: 'Clap Var', steps: [4, 12, 14, 20, 28, 30, 36, 44, 46, 52, 60, 62, 68, 76, 78, 84, 92, 94, 100, 108, 110, 116, 124, 126] },
-        // Percs
         { id: 'perc-p1', name: 'Perc Basic', steps: [18, 22, 50, 54, 82, 86, 114, 118] },
         { id: 'perc-p2', name: 'Perc Active', steps: Array.from({ length: 16 }, (_, i) => (i * 8) + 18) },
-        // Misc
         { id: 'misc-p1', name: 'Misc Ambience', steps: [0, 64] },
         { id: 'misc-p2', name: 'Misc Accents', steps: [16, 48, 80, 112] },
       ];
@@ -152,7 +143,8 @@ export default function HomePage() {
       for (const studio of studios) {
         const gameConfigs = [
           { id: 'beat-hero', name: 'Beat Hero', type: 'rhythm-producer', bpm: 120 },
-          { id: 'sample-catcher', name: 'Sample Catcher', type: 'sample-hunter', bpm: 128, bg: 'https://picsum.photos/seed/beathero-boombox/1080/1920' }
+          { id: 'vinyl-hunter', name: 'Vinyl Hunter', type: 'sample-hunter', bpm: 128 },
+          { id: 'sonic-dash', name: 'Sonic Dash', type: 'disk-dash', bpm: 124 }
         ];
 
         for (const config of gameConfigs) {
@@ -172,18 +164,14 @@ export default function HomePage() {
             difficulty: 1
           };
 
-          // Protect existing backingTrackUrl
           if (gameSnap.exists() && gameSnap.data()?.backingTrackUrl) {
             gameData.backingTrackUrl = gameSnap.data()?.backingTrackUrl;
           } else {
             gameData.backingTrackUrl = defaultBackingTrack;
           }
 
-          // Protect existing backgroundImageUrl
           if (gameSnap.exists() && gameSnap.data()?.backgroundImageUrl) {
             gameData.backgroundImageUrl = gameSnap.data()?.backgroundImageUrl;
-          } else {
-            gameData.backgroundImageUrl = config.bg || null;
           }
 
           await setDoc(gameDocRef, gameData, { merge: true });
@@ -197,60 +185,26 @@ export default function HomePage() {
               name: i === 1 ? 'Initiation' : i === 2 ? 'The Pulse' : i === 3 ? 'Modular' : 'Master'
             }, { merge: true });
 
-            if (config.type === 'rhythm-producer') {
-              const soundSet = [
-                { type: 'kick', sample: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg', pIds: ['kick-p1', 'kick-p2'] },
-                { type: 'clap', sample: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg', pIds: ['clap-p1', 'clap-p2'] },
-                { type: 'percs', sample: 'https://actions.google.com/sounds/v1/cartoon/clown_horn.ogg', pIds: ['perc-p1', 'perc-p2'] },
-                { type: 'misc', sample: 'https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg', pIds: ['misc-p1', 'misc-p2'] },
-              ];
+            const soundSet = [
+              { type: 'kick', sample: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg', pIds: ['kick-p1', 'kick-p2'] },
+              { type: 'clap', sample: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg', pIds: ['clap-p1', 'clap-p2'] },
+              { type: 'percs', sample: 'https://actions.google.com/sounds/v1/cartoon/clown_horn.ogg', pIds: ['perc-p1', 'perc-p2'] },
+              { type: 'misc', sample: 'https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg', pIds: ['misc-p1', 'misc-p2'] },
+            ];
 
-              for (let j = 0; j < i; j++) {
-                const s = soundSet[j];
-                const soundId = `sound-${levelId}-${s.type}`;
-                const soundDocRef = doc(db, 'levels', levelId, 'sounds', soundId);
-                const soundSnap = await getDoc(soundDocRef);
+            for (let j = 0; j < i; j++) {
+              const s = soundSet[j];
+              const soundId = `sound-${levelId}-${s.type}`;
+              const soundDocRef = doc(db, 'levels', levelId, 'sounds', soundId);
+              const soundSnap = await getDoc(soundDocRef);
 
-                const soundData: any = {
-                  id: soundId,
-                  levelId: levelId,
-                  type: s.type,
-                  patternIds: s.pIds
-                };
-
-                // Protect existing sampleUrl
-                if (soundSnap.exists() && soundSnap.data()?.sampleUrl) {
-                  soundData.sampleUrl = soundSnap.data()?.sampleUrl;
-                } else {
-                  soundData.sampleUrl = s.sample;
-                }
-
-                await setDoc(soundDocRef, soundData, { merge: true });
+              const soundData: any = { id: soundId, levelId: levelId, type: s.type, patternIds: s.pIds };
+              if (soundSnap.exists() && soundSnap.data()?.sampleUrl) {
+                soundData.sampleUrl = soundSnap.data()?.sampleUrl;
+              } else {
+                soundData.sampleUrl = s.sample;
               }
-            } else {
-              // Sample Hunter Sounds
-              const hunterSounds = [
-                { type: 'kick', sample: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg' },
-                { type: 'clap', sample: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg' },
-                { type: 'percs', sample: 'https://actions.google.com/sounds/v1/cartoon/clown_horn.ogg' },
-                { type: 'misc', sample: 'https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg' },
-              ];
-              for (let j = 0; j < i; j++) {
-                const s = hunterSounds[j];
-                const soundId = `sound-${levelId}-${s.type}`;
-                const soundDocRef = doc(db, 'levels', levelId, 'sounds', soundId);
-                const soundSnap = await getDoc(soundDocRef);
-                const soundData: any = { id: soundId, levelId: levelId, type: s.type, patternIds: [] };
-                
-                // Protect existing sampleUrl
-                if (soundSnap.exists() && soundSnap.data()?.sampleUrl) {
-                  soundData.sampleUrl = soundSnap.data()?.sampleUrl;
-                } else {
-                  soundData.sampleUrl = s.sample;
-                }
-                
-                await setDoc(soundDocRef, soundData, { merge: true });
-              }
+              await setDoc(soundDocRef, soundData, { merge: true });
             }
           }
         }

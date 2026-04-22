@@ -1,6 +1,6 @@
 
 export type SoundType = 'kick' | 'clap' | 'percs' | 'misc';
-export type GameType = 'rhythm-producer' | 'sample-hunter';
+export type GameType = 'rhythm-producer' | 'sample-hunter' | 'disk-dash';
 
 export interface Studio {
   id: string;
@@ -21,6 +21,7 @@ export interface Game {
   bpm?: number;
   difficulty?: number; // 1-4
   backingTrackUrl?: string;
+  backgroundImageUrl?: string;
 }
 
 export interface Level {
