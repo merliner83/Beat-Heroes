@@ -212,7 +212,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Radar Synced!", description: "Modules deployed to all districts." });
+      toast({ title: "Radar Synced!", description: "Sonic Dash deployed to Noxxos and others." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Setup Failed" });
