@@ -119,7 +119,7 @@ export default function HomePage() {
       }
 
       const patterns = [
-        { id: 'kick-p1', name: 'Kick Intro', steps: [0, 16, 32, 48, 64, 80, 96, 112, 114, 126] }, 
+        { id: 'kick-p1', name: 'Kick Intro', steps: [0, 16, 32, 48, 64, 80, 96, 110, 112, 126] }, 
         { id: 'kick-p2', name: 'Kick Main', steps: Array.from({ length: 32 }, (_, i) => i * 4) }, 
         { id: 'clap-p1', name: 'Clap Basic', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
         { id: 'clap-p2', name: 'Clap Var', steps: [4, 12, 14, 20, 28, 30, 36, 44, 46, 52, 60, 62, 68, 76, 78, 84, 92, 94, 100, 108, 110, 116, 124, 126] },
@@ -291,7 +291,7 @@ export default function HomePage() {
             <div 
               className="absolute inset-0 origin-center animate-[spin_15s_linear_infinite] opacity-40 pointer-events-none" 
               style={{ 
-                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.2) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.7) 360deg)' 
+                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.2) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.4) 360deg)' 
               }}
             />
           </div>
