@@ -112,8 +112,9 @@ export default function HomePage() {
         const studioRef = doc(db, 'studios', s.id);
         const studioSnap = await getDoc(studioRef);
         const studioData: any = { ...s };
-        if (studioSnap.exists() && studioSnap.data()?.imageUrl) {
-          studioData.imageUrl = studioSnap.data()?.imageUrl;
+        if (studioSnap.exists()) {
+          const existing = studioSnap.data();
+          if (existing?.imageUrl) studioData.imageUrl = existing.imageUrl;
         }
         await setDoc(studioRef, studioData, { merge: true });
       }
@@ -164,14 +165,13 @@ export default function HomePage() {
             difficulty: 1
           };
 
-          if (gameSnap.exists() && gameSnap.data()?.backingTrackUrl) {
-            gameData.backingTrackUrl = gameSnap.data()?.backingTrackUrl;
+          if (gameSnap.exists()) {
+            const existing = gameSnap.data();
+            if (existing?.backingTrackUrl) gameData.backingTrackUrl = existing.backingTrackUrl;
+            else gameData.backingTrackUrl = defaultBackingTrack;
+            if (existing?.backgroundImageUrl) gameData.backgroundImageUrl = existing.backgroundImageUrl;
           } else {
             gameData.backingTrackUrl = defaultBackingTrack;
-          }
-
-          if (gameSnap.exists() && gameSnap.data()?.backgroundImageUrl) {
-            gameData.backgroundImageUrl = gameSnap.data()?.backgroundImageUrl;
           }
 
           await setDoc(gameDocRef, gameData, { merge: true });
@@ -199,8 +199,10 @@ export default function HomePage() {
               const soundSnap = await getDoc(soundDocRef);
 
               const soundData: any = { id: soundId, levelId: levelId, type: s.type, patternIds: s.pIds };
-              if (soundSnap.exists() && soundSnap.data()?.sampleUrl) {
-                soundData.sampleUrl = soundSnap.data()?.sampleUrl;
+              if (soundSnap.exists()) {
+                const existing = soundSnap.data();
+                if (existing?.sampleUrl) soundData.sampleUrl = existing.sampleUrl;
+                else soundData.sampleUrl = s.sample;
               } else {
                 soundData.sampleUrl = s.sample;
               }
@@ -210,7 +212,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Radar Synced!", description: "Rhythm progression updated. 16 bars session active." });
+      toast({ title: "Radar Synced!", description: "Modules deployed to all districts." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Setup Failed" });
