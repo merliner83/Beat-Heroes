@@ -309,12 +309,12 @@ export default function HomePage() {
           <span className="text-[8px] uppercase font-black tracking-[0.4em]">City Scanner Active</span>
         </div>
         <Button 
-          variant="ghost" 
-          size="sm" 
+          variant="outline" 
+          size="lg" 
           onClick={setupStudios} 
-          className="text-[8px] uppercase tracking-tighter gap-2 opacity-60 hover:opacity-100 group h-8 px-4 font-black"
+          className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_20px_rgba(255,234,0,0.4)] animate-pulse"
         >
-          <RefreshCw className="w-3 h-3 group-hover:rotate-180 transition-transform duration-1000" /> Rack Sync
+          <RefreshCw className="w-4 h-4 mr-2" /> Rack Sync
         </Button>
       </footer>
     </div>
