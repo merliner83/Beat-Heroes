@@ -63,7 +63,6 @@
 
 .gemini-border {
   position: relative;
-  z-index: 0;
   border-radius: var(--radius);
   overflow: hidden;
 }
@@ -72,7 +71,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  padding: 2px;
+  padding: 3px; /* Stärkerer Rand für bessere Sichtbarkeit */
   border-radius: inherit;
   background: linear-gradient(90deg, #FF3399, #FF3D00, #FF9100, #FFEA00, #FF3399);
   background-size: 200% 100%;
@@ -81,8 +80,8 @@
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
-  z-index: -1;
-  opacity: 0.9;
+  z-index: 10; /* Über den Hintergrund legen */
+  opacity: 1;
 }
 
 .gemini-glow {
@@ -97,4 +96,13 @@
   background: linear-gradient(90deg, #FF3399, #FF3D00, #FF9100);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.animate-pulse-neon {
+  animation: pulse-neon 2s infinite ease-in-out;
+}
+
+@keyframes pulse-neon {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.8; filter: brightness(1.5); }
 }
