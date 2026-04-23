@@ -7,6 +7,7 @@ import { useFirestore, useMemoFirebase, useCollection, useDoc, useUser } from '@
 import { collection, query, where, doc } from 'firebase/firestore';
 import { Studio, Game, Level, LevelProgress, Track } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ChevronRight, Trophy, Loader2, Play, Pause, Music, Zap, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -137,12 +138,12 @@ export default function StudioPage() {
         )}
 
         {/* Tracks Section */}
-        {studioTracks.length > 0 && (
-          <div className="mb-10 md:mb-14">
-            <div className="flex items-center gap-2 mb-4">
-              <Music className="w-4 h-4 text-primary" />
-              <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-white">TRACKS</h2>
-            </div>
+        <div className="mb-10 md:mb-14">
+          <div className="flex items-center gap-2 mb-4">
+            <Music className="w-4 h-4 text-primary" />
+            <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-white">TRACKS</h2>
+          </div>
+          {studioTracks.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {studioTracks.map((track, idx) => (
                 <div key={track.id} className="p-2 bg-white/2 border border-white/5 hover:bg-white/5 transition-all flex items-center justify-between group rounded-xl">
@@ -166,8 +167,12 @@ export default function StudioPage() {
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="p-8 text-center bg-white/2 rounded-2xl border border-dashed border-white/10">
+               <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-20 italic">No tracks synced for this studio</p>
+            </div>
+          )}
+        </div>
 
         {/* Games Section */}
         <div className="space-y-6">
@@ -184,12 +189,19 @@ export default function StudioPage() {
               const gameLevels = allLevels?.filter(l => l.gameId === game.id) || [];
               const diffInfo = DIFFICULTY_MAP[game.difficulty || 1];
 
+              // Calculate overall game progress
+              const totalAccuracy = gameLevels.reduce((acc, level) => {
+                const progress = getLevelProgress(level.id);
+                return acc + (progress?.accuracy || 0);
+              }, 0);
+              const overallProgress = gameLevels.length > 0 ? Math.round(totalAccuracy / gameLevels.length) : 0;
+
               return (
                 <div key={game.id} className="relative group">
-                  <div className="p-4 bg-black/40 border border-white/5 rounded-2xl md:rounded-[2rem]">
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-4">
-                      <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-3 mb-2">
+                  <div className="p-4 md:p-6 bg-black/40 border border-white/5 rounded-2xl md:rounded-[2rem]">
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+                      <div className="flex-1 w-full">
+                        <div className="flex flex-wrap items-center gap-3 mb-3">
                           <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter leading-none group-hover:text-primary transition-colors">{game.name}</h3>
                           
                           <div className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded border border-white/5">
@@ -205,6 +217,21 @@ export default function StudioPage() {
                             {diffInfo.label}
                           </Badge>
                         </div>
+
+                        {/* Progress Bar Sektion */}
+                        <div className="mb-6">
+                          <div className="flex justify-between items-center mb-1.5">
+                            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20">Overall Mastery</span>
+                            <span className={cn(
+                              "text-[10px] font-black italic",
+                              overallProgress >= 80 ? "text-[#00E676]" : "text-primary"
+                            )}>
+                              {overallProgress}%
+                            </span>
+                          </div>
+                          <Progress value={overallProgress} className="h-1.5 bg-white/5" />
+                        </div>
+
                         <div className="flex gap-4 items-center">
                           <div className="flex flex-col">
                              <span className="text-[7px] font-black uppercase tracking-widest text-white/20">Pulse</span>
