@@ -5,53 +5,52 @@ import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
-import { Radio, RefreshCw, Loader2, Map as MapIcon, Zap } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, Map as MapIcon, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
-
-const STUDIO_COORDS: Record<string, { x: number, y: number }> = {
-  'gabriel-beats': { x: 20, y: 15 },
-  'yoan-beats': { x: 80, y: 15 },
-  'noxxos': { x: 50, y: 22 },
-  'dave-beats': { x: 25, y: 40 },
-  'nintu-music': { x: 75, y: 40 },
-  'dj-avox': { x: 35, y: 62 },
-  'nelio-beats': { x: 65, y: 62 },
-};
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const StudioCard = ({ color, studioName, imageUrl }: { color: string, studioName: string, imageUrl?: string }) => (
-  <div className="relative group cursor-pointer bg-transparent">
-    <div 
-      className="relative w-32 h-32 md:w-56 md:h-56 transition-all duration-700 ease-out group-hover:scale-110 group-hover:-translate-y-2 overflow-visible bg-transparent"
-    >
-      <div className="w-full h-full relative bg-transparent overflow-visible flex items-center justify-center">
-        {imageUrl && imageUrl.length > 0 ? (
-          <img 
-            src={imageUrl} 
-            alt={studioName}
-            className="object-contain w-full h-full transition-all duration-700 group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] bg-transparent block"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-white/5 border-2 border-dashed border-white/10 rounded-3xl">
-             <span className="text-white/10 font-black italic text-4xl">{studioName.substring(0,1).toUpperCase()}</span>
-          </div>
-        )}
+  <div className="relative group cursor-pointer transition-all duration-500">
+    <div className="relative aspect-[3/4] w-full max-w-[280px] md:max-w-[340px] mx-auto overflow-hidden rounded-[2.5rem] border-2 border-white/5 bg-black/40 backdrop-blur-xl group-hover:border-primary/50 transition-all duration-700">
+      <div className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-700" style={{ backgroundColor: color }} />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/90 z-10" />
+      
+      <div className="relative h-full w-full flex flex-col items-center justify-center p-8 z-20">
+        <div className="flex-1 w-full flex items-center justify-center">
+          {imageUrl && imageUrl.length > 0 ? (
+            <img 
+              src={imageUrl} 
+              alt={studioName}
+              className="object-contain w-full h-4/5 drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] transition-transform duration-700 group-hover:scale-110"
+            />
+          ) : (
+            <div className="w-32 h-32 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+               <span className="text-white/20 font-black italic text-6xl uppercase">{studioName.substring(0,1)}</span>
+            </div>
+          )}
+        </div>
         
-        <div className="absolute inset-0 flex items-end justify-center pointer-events-none z-20 pb-4 bg-transparent">
-          <div className="transform transition-all duration-500 group-hover:scale-110">
-            <h3 className="text-xs md:text-xl font-black uppercase italic tracking-tighter text-white text-center leading-none whitespace-nowrap drop-shadow-[0_4px_12px_rgba(0,0,0,1)]">
-              {studioName}
-            </h3>
-          </div>
+        <div className="w-full text-center mt-4">
+          <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white drop-shadow-[0_4px_12px_rgba(0,0,0,1)]">
+            {studioName}
+          </h3>
+          <div className="mt-2 h-1 w-12 bg-primary mx-auto rounded-full group-hover:w-24 transition-all duration-500" />
         </div>
       </div>
     </div>
     
     <div 
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-[80px] opacity-0 group-hover:opacity-30 transition-opacity duration-1000 pointer-events-none -z-10"
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[100px] opacity-0 group-hover:opacity-20 transition-opacity duration-1000 pointer-events-none -z-10"
       style={{ backgroundColor: color }}
     />
   </div>
@@ -212,7 +211,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Radar Synced!", description: "Sonic Dash deployed to Noxxos and others." });
+      toast({ title: "Radar Synced!", description: "All studio modules updated." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Setup Failed" });
@@ -224,97 +223,101 @@ export default function HomePage() {
       <div className="absolute inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '60px 60px' }} />
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,51,153,0.1) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(255,51,153,0.1) 1.5px, transparent 1.5px)', backgroundSize: '180px 180px' }} />
       
-      <header className="p-4 md:p-6 flex flex-col items-center z-50 shrink-0">
-        <div className="gemini-border gemini-glow p-3 px-8 inline-block mb-3 bg-black/80 backdrop-blur-2xl">
-          <div className="flex items-center gap-3">
-            <Radio className="w-6 h-6 text-white animate-pulse" />
-            <h1 className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
+      <header className="p-4 md:p-8 flex flex-col items-center z-50 shrink-0">
+        <div className="gemini-border gemini-glow p-3 px-10 inline-block mb-4 bg-black/80 backdrop-blur-3xl">
+          <div className="flex items-center gap-4">
+            <Radio className="w-8 h-8 text-white animate-pulse" />
+            <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
           </div>
         </div>
 
-        <div className="gemini-border gemini-glow-accent p-2 px-8 text-center bg-black/80 backdrop-blur-2xl border border-white/5">
-          <div className="text-white font-black text-xl md:text-2xl leading-none tracking-tighter flex items-center gap-2">
-            <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
+        <div className="gemini-border gemini-glow-accent p-2 px-10 text-center bg-black/80 backdrop-blur-3xl border border-white/5">
+          <div className="text-white font-black text-2xl md:text-3xl leading-none tracking-tighter flex items-center gap-3">
+            <Zap className="w-5 h-5 text-[#FFEA00]" fill="currentColor" />
             {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
           </div>
         </div>
       </header>
 
-      <main className="relative flex-1 w-full overflow-hidden p-2">
+      <main className="relative flex-1 w-full flex flex-col justify-center overflow-hidden py-12">
         {isLoadingStudios ? (
-          <div className="h-full flex items-center justify-center">
-            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+          <div className="flex flex-col items-center justify-center gap-4">
+            <Loader2 className="w-16 h-16 animate-spin text-primary" />
+            <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-30">Loading Rack...</p>
           </div>
         ) : (
-          <div className="absolute inset-0 max-w-full mx-auto pointer-events-auto pb-60">
-            {allStudios?.map((studio) => {
-              const pos = STUDIO_COORDS[studio.id] || { x: 50, y: 30 };
-              return (
-                <div 
-                  key={studio.id}
-                  className="absolute transition-all duration-1000 ease-in-out animate-in fade-in zoom-in-90"
-                  style={{ 
-                    left: `${pos.x}%`, 
-                    top: `${pos.y}%`,
-                    transform: 'translate(-50%, -50%)'
-                  }}
-                >
-                  <Link href={`/studio/${studio.id}`}>
-                    <StudioCard 
-                      color={studio.coverColor || '#FF3399'} 
-                      studioName={studio.name} 
-                      imageUrl={studio.imageUrl} 
-                    />
-                  </Link>
-                </div>
-              );
-            })}
+          <div className="w-full px-4 md:px-0">
+            <Carousel
+              opts={{
+                align: "center",
+                loop: true,
+              }}
+              className="w-full max-w-6xl mx-auto"
+            >
+              <CarouselContent className="-ml-4">
+                {allStudios?.map((studio) => (
+                  <CarouselItem key={studio.id} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
+                    <Link href={`/studio/${studio.id}`}>
+                      <StudioCard 
+                        color={studio.coverColor || '#FF3399'} 
+                        studioName={studio.name} 
+                        imageUrl={studio.imageUrl} 
+                      />
+                    </Link>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <div className="hidden md:block">
+                <CarouselPrevious className="bg-black/50 border-white/10 hover:bg-primary hover:text-white transition-all w-12 h-12" />
+                <CarouselNext className="bg-black/50 border-white/10 hover:bg-primary hover:text-white transition-all w-12 h-12" />
+              </div>
+            </Carousel>
           </div>
         )}
 
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-4 max-w-[280px] pt-2">
-          <div className="relative w-full h-32 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden shadow-[0_0_60px_rgba(0,0,0,1)]">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-4 max-w-[320px] pointer-events-none">
+          <div className="relative w-full h-24 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden shadow-[0_0_60px_rgba(0,0,0,1)] border border-white/5">
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
             
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
-              <div className="w-16 h-16 rounded-full border-2 border-white/40 animate-[ping_4s_linear_infinite]" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              <div className="w-12 h-12 rounded-full border border-white/20 animate-[ping_3s_linear_infinite]" />
             </div>
 
-            <div className="absolute left-[8%] top-[15%] flex flex-col items-start gap-1 z-20">
-              <div className="w-2 h-2 rounded-full bg-[#00E676] shadow-[0_0_10px_#00E676] animate-pulse" />
-              <span className="text-sm font-black uppercase tracking-tighter text-[#00E676] italic drop-shadow-[0_4px_8px_rgba(0,0,0,1)]">BANTIGER</span>
+            <div className="absolute left-[10%] top-[20%] flex flex-col items-start gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#00E676] shadow-[0_0_10px_#00E676] animate-pulse" />
+              <span className="text-[8px] font-black uppercase tracking-widest text-[#00E676] italic">ACTIVE</span>
             </div>
 
-            <div className="absolute right-[8%] bottom-[20%] flex flex-col items-end gap-1 z-20">
-              <div className="w-2 h-2 rounded-full bg-[#FF3D00] shadow-[0_0_10px_#FF3D00] animate-pulse" />
-              <span className="text-sm font-black uppercase tracking-tighter text-[#FF3D00] italic drop-shadow-[0_4px_8px_rgba(0,0,0,1)] text-right">OBEREMMENTAL</span>
+            <div className="absolute right-[10%] bottom-[20%] flex flex-col items-end gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_#FF3399] animate-pulse" />
+              <span className="text-[8px] font-black uppercase tracking-widest text-primary italic">SYNC</span>
             </div>
 
             <div 
-              className="absolute inset-0 origin-center animate-[spin_15s_linear_infinite] opacity-40 pointer-events-none" 
+              className="absolute inset-0 origin-center animate-[spin_10s_linear_infinite] opacity-20" 
               style={{ 
-                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.2) 120deg, rgba(255, 255, 255, 0.4) 240deg, rgba(255, 255, 255, 0.4) 360deg)' 
+                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.2) 120deg, transparent 360deg)' 
               }}
             />
           </div>
-          <div className="mt-1 text-[7px] font-black uppercase tracking-[0.6em] text-primary/30 text-center italic leading-none pointer-events-none select-none">
-            districts
+          <div className="mt-2 text-[8px] font-black uppercase tracking-[0.5em] text-primary/40 text-center italic leading-none">
+            district scanner
           </div>
         </div>
       </main>
 
-      <footer className="p-3 border-t border-white/5 bg-black/98 flex justify-between items-center z-50 shrink-0">
-        <div className="flex items-center gap-3 opacity-50">
-          <MapIcon className="w-3 h-3 text-primary" />
-          <span className="text-[8px] uppercase font-black tracking-[0.4em]">City Scanner Active</span>
+      <footer className="p-4 border-t border-white/5 bg-black/98 flex justify-between items-center z-50 shrink-0">
+        <div className="flex items-center gap-3 opacity-30">
+          <MapIcon className="w-4 h-4 text-primary" />
+          <span className="text-[10px] uppercase font-black tracking-[0.3em] hidden sm:inline">Modular Rack Online</span>
         </div>
         <Button 
           variant="outline" 
           size="lg" 
           onClick={setupStudios} 
-          className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_20px_rgba(255,234,0,0.4)] animate-pulse"
+          className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_30px_rgba(255,234,0,0.3)] h-12 px-8"
         >
-          <RefreshCw className="w-4 h-4 mr-2" /> Rack Sync
+          <RefreshCw className="w-4 h-4 mr-3" /> Rack Sync
         </Button>
       </footer>
     </div>
