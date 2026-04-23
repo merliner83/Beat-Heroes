@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 
 const StudioCard = ({ studio }: { studio: Studio }) => (
   <div className="relative group cursor-pointer transition-all duration-500 h-full">
-    <div className="relative h-64 md:h-80 overflow-hidden rounded-3xl border-2 border-white/5 bg-black/60 backdrop-blur-xl group-hover:border-primary/50 transition-all duration-700 shadow-2xl flex flex-col">
+    <div className="relative h-48 sm:h-64 md:h-80 overflow-hidden rounded-2xl md:rounded-3xl border-2 border-white/5 bg-black/60 backdrop-blur-xl group-hover:border-primary/50 transition-all duration-700 shadow-2xl flex flex-col">
       {/* Background Image */}
       {studio.imageUrl ? (
         <div className="absolute inset-0">
@@ -26,7 +26,7 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
             alt={studio.name}
             fill
             className="object-cover opacity-60 group-hover:scale-110 group-hover:opacity-100 transition-all duration-1000"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
             data-ai-hint="music studio"
           />
         </div>
@@ -39,20 +39,20 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
       <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-700 z-10" />
       
       {/* Content */}
-      <div className="relative flex-1 p-6 z-20 flex flex-col justify-end">
-        <div className="flex justify-between items-end gap-4">
-          <div className="flex-1">
+      <div className="relative flex-1 p-3 sm:p-6 z-20 flex flex-col justify-end">
+        <div className="flex justify-between items-end gap-2 md:gap-4">
+          <div className="flex-1 min-w-0">
              {studio.district && (
-              <Badge variant="outline" className="mb-3 border-white/10 text-[9px] font-black uppercase tracking-widest text-white/70 bg-black/60 backdrop-blur-md px-3 py-1">
+              <Badge variant="outline" className="mb-1 sm:mb-3 border-white/10 text-[7px] sm:text-[9px] font-black uppercase tracking-widest text-white/70 bg-black/60 backdrop-blur-md px-2 sm:px-3 py-0.5 sm:py-1 truncate block w-fit">
                 {studio.district}
               </Badge>
             )}
-            <h3 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-none">
+            <h3 className="text-xl sm:text-3xl md:text-4xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-none truncate">
               {studio.name}
             </h3>
           </div>
-          <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-primary/50 group-hover:bg-primary/10 transition-all duration-500 backdrop-blur-sm">
-             <span className="text-white/30 font-black italic text-lg uppercase group-hover:text-primary transition-colors">{studio.name.substring(0,1)}</span>
+          <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-primary/50 group-hover:bg-primary/10 transition-all duration-500 backdrop-blur-sm hidden xs:flex">
+             <span className="text-white/30 font-black italic text-sm sm:text-lg uppercase group-hover:text-primary transition-colors">{studio.name.substring(0,1)}</span>
           </div>
         </div>
       </div>
@@ -141,7 +141,6 @@ export default function HomePage() {
         
         if (studioSnap.exists()) {
           const existing = studioSnap.data();
-          // Protect existing custom URLs
           if (existing?.imageUrl) studioData.imageUrl = existing.imageUrl;
         }
         await setDoc(studioRef, studioData, { merge: true });
@@ -291,7 +290,7 @@ export default function HomePage() {
               size="sm"
               onClick={() => setSelectedTag(tag)}
               className={cn(
-                "rounded-full text-[10px] font-black uppercase tracking-[0.2em] px-5 h-8 border transition-all",
+                "rounded-full text-[10px] font-black uppercase tracking-[0.2em] px-5 h-8 border transition-all shrink-0",
                 selectedTag === tag 
                   ? "bg-primary border-primary text-white" 
                   : "bg-white/5 border-white/5 text-white/40 hover:bg-white/10"
@@ -303,14 +302,14 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="relative flex-1 w-full max-w-7xl mx-auto py-8 px-4 md:px-6">
+      <main className="relative flex-1 w-full max-w-7xl mx-auto py-4 md:py-8 px-4 md:px-6">
         {isLoadingStudios ? (
           <div className="h-64 flex flex-col items-center justify-center gap-4">
             <Loader2 className="w-10 h-10 animate-spin text-primary" />
             <p className="text-[8px] font-black uppercase tracking-[0.5em] opacity-30">Connecting to Rack...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             {filteredStudios.map((studio) => (
               <Link key={studio.id} href={`/studio/${studio.id}`}>
                 <StudioCard studio={studio} />
