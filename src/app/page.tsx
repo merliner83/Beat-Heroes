@@ -1,60 +1,58 @@
 
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
-import { Radio, RefreshCw, Loader2, Map as MapIcon, Zap, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, Map as MapIcon, Zap, Search, SlidersHorizontal, Tag } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
-const StudioCard = ({ color, studioName, imageUrl }: { color: string, studioName: string, imageUrl?: string }) => (
-  <div className="relative group cursor-pointer transition-all duration-500">
-    <div className="relative aspect-[14/10] w-full max-w-[240px] md:max-w-[320px] mx-auto overflow-hidden rounded-2xl border-2 border-white/5 bg-black/60 backdrop-blur-xl group-hover:border-primary/50 transition-all duration-700 shadow-2xl">
-      <div className="absolute inset-0 opacity-10 group-hover:opacity-30 transition-opacity duration-700" style={{ backgroundColor: color }} />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10" />
+const StudioCard = ({ studio }: { studio: Studio }) => (
+  <div className="relative group cursor-pointer transition-all duration-500 h-full">
+    <div className="relative h-full overflow-hidden rounded-2xl border-2 border-white/5 bg-black/60 backdrop-blur-xl group-hover:border-primary/50 transition-all duration-700 shadow-2xl flex flex-col">
+      <div className="absolute inset-0 opacity-10 group-hover:opacity-30 transition-opacity duration-700" style={{ backgroundColor: studio.coverColor }} />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent z-10" />
       
-      <div className="relative h-full w-full flex flex-col items-center justify-between p-3 md:p-5 z-20">
-        <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
-          {imageUrl && imageUrl.length > 0 ? (
-            <img 
-              src={imageUrl} 
-              alt={studioName}
-              className="object-contain w-full h-[90%] drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)] transition-transform duration-700 group-hover:scale-110"
-            />
-          ) : (
-            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-               <span className="text-white/30 font-black italic text-2xl md:text-4xl uppercase">{studioName.substring(0,1)}</span>
-            </div>
+      <div className="relative flex-1 p-5 z-20 flex flex-col justify-between">
+        <div className="flex justify-between items-start mb-4">
+          <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+             <span className="text-white/30 font-black italic text-xl uppercase">{studio.name.substring(0,1)}</span>
+          </div>
+          {studio.district && (
+            <Badge variant="outline" className="border-white/10 text-[8px] font-black uppercase tracking-widest text-white/40">
+              {studio.district}
+            </Badge>
           )}
         </div>
-        
-        <div className="w-full text-center pb-2">
-          <h3 className="text-xs md:text-sm font-black uppercase italic tracking-tighter text-white truncate px-1 drop-shadow-md">
-            {studioName}
+
+        <div>
+          <h3 className="text-xl font-black uppercase italic tracking-tighter text-white mb-2 group-hover:text-primary transition-colors">
+            {studio.name}
           </h3>
-          <div className="mt-1.5 h-0.5 w-4 bg-primary mx-auto rounded-full group-hover:w-8 transition-all duration-500 opacity-60" />
+          <p className="text-xs text-white/50 line-clamp-2 font-medium leading-relaxed mb-4">
+            {studio.description}
+          </p>
+          <div className="h-0.5 w-8 bg-primary rounded-full group-hover:w-16 transition-all duration-500 opacity-60" />
         </div>
       </div>
     </div>
     
     <div 
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-[50px] opacity-0 group-hover:opacity-10 transition-opacity duration-1000 pointer-events-none -z-10"
-      style={{ backgroundColor: color }}
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-[60px] opacity-0 group-hover:opacity-10 transition-opacity duration-1000 pointer-events-none -z-10"
+      style={{ backgroundColor: studio.coverColor }}
     />
   </div>
 );
+
+const TAGS = ["All", "Urban", "Electronic", "Experimental", "House", "Hip-Hop"];
 
 export default function HomePage() {
   const db = useFirestore();
@@ -62,6 +60,9 @@ export default function HomePage() {
   const { user } = useUser();
   const { toast } = useToast();
   
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTag, setSelectedTag] = useState('All');
+
   useEffect(() => {
     if (!user && auth) {
       initiateAnonymousSignIn(auth);
@@ -94,17 +95,29 @@ export default function HomePage() {
 
   const { data: allStudios, isLoading: isLoadingStudios } = useCollection<Studio>(studiosQuery);
 
+  const filteredStudios = useMemo(() => {
+    if (!allStudios) return [];
+    return allStudios.filter(s => {
+      const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           s.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesTag = selectedTag === 'All' || 
+                        s.description.toLowerCase().includes(selectedTag.toLowerCase()) ||
+                        (s.district && s.district.toLowerCase().includes(selectedTag.toLowerCase()));
+      return matchesSearch && matchesTag;
+    });
+  }, [allStudios, searchQuery, selectedTag]);
+
   const setupStudios = async () => {
     if (!db) return;
     try {
       const studios = [
-        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#FF3399' },
-        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00' },
-        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#FF3D00' },
-        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap.', coverColor: '#FF9100' },
-        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep house and tech vibes.', coverColor: '#00E676' },
-        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', coverColor: '#00B0FF' },
-        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00' }
+        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#FF3399', district: 'Downtown' },
+        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00', district: 'Industry' },
+        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#FF3D00', district: 'Unknown' },
+        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap and Hip-Hop.', coverColor: '#FF9100', district: 'Bronx' },
+        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep House and tech vibes.', coverColor: '#00E676', district: 'Berlin' },
+        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', coverColor: '#00B0FF', district: 'Miami' },
+        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00', district: 'Harlem' }
       ];
 
       for (const s of studios) {
@@ -114,7 +127,6 @@ export default function HomePage() {
         if (studioSnap.exists()) {
           const existing = studioSnap.data();
           if (existing?.imageUrl) studioData.imageUrl = existing.imageUrl;
-          if (existing?.district) studioData.district = existing.district;
         }
         await setDoc(studioRef, studioData, { merge: true });
       }
@@ -173,7 +185,6 @@ export default function HomePage() {
             const existing = gameSnap.data();
             if (existing?.backingTrackUrl) gameData.backingTrackUrl = existing.backingTrackUrl;
             else gameData.backingTrackUrl = defaultBackingTrack;
-            if (existing?.backgroundImageUrl) gameData.backgroundImageUrl = existing.backgroundImageUrl;
           } else {
             gameData.backingTrackUrl = defaultBackingTrack;
           }
@@ -224,115 +235,118 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col overflow-hidden select-none relative">
-      <div className="absolute inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '60px 60px' }} />
-      <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,51,153,0.1) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(255,51,153,0.1) 1.5px, transparent 1.5px)', backgroundSize: '180px 180px' }} />
+    <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col relative select-none">
+      <div className="fixed inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '60px 60px' }} />
       
-      <header className="p-4 md:p-6 flex flex-col items-center z-50 shrink-0">
-        <div className="gemini-border gemini-glow p-2 px-5 md:p-3 md:px-8 inline-block mb-3 bg-black/80 backdrop-blur-3xl">
-          <div className="flex items-center gap-2 md:gap-3">
-            <Radio className="w-4 h-4 md:w-6 md:h-6 text-white animate-pulse" />
-            <h1 className="text-lg md:text-3xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
+      <header className="sticky top-0 p-4 md:p-6 flex flex-col items-center z-50 shrink-0 bg-black/80 backdrop-blur-xl border-b border-white/5">
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-7xl justify-between">
+          <div className="flex items-center gap-3">
+            <div className="gemini-border gemini-glow p-2 px-5 bg-black/80 backdrop-blur-3xl">
+              <div className="flex items-center gap-2">
+                <Radio className="w-4 h-4 text-white animate-pulse" />
+                <h1 className="text-lg md:text-2xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
+              </div>
+            </div>
+
+            <div className="gemini-border gemini-glow-accent p-1.5 px-4 bg-black/80 backdrop-blur-3xl border border-white/5">
+              <div className="text-white font-black text-sm md:text-lg leading-none tracking-tighter flex items-center gap-2">
+                <Zap className="w-3 h-3 text-[#FFEA00]" fill="currentColor" />
+                {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative w-full md:w-80 group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors" />
+            <Input 
+              placeholder="Search Rack..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-10 bg-white/5 border-white/10 rounded-full focus:ring-primary focus:border-primary placeholder:text-white/10 text-xs font-bold uppercase tracking-widest"
+            />
           </div>
         </div>
 
-        <div className="gemini-border gemini-glow-accent p-1 px-4 md:p-1.5 md:px-6 text-center bg-black/80 backdrop-blur-3xl border border-white/5">
-          <div className="text-white font-black text-sm md:text-xl leading-none tracking-tighter flex items-center gap-2 md:gap-3">
-            <Zap className="w-3 h-3 md:w-4 md:h-4 text-[#FFEA00]" fill="currentColor" />
-            {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
-          </div>
+        <div className="flex gap-2 mt-4 overflow-x-auto w-full max-w-7xl pb-2 scrollbar-hide no-scrollbar">
+          {TAGS.map(tag => (
+            <Button
+              key={tag}
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedTag(tag)}
+              className={cn(
+                "rounded-full text-[10px] font-black uppercase tracking-[0.2em] px-5 h-8 border transition-all",
+                selectedTag === tag 
+                  ? "bg-primary border-primary text-white" 
+                  : "bg-white/5 border-white/5 text-white/40 hover:bg-white/10"
+              )}
+            >
+              {tag}
+            </Button>
+          ))}
         </div>
       </header>
 
-      <main className="relative flex-1 w-full flex flex-col justify-center overflow-hidden py-4 md:py-8">
+      <main className="relative flex-1 w-full max-w-7xl mx-auto py-8 px-4 md:px-6">
         {isLoadingStudios ? (
-          <div className="flex flex-col items-center justify-center gap-4">
-            <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-primary" />
-            <p className="text-[8px] font-black uppercase tracking-[0.5em] opacity-30">Loading Rack...</p>
+          <div className="h-64 flex flex-col items-center justify-center gap-4">
+            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            <p className="text-[8px] font-black uppercase tracking-[0.5em] opacity-30">Connecting to Rack...</p>
           </div>
         ) : (
-          <div className="w-full relative px-6 md:px-12">
-            <Carousel
-              opts={{
-                align: "start",
-                loop: true,
-                dragFree: true,
-              }}
-              className="w-full max-w-7xl mx-auto"
-            >
-              <CarouselContent className="-ml-4">
-                {allStudios?.map((studio) => (
-                  <CarouselItem key={studio.id} className="pl-4 basis-[70%] sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                    <Link href={`/studio/${studio.id}`}>
-                      <StudioCard 
-                        color={studio.coverColor || '#FF3399'} 
-                        studioName={studio.name} 
-                        imageUrl={studio.imageUrl} 
-                      />
-                    </Link>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <div className="hidden md:flex justify-between absolute top-1/2 -translate-y-1/2 w-full left-0 px-4 pointer-events-none">
-                <CarouselPrevious className="h-12 w-12 bg-black/40 border-white/5 hover:bg-primary text-white transition-all pointer-events-auto" />
-                <CarouselNext className="h-12 w-12 bg-black/40 border-white/5 hover:bg-primary text-white transition-all pointer-events-auto" />
-              </div>
-            </Carousel>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {filteredStudios.map((studio) => (
+              <Link key={studio.id} href={`/studio/${studio.id}`}>
+                <StudioCard studio={studio} />
+              </Link>
+            ))}
             
-            <div className="mt-6 flex flex-col items-center gap-2 md:hidden">
-               <div className="flex gap-2 items-center opacity-40">
-                  <ChevronLeft className="w-4 h-4 animate-pulse" />
-                  <span className="text-[8px] font-black uppercase tracking-[0.3em]">Swipe Rack</span>
-                  <ChevronRight className="w-4 h-4 animate-pulse" />
-               </div>
-            </div>
+            {filteredStudios.length === 0 && (
+              <div className="col-span-full py-20 text-center opacity-20">
+                 <Radio className="w-12 h-12 mx-auto mb-4" />
+                 <p className="text-xs font-black uppercase tracking-widest italic">No modules matching sync parameters</p>
+              </div>
+            )}
           </div>
         )}
 
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-4 max-w-[240px] pointer-events-none">
-          <div className="relative w-full h-14 md:h-20 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden border border-white/5">
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '14px 14px' }} />
-            
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <div className="w-8 h-8 md:w-12 md:h-12 rounded-full border border-white/10 animate-[ping_4s_linear_infinite]" />
-            </div>
-
-            <div className="absolute left-[8%] top-[15%] flex flex-col items-start">
-              <div className="w-1 h-1 rounded-full bg-[#00E676] shadow-[0_0_8px_#00E676] animate-pulse" />
-              <span className="text-[6px] md:text-[7px] font-black uppercase tracking-widest text-[#00E676] italic">ACTIVE</span>
-            </div>
-
-            <div className="absolute right-[8%] bottom-[15%] flex flex-col items-end">
-              <div className="w-1 h-1 rounded-full bg-primary shadow-[0_0_8px_#FF3399] animate-pulse" />
-              <span className="text-[6px] md:text-[7px] font-black uppercase tracking-widest text-primary italic">SYNC</span>
-            </div>
-
-            <div 
-              className="absolute inset-0 origin-center animate-[spin_12s_linear_infinite] opacity-10" 
-              style={{ 
-                background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.2) 120deg, transparent 360deg)' 
-              }}
-            />
-          </div>
-          <div className="mt-2 text-[6px] md:text-[7px] font-black uppercase tracking-[0.4em] text-primary/30 text-center italic leading-none">
-            rack sensor online
-          </div>
+        {/* Decorative Radar Element */}
+        <div className="fixed bottom-20 right-8 z-50 pointer-events-none hidden lg:block">
+           <div className="w-24 h-24 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden border border-white/5 relative">
+              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <div className="w-4 h-4 rounded-full border border-white/10 animate-ping" />
+              </div>
+              <div 
+                className="absolute inset-0 origin-center animate-[spin_8s_linear_infinite] opacity-10" 
+                style={{ background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.4) 120deg, transparent 360deg)' }}
+              />
+              <div className="absolute bottom-2 left-2 flex items-center gap-1">
+                 <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+                 <span className="text-[6px] font-black uppercase tracking-widest opacity-40">Scan</span>
+              </div>
+           </div>
         </div>
       </main>
 
-      <footer className="p-3 md:p-4 border-t border-white/5 bg-black/98 flex justify-between items-center z-50 shrink-0">
+      <footer className="sticky bottom-0 p-3 md:p-4 border-t border-white/5 bg-black/95 backdrop-blur-xl flex justify-between items-center z-50 shrink-0">
         <div className="flex items-center gap-2 opacity-20">
           <MapIcon className="w-4 h-4 text-primary" />
           <span className="text-[8px] md:text-[9px] uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack Online</span>
         </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={setupStudios} 
-          className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_15px_rgba(255,234,0,0.2)] h-10 md:h-12 px-5 md:px-8 text-xs md:text-sm"
-        >
-          <RefreshCw className="w-4 h-4 md:w-5 md:h-5 mr-2" /> Rack Sync
-        </Button>
+        <div className="flex items-center gap-4">
+          <p className="text-[10px] font-black uppercase tracking-widest text-white/30 hidden md:block italic">
+            {filteredStudios.length} Active Modules
+          </p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={setupStudios} 
+            className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_15px_rgba(255,234,0,0.2)] h-10 md:h-12 px-5 md:px-8 text-xs md:text-sm transition-transform active:scale-95"
+          >
+            <RefreshCw className="w-4 h-4 md:w-5 md:h-5 mr-2" /> Rack Sync
+          </Button>
+        </div>
       </footer>
     </div>
   );
