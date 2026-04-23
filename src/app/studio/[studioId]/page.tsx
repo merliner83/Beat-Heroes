@@ -7,7 +7,7 @@ import { useFirestore, useMemoFirebase, useCollection, useDoc, useUser } from '@
 import { collection, query, where, doc } from 'firebase/firestore';
 import { Studio, Game, Level, LevelProgress, Track } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ChevronRight, Trophy, Loader2, Play, Pause, Music, Zap } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Trophy, Loader2, Play, Pause, Music, Zap, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -116,9 +116,23 @@ export default function StudioPage() {
             <h1 className="text-3xl md:text-6xl font-black mb-3 md:mb-4 uppercase italic tracking-tighter leading-none text-white">
               {studio.name}
             </h1>
-            <p className="text-xs md:text-sm opacity-40 font-medium max-w-xl leading-relaxed">
+            <p className="text-xs md:text-sm opacity-40 font-medium max-w-xl leading-relaxed mb-6">
               {studio.description}
             </p>
+
+            {studio.linkUrl && (
+              <a 
+                href={studio.linkUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-5 py-2.5 transition-all group"
+              >
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary italic">
+                  {studio.linkLabel || 'Visit Studio'}
+                </span>
+                <ExternalLink className="w-3 h-3 text-white/40 group-hover:text-white transition-colors" />
+              </a>
+            )}
           </div>
         )}
 

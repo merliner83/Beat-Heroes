@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -129,9 +130,9 @@ export default function HomePage() {
       }
 
       const studios = [
-        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', tags: ['Urban', 'Hip-Hop'], coverColor: '#FF3399', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/gabriel-beats/800/1000' },
-        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', tags: ['Electronic', 'House'], coverColor: '#FFEA00', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/yoan-beats/800/1000' },
-        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', tags: ['Experimental', 'Electronic'], coverColor: '#FF3D00', district: 'Oberemmental', imageUrl: 'https://picsum.photos/seed/noxxos/800/1000' },
+        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', tags: ['Urban', 'Hip-Hop'], coverColor: '#FF3399', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/gabriel-beats/800/1000', linkUrl: 'https://instagram.com/beathero', linkLabel: 'Instagram' },
+        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', tags: ['Electronic', 'House'], coverColor: '#FFEA00', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/yoan-beats/800/1000', linkUrl: 'https://soundcloud.com', linkLabel: 'SoundCloud' },
+        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', tags: ['Experimental', 'Electronic'], coverColor: '#FF3D00', district: 'Oberemmental', imageUrl: 'https://picsum.photos/seed/noxxos/800/1000', linkUrl: 'https://noxxos.music', linkLabel: 'Website' },
         { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap and Hip-Hop.', tags: ['Hip-Hop', 'Urban'], coverColor: '#FF9100', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/dave-beats/800/1000' },
         { id: 'nintu-music', name: 'Nintu Music', description: 'Deep House and tech vibes.', tags: ['House', 'Electronic'], coverColor: '#00E676', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/nintu-music/800/1000' },
         { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', tags: ['House'], coverColor: '#00B0FF', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/dj-avox/800/1000' },
