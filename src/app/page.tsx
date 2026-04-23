@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
 import { Radio, RefreshCw, Loader2, Map as MapIcon, Zap, Search, SlidersHorizontal, Tag } from 'lucide-react';
@@ -17,36 +18,50 @@ import { cn } from '@/lib/utils';
 
 const StudioCard = ({ studio }: { studio: Studio }) => (
   <div className="relative group cursor-pointer transition-all duration-500 h-full">
-    <div className="relative h-full overflow-hidden rounded-2xl border-2 border-white/5 bg-black/60 backdrop-blur-xl group-hover:border-primary/50 transition-all duration-700 shadow-2xl flex flex-col">
-      <div className="absolute inset-0 opacity-10 group-hover:opacity-30 transition-opacity duration-700" style={{ backgroundColor: studio.coverColor }} />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent z-10" />
-      
-      <div className="relative flex-1 p-5 z-20 flex flex-col justify-between">
-        <div className="flex justify-between items-start mb-4">
-          <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-             <span className="text-white/30 font-black italic text-xl uppercase">{studio.name.substring(0,1)}</span>
-          </div>
-          {studio.district && (
-            <Badge variant="outline" className="border-white/10 text-[8px] font-black uppercase tracking-widest text-white/40">
-              {studio.district}
-            </Badge>
-          )}
+    <div className="relative h-64 md:h-80 overflow-hidden rounded-3xl border-2 border-white/5 bg-black/60 backdrop-blur-xl group-hover:border-primary/50 transition-all duration-700 shadow-2xl flex flex-col">
+      {/* Background Image */}
+      {studio.imageUrl ? (
+        <div className="absolute inset-0">
+          <Image
+            src={studio.imageUrl}
+            alt={studio.name}
+            fill
+            className="object-cover opacity-60 group-hover:scale-110 group-hover:opacity-100 transition-all duration-1000"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            data-ai-hint="music studio"
+          />
         </div>
+      ) : (
+        <div className="absolute inset-0 opacity-20" style={{ backgroundColor: studio.coverColor }} />
+      )}
 
-        <div>
-          <h3 className="text-xl font-black uppercase italic tracking-tighter text-white mb-2 group-hover:text-primary transition-colors">
-            {studio.name}
-          </h3>
-          <p className="text-xs text-white/50 line-clamp-2 font-medium leading-relaxed mb-4">
-            {studio.description}
-          </p>
-          <div className="h-0.5 w-8 bg-primary rounded-full group-hover:w-16 transition-all duration-500 opacity-60" />
+      {/* Overlays */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+      <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-700 z-10" />
+      
+      {/* Content */}
+      <div className="relative flex-1 p-6 z-20 flex flex-col justify-end">
+        <div className="flex justify-between items-end gap-4">
+          <div className="flex-1">
+             {studio.district && (
+              <Badge variant="outline" className="mb-3 border-white/10 text-[9px] font-black uppercase tracking-widest text-white/70 bg-black/60 backdrop-blur-md px-3 py-1">
+                {studio.district}
+              </Badge>
+            )}
+            <h3 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-none">
+              {studio.name}
+            </h3>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-primary/50 group-hover:bg-primary/10 transition-all duration-500 backdrop-blur-sm">
+             <span className="text-white/30 font-black italic text-lg uppercase group-hover:text-primary transition-colors">{studio.name.substring(0,1)}</span>
+          </div>
         </div>
       </div>
     </div>
     
+    {/* Ambient Glow */}
     <div 
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-[60px] opacity-0 group-hover:opacity-10 transition-opacity duration-1000 pointer-events-none -z-10"
+      className="absolute -inset-2 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-1000 pointer-events-none -z-10"
       style={{ backgroundColor: studio.coverColor }}
     />
   </div>
@@ -111,21 +126,23 @@ export default function HomePage() {
     if (!db) return;
     try {
       const studios = [
-        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#FF3399', district: 'Downtown' },
-        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00', district: 'Industry' },
-        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#FF3D00', district: 'Unknown' },
-        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap and Hip-Hop.', coverColor: '#FF9100', district: 'Bronx' },
-        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep House and tech vibes.', coverColor: '#00E676', district: 'Berlin' },
-        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', coverColor: '#00B0FF', district: 'Miami' },
-        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00', district: 'Harlem' }
+        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#FF3399', district: 'Downtown', imageUrl: 'https://picsum.photos/seed/gabriel-beats/800/1000' },
+        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00', district: 'Industry', imageUrl: 'https://picsum.photos/seed/yoan-beats/800/1000' },
+        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#FF3D00', district: 'Unknown', imageUrl: 'https://picsum.photos/seed/noxxos/800/1000' },
+        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap and Hip-Hop.', coverColor: '#FF9100', district: 'Bronx', imageUrl: 'https://picsum.photos/seed/dave-beats/800/1000' },
+        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep House and tech vibes.', coverColor: '#00E676', district: 'Berlin', imageUrl: 'https://picsum.photos/seed/nintu-music/800/1000' },
+        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', coverColor: '#00B0FF', district: 'Miami', imageUrl: 'https://picsum.photos/seed/dj-avox/800/1000' },
+        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00', district: 'Harlem', imageUrl: 'https://picsum.photos/seed/nelio-beats/800/1000' }
       ];
 
       for (const s of studios) {
         const studioRef = doc(db, 'studios', s.id);
         const studioSnap = await getDoc(studioRef);
         const studioData: any = { ...s };
+        
         if (studioSnap.exists()) {
           const existing = studioSnap.data();
+          // Protect existing custom URLs
           if (existing?.imageUrl) studioData.imageUrl = existing.imageUrl;
         }
         await setDoc(studioRef, studioData, { merge: true });
@@ -227,7 +244,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Radar Synced!", description: "All studio modules updated." });
+      toast({ title: "Rack Synchronized!", description: "All studio modules have been updated." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Setup Failed" });
@@ -259,7 +276,7 @@ export default function HomePage() {
           <div className="relative w-full md:w-80 group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors" />
             <Input 
-              placeholder="Search Rack..." 
+              placeholder="Search Modules..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 h-10 bg-white/5 border-white/10 rounded-full focus:ring-primary focus:border-primary placeholder:text-white/10 text-xs font-bold uppercase tracking-widest"
@@ -294,7 +311,7 @@ export default function HomePage() {
             <p className="text-[8px] font-black uppercase tracking-[0.5em] opacity-30">Connecting to Rack...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             {filteredStudios.map((studio) => (
               <Link key={studio.id} href={`/studio/${studio.id}`}>
                 <StudioCard studio={studio} />
@@ -304,14 +321,14 @@ export default function HomePage() {
             {filteredStudios.length === 0 && (
               <div className="col-span-full py-20 text-center opacity-20">
                  <Radio className="w-12 h-12 mx-auto mb-4" />
-                 <p className="text-xs font-black uppercase tracking-widest italic">No modules matching sync parameters</p>
+                 <p className="text-xs font-black uppercase tracking-widest italic">No modules matching search criteria</p>
               </div>
             )}
           </div>
         )}
 
         {/* Decorative Radar Element */}
-        <div className="fixed bottom-20 right-8 z-50 pointer-events-none hidden lg:block">
+        <div className="fixed bottom-24 right-8 z-50 pointer-events-none hidden lg:block">
            <div className="w-24 h-24 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden border border-white/5 relative">
               <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -329,25 +346,26 @@ export default function HomePage() {
         </div>
       </main>
 
-      <footer className="sticky bottom-0 p-3 md:p-4 border-t border-white/5 bg-black/95 backdrop-blur-xl flex justify-between items-center z-50 shrink-0">
-        <div className="flex items-center gap-2 opacity-20">
+      <footer className="sticky bottom-0 p-3 md:p-5 border-t border-white/5 bg-black/95 backdrop-blur-2xl flex justify-between items-center z-50 shrink-0">
+        <div className="flex items-center gap-2 opacity-30">
           <MapIcon className="w-4 h-4 text-primary" />
-          <span className="text-[8px] md:text-[9px] uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack Online</span>
+          <span className="text-[8px] md:text-[9px] uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack System Online</span>
         </div>
         <div className="flex items-center gap-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-white/30 hidden md:block italic">
-            {filteredStudios.length} Active Modules
+            {filteredStudios.length} Active Modules Loaded
           </p>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={setupStudios} 
-            className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_15px_rgba(255,234,0,0.2)] h-10 md:h-12 px-5 md:px-8 text-xs md:text-sm transition-transform active:scale-95"
+            className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_20px_rgba(255,234,0,0.3)] h-12 md:h-14 px-8 md:px-12 text-sm md:text-base transition-transform active:scale-95"
           >
-            <RefreshCw className="w-4 h-4 md:w-5 md:h-5 mr-2" /> Rack Sync
+            <RefreshCw className="w-4 h-4 md:w-5 md:h-5 mr-3" /> Rack Sync
           </Button>
         </div>
       </footer>
     </div>
   );
 }
+
