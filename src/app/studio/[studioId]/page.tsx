@@ -18,6 +18,13 @@ const DIFFICULTY_MAP: Record<number, { label: string, color: string }> = {
   4: { label: 'HERO', color: '#FF3D00' },
 };
 
+const TRACK_NAMES: Record<string, string> = {
+  'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg': 'Glitch Power',
+  'https://actions.google.com/sounds/v1/science_fiction/low_power_hum.ogg': 'System Hum',
+  'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg': 'Techno Core',
+  'https://actions.google.com/sounds/v1/science_fiction/deep_space_drone.ogg': 'Space Drift',
+};
+
 export default function StudioPage() {
   const { studioId } = useParams();
   const db = useFirestore();
@@ -48,6 +55,11 @@ export default function StudioPage() {
   const [playingTrack, setPlayingTrack] = useState<string | null>(null);
   const [audio] = useState(() => typeof Audio !== 'undefined' ? new Audio() : null);
 
+  const getTrackName = (url?: string) => {
+    if (!url) return 'Unknown Track';
+    return TRACK_NAMES[url] || url.split('/').pop()?.replace('.ogg', '').replace(/_/g, ' ') || 'Generic Track';
+  };
+
   const toggleTrack = (url: string) => {
     if (!audio) return;
     if (playingTrack === url) {
@@ -72,13 +84,13 @@ export default function StudioPage() {
 
   const uniqueTracks = useMemo(() => {
     if (!games) return [];
-    const tracks = new Map();
+    const tracks = new Set<string>();
     games.forEach(g => {
       if (g.backingTrackUrl) {
-        tracks.set(g.backingTrackUrl, g.name);
+        tracks.add(g.backingTrackUrl);
       }
     });
-    return Array.from(tracks.entries()).map(([url, name]) => ({ url, name }));
+    return Array.from(tracks).map(url => ({ url, name: getTrackName(url) }));
   }, [games]);
 
   const getLevelProgress = (levelId: string) => {
@@ -95,7 +107,7 @@ export default function StudioPage() {
         </Link>
 
         {studio && (
-          <div className="mb-10 md:mb-14">
+          <div className="mb-8 md:mb-12">
             <div className="flex items-center gap-3 mb-3">
                {studio.district && (
                  <Badge variant="outline" className="border-primary/30 text-primary text-[8px] font-black uppercase tracking-widest bg-primary/5 px-2 py-0.5">
@@ -115,14 +127,14 @@ export default function StudioPage() {
 
         {/* Tracks Section */}
         {uniqueTracks.length > 0 && (
-          <div className="mb-12 md:mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="mb-10 md:mb-14 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex items-center gap-2 mb-6">
               <Music className="w-4 h-4 text-primary" />
               <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-white">TRACKS</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {uniqueTracks.map((track, idx) => (
-                <div key={idx} className="p-3 bg-white/2 border border-white/5 hover:bg-white/5 transition-all flex items-center justify-between group rounded-xl">
+                <div key={idx} className="p-2 bg-white/2 border border-white/5 hover:bg-white/5 transition-all flex items-center justify-between group rounded-xl">
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-[9px] font-black italic text-white/20">
                       {(idx + 1).toString().padStart(2, '0')}
@@ -149,7 +161,7 @@ export default function StudioPage() {
         )}
 
         {/* Games Section */}
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-[#FFEA00]" />
@@ -158,21 +170,27 @@ export default function StudioPage() {
             {isLoadingLevels && <Loader2 className="w-3 h-3 animate-spin opacity-20" />}
           </div>
           
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-4">
             {games?.map((game) => {
               const gameLevels = allLevels?.filter(l => l.gameId === game.id) || [];
               const diffInfo = DIFFICULTY_MAP[game.difficulty || 1];
 
               return (
                 <div key={game.id} className="relative group">
-                  <div className="p-5 md:p-8 bg-black/40 backdrop-blur-xl border border-white/5 rounded-2xl md:rounded-[2.5rem]">
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
+                  <div className="p-4 md:p-6 bg-black/40 backdrop-blur-xl border border-white/5 rounded-2xl md:rounded-[2rem]">
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
                       <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-3 mb-4">
+                        <div className="flex flex-wrap items-center gap-3 mb-3">
                           <h3 className="text-xl md:text-3xl font-black uppercase italic tracking-tighter leading-none group-hover:text-primary transition-colors">{game.name}</h3>
+                          
+                          <div className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                            <Music className="w-2.5 h-2.5 text-primary" />
+                            <span className="text-[9px] font-black italic uppercase text-white/40">{getTrackName(game.backingTrackUrl)}</span>
+                          </div>
+
                           <Badge 
                             variant="outline" 
-                            className="text-[8px] font-black tracking-widest py-1 px-3"
+                            className="text-[8px] font-black tracking-widest py-0.5 px-2 h-5"
                             style={{ borderColor: diffInfo.color, color: diffInfo.color }}
                           >
                             {diffInfo.label}
@@ -203,7 +221,7 @@ export default function StudioPage() {
                             className="block"
                           >
                             <div className={cn(
-                              "h-16 md:h-20 border flex flex-col items-center justify-center gap-1 group/level transition-all rounded-xl relative overflow-hidden",
+                              "h-14 md:h-16 border flex flex-col items-center justify-center gap-0.5 group/level transition-all rounded-xl relative overflow-hidden",
                               progress ? "border-[#00E676]/30 bg-[#00E676]/5" : "border-white/5 bg-white/2 hover:bg-white/5 hover:border-white/10"
                             )}>
                               <span className="text-[7px] opacity-30 font-black uppercase tracking-[0.2em]">LVL {level.difficulty}</span>
@@ -217,7 +235,7 @@ export default function StudioPage() {
                                   <span className="text-[8px] font-black text-[#00E676]">{progress.accuracy}%</span>
                                 </div>
                               )}
-                              <div className="absolute -bottom-1 -right-1 text-2xl font-black italic opacity-[0.02] select-none">{level.difficulty}</div>
+                              <div className="absolute -bottom-1 -right-1 text-xl font-black italic opacity-[0.02] select-none">{level.difficulty}</div>
                             </div>
                           </Link>
                         );
