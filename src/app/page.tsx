@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -16,31 +17,30 @@ import { cn } from '@/lib/utils';
 import { Radio, RefreshCw, Loader2, Zap, Search } from 'lucide-react';
 
 const StudioCard = ({ studio }: { studio: Studio }) => (
-  <div className="relative group cursor-pointer transition-all duration-500 h-full overflow-hidden rounded-xl border border-white/5 bg-black/40 backdrop-blur-xl hover:border-primary/50 shadow-2xl aspect-[3/4]">
-    {studio.imageUrl ? (
-      <Image
-        src={studio.imageUrl}
-        alt={studio.name}
-        fill
-        className="object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-1000"
-        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
-        data-ai-hint="music studio"
-      />
-    ) : (
-      <div className="absolute inset-0 opacity-40" style={{ backgroundColor: studio.coverColor }} />
-    )}
-
-    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+  <div className="relative group cursor-pointer transition-all duration-500 overflow-hidden rounded-lg border border-white/5 bg-black/40 backdrop-blur-xl hover:border-primary/50 shadow-2xl flex flex-col h-full">
+    <div className="relative aspect-square w-full overflow-hidden shrink-0">
+      {studio.imageUrl ? (
+        <Image
+          src={studio.imageUrl}
+          alt={studio.name}
+          fill
+          className="object-cover opacity-60 group-hover:scale-110 group-hover:opacity-100 transition-all duration-1000"
+          sizes="(max-width: 640px) 33vw, (max-width: 1024px) 15vw, 10vw"
+          data-ai-hint="music studio"
+        />
+      ) : (
+        <div className="absolute inset-0 opacity-40" style={{ backgroundColor: studio.coverColor }} />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
+    </div>
     
-    <div className="relative p-4 z-20 flex flex-col justify-end h-full">
-      <div className="flex items-center gap-2 mb-1">
-        {studio.district && (
-          <Badge variant="outline" className="border-primary/30 text-primary text-[8px] font-black uppercase tracking-widest bg-black/60 backdrop-blur-md px-1.5 py-0.5 w-fit">
-            {studio.district}
-          </Badge>
-        )}
-      </div>
-      <h3 className="text-sm md:text-base font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-tight truncate">
+    <div className="p-2 md:p-3 flex flex-col gap-0.5 justify-center flex-1 bg-black/20">
+      {studio.district && (
+        <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-primary/80 truncate">
+          {studio.district}
+        </span>
+      )}
+      <h3 className="text-[9px] md:text-[11px] font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-tight truncate">
         {studio.name}
       </h3>
     </div>
@@ -128,13 +128,13 @@ export default function HomePage() {
       }
 
       const studios = [
-        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', tags: ['Urban', 'Hip-Hop'], coverColor: '#FF3399', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/gabriel-beats/800/1000', linkUrl: 'https://instagram.com/beathero', linkLabel: 'Instagram' },
-        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', tags: ['Electronic', 'House'], coverColor: '#FFEA00', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/yoan-beats/800/1000', linkUrl: 'https://soundcloud.com', linkLabel: 'SoundCloud' },
-        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', tags: ['Experimental', 'Electronic'], coverColor: '#FF3D00', district: 'Oberemmental', imageUrl: 'https://picsum.photos/seed/noxxos/800/1000', linkUrl: 'https://noxxos.music', linkLabel: 'Website' },
-        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap and Hip-Hop.', tags: ['Hip-Hop', 'Urban'], coverColor: '#FF9100', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/dave-beats/800/1000' },
-        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep House and tech vibes.', tags: ['House', 'Electronic'], coverColor: '#00E676', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/nintu-music/800/1000' },
-        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', tags: ['House'], coverColor: '#00B0FF', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/dj-avox/800/1000' },
-        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', tags: ['Hip-Hop'], coverColor: '#FF6D00', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/nelio-beats/800/1000' }
+        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', tags: ['Urban', 'Hip-Hop'], coverColor: '#FF3399', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/gabriel-beats/800/800', linkUrl: 'https://instagram.com/beathero', linkLabel: 'Instagram' },
+        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', tags: ['Electronic', 'House'], coverColor: '#FFEA00', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/yoan-beats/800/800', linkUrl: 'https://soundcloud.com', linkLabel: 'SoundCloud' },
+        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', tags: ['Experimental', 'Electronic'], coverColor: '#FF3D00', district: 'Oberemmental', imageUrl: 'https://picsum.photos/seed/noxxos/800/800', linkUrl: 'https://noxxos.music', linkLabel: 'Website' },
+        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap and Hip-Hop.', tags: ['Hip-Hop', 'Urban'], coverColor: '#FF9100', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/dave-beats/800/800' },
+        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep House and tech vibes.', tags: ['House', 'Electronic'], coverColor: '#00E676', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/nintu-music/800/800' },
+        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', tags: ['House'], coverColor: '#00B0FF', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/dj-avox/800/800' },
+        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', tags: ['Hip-Hop'], coverColor: '#FF6D00', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/nelio-beats/800/800' }
       ];
 
       for (const s of studios) {
@@ -270,16 +270,16 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="relative flex-1 w-full max-w-7xl mx-auto py-4 md:py-8 px-4 md:px-6">
+      <main className="relative flex-1 w-full max-w-7xl mx-auto py-6 md:py-10 px-4 md:px-6">
         {isLoadingStudios ? (
           <div className="h-64 flex flex-col items-center justify-center gap-4">
             <Loader2 className="w-10 h-10 animate-spin text-primary" />
             <p className="text-[9px] font-black uppercase tracking-[0.4em] opacity-30">Connecting to Rack...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             {filteredStudios.map((studio) => (
-              <Link key={studio.id} href={`/studio/${studio.id}`}>
+              <Link key={studio.id} href={`/studio/${studio.id}`} className="block transform transition-transform hover:scale-[1.03] active:scale-95">
                 <StudioCard studio={studio} />
               </Link>
             ))}
@@ -316,3 +316,4 @@ export default function HomePage() {
     </div>
   );
 }
+
