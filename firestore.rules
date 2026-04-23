@@ -29,6 +29,12 @@ service cloud.firestore {
       allow write: if isSignedIn();
     }
 
+    // Tracks
+    match /tracks/{trackId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
     // Games
     match /games/{gameId} {
       allow read: if true;
