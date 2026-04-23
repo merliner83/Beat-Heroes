@@ -25,7 +25,7 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
           alt={studio.name}
           fill
           className="object-cover opacity-40 group-hover:scale-110 group-hover:opacity-60 transition-all duration-1000"
-          sizes="(max-width: 640px) 33vw, (max-width: 1024px) 15vw, 10vw"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
           data-ai-hint="music studio"
         />
       ) : (
@@ -37,8 +37,8 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10" />
     
     {/* Studio Info Overlay */}
-    <div className="absolute inset-0 p-3 md:p-4 flex flex-col justify-end z-20">
-      <h3 className="text-sm md:text-xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-[0.9] break-words">
+    <div className="absolute inset-0 p-4 md:p-6 flex flex-col justify-end z-20">
+      <h3 className="text-xl md:text-3xl lg:text-4xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-[0.85] break-words">
         {studio.name}
       </h3>
     </div>
@@ -276,7 +276,7 @@ export default function HomePage() {
             <p className="text-xs md:text-sm font-black uppercase tracking-[0.4em] opacity-30">Connecting to Rack...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             {filteredStudios.map((studio) => (
               <Link key={studio.id} href={`/studio/${studio.id}`} className="block transform transition-transform hover:scale-[1.03] active:scale-95">
                 <StudioCard studio={studio} />
