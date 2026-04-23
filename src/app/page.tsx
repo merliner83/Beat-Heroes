@@ -17,24 +17,24 @@ import { Radio, RefreshCw, Loader2, Zap, Search } from 'lucide-react';
 
 const StudioCard = ({ studio }: { studio: Studio }) => (
   <div className="relative group cursor-pointer transition-all duration-500 overflow-hidden rounded-lg border border-white/5 bg-black/40 hover:border-primary/50 shadow-2xl aspect-square w-full">
-    {/* Background Image */}
+    {/* Background Image - Fully Visible */}
     <div className="absolute inset-0 overflow-hidden">
       {studio.imageUrl ? (
         <Image
           src={studio.imageUrl}
           alt={studio.name}
           fill
-          className="object-cover opacity-40 group-hover:scale-110 group-hover:opacity-60 transition-all duration-1000"
+          className="object-cover opacity-100 group-hover:scale-110 transition-all duration-1000"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
           data-ai-hint="music studio"
         />
       ) : (
-        <div className="absolute inset-0 opacity-20" style={{ backgroundColor: studio.coverColor }} />
+        <div className="absolute inset-0 opacity-100" style={{ backgroundColor: studio.coverColor }} />
       )}
     </div>
 
-    {/* Gradient Overlay for Text Legibility */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10" />
+    {/* Gradient Overlay for Text Legibility (Fades from dark bottom to transparent top) */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10" />
     
     {/* Studio Info Overlay */}
     <div className="absolute inset-0 p-4 md:p-6 flex flex-col justify-end z-20">
