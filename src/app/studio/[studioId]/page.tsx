@@ -199,9 +199,9 @@ export default function StudioPage() {
               return (
                 <div key={game.id} className="relative group">
                   <div className="p-4 md:p-6 bg-black/40 border border-white/5 rounded-2xl md:rounded-[2rem]">
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-4">
                       <div className="flex-1 w-full">
-                        <div className="flex flex-wrap items-center gap-3 mb-3">
+                        <div className="flex flex-wrap items-center gap-3 mb-4">
                           <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter leading-none group-hover:text-primary transition-colors">{game.name}</h3>
                           
                           <div className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded border border-white/5">
@@ -209,17 +209,22 @@ export default function StudioPage() {
                             <span className="text-[9px] font-black italic uppercase text-white/40">{getTrackName(game)}</span>
                           </div>
 
-                          <Badge 
-                            variant="outline" 
-                            className="text-[8px] font-black tracking-widest py-0.5 px-2 h-5"
-                            style={{ borderColor: diffInfo.color, color: diffInfo.color }}
-                          >
-                            {diffInfo.label}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant="outline" 
+                              className="text-[8px] font-black tracking-widest py-0.5 px-2 h-5"
+                              style={{ borderColor: diffInfo.color, color: diffInfo.color }}
+                            >
+                              {diffInfo.label}
+                            </Badge>
+                            {game.bpm && (
+                              <span className="text-xs font-black italic text-[#FFEA00]">{game.bpm} BPM</span>
+                            )}
+                          </div>
                         </div>
 
                         {/* Progress Bar Sektion */}
-                        <div className="mb-6">
+                        <div className="mb-2">
                           <div className="flex justify-between items-center mb-1.5">
                             <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20">Overall Mastery</span>
                             <span className={cn(
@@ -230,18 +235,6 @@ export default function StudioPage() {
                             </span>
                           </div>
                           <Progress value={overallProgress} className="h-1.5 bg-white/5" />
-                        </div>
-
-                        <div className="flex gap-4 items-center">
-                          <div className="flex flex-col">
-                             <span className="text-[7px] font-black uppercase tracking-widest text-white/20">Pulse</span>
-                             <span className="text-xs font-black italic text-[#FFEA00]">{game.bpm} BPM</span>
-                          </div>
-                          <div className="w-px h-6 bg-white/5" />
-                          <div className="flex flex-col">
-                             <span className="text-[7px] font-black uppercase tracking-widest text-white/20">Type</span>
-                             <span className="text-xs font-black italic text-white/30 uppercase tracking-tight">{game.type.replace('-', ' ')}</span>
-                          </div>
                         </div>
                       </div>
                     </div>
