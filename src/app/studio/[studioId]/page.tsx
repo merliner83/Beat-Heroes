@@ -146,9 +146,9 @@ export default function StudioPage() {
           {studioTracks.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {studioTracks.map((track, idx) => (
-                <div key={track.id} className="p-4 bg-white/2 border border-white/5 hover:bg-white/5 transition-all flex items-center justify-between group rounded-xl">
+                <div key={track.id} className="p-3 bg-white/2 border border-white/5 hover:bg-white/5 transition-all flex items-center justify-between group rounded-xl">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-[12px] font-black italic text-white/20">
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[11px] font-black italic text-white/20">
                       {(idx + 1).toString().padStart(2, '0')}
                     </div>
                     <h4 className="text-base md:text-lg font-black italic uppercase tracking-tight group-hover:text-primary transition-colors">{track.name}</h4>
@@ -158,11 +158,11 @@ export default function StudioPage() {
                     variant="ghost" 
                     onClick={() => toggleTrack(track.url)}
                     className={cn(
-                      "w-12 h-12 rounded-full transition-all",
+                      "w-10 h-10 rounded-full transition-all",
                       playingTrack === track.url ? "bg-primary text-white" : "bg-white/5 hover:bg-white/10"
                     )}
                   >
-                    {playingTrack === track.url ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+                    {playingTrack === track.url ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
                   </Button>
                 </div>
               ))}
@@ -196,32 +196,32 @@ export default function StudioPage() {
               const overallProgress = gameLevels.length > 0 ? Math.round(totalAccuracy / gameLevels.length) : 0;
 
               return (
-                <div key={game.id} className="relative group gemini-border gemini-glow">
-                  <div className="p-6 md:p-10 bg-black/40 backdrop-blur-xl">
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-8">
+                <div key={game.id} className="relative group gemini-border">
+                  <div className="p-4 md:p-6 bg-black/40 backdrop-blur-xl">
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
                       <div className="flex-1 w-full">
-                        <div className="flex flex-wrap items-center gap-5 mb-6">
-                          <h3 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter leading-none group-hover:text-primary transition-colors">
+                        <div className="flex flex-wrap items-center gap-4 mb-4">
+                          <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter leading-none group-hover:text-primary transition-colors">
                             {game.name}
                           </h3>
                           
-                          <div className="flex items-center gap-3 bg-white/5 px-4 py-1.5 rounded border border-white/5">
-                            <Music className="w-4 h-4 text-primary" />
-                            <span className="text-xs font-black italic uppercase text-white/40">
+                          <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded border border-white/5">
+                            <Music className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-[11px] font-black italic uppercase text-white/40">
                               {getTrackName(game)}
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-3">
                             <Badge 
                               variant="outline" 
-                              className="text-[11px] font-black tracking-widest py-1.5 px-4 h-7"
+                              className="text-[10px] font-black tracking-widest py-1 px-3 h-6"
                               style={{ borderColor: diffInfo.color, color: diffInfo.color }}
                             >
                               {diffInfo.label}
                             </Badge>
                             {game.bpm && (
-                              <span className="text-base font-black italic text-[#FFEA00]">
+                              <span className="text-sm font-black italic text-[#FFEA00]">
                                 {game.bpm} BPM
                               </span>
                             )}
@@ -229,21 +229,21 @@ export default function StudioPage() {
                         </div>
 
                         <div className="mb-4">
-                          <div className="flex justify-between items-center mb-3">
-                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white/20">Overall Mastery</span>
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Mastery</span>
                             <span className={cn(
-                              "text-sm font-black italic",
+                              "text-xs font-black italic",
                               overallProgress >= 80 ? "text-[#00E676]" : "text-primary"
                             )}>
                               {overallProgress}%
                             </span>
                           </div>
-                          <Progress value={overallProgress} className="h-2.5 bg-white/5" />
+                          <Progress value={overallProgress} className="h-2 bg-white/5" />
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {gameLevels.sort((a,b) => a.difficulty - b.difficulty).map((level) => {
                         const progress = getLevelProgress(level.id);
                         return (
@@ -253,17 +253,17 @@ export default function StudioPage() {
                             className="block"
                           >
                             <div className={cn(
-                              "h-18 md:h-24 border flex flex-col items-center justify-center transition-all rounded-2xl relative overflow-hidden group/level",
+                              "h-16 md:h-20 border flex flex-col items-center justify-center transition-all rounded-xl relative overflow-hidden group/level",
                               progress ? "border-[#00E676]/30 bg-[#00E676]/5" : "border-white/5 bg-white/2 hover:bg-white/5 hover:border-white/10"
                             )}>
-                              <div className="text-sm md:text-lg flex items-center gap-2 uppercase italic font-black transition-colors group-hover/level:text-primary">
+                              <div className="text-xs md:text-base flex items-center gap-1.5 uppercase italic font-black transition-colors group-hover/level:text-primary">
                                 LVL {level.difficulty}
-                                <ChevronRight className="w-5 h-5" />
+                                <ChevronRight className="w-4 h-4" />
                               </div>
                               {progress && (
-                                <div className="mt-2 flex items-center gap-1.5 bg-[#00E676]/20 px-3 py-1 rounded-full border border-[#00E676]/30">
-                                  <Trophy className="w-3.5 h-3.5 text-[#00E676]" />
-                                  <span className="text-xs font-black text-[#00E676]">{progress.accuracy}%</span>
+                                <div className="mt-1 flex items-center gap-1 bg-[#00E676]/20 px-2 py-0.5 rounded-full border border-[#00E676]/30">
+                                  <Trophy className="w-3 h-3 text-[#00E676]" />
+                                  <span className="text-[10px] font-black text-[#00E676]">{progress.accuracy}%</span>
                                 </div>
                               )}
                             </div>
