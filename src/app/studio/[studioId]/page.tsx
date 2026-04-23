@@ -143,26 +143,28 @@ export default function StudioPage() {
             <h2 className="text-sm font-black uppercase tracking-[0.5em] text-white">TRACKS</h2>
           </div>
           {studioTracks.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {studioTracks.map((track, idx) => (
-                <div key={track.id} className="p-3 bg-white/2 border border-white/5 hover:bg-white/5 transition-all flex items-center justify-between group rounded-xl">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[11px] font-black italic text-white/20">
-                      {(idx + 1).toString().padStart(2, '0')}
+                <div key={track.id} className="gemini-border-primary group">
+                  <div className="p-3 bg-black/40 backdrop-blur-xl border border-white/5 flex items-center justify-between rounded-xl">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[11px] font-black italic text-white/20">
+                        {(idx + 1).toString().padStart(2, '0')}
+                      </div>
+                      <h4 className="text-base md:text-lg font-black italic uppercase tracking-tight group-hover:text-primary transition-colors">{track.name}</h4>
                     </div>
-                    <h4 className="text-base md:text-lg font-black italic uppercase tracking-tight group-hover:text-primary transition-colors">{track.name}</h4>
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      onClick={() => toggleTrack(track.url)}
+                      className={cn(
+                        "w-10 h-10 rounded-full transition-all",
+                        playingTrack === track.url ? "bg-primary text-white" : "bg-white/5 hover:bg-white/10"
+                      )}
+                    >
+                      {playingTrack === track.url ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
+                    </Button>
                   </div>
-                  <Button 
-                    size="icon" 
-                    variant="ghost" 
-                    onClick={() => toggleTrack(track.url)}
-                    className={cn(
-                      "w-10 h-10 rounded-full transition-all",
-                      playingTrack === track.url ? "bg-primary text-white" : "bg-white/5 hover:bg-white/10"
-                    )}
-                  >
-                    {playingTrack === track.url ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
-                  </Button>
                 </div>
               ))}
             </div>

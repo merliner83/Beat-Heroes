@@ -61,27 +61,51 @@
   animation: wave-red 0.4s cubic-bezier(0, 0, 0.2, 1) forwards;
 }
 
-.gemini-border {
+/* Base Neon Border Class */
+.gemini-border-base {
   position: relative;
   border-radius: var(--radius);
   overflow: hidden;
 }
 
-.gemini-border::before {
+.gemini-border-base::before {
   content: "";
   position: absolute;
   inset: 0;
-  padding: 2px; /* Etwas feinerer Rand für Eleganz */
+  padding: 2px;
   border-radius: inherit;
-  background: linear-gradient(90deg, #FF3399, #FF3D00, #FF9100, #FFEA00, #FF3399);
   background-size: 200% 100%;
   animation: border-rotate 4s linear infinite;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
-  z-index: 20; /* Höherer Index, damit er über dem Content liegt */
+  z-index: 20;
   opacity: 1;
+}
+
+/* Rainbow Variant (Games/Logo) */
+.gemini-border {
+  @apply gemini-border-base;
+}
+.gemini-border::before {
+  background-image: linear-gradient(90deg, #FF3399, #FF3D00, #FF9100, #FFEA00, #FF3399);
+}
+
+/* Primary Variant (Tracks/Districts) */
+.gemini-border-primary {
+  @apply gemini-border-base;
+}
+.gemini-border-primary::before {
+  background-image: linear-gradient(90deg, #FF3399, #993DEB, #3838FA, #FF3399);
+}
+
+/* Accent Variant */
+.gemini-border-accent {
+  @apply gemini-border-base;
+}
+.gemini-border-accent::before {
+  background-image: linear-gradient(90deg, #FFEA00, #FF9100, #FFEA00);
 }
 
 .gemini-glow {
