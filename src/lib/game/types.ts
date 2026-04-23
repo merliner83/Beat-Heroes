@@ -1,4 +1,3 @@
-
 export type SoundType = 'kick' | 'clap' | 'percs' | 'misc';
 export type GameType = 'rhythm-producer' | 'sample-hunter' | 'disk-dash';
 
@@ -9,6 +8,8 @@ export interface Studio {
   coverColor: string;
   imageUrl?: string;
   district?: string;
+  tags?: string[];
+  featured?: boolean;
   linkUrl?: string;
   linkLabel?: string;
 }
@@ -17,6 +18,8 @@ export interface Track {
   id: string;
   name: string;
   url: string;
+  author?: string;
+  duration?: number;
 }
 
 export interface Game {

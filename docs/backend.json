@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "Studio": {
@@ -12,6 +11,12 @@
         "coverColor": { "type": "string" },
         "imageUrl": { "type": "string", "description": "Pfad zum Studio-Bild (z.B. /studios/house1.png)" },
         "district": { "type": "string", "description": "Der Stadtteil/Distrikt, in dem das Studio liegt." },
+        "tags": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "Stile oder Kategorien (z.B. Hip-Hop, Techno)." 
+        },
+        "featured": { "type": "boolean", "default": false },
         "linkUrl": { "type": "string", "format": "uri", "description": "Eine externe Webseite oder Social Media Link." },
         "linkLabel": { "type": "string", "description": "Der Text, der für den Link angezeigt werden soll." }
       },
@@ -24,6 +29,8 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
+        "author": { "type": "string", "description": "Der Produzent des Tracks." },
+        "duration": { "type": "number", "description": "Länge in Sekunden." },
         "url": { "type": "string", "format": "uri" }
       },
       "required": ["id", "name", "url"]

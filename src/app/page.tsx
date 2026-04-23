@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -14,32 +13,40 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Radio, RefreshCw, Loader2, Zap, Search } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, Zap, Search, Star } from 'lucide-react';
 
 const StudioCard = ({ studio }: { studio: Studio }) => (
-  <div className="relative group cursor-pointer transition-all duration-500 h-full overflow-hidden rounded-2xl md:rounded-3xl border border-white/5 bg-black/40 backdrop-blur-xl hover:border-primary/50 shadow-2xl">
+  <div className="relative group cursor-pointer transition-all duration-500 h-full overflow-hidden rounded-2xl border border-white/5 bg-black/40 backdrop-blur-xl hover:border-primary/50 shadow-2xl aspect-[16/10]">
     {studio.imageUrl ? (
       <Image
         src={studio.imageUrl}
         alt={studio.name}
         fill
-        className="object-cover opacity-40 group-hover:scale-110 group-hover:opacity-60 transition-all duration-1000"
+        className="object-cover opacity-60 group-hover:scale-110 group-hover:opacity-80 transition-all duration-1000"
         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
         data-ai-hint="music studio"
       />
     ) : (
-      <div className="absolute inset-0 opacity-20" style={{ backgroundColor: studio.coverColor }} />
+      <div className="absolute inset-0 opacity-40" style={{ backgroundColor: studio.coverColor }} />
     )}
 
     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
     
-    <div className="relative p-4 sm:p-6 z-20 flex flex-col justify-end h-full min-h-[160px] sm:min-h-[220px]">
-      {studio.district && (
-        <Badge variant="outline" className="mb-2 border-primary/30 text-primary text-[8px] font-black uppercase tracking-widest bg-black/60 backdrop-blur-md px-2 py-0.5 w-fit">
-          {studio.district}
-        </Badge>
-      )}
-      <h3 className="text-xl sm:text-2xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-none truncate">
+    <div className="relative p-4 z-20 flex flex-col justify-end h-full">
+      <div className="flex items-center gap-2 mb-1">
+        {studio.district && (
+          <Badge variant="outline" className="border-primary/30 text-primary text-[8px] font-black uppercase tracking-widest bg-black/60 backdrop-blur-md px-2 py-0.5 w-fit">
+            {studio.district}
+          </Badge>
+        )}
+        {studio.featured && (
+          <Badge className="bg-[#FFEA00] text-black text-[8px] font-black uppercase tracking-widest px-2 py-0.5 w-fit">
+            <Star className="w-2 h-2 mr-1 fill-current" />
+            Featured
+          </Badge>
+        )}
+      </div>
+      <h3 className="text-lg md:text-xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-none truncate">
         {studio.name}
       </h3>
     </div>
@@ -50,8 +57,6 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
     />
   </div>
 );
-
-const TAGS = ["All", "Urban", "Electronic", "Experimental", "House", "Hip-Hop"];
 
 export default function HomePage() {
   const db = useFirestore();
@@ -94,14 +99,23 @@ export default function HomePage() {
 
   const { data: allStudios, isLoading: isLoadingStudios } = useCollection<Studio>(studiosQuery);
 
+  // Dynamic tags from DB
+  const dynamicTags = useMemo(() => {
+    if (!allStudios) return ['All'];
+    const tagsSet = new Set<string>(['All']);
+    allStudios.forEach(s => {
+      s.tags?.forEach(tag => tagsSet.add(tag));
+    });
+    return Array.from(tagsSet);
+  }, [allStudios]);
+
   const filteredStudios = useMemo(() => {
     if (!allStudios) return [];
     return allStudios.filter(s => {
       const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            s.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesTag = selectedTag === 'All' || 
-                        s.description.toLowerCase().includes(selectedTag.toLowerCase()) ||
-                        (s.district && s.district.toLowerCase().includes(selectedTag.toLowerCase()));
+                        s.tags?.some(t => t.toLowerCase() === selectedTag.toLowerCase());
       return matchesSearch && matchesTag;
     });
   }, [allStudios, searchQuery, selectedTag]);
@@ -110,10 +124,10 @@ export default function HomePage() {
     if (!db) return;
     try {
       const tracks = [
-        { id: 'track-glitch', name: 'Glitch Power', url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' },
-        { id: 'track-hum', name: 'System Hum', url: 'https://actions.google.com/sounds/v1/science_fiction/low_power_hum.ogg' },
-        { id: 'track-techno', name: 'Techno Core', url: 'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg' },
-        { id: 'track-space', name: 'Space Drift', url: 'https://actions.google.com/sounds/v1/science_fiction/deep_space_drone.ogg' }
+        { id: 'track-glitch', name: 'Glitch Power', author: 'BeatBot', duration: 64, url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' },
+        { id: 'track-hum', name: 'System Hum', author: 'Cyborg', duration: 120, url: 'https://actions.google.com/sounds/v1/science_fiction/low_power_hum.ogg' },
+        { id: 'track-techno', name: 'Techno Core', author: 'Neon', duration: 90, url: 'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg' },
+        { id: 'track-space', name: 'Space Drift', author: 'Astro', duration: 180, url: 'https://actions.google.com/sounds/v1/science_fiction/deep_space_drone.ogg' }
       ];
 
       for (const t of tracks) {
@@ -121,13 +135,13 @@ export default function HomePage() {
       }
 
       const studios = [
-        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#FF3399', district: 'Downtown', imageUrl: 'https://picsum.photos/seed/gabriel-beats/800/1000' },
-        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00', district: 'Industry', imageUrl: 'https://picsum.photos/seed/yoan-beats/800/1000' },
-        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', coverColor: '#FF3D00', district: 'Unknown', imageUrl: 'https://picsum.photos/seed/noxxos/800/1000' },
-        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap and Hip-Hop.', coverColor: '#FF9100', district: 'Bronx', imageUrl: 'https://picsum.photos/seed/dave-beats/800/1000' },
-        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep House and tech vibes.', coverColor: '#00E676', district: 'Berlin', imageUrl: 'https://picsum.photos/seed/nintu-music/800/1000' },
-        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', coverColor: '#00B0FF', district: 'Miami', imageUrl: 'https://picsum.photos/seed/dj-avox/800/1000' },
-        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', coverColor: '#FF6D00', district: 'Harlem', imageUrl: 'https://picsum.photos/seed/nelio-beats/800/1000' }
+        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', tags: ['Urban', 'Hip-Hop'], featured: true, coverColor: '#FF3399', district: 'Downtown', imageUrl: 'https://picsum.photos/seed/gabriel-beats/800/1000' },
+        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', tags: ['Electronic', 'House'], coverColor: '#FFEA00', district: 'Industry', imageUrl: 'https://picsum.photos/seed/yoan-beats/800/1000' },
+        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', tags: ['Experimental', 'Electronic'], coverColor: '#FF3D00', district: 'Unknown', imageUrl: 'https://picsum.photos/seed/noxxos/800/1000' },
+        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap and Hip-Hop.', tags: ['Hip-Hop', 'Urban'], coverColor: '#FF9100', district: 'Bronx', imageUrl: 'https://picsum.photos/seed/dave-beats/800/1000' },
+        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep House and tech vibes.', tags: ['House', 'Electronic'], coverColor: '#00E676', district: 'Berlin', imageUrl: 'https://picsum.photos/seed/nintu-music/800/1000' },
+        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', tags: ['House'], featured: true, coverColor: '#00B0FF', district: 'Miami', imageUrl: 'https://picsum.photos/seed/dj-avox/800/1000' },
+        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', tags: ['Hip-Hop'], coverColor: '#FF6D00', district: 'Harlem', imageUrl: 'https://picsum.photos/seed/nelio-beats/800/1000' }
       ];
 
       for (const s of studios) {
@@ -203,7 +217,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Rack Synchronized!", description: "All studios and tracks updated." });
+      toast({ title: "Rack Synchronized!", description: "All studios, tracks and tags updated." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
@@ -244,7 +258,7 @@ export default function HomePage() {
         </div>
 
         <div className="flex gap-2 mt-4 overflow-x-auto w-full max-w-7xl pb-2 scrollbar-hide no-scrollbar">
-          {TAGS.map(tag => (
+          {dynamicTags.map(tag => (
             <Button
               key={tag}
               variant="ghost"
