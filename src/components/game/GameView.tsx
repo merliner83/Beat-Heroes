@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -263,30 +262,30 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   }, [isFinished, score.accuracy, user, db, level]);
 
   return (
-    <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 max-w-5xl mx-auto overflow-hidden">
-      <header className="flex justify-between items-center mb-1 px-2 h-10 md:h-12 shrink-0">
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col h-screen bg-[#050505] text-white p-3 md:p-6 max-w-6xl mx-auto overflow-hidden">
+      <header className="flex justify-between items-center mb-2 px-4 h-12 md:h-16 shrink-0">
+        <div className="flex items-center gap-4">
           <Link href={`/studio/${game.studioId}`}>
-            <ArrowLeft className="w-4 h-4 text-white/50 hover:text-white" />
+            <ArrowLeft className="w-6 h-6 text-white/50 hover:text-white" />
           </Link>
           <div className="flex flex-col">
-            <h1 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-white leading-none">Session</h1>
-            <p className="text-[7px] md:text-[8px] uppercase font-black opacity-30 tracking-widest line-clamp-1">{game.name}</p>
+            <h1 className="text-xs md:text-sm font-black uppercase italic tracking-tighter text-white leading-none">Session</h1>
+            <p className="text-[9px] md:text-[10px] uppercase font-black opacity-30 tracking-widest line-clamp-1">{game.name}</p>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-full border border-white/10 h-8 md:h-10">
-            <Percent className="w-3 h-3 text-[#FFEA00]" />
-            <p className={cn("text-sm md:text-2xl font-black italic leading-none", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2.5 bg-white/5 px-5 py-2 rounded-full border border-white/10 h-10 md:h-14">
+            <Percent className="w-4 h-4 text-[#FFEA00]" />
+            <p className={cn("text-lg md:text-3xl font-black italic leading-none", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
               {score.accuracy}
             </p>
           </div>
         </div>
       </header>
 
-      <main className="relative flex-1 gemini-border gemini-glow overflow-hidden flex flex-col bg-black/40 rounded-2xl md:rounded-[2rem]">
-        <div className="flex-1 flex px-1">
+      <main className="relative flex-1 gemini-border gemini-glow overflow-hidden flex flex-col bg-black/40 rounded-3xl md:rounded-[3rem]">
+        <div className="flex-1 flex px-2">
           {activeSoundTypes.map((type) => {
             const sound = soundsWithPatterns.find(s => s.type === type);
             return (
@@ -295,11 +294,11 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           })}
         </div>
 
-        <div className="p-2 md:p-8 bg-black/60 border-t border-white/5 shrink-0">
+        <div className="p-4 md:p-12 bg-black/60 border-t border-white/5 shrink-0">
           <div className={cn(
-            "grid gap-2 md:gap-4 max-w-lg mx-auto",
-            activeSoundTypes.length === 1 ? "grid-cols-1 max-w-[120px]" :
-            activeSoundTypes.length === 2 ? "grid-cols-2 max-w-[240px]" :
+            "grid gap-4 md:gap-8 max-w-xl mx-auto",
+            activeSoundTypes.length === 1 ? "grid-cols-1 max-w-[150px]" :
+            activeSoundTypes.length === 2 ? "grid-cols-2 max-w-[300px]" :
             "grid-cols-4"
           )}>
             {activeSoundTypes.map((type) => (
@@ -318,10 +317,10 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-50 backdrop-blur-sm">
-            <div className="text-center mx-4">
-              <Sparkles className="w-12 h-12 text-[#993DEB] mx-auto mb-4 animate-pulse-neon" />
-              <h2 className="text-xl md:text-4xl font-black mb-8 uppercase italic tracking-tighter">Sync Interface</h2>
-              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-48 md:w-64 h-14 md:h-20 text-sm md:text-2xl font-black uppercase italic bg-white text-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)]">
+            <div className="text-center mx-6">
+              <Sparkles className="w-16 h-16 text-[#993DEB] mx-auto mb-6 animate-pulse-neon" />
+              <h2 className="text-2xl md:text-5xl font-black mb-10 uppercase italic tracking-tighter">Sync Interface</h2>
+              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-56 md:w-80 h-16 md:h-24 text-base md:text-3xl font-black uppercase italic bg-white text-black rounded-3xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)]">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Pulse"}
               </Button>
             </div>
@@ -330,30 +329,30 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
         {countIn !== null && (
           <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-            <div className="text-[8rem] md:text-[14rem] font-black italic text-[#FFEA00] drop-shadow-[0_0_50px_rgba(255,234,0,0.4)] animate-in zoom-in-50 duration-200">{countIn}</div>
+            <div className="text-[10rem] md:text-[18rem] font-black italic text-[#FFEA00] drop-shadow-[0_0_70px_rgba(255,234,0,0.4)] animate-in zoom-in-50 duration-200">{countIn}</div>
           </div>
         )}
 
         {isFinished && (
-          <div className="absolute inset-0 bg-black/98 flex items-center justify-center p-6 z-50">
-            <div className="text-center space-y-6 max-w-sm">
+          <div className="absolute inset-0 bg-black/98 flex items-center justify-center p-8 z-50">
+            <div className="text-center space-y-8 max-w-md">
               {score.accuracy >= PASS_THRESHOLD ? (
                 <>
-                  <Trophy className="w-16 h-16 text-[#FFEA00] mx-auto drop-shadow-[0_0_20px_#FFEA00]" />
-                  <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter">Gold Mastered</h2>
-                  <p className="text-[#00E676] font-black text-2xl md:text-4xl italic">{score.accuracy}% Sync</p>
+                  <Trophy className="w-20 h-20 text-[#FFEA00] mx-auto drop-shadow-[0_0_30px_#FFEA00]" />
+                  <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">Gold Mastered</h2>
+                  <p className="text-[#00E676] font-black text-3xl md:text-5xl italic">{score.accuracy}% Sync</p>
                 </>
               ) : (
                 <>
-                  <XCircle className="w-16 h-16 text-[#FF3D00] mx-auto drop-shadow-[0_0_20px_#FF3D00]" />
-                  <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter">Desynced</h2>
-                  <p className="text-[#FF3D00] font-black text-2xl md:text-4xl italic">{score.accuracy}% Sync</p>
+                  <XCircle className="w-20 h-20 text-[#FF3D00] mx-auto drop-shadow-[0_0_30px_#FF3D00]" />
+                  <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">Desynced</h2>
+                  <p className="text-[#FF3D00] font-black text-3xl md:text-5xl italic">{score.accuracy}% Sync</p>
                 </>
               )}
-              <div className="flex gap-4 pt-10">
-                <Button onClick={startLevel} variant="outline" className="flex-1 h-14 border-white/20 text-xs md:text-sm uppercase font-black italic rounded-xl">Retry</Button>
+              <div className="flex gap-6 pt-12">
+                <Button onClick={startLevel} variant="outline" className="flex-1 h-16 md:h-20 border-white/20 text-sm md:text-lg uppercase font-black italic rounded-2xl">Retry</Button>
                 <Link href={`/studio/${game.studioId}`} className="flex-1">
-                  <Button className="w-full h-14 bg-white text-black font-black uppercase italic rounded-xl">Return</Button>
+                  <Button className="w-full h-16 md:h-20 bg-white text-black font-black uppercase italic rounded-2xl">Return</Button>
                 </Link>
               </div>
             </div>

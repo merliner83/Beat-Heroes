@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -33,15 +32,15 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
 
     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
     
-    <div className="relative p-4 z-20 flex flex-col justify-end h-full">
-      <div className="flex items-center gap-2 mb-1">
+    <div className="relative p-5 z-20 flex flex-col justify-end h-full">
+      <div className="flex items-center gap-2 mb-2">
         {studio.district && (
-          <Badge variant="outline" className="border-primary/30 text-primary text-[8px] font-black uppercase tracking-widest bg-black/60 backdrop-blur-md px-2 py-0.5 w-fit">
+          <Badge variant="outline" className="border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest bg-black/60 backdrop-blur-md px-2.5 py-1 w-fit">
             {studio.district}
           </Badge>
         )}
       </div>
-      <h3 className="text-lg md:text-xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-none truncate">
+      <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-none truncate">
         {studio.name}
       </h3>
     </div>
@@ -94,7 +93,6 @@ export default function HomePage() {
 
   const { data: allStudios, isLoading: isLoadingStudios } = useCollection<Studio>(studiosQuery);
 
-  // Dynamic tags from DB
   const dynamicTags = useMemo(() => {
     if (!allStudios) return ['All'];
     const tagsSet = new Set<string>(['All']);
@@ -223,36 +221,36 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col relative select-none">
       <div className="fixed inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '60px 60px' }} />
       
-      <header className="sticky top-0 p-4 md:p-6 flex flex-col items-center z-50 shrink-0 bg-black/80 backdrop-blur-xl border-b border-white/5">
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-7xl justify-between">
-          <div className="flex items-center gap-3">
-            <div className="gemini-border gemini-glow p-2 px-5 bg-black/80 backdrop-blur-3xl">
-              <div className="flex items-center gap-2">
-                <Radio className="w-4 h-4 text-white animate-pulse" />
-                <h1 className="text-lg md:text-2xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
+      <header className="sticky top-0 p-4 md:p-8 flex flex-col items-center z-50 shrink-0 bg-black/80 backdrop-blur-xl border-b border-white/5">
+        <div className="flex flex-col md:flex-row items-center gap-6 w-full max-w-7xl justify-between">
+          <div className="flex items-center gap-4">
+            <div className="gemini-border gemini-glow p-3 px-7 bg-black/80 backdrop-blur-3xl">
+              <div className="flex items-center gap-3">
+                <Radio className="w-5 h-5 text-white animate-pulse" />
+                <h1 className="text-xl md:text-3xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
               </div>
             </div>
 
-            <div className="gemini-border gemini-glow-accent p-1.5 px-4 bg-black/80 backdrop-blur-3xl border border-white/5">
-              <div className="text-white font-black text-sm md:text-lg leading-none tracking-tighter flex items-center gap-2">
-                <Zap className="w-3 h-3 text-[#FFEA00]" fill="currentColor" />
+            <div className="gemini-border gemini-glow-accent p-2 px-5 bg-black/80 backdrop-blur-3xl border border-white/5">
+              <div className="text-white font-black text-base md:text-xl leading-none tracking-tighter flex items-center gap-2">
+                <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
                 {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
               </div>
             </div>
           </div>
 
-          <div className="relative w-full md:w-80 group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors" />
+          <div className="relative w-full md:w-96 group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-primary transition-colors" />
             <Input 
               placeholder="Search Studios..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-white/5 border-white/10 rounded-full focus:ring-primary focus:border-primary placeholder:text-white/10 text-xs font-bold uppercase tracking-widest"
+              className="pl-12 h-12 bg-white/5 border-white/10 rounded-full focus:ring-primary focus:border-primary placeholder:text-white/10 text-sm font-bold uppercase tracking-widest"
             />
           </div>
         </div>
 
-        <div className="flex gap-2 mt-4 overflow-x-auto w-full max-w-7xl pb-2 scrollbar-hide no-scrollbar">
+        <div className="flex gap-3 mt-6 overflow-x-auto w-full max-w-7xl pb-2 scrollbar-hide no-scrollbar">
           {dynamicTags.map(tag => (
             <Button
               key={tag}
@@ -260,7 +258,7 @@ export default function HomePage() {
               size="sm"
               onClick={() => setSelectedTag(tag)}
               className={cn(
-                "rounded-full text-[10px] font-black uppercase tracking-[0.2em] px-5 h-8 border transition-all shrink-0",
+                "rounded-full text-[12px] font-black uppercase tracking-[0.2em] px-6 h-10 border transition-all shrink-0",
                 selectedTag === tag 
                   ? "bg-primary border-primary text-white" 
                   : "bg-white/5 border-white/5 text-white/40 hover:bg-white/10"
@@ -272,14 +270,14 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="relative flex-1 w-full max-w-7xl mx-auto py-4 md:py-8 px-4 md:px-6">
+      <main className="relative flex-1 w-full max-w-7xl mx-auto py-6 md:py-10 px-4 md:px-6">
         {isLoadingStudios ? (
           <div className="h-64 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="w-10 h-10 animate-spin text-primary" />
-            <p className="text-[8px] font-black uppercase tracking-[0.5em] opacity-30">Connecting to Rack...</p>
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-30">Connecting to Rack...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             {filteredStudios.map((studio) => (
               <Link key={studio.id} href={`/studio/${studio.id}`}>
                 <StudioCard studio={studio} />
@@ -288,30 +286,30 @@ export default function HomePage() {
             
             {filteredStudios.length === 0 && (
               <div className="col-span-full py-20 text-center opacity-20">
-                 <Radio className="w-12 h-12 mx-auto mb-4" />
-                 <p className="text-xs font-black uppercase tracking-widest italic">No studios matching search criteria</p>
+                 <Radio className="w-16 h-16 mx-auto mb-4" />
+                 <p className="text-sm font-black uppercase tracking-widest italic">No studios matching search criteria</p>
               </div>
             )}
           </div>
         )}
       </main>
 
-      <footer className="sticky bottom-0 p-3 md:p-5 border-t border-white/5 bg-black/95 backdrop-blur-2xl flex justify-between items-center z-50 shrink-0">
-        <div className="flex items-center gap-2 opacity-30">
-          <Zap className="w-4 h-4 text-primary" />
-          <span className="text-[8px] md:text-[9px] uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack System Online</span>
+      <footer className="sticky bottom-0 p-4 md:p-6 border-t border-white/5 bg-black/95 backdrop-blur-2xl flex justify-between items-center z-50 shrink-0">
+        <div className="flex items-center gap-3 opacity-30">
+          <Zap className="w-5 h-5 text-primary" />
+          <span className="text-[10px] md:text-[11px] uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack System Online</span>
         </div>
-        <div className="flex items-center gap-4">
-          <p className="text-[10px] font-black uppercase tracking-widest text-white/30 hidden md:block italic">
+        <div className="flex items-center gap-6">
+          <p className="text-[12px] font-black uppercase tracking-widest text-white/30 hidden md:block italic">
             {filteredStudios.length} Active Studios Loaded
           </p>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={setupStudios} 
-            className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_20px_rgba(255,234,0,0.3)] h-12 md:h-14 px-8 md:px-12 text-sm md:text-base transition-transform active:scale-95"
+            className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_20px_rgba(255,234,0,0.3)] h-12 md:h-16 px-10 md:px-16 text-base md:text-lg transition-transform active:scale-95"
           >
-            <RefreshCw className="w-4 h-4 md:w-5 md:h-5 mr-3" /> Rack Sync
+            <RefreshCw className="w-5 h-5 md:w-6 md:h-6 mr-4" /> Rack Sync
           </Button>
         </div>
       </footer>

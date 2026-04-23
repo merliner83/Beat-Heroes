@@ -35,8 +35,8 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
   }, [shortcut, handlePress]);
 
   return (
-    <div className="relative w-full max-w-[100px] aspect-square">
-      {/* Wave Flash Overlay - flashKey erzwingt eine neue Instanz/Animation bei jedem Trigger */}
+    <div className="relative w-full max-w-[120px] aspect-square">
+      {/* Wave Flash Overlay */}
       {flash && (
         <div 
           key={flashKey} 
@@ -60,8 +60,8 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
           boxShadow: isPressed ? `0 0 20px ${color}` : `0 0 10px ${color}33`,
         }}
       >
-        <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest opacity-40 mb-1">{shortcut}</span>
-        <span className="text-[8px] md:text-xs font-black uppercase italic tracking-tighter line-clamp-1">{label}</span>
+        <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest opacity-40 mb-2">{shortcut}</span>
+        <span className="text-[11px] md:text-sm font-black uppercase italic tracking-tighter line-clamp-1">{label}</span>
       </button>
     </div>
   );
