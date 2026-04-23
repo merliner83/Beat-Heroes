@@ -16,7 +16,6 @@
           "items": { "type": "string" },
           "description": "Stile oder Kategorien (z.B. Hip-Hop, Techno)." 
         },
-        "featured": { "type": "boolean", "default": false },
         "linkUrl": { "type": "string", "format": "uri", "description": "Eine externe Webseite oder Social Media Link." },
         "linkLabel": { "type": "string", "description": "Der Text, der für den Link angezeigt werden soll." }
       },
@@ -74,7 +73,7 @@
         "steps": { 
           "type": "array", 
           "items": { "type": "number" },
-          "description": "Schritte (0-127) für einen 8-Takt-Loop."
+          "description": "Schritte (0-127) for einen 8-Takt-Loop."
         }
       },
       "required": ["id", "name", "steps"]

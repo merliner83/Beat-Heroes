@@ -9,7 +9,6 @@ export interface Studio {
   imageUrl?: string;
   district?: string;
   tags?: string[];
-  featured?: boolean;
   linkUrl?: string;
   linkLabel?: string;
 }
