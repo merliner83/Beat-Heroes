@@ -34,11 +34,11 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
     </div>
 
     {/* Gradient Overlay for Text Legibility (Fades from dark bottom to transparent top) */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10" />
+    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10" />
     
-    {/* Studio Info Overlay */}
-    <div className="absolute inset-0 p-4 md:p-6 flex flex-col justify-end z-20">
-      <h3 className="text-xl md:text-3xl lg:text-4xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-[0.85] break-words">
+    {/* Studio Info Overlay - Centered Horizontally */}
+    <div className="absolute inset-0 p-4 md:p-6 flex flex-col justify-end items-center text-center z-20 pb-6 md:pb-8">
+      <h3 className="text-xl md:text-3xl lg:text-4xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-[0.85] break-words drop-shadow-lg">
         {studio.name}
       </h3>
     </div>
