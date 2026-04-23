@@ -5,7 +5,7 @@ import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
-import { Radio, RefreshCw, Loader2, Map as MapIcon, Zap } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, Map as MapIcon, Zap, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -21,36 +21,36 @@ import {
 
 const StudioCard = ({ color, studioName, imageUrl }: { color: string, studioName: string, imageUrl?: string }) => (
   <div className="relative group cursor-pointer transition-all duration-500">
-    <div className="relative aspect-[3/4] w-full max-w-[180px] md:max-w-[240px] mx-auto overflow-hidden rounded-[2rem] border-2 border-white/5 bg-black/40 backdrop-blur-xl group-hover:border-primary/50 transition-all duration-700">
-      <div className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-700" style={{ backgroundColor: color }} />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/90 z-10" />
+    <div className="relative aspect-[4/3] w-full max-w-[160px] md:max-w-[220px] mx-auto overflow-hidden rounded-2xl border-2 border-white/5 bg-black/40 backdrop-blur-xl group-hover:border-primary/50 transition-all duration-700">
+      <div className="absolute inset-0 opacity-10 group-hover:opacity-30 transition-opacity duration-700" style={{ backgroundColor: color }} />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/5 to-black/80 z-10" />
       
-      <div className="relative h-full w-full flex flex-col items-center justify-center p-4 md:p-6 z-20">
+      <div className="relative h-full w-full flex flex-col items-center justify-center p-3 md:p-5 z-20">
         <div className="flex-1 w-full flex items-center justify-center">
           {imageUrl && imageUrl.length > 0 ? (
             <img 
               src={imageUrl} 
               alt={studioName}
-              className="object-contain w-full h-4/5 drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] transition-transform duration-700 group-hover:scale-110"
+              className="object-contain w-full h-3/4 drop-shadow-[0_8px_15px_rgba(0,0,0,0.5)] transition-transform duration-700 group-hover:scale-110"
             />
           ) : (
-            <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-               <span className="text-white/20 font-black italic text-4xl md:text-6xl uppercase">{studioName.substring(0,1)}</span>
+            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+               <span className="text-white/20 font-black italic text-2xl md:text-4xl uppercase">{studioName.substring(0,1)}</span>
             </div>
           )}
         </div>
         
-        <div className="w-full text-center mt-2">
-          <h3 className="text-sm md:text-lg font-black uppercase italic tracking-tighter text-white drop-shadow-[0_4px_12px_rgba(0,0,0,1)] line-clamp-2">
+        <div className="w-full text-center mt-1">
+          <h3 className="text-[10px] md:text-sm font-black uppercase italic tracking-tighter text-white drop-shadow-[0_2px_8px_rgba(0,0,0,1)] line-clamp-1">
             {studioName}
           </h3>
-          <div className="mt-1 h-0.5 w-8 bg-primary mx-auto rounded-full group-hover:w-16 transition-all duration-500" />
+          <div className="mt-1 h-0.5 w-4 bg-primary mx-auto rounded-full group-hover:w-8 transition-all duration-500" />
         </div>
       </div>
     </div>
     
     <div 
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-[80px] opacity-0 group-hover:opacity-20 transition-opacity duration-1000 pointer-events-none -z-10"
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-[60px] opacity-0 group-hover:opacity-10 transition-opacity duration-1000 pointer-events-none -z-10"
       style={{ backgroundColor: color }}
     />
   </div>
@@ -119,8 +119,21 @@ export default function HomePage() {
       }
 
       const patterns = [
-        { id: 'kick-p1', name: 'Kick Intro', steps: [0, 16, 32, 48, 64, 80, 96, 110, 112, 126] }, 
-        { id: 'kick-p2', name: 'Kick Main', steps: Array.from({ length: 32 }, (_, i) => i * 4) }, 
+        // Kick Pattern: Takt 1-8 (einzelne Kicks + Einschübe), Takt 9-16 (1/4 Noten)
+        { 
+          id: 'kick-p1', 
+          name: 'Kick Progression', 
+          steps: [
+            // Takt 1-4: Auf der 1 + kleine Synkope
+            0, 14, 16, 30, 32, 46, 48, 62,
+            // Takt 5-8: Mehr Dynamik
+            64, 78, 80, 84, 96, 110, 112, 114, 126,
+            // Takt 9-16 (Intern berechnet in GameView auf 1/4 Noten, hier exemplarisch für 8 Takte 9-16 als Four-to-the-floor)
+            // Hinweis: Da patterns pro 8 Takte definiert sind, machen wir kick-p2 für die 1/4 Noten
+          ] 
+        },
+        { id: 'kick-p2', name: 'Kick Main 4/4', steps: Array.from({ length: 32 }, (_, i) => i * 4) },
+        
         { id: 'clap-p1', name: 'Clap Basic', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
         { id: 'clap-p2', name: 'Clap Var', steps: [4, 12, 14, 20, 28, 30, 36, 44, 46, 52, 60, 62, 68, 76, 78, 84, 92, 94, 100, 108, 110, 116, 124, 126] },
         { id: 'perc-p1', name: 'Perc Basic', steps: [18, 22, 50, 54, 82, 86, 114, 118] },
@@ -223,36 +236,37 @@ export default function HomePage() {
       <div className="absolute inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '60px 60px' }} />
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,51,153,0.1) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(255,51,153,0.1) 1.5px, transparent 1.5px)', backgroundSize: '180px 180px' }} />
       
-      <header className="p-4 md:p-8 flex flex-col items-center z-50 shrink-0">
-        <div className="gemini-border gemini-glow p-2 px-6 md:p-3 md:px-10 inline-block mb-4 bg-black/80 backdrop-blur-3xl">
-          <div className="flex items-center gap-2 md:gap-4">
-            <Radio className="w-5 h-5 md:w-8 md:h-8 text-white animate-pulse" />
-            <h1 className="text-xl md:text-5xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
+      <header className="p-4 md:p-6 flex flex-col items-center z-50 shrink-0">
+        <div className="gemini-border gemini-glow p-2 px-5 md:p-3 md:px-8 inline-block mb-3 bg-black/80 backdrop-blur-3xl">
+          <div className="flex items-center gap-2 md:gap-3">
+            <Radio className="w-4 h-4 md:w-6 md:h-6 text-white animate-pulse" />
+            <h1 className="text-lg md:text-3xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
           </div>
         </div>
 
-        <div className="gemini-border gemini-glow-accent p-1 px-6 md:p-2 md:px-10 text-center bg-black/80 backdrop-blur-3xl border border-white/5">
-          <div className="text-white font-black text-lg md:text-3xl leading-none tracking-tighter flex items-center gap-2 md:gap-3">
-            <Zap className="w-4 h-4 md:w-5 md:h-5 text-[#FFEA00]" fill="currentColor" />
+        <div className="gemini-border gemini-glow-accent p-1 px-4 md:p-1.5 md:px-6 text-center bg-black/80 backdrop-blur-3xl border border-white/5">
+          <div className="text-white font-black text-sm md:text-xl leading-none tracking-tighter flex items-center gap-2 md:gap-3">
+            <Zap className="w-3 h-3 md:w-4 md:h-4 text-[#FFEA00]" fill="currentColor" />
             {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
           </div>
         </div>
       </header>
 
-      <main className="relative flex-1 w-full flex flex-col justify-center overflow-hidden py-4 md:py-12">
+      <main className="relative flex-1 w-full flex flex-col justify-center overflow-hidden py-2 md:py-6">
         {isLoadingStudios ? (
           <div className="flex flex-col items-center justify-center gap-4">
-            <Loader2 className="w-12 h-12 md:w-16 md:h-16 animate-spin text-primary" />
-            <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.5em] opacity-30">Loading Rack...</p>
+            <Loader2 className="w-10 h-10 md:w-12 md:h-12 animate-spin text-primary" />
+            <p className="text-[8px] font-black uppercase tracking-[0.5em] opacity-30">Loading Rack...</p>
           </div>
         ) : (
-          <div className="w-full px-4 md:px-0">
+          <div className="w-full relative px-10">
             <Carousel
               opts={{
-                align: "center",
+                align: "start",
                 loop: true,
+                dragFree: true,
               }}
-              className="w-full max-w-7xl mx-auto"
+              className="w-full max-w-6xl mx-auto"
             >
               <CarouselContent className="-ml-2 md:-ml-4">
                 {allStudios?.map((studio) => (
@@ -267,61 +281,67 @@ export default function HomePage() {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <div className="hidden lg:block">
-                <CarouselPrevious className="bg-black/50 border-white/10 hover:bg-primary hover:text-white transition-all w-10 h-10 -left-12" />
-                <CarouselNext className="bg-black/50 border-white/10 hover:bg-primary hover:text-white transition-all w-10 h-10 -right-12" />
+              <div className="flex justify-center mt-6 gap-6 md:absolute md:top-1/2 md:-translate-y-1/2 md:w-full md:left-0 md:px-4 md:justify-between md:pointer-events-none md:mt-0">
+                <CarouselPrevious className="static md:absolute md:left-2 translate-y-0 h-8 w-8 md:h-10 md:w-10 bg-black/40 border-white/5 hover:bg-primary text-white transition-all md:pointer-events-auto" />
+                <CarouselNext className="static md:absolute md:right-2 translate-y-0 h-8 w-8 md:h-10 md:w-10 bg-black/40 border-white/5 hover:bg-primary text-white transition-all md:pointer-events-auto" />
               </div>
             </Carousel>
+            
+            <div className="mt-4 flex flex-col items-center gap-1 md:hidden">
+               <div className="flex gap-1.5 items-center opacity-30">
+                  <ChevronLeft className="w-3 h-3" />
+                  <span className="text-[6px] font-black uppercase tracking-[0.3em]">Swipe to browse studios</span>
+                  <ChevronRight className="w-3 h-3" />
+               </div>
+            </div>
           </div>
         )}
 
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-4 max-w-[280px] pointer-events-none">
-          <div className="relative w-full h-16 md:h-24 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden shadow-[0_0_60px_rgba(0,0,0,1)] border border-white/5">
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '15px 15px' }} />
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center w-full px-4 max-w-[200px] pointer-events-none">
+          <div className="relative w-full h-12 md:h-16 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden border border-white/5">
+            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '12px 12px' }} />
             
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <div className="w-8 h-8 md:w-12 md:h-12 rounded-full border border-white/20 animate-[ping_3s_linear_infinite]" />
+              <div className="w-6 h-6 md:w-10 md:h-10 rounded-full border border-white/10 animate-[ping_3s_linear_infinite]" />
             </div>
 
-            <div className="absolute left-[8%] top-[15%] flex flex-col items-start gap-0.5">
-              <div className="w-1 h-1 rounded-full bg-[#00E676] shadow-[0_0_10px_#00E676] animate-pulse" />
-              <span className="text-[6px] md:text-[8px] font-black uppercase tracking-widest text-[#00E676] italic">ACTIVE</span>
+            <div className="absolute left-[8%] top-[15%] flex flex-col items-start">
+              <div className="w-0.5 h-0.5 rounded-full bg-[#00E676] shadow-[0_0_8px_#00E676] animate-pulse" />
+              <span className="text-[5px] md:text-[6px] font-black uppercase tracking-widest text-[#00E676] italic">ACTIVE</span>
             </div>
 
-            <div className="absolute right-[8%] bottom-[15%] flex flex-col items-end gap-0.5">
-              <div className="w-1 h-1 rounded-full bg-primary shadow-[0_0_10px_#FF3399] animate-pulse" />
-              <span className="text-[6px] md:text-[8px] font-black uppercase tracking-widest text-primary italic">SYNC</span>
+            <div className="absolute right-[8%] bottom-[15%] flex flex-col items-end">
+              <div className="w-0.5 h-0.5 rounded-full bg-primary shadow-[0_0_8px_#FF3399] animate-pulse" />
+              <span className="text-[5px] md:text-[6px] font-black uppercase tracking-widest text-primary italic">SYNC</span>
             </div>
 
             <div 
-              className="absolute inset-0 origin-center animate-[spin_10s_linear_infinite] opacity-20" 
+              className="absolute inset-0 origin-center animate-[spin_10s_linear_infinite] opacity-10" 
               style={{ 
                 background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.2) 120deg, transparent 360deg)' 
               }}
             />
           </div>
-          <div className="mt-1 md:mt-2 text-[6px] md:text-[8px] font-black uppercase tracking-[0.5em] text-primary/40 text-center italic leading-none">
+          <div className="mt-1 text-[5px] md:text-[6px] font-black uppercase tracking-[0.4em] text-primary/30 text-center italic leading-none">
             district scanner
           </div>
         </div>
       </main>
 
-      <footer className="p-3 md:p-4 border-t border-white/5 bg-black/98 flex justify-between items-center z-50 shrink-0">
-        <div className="flex items-center gap-2 md:gap-3 opacity-30">
-          <MapIcon className="w-3 h-3 md:w-4 md:h-4 text-primary" />
-          <span className="text-[8px] md:text-[10px] uppercase font-black tracking-[0.3em] hidden sm:inline">Modular Rack Online</span>
+      <footer className="p-2 md:p-3 border-t border-white/5 bg-black/98 flex justify-between items-center z-50 shrink-0">
+        <div className="flex items-center gap-2 opacity-20">
+          <MapIcon className="w-3 h-3 text-primary" />
+          <span className="text-[7px] md:text-[8px] uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack Online</span>
         </div>
         <Button 
           variant="outline" 
           size="sm" 
           onClick={setupStudios} 
-          className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_20px_rgba(255,234,0,0.3)] h-10 md:h-12 px-4 md:px-8 text-xs md:text-sm"
+          className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_15px_rgba(255,234,0,0.2)] h-8 md:h-10 px-4 md:px-6 text-[10px] md:text-xs"
         >
-          <RefreshCw className="w-3 h-3 md:w-4 md:h-4 mr-2 md:mr-3" /> Rack Sync
+          <RefreshCw className="w-3 h-3 md:w-4 md:h-4 mr-2" /> Rack Sync
         </Button>
       </footer>
     </div>
   );
 }
-
-    
