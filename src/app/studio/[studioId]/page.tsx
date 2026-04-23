@@ -139,7 +139,7 @@ export default function StudioPage() {
         {/* Tracks Section */}
         {studioTracks.length > 0 && (
           <div className="mb-10 md:mb-14">
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-2 mb-4">
               <Music className="w-4 h-4 text-primary" />
               <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-white">TRACKS</h2>
             </div>
@@ -186,11 +186,11 @@ export default function StudioPage() {
 
               return (
                 <div key={game.id} className="relative group">
-                  <div className="p-4 md:p-6 bg-black/40 border border-white/5 rounded-2xl md:rounded-[2rem]">
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+                  <div className="p-4 bg-black/40 border border-white/5 rounded-2xl md:rounded-[2rem]">
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-4">
                       <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-3 mb-3">
-                          <h3 className="text-xl md:text-3xl font-black uppercase italic tracking-tighter leading-none group-hover:text-primary transition-colors">{game.name}</h3>
+                        <div className="flex flex-wrap items-center gap-3 mb-2">
+                          <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter leading-none group-hover:text-primary transition-colors">{game.name}</h3>
                           
                           <div className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded border border-white/5">
                             <Music className="w-2.5 h-2.5 text-primary" />
@@ -229,16 +229,15 @@ export default function StudioPage() {
                             className="block"
                           >
                             <div className={cn(
-                              "h-14 md:h-16 border flex flex-col items-center justify-center gap-0.5 group/level transition-all rounded-xl relative overflow-hidden",
+                              "h-12 md:h-14 border flex flex-col items-center justify-center transition-all rounded-xl relative overflow-hidden",
                               progress ? "border-[#00E676]/30 bg-[#00E676]/5" : "border-white/5 bg-white/2 hover:bg-white/5 hover:border-white/10"
                             )}>
-                              <span className="text-[7px] opacity-30 font-black uppercase tracking-[0.2em]">LVL {level.difficulty}</span>
-                              <div className="text-[9px] md:text-[10px] flex items-center gap-1 uppercase italic font-black group-hover/level:text-primary transition-colors">
-                                {level.name}
-                                <ChevronRight className="w-2.5 h-2.5" />
+                              <div className="text-[10px] md:text-sm flex items-center gap-1 uppercase italic font-black group-hover/level:text-primary transition-colors">
+                                LVL {level.difficulty}
+                                <ChevronRight className="w-3 h-3" />
                               </div>
                               {progress && (
-                                <div className="mt-1 flex items-center gap-1 bg-[#00E676]/20 px-1.5 py-0.5 rounded-full border border-[#00E676]/30">
+                                <div className="mt-1 flex items-center gap-1 bg-[#00E676]/20 px-1.5 py-0.5 rounded-full border border-[#00E676]/30 scale-75">
                                   <Trophy className="w-2 h-2 text-[#00E676]" />
                                   <span className="text-[8px] font-black text-[#00E676]">{progress.accuracy}%</span>
                                 </div>

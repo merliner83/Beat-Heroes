@@ -187,7 +187,7 @@ export default function HomePage() {
               id: levelId,
               gameId: gameId,
               difficulty: i,
-              name: i === 1 ? 'Initiation' : i === 2 ? 'The Pulse' : i === 3 ? 'Modular' : 'Master'
+              name: `lvl ${i}`
             }, { merge: true });
 
             const soundSet = [
