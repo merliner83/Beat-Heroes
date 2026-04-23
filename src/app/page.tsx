@@ -12,41 +12,40 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Radio, RefreshCw, Loader2, Zap, Search } from 'lucide-react';
 
 const StudioCard = ({ studio }: { studio: Studio }) => (
-  <div className="relative group cursor-pointer transition-all duration-500 overflow-hidden rounded-lg border border-white/5 bg-black/40 backdrop-blur-xl hover:border-primary/50 shadow-2xl flex flex-col h-full">
-    <div className="relative aspect-square w-full overflow-hidden shrink-0">
+  <div className="relative group cursor-pointer transition-all duration-500 overflow-hidden rounded-lg border border-white/5 bg-black/40 hover:border-primary/50 shadow-2xl aspect-square w-full">
+    {/* Background Image */}
+    <div className="absolute inset-0 overflow-hidden">
       {studio.imageUrl ? (
         <Image
           src={studio.imageUrl}
           alt={studio.name}
           fill
-          className="object-cover opacity-60 group-hover:scale-110 group-hover:opacity-100 transition-all duration-1000"
+          className="object-cover opacity-40 group-hover:scale-110 group-hover:opacity-60 transition-all duration-1000"
           sizes="(max-width: 640px) 33vw, (max-width: 1024px) 15vw, 10vw"
           data-ai-hint="music studio"
         />
       ) : (
-        <div className="absolute inset-0 opacity-40" style={{ backgroundColor: studio.coverColor }} />
+        <div className="absolute inset-0 opacity-20" style={{ backgroundColor: studio.coverColor }} />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
     </div>
+
+    {/* Gradient Overlay for Text Legibility */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10" />
     
-    <div className="p-2 md:p-3 flex flex-col gap-0.5 justify-center flex-1 bg-black/20">
-      {studio.district && (
-        <span className="text-[7px] md:text-[8px] font-black uppercase tracking-widest text-primary/80 truncate">
-          {studio.district}
-        </span>
-      )}
-      <h3 className="text-[9px] md:text-[11px] font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-tight truncate">
+    {/* Studio Info Overlay */}
+    <div className="absolute inset-0 p-3 md:p-4 flex flex-col justify-end z-20">
+      <h3 className="text-sm md:text-xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-[0.9] break-words">
         {studio.name}
       </h3>
     </div>
     
+    {/* Subtle Glow interaction */}
     <div 
-      className="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-1000 pointer-events-none -z-10"
+      className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-1000 pointer-events-none z-0"
       style={{ backgroundColor: studio.coverColor }}
     />
   </div>
@@ -210,7 +209,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Rack Synchronized!", description: "All studios assigned to their districts." });
+      toast({ title: "Rack Synchronized!", description: "All studios updated." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
@@ -227,13 +226,13 @@ export default function HomePage() {
             <div className="gemini-border gemini-glow p-2 px-5 bg-black/80 backdrop-blur-3xl">
               <div className="flex items-center gap-2">
                 <Radio className="w-4 h-4 text-white animate-pulse" />
-                <h1 className="text-lg md:text-2xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
+                <h1 className="text-xl md:text-3xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
               </div>
             </div>
 
             <div className="gemini-border gemini-glow-accent p-1.5 px-4 bg-black/80 backdrop-blur-3xl border border-white/5">
-              <div className="text-white font-black text-sm md:text-lg leading-none tracking-tighter flex items-center gap-2">
-                <Zap className="w-3.5 h-3.5 text-[#FFEA00]" fill="currentColor" />
+              <div className="text-white font-black text-base md:text-2xl leading-none tracking-tighter flex items-center gap-2">
+                <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
                 {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
               </div>
             </div>
@@ -245,7 +244,7 @@ export default function HomePage() {
               placeholder="Search Studios..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-white/5 border-white/10 rounded-full focus:ring-primary focus:border-primary placeholder:text-white/10 text-xs font-bold uppercase tracking-widest"
+              className="pl-10 h-10 md:h-12 bg-white/5 border-white/10 rounded-full focus:ring-primary focus:border-primary placeholder:text-white/10 text-xs md:text-sm font-bold uppercase tracking-widest"
             />
           </div>
         </div>
@@ -258,7 +257,7 @@ export default function HomePage() {
               size="sm"
               onClick={() => setSelectedTag(tag)}
               className={cn(
-                "rounded-full text-[10px] font-black uppercase tracking-[0.15em] px-4 h-8 border transition-all shrink-0",
+                "rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.15em] px-5 h-9 md:h-10 border transition-all shrink-0",
                 selectedTag === tag 
                   ? "bg-primary border-primary text-white" 
                   : "bg-white/5 border-white/5 text-white/40 hover:bg-white/10"
@@ -274,10 +273,10 @@ export default function HomePage() {
         {isLoadingStudios ? (
           <div className="h-64 flex flex-col items-center justify-center gap-4">
             <Loader2 className="w-10 h-10 animate-spin text-primary" />
-            <p className="text-[9px] font-black uppercase tracking-[0.4em] opacity-30">Connecting to Rack...</p>
+            <p className="text-xs md:text-sm font-black uppercase tracking-[0.4em] opacity-30">Connecting to Rack...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             {filteredStudios.map((studio) => (
               <Link key={studio.id} href={`/studio/${studio.id}`} className="block transform transition-transform hover:scale-[1.03] active:scale-95">
                 <StudioCard studio={studio} />
@@ -287,7 +286,7 @@ export default function HomePage() {
             {filteredStudios.length === 0 && (
               <div className="col-span-full py-20 text-center opacity-20">
                  <Radio className="w-12 h-12 mx-auto mb-4" />
-                 <p className="text-xs font-black uppercase tracking-widest italic">No studios matching search criteria</p>
+                 <p className="text-sm md:text-base font-black uppercase tracking-widest italic">No studios matching search criteria</p>
               </div>
             )}
           </div>
@@ -297,10 +296,10 @@ export default function HomePage() {
       <footer className="sticky bottom-0 p-3 md:p-4 border-t border-white/5 bg-black/95 backdrop-blur-2xl flex justify-between items-center z-50 shrink-0">
         <div className="flex items-center gap-3 opacity-30">
           <Zap className="w-4 h-4 text-primary" />
-          <span className="text-[9px] uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack System Online</span>
+          <span className="text-[10px] md:text-xs uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack System Online</span>
         </div>
         <div className="flex items-center gap-4">
-          <p className="text-[10px] font-black uppercase tracking-widest text-white/30 hidden md:block italic">
+          <p className="text-[11px] md:text-sm font-black uppercase tracking-widest text-white/30 hidden md:block italic">
             {filteredStudios.length} Active Studios
           </p>
           <Button 
@@ -316,4 +315,3 @@ export default function HomePage() {
     </div>
   );
 }
-
