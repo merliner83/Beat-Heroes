@@ -13,6 +13,12 @@ export interface Studio {
   linkLabel?: string;
 }
 
+export interface Track {
+  id: string;
+  name: string;
+  url: string;
+}
+
 export interface Game {
   id: string;
   studioId: string;
@@ -20,6 +26,7 @@ export interface Game {
   type: GameType;
   bpm?: number;
   difficulty?: number; // 1-4
+  trackId?: string;
   backingTrackUrl?: string;
   backgroundImageUrl?: string;
 }

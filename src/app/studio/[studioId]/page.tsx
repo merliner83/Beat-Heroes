@@ -1,10 +1,11 @@
+
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useCollection, useDoc, useUser } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
-import { Studio, Game, Level, LevelProgress } from '@/lib/game/types';
+import { Studio, Game, Level, LevelProgress, Track } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ChevronRight, Trophy, Loader2, Play, Pause, Music, Zap } from 'lucide-react';
 import Link from 'next/link';
@@ -16,13 +17,6 @@ const DIFFICULTY_MAP: Record<number, { label: string, color: string }> = {
   2: { label: 'SKILLED', color: '#FFEA00' },
   3: { label: 'PRO', color: '#EB3D99' },
   4: { label: 'HERO', color: '#FF3D00' },
-};
-
-const TRACK_NAMES: Record<string, string> = {
-  'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg': 'Glitch Power',
-  'https://actions.google.com/sounds/v1/science_fiction/low_power_hum.ogg': 'System Hum',
-  'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg': 'Techno Core',
-  'https://actions.google.com/sounds/v1/science_fiction/deep_space_drone.ogg': 'Space Drift',
 };
 
 export default function StudioPage() {
@@ -39,6 +33,12 @@ export default function StudioPage() {
   }, [db, studioId]);
   const { data: games } = useCollection<Game>(gamesQuery);
 
+  const tracksQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, 'tracks'));
+  }, [db]);
+  const { data: allTracks } = useCollection<Track>(tracksQuery);
+
   const allLevelsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'levels'));
@@ -51,14 +51,8 @@ export default function StudioPage() {
   }, [db, user]);
   const { data: userProgress } = useCollection<LevelProgress>(progressQuery);
 
-  // Audio state for track preview
   const [playingTrack, setPlayingTrack] = useState<string | null>(null);
   const [audio] = useState(() => typeof Audio !== 'undefined' ? new Audio() : null);
-
-  const getTrackName = (url?: string) => {
-    if (!url) return 'Unknown Track';
-    return TRACK_NAMES[url] || url.split('/').pop()?.replace('.ogg', '').replace(/_/g, ' ') || 'Generic Track';
-  };
 
   const toggleTrack = (url: string) => {
     if (!audio) return;
@@ -82,16 +76,19 @@ export default function StudioPage() {
     };
   }, [audio]);
 
-  const uniqueTracks = useMemo(() => {
-    if (!games) return [];
-    const tracks = new Set<string>();
-    games.forEach(g => {
-      if (g.backingTrackUrl) {
-        tracks.add(g.backingTrackUrl);
-      }
-    });
-    return Array.from(tracks).map(url => ({ url, name: getTrackName(url) }));
-  }, [games]);
+  const studioTracks = useMemo(() => {
+    if (!games || !allTracks) return [];
+    const usedTrackIds = new Set(games.map(g => g.trackId).filter(Boolean));
+    return allTracks.filter(t => usedTrackIds.has(t.id));
+  }, [games, allTracks]);
+
+  const getTrackName = (game: Game) => {
+    if (game.trackId && allTracks) {
+      const track = allTracks.find(t => t.id === game.trackId);
+      if (track) return track.name;
+    }
+    return game.backingTrackUrl?.split('/').pop()?.replace('.ogg', '') || 'Generic Track';
+  };
 
   const getLevelProgress = (levelId: string) => {
     return userProgress?.find(p => p.levelId === levelId);
@@ -116,7 +113,7 @@ export default function StudioPage() {
                )}
                <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent" />
             </div>
-            <h1 className="text-3xl md:text-6xl font-black mb-3 md:mb-4 uppercase italic tracking-tighter leading-none text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+            <h1 className="text-3xl md:text-6xl font-black mb-3 md:mb-4 uppercase italic tracking-tighter leading-none text-white">
               {studio.name}
             </h1>
             <p className="text-xs md:text-sm opacity-40 font-medium max-w-xl leading-relaxed">
@@ -126,22 +123,20 @@ export default function StudioPage() {
         )}
 
         {/* Tracks Section */}
-        {uniqueTracks.length > 0 && (
-          <div className="mb-10 md:mb-14 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        {studioTracks.length > 0 && (
+          <div className="mb-10 md:mb-14">
             <div className="flex items-center gap-2 mb-6">
               <Music className="w-4 h-4 text-primary" />
               <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-white">TRACKS</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {uniqueTracks.map((track, idx) => (
-                <div key={idx} className="p-2 bg-white/2 border border-white/5 hover:bg-white/5 transition-all flex items-center justify-between group rounded-xl">
+              {studioTracks.map((track, idx) => (
+                <div key={track.id} className="p-2 bg-white/2 border border-white/5 hover:bg-white/5 transition-all flex items-center justify-between group rounded-xl">
                   <div className="flex items-center gap-3">
                     <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-[9px] font-black italic text-white/20">
                       {(idx + 1).toString().padStart(2, '0')}
                     </div>
-                    <div>
-                      <h4 className="text-xs font-black italic uppercase tracking-tight group-hover:text-primary transition-colors">{track.name}</h4>
-                    </div>
+                    <h4 className="text-xs font-black italic uppercase tracking-tight group-hover:text-primary transition-colors">{track.name}</h4>
                   </div>
                   <Button 
                     size="icon" 
@@ -149,7 +144,7 @@ export default function StudioPage() {
                     onClick={() => toggleTrack(track.url)}
                     className={cn(
                       "w-8 h-8 rounded-full transition-all",
-                      playingTrack === track.url ? "bg-primary text-white shadow-[0_0_15px_rgba(255,51,153,0.3)]" : "bg-white/5 hover:bg-white/10"
+                      playingTrack === track.url ? "bg-primary text-white" : "bg-white/5 hover:bg-white/10"
                     )}
                   >
                     {playingTrack === track.url ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
@@ -161,7 +156,7 @@ export default function StudioPage() {
         )}
 
         {/* Games Section */}
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-[#FFEA00]" />
@@ -177,7 +172,7 @@ export default function StudioPage() {
 
               return (
                 <div key={game.id} className="relative group">
-                  <div className="p-4 md:p-6 bg-black/40 backdrop-blur-xl border border-white/5 rounded-2xl md:rounded-[2rem]">
+                  <div className="p-4 md:p-6 bg-black/40 border border-white/5 rounded-2xl md:rounded-[2rem]">
                     <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-3 mb-3">
@@ -185,7 +180,7 @@ export default function StudioPage() {
                           
                           <div className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded border border-white/5">
                             <Music className="w-2.5 h-2.5 text-primary" />
-                            <span className="text-[9px] font-black italic uppercase text-white/40">{getTrackName(game.backingTrackUrl)}</span>
+                            <span className="text-[9px] font-black italic uppercase text-white/40">{getTrackName(game)}</span>
                           </div>
 
                           <Badge 
@@ -210,7 +205,6 @@ export default function StudioPage() {
                       </div>
                     </div>
 
-                    {/* Levels displayed directly in the card */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {gameLevels.sort((a,b) => a.difficulty - b.difficulty).map((level) => {
                         const progress = getLevelProgress(level.id);
@@ -235,7 +229,6 @@ export default function StudioPage() {
                                   <span className="text-[8px] font-black text-[#00E676]">{progress.accuracy}%</span>
                                 </div>
                               )}
-                              <div className="absolute -bottom-1 -right-1 text-xl font-black italic opacity-[0.02] select-none">{level.difficulty}</div>
                             </div>
                           </Link>
                         );

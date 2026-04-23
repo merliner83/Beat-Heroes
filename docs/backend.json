@@ -17,6 +17,17 @@
       },
       "required": ["id", "name"]
     },
+    "Track": {
+      "title": "Track",
+      "type": "object",
+      "description": "Ein Audio-Track, der als Backing-Track für Spiele dient.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "url": { "type": "string", "format": "uri" }
+      },
+      "required": ["id", "name", "url"]
+    },
     "Game": {
       "title": "Game",
       "type": "object",
@@ -28,7 +39,8 @@
         "type": { "type": "string", "enum": ["rhythm-producer", "sample-hunter", "disk-dash"], "description": "Der technische Typ des Spiels." },
         "bpm": { "type": "number", "description": "Spezifisch für Rhythm Producer." },
         "difficulty": { "type": "number", "description": "Schwierigkeitsgrad (1-4)" },
-        "backingTrackUrl": { "type": "string", "format": "uri", "description": "Spezifisch für Rhythm Producer." },
+        "trackId": { "type": "string", "description": "ID des zugehörigen Tracks aus der tracks Collection." },
+        "backingTrackUrl": { "type": "string", "format": "uri", "description": "Fallback URL für den Backing Track." },
         "backgroundImageUrl": { "type": "string", "format": "uri", "description": "Hintergrundbild für das Spiel-Interface." }
       },
       "required": ["id", "studioId", "name", "type"]
@@ -106,6 +118,10 @@
     "/studios/{studioId}": {
       "schema": "#/backend/entities/Studio",
       "description": "Öffentliche Studios."
+    },
+    "/tracks/{trackId}": {
+      "schema": "#/backend/entities/Track",
+      "description": "Globale Audio-Tracks."
     },
     "/games/{gameId}": {
       "schema": "#/backend/entities/Game",

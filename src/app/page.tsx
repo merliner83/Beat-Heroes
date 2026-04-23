@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -5,7 +6,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
-import { Radio, RefreshCw, Loader2, Map as MapIcon, Zap, Search, SlidersHorizontal, Tag } from 'lucide-react';
 import { Studio } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,53 +14,38 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Radio, RefreshCw, Loader2, Zap, Search } from 'lucide-react';
 
 const StudioCard = ({ studio }: { studio: Studio }) => (
-  <div className="relative group cursor-pointer transition-all duration-500 h-full">
-    <div className="relative h-48 sm:h-64 md:h-80 overflow-hidden rounded-2xl md:rounded-3xl border-2 border-white/5 bg-black/60 backdrop-blur-xl group-hover:border-primary/50 transition-all duration-700 shadow-2xl flex flex-col">
-      {/* Background Image */}
-      {studio.imageUrl ? (
-        <div className="absolute inset-0">
-          <Image
-            src={studio.imageUrl}
-            alt={studio.name}
-            fill
-            className="object-cover opacity-60 group-hover:scale-110 group-hover:opacity-100 transition-all duration-1000"
-            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-            data-ai-hint="music studio"
-          />
-        </div>
-      ) : (
-        <div className="absolute inset-0 opacity-20" style={{ backgroundColor: studio.coverColor }} />
-      )}
+  <div className="relative group cursor-pointer transition-all duration-500 h-full overflow-hidden rounded-2xl md:rounded-3xl border border-white/5 bg-black/40 backdrop-blur-xl hover:border-primary/50 shadow-2xl">
+    {studio.imageUrl ? (
+      <Image
+        src={studio.imageUrl}
+        alt={studio.name}
+        fill
+        className="object-cover opacity-40 group-hover:scale-110 group-hover:opacity-60 transition-all duration-1000"
+        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+        data-ai-hint="music studio"
+      />
+    ) : (
+      <div className="absolute inset-0 opacity-20" style={{ backgroundColor: studio.coverColor }} />
+    )}
 
-      {/* Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
-      <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-700 z-10" />
-      
-      {/* Content */}
-      <div className="relative flex-1 p-3 sm:p-6 z-20 flex flex-col justify-end">
-        <div className="flex justify-between items-end gap-2 md:gap-4">
-          <div className="flex-1 min-w-0">
-             {studio.district && (
-              <Badge variant="outline" className="mb-1 sm:mb-3 border-white/10 text-[7px] sm:text-[9px] font-black uppercase tracking-widest text-white/70 bg-black/60 backdrop-blur-md px-2 sm:px-3 py-0.5 sm:py-1 truncate block w-fit">
-                {studio.district}
-              </Badge>
-            )}
-            <h3 className="text-xl sm:text-3xl md:text-4xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-none truncate">
-              {studio.name}
-            </h3>
-          </div>
-          <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-primary/50 group-hover:bg-primary/10 transition-all duration-500 backdrop-blur-sm hidden xs:flex">
-             <span className="text-white/30 font-black italic text-sm sm:text-lg uppercase group-hover:text-primary transition-colors">{studio.name.substring(0,1)}</span>
-          </div>
-        </div>
-      </div>
+    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+    
+    <div className="relative p-4 sm:p-6 z-20 flex flex-col justify-end h-full min-h-[160px] sm:min-h-[220px]">
+      {studio.district && (
+        <Badge variant="outline" className="mb-2 border-primary/30 text-primary text-[8px] font-black uppercase tracking-widest bg-black/60 backdrop-blur-md px-2 py-0.5 w-fit">
+          {studio.district}
+        </Badge>
+      )}
+      <h3 className="text-xl sm:text-2xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-none truncate">
+        {studio.name}
+      </h3>
     </div>
     
-    {/* Ambient Glow */}
     <div 
-      className="absolute -inset-2 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-1000 pointer-events-none -z-10"
+      className="absolute -inset-2 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-1000 pointer-events-none -z-10"
       style={{ backgroundColor: studio.coverColor }}
     />
   </div>
@@ -124,6 +109,17 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     try {
+      const tracks = [
+        { id: 'track-glitch', name: 'Glitch Power', url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' },
+        { id: 'track-hum', name: 'System Hum', url: 'https://actions.google.com/sounds/v1/science_fiction/low_power_hum.ogg' },
+        { id: 'track-techno', name: 'Techno Core', url: 'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg' },
+        { id: 'track-space', name: 'Space Drift', url: 'https://actions.google.com/sounds/v1/science_fiction/deep_space_drone.ogg' }
+      ];
+
+      for (const t of tracks) {
+        await setDoc(doc(db, 'tracks', t.id), t, { merge: true });
+      }
+
       const studios = [
         { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', coverColor: '#FF3399', district: 'Downtown', imageUrl: 'https://picsum.photos/seed/gabriel-beats/800/1000' },
         { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', coverColor: '#FFEA00', district: 'Industry', imageUrl: 'https://picsum.photos/seed/yoan-beats/800/1000' },
@@ -135,23 +131,11 @@ export default function HomePage() {
       ];
 
       for (const s of studios) {
-        const studioRef = doc(db, 'studios', s.id);
-        const studioSnap = await getDoc(studioRef);
-        const studioData: any = { ...s };
-        
-        if (studioSnap.exists()) {
-          const existing = studioSnap.data();
-          if (existing?.imageUrl) studioData.imageUrl = existing.imageUrl;
-        }
-        await setDoc(studioRef, studioData, { merge: true });
+        await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
       const patterns = [
-        { 
-          id: 'kick-p1', 
-          name: 'Kick Progression', 
-          steps: [0, 14, 16, 30, 32, 46, 48, 62, 64, 78, 80, 84, 96, 110, 112, 114, 126] 
-        },
+        { id: 'kick-p1', name: 'Kick Progression', steps: [0, 14, 16, 30, 32, 46, 48, 62, 64, 78, 80, 84, 96, 110, 112, 114, 126] },
         { id: 'kick-p2', name: 'Kick Main 4/4', steps: Array.from({ length: 32 }, (_, i) => i * 4) },
         { id: 'clap-p1', name: 'Clap Basic', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
         { id: 'clap-p2', name: 'Clap Var', steps: [4, 12, 14, 20, 28, 30, 36, 44, 46, 52, 60, 62, 68, 76, 78, 84, 92, 94, 100, 108, 110, 116, 124, 126] },
@@ -165,13 +149,6 @@ export default function HomePage() {
         await setDoc(doc(db, 'patterns', p.id), p, { merge: true });
       }
 
-      const backingTracks = [
-        'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg',
-        'https://actions.google.com/sounds/v1/science_fiction/low_power_hum.ogg',
-        'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg',
-        'https://actions.google.com/sounds/v1/science_fiction/deep_space_drone.ogg'
-      ];
-
       for (const studio of studios) {
         const gameConfigs = [
           { id: 'beat-hero', name: 'Beat Hero', type: 'rhythm-producer', bpm: 120 },
@@ -181,30 +158,19 @@ export default function HomePage() {
 
         for (const config of gameConfigs) {
           const gameId = `${studio.id}-${config.id}`;
-          const gameDocRef = doc(db, 'games', gameId);
-          const gameSnap = await getDoc(gameDocRef);
-          
-          const trackIndex = (studios.indexOf(studio) + gameConfigs.indexOf(config)) % backingTracks.length;
-          const defaultBackingTrack = backingTracks[trackIndex];
+          const trackIndex = (studios.indexOf(studio) + gameConfigs.indexOf(config)) % tracks.length;
+          const selectedTrack = tracks[trackIndex];
 
-          const gameData: any = {
+          await setDoc(doc(db, 'games', gameId), {
             id: gameId,
             studioId: studio.id,
             name: config.name,
             type: config.type,
             bpm: config.bpm,
-            difficulty: 1
-          };
-
-          if (gameSnap.exists()) {
-            const existing = gameSnap.data();
-            if (existing?.backingTrackUrl) gameData.backingTrackUrl = existing.backingTrackUrl;
-            else gameData.backingTrackUrl = defaultBackingTrack;
-          } else {
-            gameData.backingTrackUrl = defaultBackingTrack;
-          }
-
-          await setDoc(gameDocRef, gameData, { merge: true });
+            difficulty: 1,
+            trackId: selectedTrack.id,
+            backingTrackUrl: selectedTrack.url
+          }, { merge: true });
 
           for (let i = 1; i <= 4; i++) {
             const levelId = `${gameId}-lvl-${i}`;
@@ -225,27 +191,22 @@ export default function HomePage() {
             for (let j = 0; j < i; j++) {
               const s = soundSet[j];
               const soundId = `sound-${levelId}-${s.type}`;
-              const soundDocRef = doc(db, 'levels', levelId, 'sounds', soundId);
-              const soundSnap = await getDoc(soundDocRef);
-
-              const soundData: any = { id: soundId, levelId: levelId, type: s.type, patternIds: s.pIds };
-              if (soundSnap.exists()) {
-                const existing = soundSnap.data();
-                if (existing?.sampleUrl) soundData.sampleUrl = existing.sampleUrl;
-                else soundData.sampleUrl = s.sample;
-              } else {
-                soundData.sampleUrl = s.sample;
-              }
-              await setDoc(soundDocRef, soundData, { merge: true });
+              await setDoc(doc(db, 'levels', levelId, 'sounds', soundId), {
+                id: soundId,
+                levelId: levelId,
+                type: s.type,
+                sampleUrl: s.sample,
+                patternIds: s.pIds
+              }, { merge: true });
             }
           }
         }
       }
 
-      toast({ title: "Rack Synchronized!", description: "All studio modules have been updated." });
+      toast({ title: "Rack Synchronized!", description: "All studios and tracks updated." });
     } catch (e) {
       console.error(e);
-      toast({ variant: "destructive", title: "Setup Failed" });
+      toast({ variant: "destructive", title: "Sync Failed" });
     }
   };
 
@@ -324,29 +285,11 @@ export default function HomePage() {
             )}
           </div>
         )}
-
-        {/* Decorative Radar Element */}
-        <div className="fixed bottom-24 right-8 z-50 pointer-events-none hidden lg:block">
-           <div className="w-24 h-24 gemini-border gemini-glow bg-black/95 backdrop-blur-3xl overflow-hidden border border-white/5 relative">
-              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <div className="w-4 h-4 rounded-full border border-white/10 animate-ping" />
-              </div>
-              <div 
-                className="absolute inset-0 origin-center animate-[spin_8s_linear_infinite] opacity-10" 
-                style={{ background: 'conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255, 255, 255, 0.4) 120deg, transparent 360deg)' }}
-              />
-              <div className="absolute bottom-2 left-2 flex items-center gap-1">
-                 <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-                 <span className="text-[6px] font-black uppercase tracking-widest opacity-40">Scan</span>
-              </div>
-           </div>
-        </div>
       </main>
 
       <footer className="sticky bottom-0 p-3 md:p-5 border-t border-white/5 bg-black/95 backdrop-blur-2xl flex justify-between items-center z-50 shrink-0">
         <div className="flex items-center gap-2 opacity-30">
-          <MapIcon className="w-4 h-4 text-primary" />
+          <Zap className="w-4 h-4 text-primary" />
           <span className="text-[8px] md:text-[9px] uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack System Online</span>
         </div>
         <div className="flex items-center gap-4">
