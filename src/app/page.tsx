@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -276,7 +275,7 @@ export default function HomePage() {
           <div className="relative w-full md:w-80 group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors" />
             <Input 
-              placeholder="Search Modules..." 
+              placeholder="Search Studios..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 h-10 bg-white/5 border-white/10 rounded-full focus:ring-primary focus:border-primary placeholder:text-white/10 text-xs font-bold uppercase tracking-widest"
@@ -321,7 +320,7 @@ export default function HomePage() {
             {filteredStudios.length === 0 && (
               <div className="col-span-full py-20 text-center opacity-20">
                  <Radio className="w-12 h-12 mx-auto mb-4" />
-                 <p className="text-xs font-black uppercase tracking-widest italic">No modules matching search criteria</p>
+                 <p className="text-xs font-black uppercase tracking-widest italic">No studios matching search criteria</p>
               </div>
             )}
           </div>
@@ -353,7 +352,7 @@ export default function HomePage() {
         </div>
         <div className="flex items-center gap-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-white/30 hidden md:block italic">
-            {filteredStudios.length} Active Modules Loaded
+            {filteredStudios.length} Active Studios Loaded
           </p>
           <Button 
             variant="outline" 
@@ -368,4 +367,3 @@ export default function HomePage() {
     </div>
   );
 }
-
