@@ -135,13 +135,13 @@ export default function HomePage() {
       }
 
       const studios = [
-        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', tags: ['Urban', 'Hip-Hop'], featured: true, coverColor: '#FF3399', district: 'Downtown', imageUrl: 'https://picsum.photos/seed/gabriel-beats/800/1000' },
-        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', tags: ['Electronic', 'House'], coverColor: '#FFEA00', district: 'Industry', imageUrl: 'https://picsum.photos/seed/yoan-beats/800/1000' },
-        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', tags: ['Experimental', 'Electronic'], coverColor: '#FF3D00', district: 'Unknown', imageUrl: 'https://picsum.photos/seed/noxxos/800/1000' },
-        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap and Hip-Hop.', tags: ['Hip-Hop', 'Urban'], coverColor: '#FF9100', district: 'Bronx', imageUrl: 'https://picsum.photos/seed/dave-beats/800/1000' },
-        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep House and tech vibes.', tags: ['House', 'Electronic'], coverColor: '#00E676', district: 'Berlin', imageUrl: 'https://picsum.photos/seed/nintu-music/800/1000' },
-        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', tags: ['House'], featured: true, coverColor: '#00B0FF', district: 'Miami', imageUrl: 'https://picsum.photos/seed/dj-avox/800/1000' },
-        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', tags: ['Hip-Hop'], coverColor: '#FF6D00', district: 'Harlem', imageUrl: 'https://picsum.photos/seed/nelio-beats/800/1000' }
+        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', tags: ['Urban', 'Hip-Hop'], featured: true, coverColor: '#FF3399', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/gabriel-beats/800/1000' },
+        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', tags: ['Electronic', 'House'], coverColor: '#FFEA00', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/yoan-beats/800/1000' },
+        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', tags: ['Experimental', 'Electronic'], coverColor: '#FF3D00', district: 'Oberemmental', imageUrl: 'https://picsum.photos/seed/noxxos/800/1000' },
+        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap and Hip-Hop.', tags: ['Hip-Hop', 'Urban'], coverColor: '#FF9100', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/dave-beats/800/1000' },
+        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep House and tech vibes.', tags: ['House', 'Electronic'], coverColor: '#00E676', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/nintu-music/800/1000' },
+        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', tags: ['House'], featured: true, coverColor: '#00B0FF', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/dj-avox/800/1000' },
+        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', tags: ['Hip-Hop'], coverColor: '#FF6D00', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/nelio-beats/800/1000' }
       ];
 
       for (const s of studios) {
@@ -217,7 +217,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Rack Synchronized!", description: "All studios, tracks and tags updated." });
+      toast({ title: "Rack Synchronized!", description: "All studios assigned to their districts." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
