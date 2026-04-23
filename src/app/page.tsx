@@ -21,36 +21,36 @@ import {
 
 const StudioCard = ({ color, studioName, imageUrl }: { color: string, studioName: string, imageUrl?: string }) => (
   <div className="relative group cursor-pointer transition-all duration-500">
-    <div className="relative aspect-[4/3] w-full max-w-[160px] md:max-w-[220px] mx-auto overflow-hidden rounded-2xl border-2 border-white/5 bg-black/40 backdrop-blur-xl group-hover:border-primary/50 transition-all duration-700">
+    <div className="relative aspect-[16/10] w-full max-w-[150px] md:max-w-[200px] mx-auto overflow-hidden rounded-2xl border-2 border-white/5 bg-black/60 backdrop-blur-xl group-hover:border-primary/50 transition-all duration-700 shadow-2xl">
       <div className="absolute inset-0 opacity-10 group-hover:opacity-30 transition-opacity duration-700" style={{ backgroundColor: color }} />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/5 to-black/80 z-10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10" />
       
-      <div className="relative h-full w-full flex flex-col items-center justify-center p-3 md:p-5 z-20">
-        <div className="flex-1 w-full flex items-center justify-center">
+      <div className="relative h-full w-full flex flex-col items-center justify-between p-2 md:p-3 z-20">
+        <div className="flex-1 w-full flex items-center justify-center overflow-hidden">
           {imageUrl && imageUrl.length > 0 ? (
             <img 
               src={imageUrl} 
               alt={studioName}
-              className="object-contain w-full h-3/4 drop-shadow-[0_8px_15px_rgba(0,0,0,0.5)] transition-transform duration-700 group-hover:scale-110"
+              className="object-contain w-full h-[85%] drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)] transition-transform duration-700 group-hover:scale-110"
             />
           ) : (
-            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-               <span className="text-white/20 font-black italic text-2xl md:text-4xl uppercase">{studioName.substring(0,1)}</span>
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+               <span className="text-white/30 font-black italic text-xl md:text-3xl uppercase">{studioName.substring(0,1)}</span>
             </div>
           )}
         </div>
         
-        <div className="w-full text-center mt-1">
-          <h3 className="text-[10px] md:text-sm font-black uppercase italic tracking-tighter text-white drop-shadow-[0_2px_8px_rgba(0,0,0,1)] line-clamp-1">
+        <div className="w-full text-center pb-1">
+          <h3 className="text-[9px] md:text-[11px] font-black uppercase italic tracking-tighter text-white truncate px-1 drop-shadow-md">
             {studioName}
           </h3>
-          <div className="mt-1 h-0.5 w-4 bg-primary mx-auto rounded-full group-hover:w-8 transition-all duration-500" />
+          <div className="mt-1 h-0.5 w-3 bg-primary mx-auto rounded-full group-hover:w-6 transition-all duration-500 opacity-60" />
         </div>
       </div>
     </div>
     
     <div 
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-[60px] opacity-0 group-hover:opacity-10 transition-opacity duration-1000 pointer-events-none -z-10"
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full blur-[40px] opacity-0 group-hover:opacity-10 transition-opacity duration-1000 pointer-events-none -z-10"
       style={{ backgroundColor: color }}
     />
   </div>
@@ -119,21 +119,12 @@ export default function HomePage() {
       }
 
       const patterns = [
-        // Kick Pattern: Takt 1-8 (einzelne Kicks + Einschübe), Takt 9-16 (1/4 Noten)
         { 
           id: 'kick-p1', 
           name: 'Kick Progression', 
-          steps: [
-            // Takt 1-4: Auf der 1 + kleine Synkope
-            0, 14, 16, 30, 32, 46, 48, 62,
-            // Takt 5-8: Mehr Dynamik
-            64, 78, 80, 84, 96, 110, 112, 114, 126,
-            // Takt 9-16 (Intern berechnet in GameView auf 1/4 Noten, hier exemplarisch für 8 Takte 9-16 als Four-to-the-floor)
-            // Hinweis: Da patterns pro 8 Takte definiert sind, machen wir kick-p2 für die 1/4 Noten
-          ] 
+          steps: [0, 14, 16, 30, 32, 46, 48, 62, 64, 78, 80, 84, 96, 110, 112, 114, 126] 
         },
         { id: 'kick-p2', name: 'Kick Main 4/4', steps: Array.from({ length: 32 }, (_, i) => i * 4) },
-        
         { id: 'clap-p1', name: 'Clap Basic', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
         { id: 'clap-p2', name: 'Clap Var', steps: [4, 12, 14, 20, 28, 30, 36, 44, 46, 52, 60, 62, 68, 76, 78, 84, 92, 94, 100, 108, 110, 116, 124, 126] },
         { id: 'perc-p1', name: 'Perc Basic', steps: [18, 22, 50, 54, 82, 86, 114, 118] },
