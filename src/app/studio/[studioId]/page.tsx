@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -55,7 +56,7 @@ export default function StudioPage() {
   const [audio] = useState(() => typeof Audio !== 'undefined' ? new Audio() : null);
 
   const toggleTrack = (url: string) => {
-    if (!audio) return;
+    if (!audio || !url) return;
     if (playingTrack === url) {
       audio.pause();
       setPlayingTrack(null);
@@ -78,6 +79,7 @@ export default function StudioPage() {
 
   const studioTracks = useMemo(() => {
     if (!games || !allTracks) return [];
+    // Filter tracks that are either linked via trackId in games of this studio
     const usedTrackIds = new Set(games.map(g => g.trackId).filter(Boolean));
     return allTracks.filter(t => usedTrackIds.has(t.id));
   }, [games, allTracks]);
@@ -140,7 +142,7 @@ export default function StudioPage() {
         <div className="mb-14 md:mb-20">
           <div className="flex items-center gap-3 mb-6">
             <Music className="w-6 h-6 text-primary" />
-            <h2 className="text-xs font-black uppercase tracking-[0.5em] text-white">TRACKS</h2>
+            <h2 className="text-xs font-black uppercase tracking-[0.5em] text-white">STUDIO TRACKS</h2>
           </div>
           {studioTracks.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -151,19 +153,24 @@ export default function StudioPage() {
                       <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[11px] font-black italic text-white/20">
                         {(idx + 1).toString().padStart(2, '0')}
                       </div>
-                      <h4 className="text-sm md:text-base font-black italic uppercase tracking-tight group-hover:text-primary transition-colors">{track.name}</h4>
+                      <div>
+                        <h4 className="text-sm md:text-base font-black italic uppercase tracking-tight group-hover:text-primary transition-colors">{track.name}</h4>
+                        {track.author && <p className="text-[9px] opacity-30 uppercase font-black">{track.author}</p>}
+                      </div>
                     </div>
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      onClick={() => toggleTrack(track.url)}
-                      className={cn(
-                        "w-10 h-10 rounded-full transition-all",
-                        playingTrack === track.url ? "bg-primary text-white" : "bg-white/5 hover:bg-white/10"
-                      )}
-                    >
-                      {playingTrack === track.url ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
-                    </Button>
+                    {track.url && (
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        onClick={() => toggleTrack(track.url)}
+                        className={cn(
+                          "w-10 h-10 rounded-full transition-all",
+                          playingTrack === track.url ? "bg-primary text-white" : "bg-white/5 hover:bg-white/10"
+                        )}
+                      >
+                        {playingTrack === track.url ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -180,7 +187,7 @@ export default function StudioPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Zap className="w-6 h-6 text-[#FFEA00]" />
-              <h2 className="text-xs font-black uppercase tracking-[0.5em] text-white">GAMES</h2>
+              <h2 className="text-xs font-black uppercase tracking-[0.5em] text-white">STUDIO MODULES</h2>
             </div>
             {isLoadingLevels && <Loader2 className="w-5 h-5 animate-spin opacity-20" />}
           </div>
