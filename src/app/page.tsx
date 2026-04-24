@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -224,7 +225,8 @@ export default function HomePage() {
 
       const globalGames: Game[] = [
         { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1, minRole: 'free', backingTrackUrl: '', backgroundImageUrl: '', bpm: 120 },
-        { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, minRole: 'admin', backingTrackUrl: '', backgroundImageUrl: '', bpm: 120 },
+        { id: 'global-rhythm-trainer', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-trainer', difficulty: 1, minRole: 'free', backingTrackUrl: '', backgroundImageUrl: '', bpm: 100 },
+        { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Beat Hero Pro', type: 'rhythm-producer', difficulty: 1, minRole: 'admin', backingTrackUrl: '', backgroundImageUrl: '', bpm: 120 },
         { id: 'global-notation-pro', studioId: 'learn-center', name: 'Notation Pro', type: 'notation-pro', difficulty: 1, minRole: 'admin', backingTrackUrl: '', backgroundImageUrl: '', bpm: 120 },
       ];
       for (const g of globalGames) {
@@ -232,7 +234,7 @@ export default function HomePage() {
         setDoc(gRef, g, { merge: true }).catch(e => {
           errorEmitter.emit('permission-error', new FirestorePermissionError({ path: gRef.path, operation: 'write', requestResourceData: g }));
         });
-        const levelId = g.id === 'global-ear-training' ? 'global-ear-training' : `${g.id}-lvl1`;
+        const levelId = g.id === 'global-ear-training' || g.id === 'global-rhythm-trainer' ? g.id : `${g.id}-lvl1`;
         const lRef = doc(db, 'levels', levelId);
         setDoc(lRef, { id: levelId, gameId: g.id, difficulty: 1, name: 'Basics' }, { merge: true }).catch(e => {
           errorEmitter.emit('permission-error', new FirestorePermissionError({ path: lRef.path, operation: 'write' }));
@@ -269,7 +271,7 @@ export default function HomePage() {
               errorEmitter.emit('permission-error', new FirestorePermissionError({ path: lRef.path, operation: 'write', requestResourceData: lData }));
             });
 
-            if (config.type !== 'ear-training' && config.type !== 'notation-pro') {
+            if (config.type !== 'ear-training' && config.type !== 'notation-pro' && config.type !== 'rhythm-trainer') {
                const kickData = {
                  id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: kickUrl,
                  patternIds: ['kick-intro', 'kick-verse', 'kick-refrain']
@@ -340,7 +342,7 @@ export default function HomePage() {
         });
       }
 
-      toast({ title: "Rack Fully Synced!", description: "All attributes are now present in Firestore." });
+      toast({ title: "Rack Fully Synced!", description: "All attributes including RHYTHM Lab are now present." });
     } catch (e) {
       toast({ variant: "destructive", title: "Sync Failed" });
     }

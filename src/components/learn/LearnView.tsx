@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo } from 'react';
@@ -19,7 +20,8 @@ import {
   Gamepad2,
   Headphones,
   Keyboard,
-  ChevronRight
+  ChevronRight,
+  Target
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Game, Article, hasAccess } from '@/lib/game/types';
@@ -40,13 +42,15 @@ const CATEGORY_MAP = [
 const GAME_ICON_MAP: Record<string, any> = {
   'rhythm-producer': Gamepad2,
   'ear-training': Headphones,
-  'notation-pro': Keyboard
+  'notation-pro': Keyboard,
+  'rhythm-trainer': Target
 };
 
 const GAME_COLOR_MAP: Record<string, string> = {
   'rhythm-producer': '#FF3399',
   'ear-training': '#00E676',
-  'notation-pro': '#FFEA00'
+  'notation-pro': '#FFEA00',
+  'rhythm-trainer': '#FFEA00'
 };
 
 export const LearnView = () => {
@@ -83,7 +87,7 @@ export const LearnView = () => {
             <Gamepad2 className="w-5 h-5 text-primary" />
             <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white/50">Learn-InApps</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {filteredLearnGames.map((game) => {
               const isLocked = !hasAccess(profile?.role, game.minRole || 'free');
               const Icon = GAME_ICON_MAP[game.type] || Gamepad2;
@@ -92,7 +96,7 @@ export const LearnView = () => {
               return (
                 <Link 
                   key={game.id} 
-                  href={isLocked ? '#' : `/session/${game.id === 'global-ear-training' ? 'global-ear-training' : (game.id === 'global-notation-pro' ? 'global-notation-1' : 'global-rhythm-1')}`}
+                  href={isLocked ? '#' : `/session/${game.id}`}
                   className={cn(isLocked && "cursor-not-allowed")}
                 >
                   <div className="gemini-border group transition-transform hover:scale-[1.02] active:scale-95">

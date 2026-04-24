@@ -10,6 +10,7 @@ import { GameView } from '@/components/game/GameView';
 import { SampleHunterView } from '@/components/game/SampleHunterView';
 import { DiskDashView } from '@/components/game/DiskDashView';
 import { EarTrainingView } from '@/components/game/EarTrainingView';
+import { RhythmTrainerView } from '@/components/game/RhythmTrainerView';
 import { Loader2, AlertCircle, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -39,7 +40,7 @@ export default function GameSessionPage() {
 
   const isLocked = game && !hasAccess(profile?.role, game.minRole || 'free');
 
-  const isLoading = isUserLoading || isLoadingLevel || isLoadingGame || (game?.type !== 'ear-training' && (isLoadingSounds || isLoadingPatterns));
+  const isLoading = isUserLoading || isLoadingLevel || isLoadingGame || (game?.type !== 'ear-training' && game?.type !== 'rhythm-trainer' && (isLoadingSounds || isLoadingPatterns));
 
   if (isLoading) {
     return (
@@ -82,6 +83,8 @@ export default function GameSessionPage() {
     <div className="h-screen bg-[#050505] overflow-hidden">
       {game.type === 'ear-training' ? (
         <EarTrainingView game={game} level={level} />
+      ) : game.type === 'rhythm-trainer' ? (
+        <RhythmTrainerView game={game} level={level} />
       ) : sounds ? (
         game.type === 'sample-hunter' ? (
           <SampleHunterView game={game} level={level} sounds={sounds} />

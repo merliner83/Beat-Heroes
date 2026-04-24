@@ -45,7 +45,7 @@
         "id": { "type": "string" },
         "studioId": { "type": "string" },
         "name": { "type": "string" },
-        "type": { "type": "string", "enum": ["rhythm-producer", "sample-hunter", "disk-dash", "ear-training", "notation-pro"], "description": "Der technische Typ des Spiels." },
+        "type": { "type": "string", "enum": ["rhythm-producer", "sample-hunter", "disk-dash", "ear-training", "notation-pro", "rhythm-trainer"], "description": "Der technische Typ des Spiels." },
         "bpm": { "type": "number", "description": "Spezifisch für Rhythm Producer." },
         "difficulty": { "type": "number", "description": "Schwierigkeitsgrad (1-4)" },
         "trackId": { "type": "string", "description": "ID des zugehörigen Tracks aus der tracks Collection." },
