@@ -17,8 +17,8 @@ import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 // Constant for sync offset
 export const SYNC_OFFSET = 0.0;
 // Shared hit position for the timing bar and note lanes
-// Positioned higher up to align with the new pad position
-export const HIT_POSITION = 400; 
+// Set to 450px to be more centrally located on most mobile/desktop screens
+export const HIT_POSITION = 450; 
 
 const PAD_COLORS: Record<SoundType, string> = {
   kick: '#993DEB',
@@ -311,7 +311,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           </div>
         </div>
 
-        {/* Global Timing Bar Overlay */}
+        {/* Global Timing Bar Overlay - Vertically Centered */}
         <div 
           key={globalFlash.key}
           className={cn(
@@ -323,10 +323,10 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           style={{ top: `${HIT_POSITION}px` }}
         />
 
-        {/* Sampler Pads - Positioned as an Overlay further up */}
-        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${HIT_POSITION - 40}px` }}>
+        {/* Sampler Pads - Positioned BELOW the hit line */}
+        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${HIT_POSITION + 20}px` }}>
           <div className={cn(
-            "grid gap-4 md:gap-8 mx-auto pointer-events-auto bg-black/20 backdrop-blur-sm p-4 rounded-3xl border border-white/5",
+            "grid gap-4 md:gap-8 mx-auto pointer-events-auto bg-black/20 backdrop-blur-sm p-4 rounded-3xl border border-white/5 shadow-2xl",
             activeSoundTypes.length === 1 ? "grid-cols-1 max-w-[140px]" :
             activeSoundTypes.length === 2 ? "grid-cols-2 max-w-[280px]" :
             "grid-cols-4 max-w-xl"

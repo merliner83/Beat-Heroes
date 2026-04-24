@@ -38,7 +38,6 @@ export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isA
         const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
         
         // Culling: Prevent rendering of notes far outside the viewport
-        // Notes continue to flow behind the pads (relativeTime < 0)
         if (relativeTime < -2.0 || relativeTime > 2.5) return null;
 
         const top = hitPosition - (relativeTime * speed) - 6;
