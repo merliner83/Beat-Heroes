@@ -138,14 +138,12 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     try {
-      // 0. Define Sound URLs
       const kickUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57';
       const clapUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_Clap_01.wav?alt=media&token=6d31cec5-6412-47af-a039-2d980d669929';
       const hatsUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_HiHat_03.wav?alt=media&token=a5e7b4ac-3af8-49ab-bb6b-557a6e3551bd';
       const miscUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.wav?alt=media&token=bf90be29-fd25-4fad-bc2c-9483840246ba';
       const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
-      // 1. Patterns (Each is 8 bars / 128 steps)
       await setDoc(doc(db, 'patterns', 'pattern-4onfloor'), {
         id: 'pattern-4onfloor',
         name: '4-on-the-Floor',
@@ -170,7 +168,6 @@ export default function HomePage() {
         steps: [60, 124]
       }, { merge: true });
 
-      // 2. Studios
       const studios: Studio[] = [
         { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: ['Hip-Hop', 'Soul'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f', linkUrl: '', linkLabel: '' },
         { id: 'std-nintu', name: 'Nintu Music', description: 'Deep melodic explorations.', coverColor: '#993DEB', district: 'Melody District', tags: ['Melodic', 'Techno'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudioo.png?alt=media&token=9a547bdf-a3bf-4a9a-a132-222383e88b1f', linkUrl: '', linkLabel: '' },
@@ -182,7 +179,6 @@ export default function HomePage() {
         await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
-      // 3. Tracks for Gabriel Beats
       const gabrielTracks: Track[] = [
         { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel', url: '' },
         { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel', url: '' },
@@ -194,7 +190,6 @@ export default function HomePage() {
         await setDoc(doc(db, 'tracks', t.id), t, { merge: true });
       }
 
-      // 4. Global Learn Games
       const globalGames: Game[] = [
         { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1, minRole: 'free', backingTrackUrl: '', backgroundImageUrl: '', bpm: 120 },
         { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, minRole: 'admin', backingTrackUrl: '', backgroundImageUrl: '', bpm: 120 },
@@ -206,7 +201,6 @@ export default function HomePage() {
         await setDoc(doc(db, 'levels', levelId), { id: levelId, gameId: g.id, difficulty: 1, name: 'Basics' }, { merge: true });
       }
 
-      // 5. Studio Games (3 per Studio, 4 Levels each)
       const gameConfigs = [
         { type: 'rhythm-producer' as const, name: 'Beat Hero' },
         { type: 'disk-dash' as const, name: 'Sample Catcher' },
@@ -241,28 +235,22 @@ export default function HomePage() {
             }, { merge: true });
 
             if (config.type !== 'ear-training' && config.type !== 'notation-pro') {
-               // Each sound uses repeated patterns to cover 16 bars (2 x 8 bars)
-               
-               // Level 1: Kick
                await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), {
                  id: `${levelId}-kick`, levelId, type: 'kick', patternIds: ['pattern-4onfloor', 'pattern-4onfloor'], sampleUrl: kickUrl
                }, { merge: true });
 
-               // Level 2+: Clap
                if (i >= 2) {
                  await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`), {
                    id: `${levelId}-clap`, levelId, type: 'clap', patternIds: ['pattern-offbeat', 'pattern-offbeat'], sampleUrl: clapUrl
                  }, { merge: true });
                }
 
-               // Level 3+: Hats
                if (i >= 3) {
                  await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`), {
                    id: `${levelId}-hats`, levelId, type: 'percs', patternIds: ['pattern-8ths', 'pattern-8ths'], sampleUrl: hatsUrl
                  }, { merge: true });
                }
 
-               // Level 4: Misc
                if (i >= 4) {
                  await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`), {
                    id: `${levelId}-misc`, levelId, type: 'misc', patternIds: ['pattern-onehit', 'pattern-onehit'], sampleUrl: miscUrl
@@ -273,7 +261,6 @@ export default function HomePage() {
         }
       }
 
-      // 6. Knowledge Base
       const articles: Article[] = [
         { id: 'article-producing', categoryId: 'intro', title: 'Producing Basics', minRole: 'free', content: `Was ist Producing? Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.\n\n# Die Phasen der Musikproduktion\n\nPHASE:COMPOSING|*Ideenfindung und Songwriting:*\nZu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.|article-composing\n\nPHASE:RECORDING|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente.|article-recording\n\nPHASE:EDITING|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen.|article-editing\n\nPHASE:ARRANGEMENT|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat.|article-arrangement\n\nPHASE:SOUNDDESIGN|In dieser Phase geht es darum, die perfekten Klänge zu kreieren oder auszuwählen, um dem Track eine einzigartige Atmosphäre zu verleihen.|article-sounddesign\n\nPHASE:MIXING / MASTERING|Im Mixing werden alle Spuren harmonisch abgestimmt. Das abschließende Mastering stellt sicher, dass der Song professionell klingt.|article-mixing-mastering` },
         { id: 'article-composing', categoryId: 'composing', title: 'Composing Deep Dive', minRole: 'admin', content: `Composing ist das Herzstück deiner musikalischen Identität.` },
@@ -295,7 +282,7 @@ export default function HomePage() {
         await setDoc(doc(db, 'articles', art.id), art, { merge: true });
       }
 
-      toast({ title: "Rack Fully Synced!", description: "All attributes are now present in Firestore and patterns cover 16 bars." });
+      toast({ title: "Rack Fully Synced!", description: "All attributes are now present in Firestore." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
@@ -400,7 +387,7 @@ export default function HomePage() {
                 className="pl-10 h-10 md:h-12 bg-white/5 border-white/10 rounded-full focus:ring-primary focus:border-primary placeholder:text-white/10 text-xs md:text-sm font-bold uppercase tracking-widest"
               />
             </div>
-            <div className="flex gap-2 overflow-x-auto w-full pb-1 scrollbar-hide no-scrollbar">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 w-full overflow-hidden">
               {dynamicTags.map(tag => (
                 <Button
                   key={tag}
