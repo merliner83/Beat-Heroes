@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Game, Level, Sound, TriggerPattern } from '@/lib/game/types';
+import { Game, Level, TriggerPattern } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { 
@@ -26,41 +26,14 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, increment, setDoc, serverTimestamp, collection, query, where } from 'firebase/firestore';
 
-interface RhythmPattern {
-  id: string;
-  name: string;
-  steps: number[]; // 0-15 for 1 bar
-  soundUrl: string;
-}
-
-const RHYTHM_CONFIG: RhythmPattern[] = [
-  { 
-    id: '4th-kick', 
-    name: 'Straight Four', 
-    steps: [0, 4, 8, 12], 
-    soundUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57' 
-  },
-  { 
-    id: '8th-shaker', 
-    name: '8th Shaker', 
-    steps: [0, 2, 4, 6, 8, 10, 12, 14], 
-    soundUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.wav?alt=media&token=bf90be29-fd25-4fad-bc2c-9483840246ba' 
-  },
-  { 
-    id: '16th-trap-hats', 
-    name: 'Trap Hi-Hats', 
-    steps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], 
-    soundUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_HiHat_03.wav?alt=media&token=a5e7b4ac-3af8-49ab-bb6b-557a6e3551bd' 
-  },
-  { 
-    id: 'clave', 
-    name: 'Classic Clave', 
-    steps: [0, 3, 6, 10, 12], 
-    soundUrl: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg' 
-  },
-];
-
 const TOTAL_ROUNDS = 5;
+
+const SOUND_MAPPING: Record<string, string> = {
+  'kick': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57',
+  'clap': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_Clap_01.wav?alt=media&token=6d31cec5-6412-47af-a039-2d980d669929',
+  'hats': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_HiHat_03.wav?alt=media&token=a5e7b4ac-3af8-49ab-bb6b-557a6e3551bd',
+  'clave': 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg'
+};
 
 interface RhythmTrainerViewProps {
   game: Game;
@@ -75,7 +48,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
   const [mode, setMode] = useState<'explore' | 'quiz'>('explore');
   const [status, setStatus] = useState<ViewStatus>('IDLE');
-  const [selectedPatternId, setSelectedPatternId] = useState(RHYTHM_CONFIG[0].id);
+  const [selectedPatternId, setSelectedPatternId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playhead, setPlayhead] = useState(0); // 0-15
   const [countIn, setCountIn] = useState<number | null>(null);
@@ -83,16 +56,26 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
   // Quiz State
   const [round, setRound] = useState(1);
-  const [targetPatternId, setTargetPatternId] = useState('');
+  const [targetPatternId, setTargetPatternId] = useState<string | null>(null);
   const [lastGuess, setLastGuess] = useState<string | null>(null);
   const [sessionScores, setSessionScores] = useState<number[]>([]);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const playheadRef = useRef(0);
 
-  const selectedPattern = RHYTHM_CONFIG.find(p => p.id === selectedPatternId)!;
   const bpm = game.bpm || 128;
   const stepTime = (60 / bpm) / 4 * 1000;
+
+  const patternsQuery = useMemoFirebase(() => db ? query(collection(db, 'patterns')) : null, [db]);
+  const { data: patterns } = useCollection<TriggerPattern>(patternsQuery);
+
+  const selectedPattern = useMemo(() => patterns?.find(p => p.id === selectedPatternId), [patterns, selectedPatternId]);
+
+  useEffect(() => {
+    if (patterns && patterns.length > 0 && !selectedPatternId) {
+      setSelectedPatternId(patterns[0].id);
+    }
+  }, [patterns, selectedPatternId]);
 
   useEffect(() => {
     return () => {
@@ -100,18 +83,24 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     };
   }, []);
 
+  const getSoundForPattern = (patternId: string) => {
+    if (patternId.includes('kick')) return SOUND_MAPPING['kick'];
+    if (patternId.includes('clap')) return SOUND_MAPPING['clap'];
+    if (patternId.includes('hats')) return SOUND_MAPPING['hats'];
+    return SOUND_MAPPING['clave'];
+  };
+
   const handleTap = useCallback(() => {
     if (!audioEngine) return;
-    const soundUrl = mode === 'quiz' && targetPatternId 
-      ? RHYTHM_CONFIG.find(p => p.id === targetPatternId)?.soundUrl 
-      : selectedPattern.soundUrl;
+    const pId = mode === 'quiz' ? targetPatternId : selectedPatternId;
+    const soundUrl = pId ? getSoundForPattern(pId) : SOUND_MAPPING['clave'];
     
     if (soundUrl) {
       audioEngine.playOneShot(soundUrl);
     }
     setIsPadPressed(true);
     setTimeout(() => setIsPadPressed(false), 100);
-  }, [mode, targetPatternId, selectedPattern.soundUrl]);
+  }, [mode, targetPatternId, selectedPatternId]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -123,10 +112,11 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleTap]);
 
-  const startPlayback = async (pattern: RhythmPattern) => {
+  const startPlayback = async (pattern: TriggerPattern) => {
     if (!audioEngine) return;
     await audioEngine.resume();
-    await audioEngine.preloadAudio([pattern.soundUrl, audioEngine.constructor.METRONOME_URL]);
+    const soundUrl = getSoundForPattern(pattern.id);
+    await audioEngine.preloadAudio([soundUrl, audioEngine.constructor.METRONOME_URL]);
     
     setIsPlaying(true);
     playheadRef.current = 0;
@@ -136,14 +126,13 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       const currentStep = playheadRef.current;
       setPlayhead(currentStep);
 
-      // Metronome on beats (0, 4, 8, 12)
       if (currentStep % 4 === 0) {
         audioEngine.playOneShot(audioEngine.constructor.METRONOME_URL);
       }
 
-      // Pattern Sound
+      // We only play/show the first 16 steps (1 bar) for the Rhythm Master trainer
       if (pattern.steps.includes(currentStep)) {
-        audioEngine.playOneShot(pattern.soundUrl);
+        audioEngine.playOneShot(soundUrl);
       }
 
       playheadRef.current = (currentStep + 1) % 16;
@@ -165,7 +154,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
   const toggleExplore = () => {
     if (isPlaying) stopPlayback();
-    else startPlayback(selectedPattern);
+    else if (selectedPattern) startPlayback(selectedPattern);
   };
 
   const startQuiz = async () => {
@@ -177,7 +166,8 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
   const generateNewQuizTarget = async () => {
     stopPlayback();
-    const randomPattern = RHYTHM_CONFIG[Math.floor(Math.random() * RHYTHM_CONFIG.length)];
+    if (!patterns || patterns.length === 0) return;
+    const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
     setTargetPatternId(randomPattern.id);
     setLastGuess(null);
     setStatus('COUNT_IN');
@@ -185,25 +175,25 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     if (!audioEngine) return;
     await audioEngine.resume();
     
-    // Count In
     await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
     setCountIn(null);
     
-    // Play Pattern once
     setStatus('QUIZ_PLAYING');
     await playPatternOnce(randomPattern);
     setStatus('IDLE');
   };
 
-  const playPatternOnce = (pattern: RhythmPattern): Promise<void> => {
+  const playPatternOnce = (pattern: TriggerPattern): Promise<void> => {
     return new Promise((resolve) => {
       let step = 0;
+      const soundUrl = getSoundForPattern(pattern.id);
       const tick = () => {
         if (step % 4 === 0) {
           audioEngine?.playOneShot(audioEngine.constructor.METRONOME_URL);
         }
+        // Only first 16 steps
         if (pattern.steps.includes(step)) {
-          audioEngine?.playOneShot(pattern.soundUrl);
+          audioEngine?.playOneShot(soundUrl);
         }
         setPlayhead(step);
         step++;
@@ -313,7 +303,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               </h2>
               <div className="flex gap-2 justify-center max-w-md mx-auto mb-12">
                 {Array.from({ length: 16 }).map((_, i) => {
-                  const isStep = selectedPattern.steps.includes(i);
+                  const isStep = selectedPattern?.steps.includes(i);
                   const isCurrent = playhead === i && isPlaying;
                   const isBeat = i % 4 === 0;
 
@@ -349,7 +339,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
             {/* Pattern Selection Buttons */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {RHYTHM_CONFIG.map(p => (
+              {patterns?.map(p => (
                 <Button
                   key={p.id}
                   onClick={() => {
@@ -440,7 +430,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
                 {status === 'IDLE' && !lastGuess && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in slide-in-from-bottom-4 duration-500">
-                    {RHYTHM_CONFIG.map(p => (
+                    {patterns?.map(p => (
                       <Button
                         key={p.id}
                         onClick={() => handleGuess(p.id)}

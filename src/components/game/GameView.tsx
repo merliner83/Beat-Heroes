@@ -86,6 +86,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     sound.patternIds?.forEach((pId, index) => {
       const pattern = patterns.find(p => p.id === pId);
       if (pattern) {
+        // Offset each 8-bar pattern by 128 steps (16 steps/bar * 8 bars)
         const offset = index * 128; 
         pattern.steps.forEach(s => {
           const actualStep = s + offset;
