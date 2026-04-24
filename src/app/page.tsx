@@ -27,7 +27,6 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
           fill
           className="object-cover opacity-100 group-hover:scale-110 transition-all duration-1000"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          data-ai-hint="music studio"
         />
       ) : (
         <div className="absolute inset-0 opacity-100" style={{ backgroundColor: studio.coverColor }} />
@@ -127,19 +126,58 @@ export default function HomePage() {
         steps: [0, 16, 32, 48, 64, 80, 96, 112]
       }, { merge: true });
 
-      // 2. Studios (Updated List)
+      // 2. Studios
       const mockStudios: Partial<Studio>[] = [
-        { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: ['Hip-Hop', 'Soul'] },
-        { id: 'std-nintu', name: 'Nintu Music', description: 'Deep melodic explorations.', coverColor: '#993DEB', district: 'Melody District', tags: ['Melodic', 'Techno'] },
-        { id: 'std-yoan', name: 'Yoan Beats', description: 'Raw urban textures.', coverColor: '#3838FA', district: 'Underground', tags: ['Trap', 'Urban'] },
-        { id: 'std-dave', name: 'Dave Beats', description: 'Experimental soundscapes.', coverColor: '#EB3D99', district: 'The Lab', tags: ['Glitch', 'Ambient'] },
-        { id: 'std-noxxos', name: 'Noxxos', description: 'Futuristic club anthems.', coverColor: '#FF3D00', district: 'Skyline', tags: ['Electro', 'House'] }
+        { 
+          id: 'std-gabriel', 
+          name: 'Gabriel Beats', 
+          description: 'Handcrafted signature sounds.', 
+          coverColor: '#FF9100', 
+          district: 'Creative Hub', 
+          tags: ['Hip-Hop', 'Soul'],
+          imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f'
+        },
+        { 
+          id: 'std-nintu', 
+          name: 'Nintu Music', 
+          description: 'Deep melodic explorations.', 
+          coverColor: '#993DEB', 
+          district: 'Melody District', 
+          tags: ['Melodic', 'Techno'],
+          imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudioo.png?alt=media&token=9a547bdf-a3bf-4a9a-a132-222383e88b1f'
+        },
+        { 
+          id: 'std-yoan', 
+          name: 'Yoan Beats', 
+          description: 'Raw urban textures.', 
+          coverColor: '#3838FA', 
+          district: 'Underground', 
+          tags: ['Trap', 'Urban'],
+          imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FYoan%20Beats.png?alt=media&token=984099f0-f45b-4836-81d0-35241d774d83'
+        },
+        { 
+          id: 'std-dave', 
+          name: 'Dave Beats', 
+          description: 'Experimental soundscapes.', 
+          coverColor: '#EB3D99', 
+          district: 'The Lab', 
+          tags: ['Glitch', 'Ambient'] 
+        },
+        { 
+          id: 'std-noxxos', 
+          name: 'Noxxos', 
+          description: 'Futuristic club anthems.', 
+          coverColor: '#FF3D00', 
+          district: 'Skyline', 
+          tags: ['Electro', 'House'],
+          imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FNoxxos%20Studio.png?alt=media&token=fa9f78bc-965b-4af2-bfde-4f0383a87d98'
+        }
       ];
       for (const s of mockStudios) {
         await setDoc(doc(db, 'studios', s.id!), s, { merge: true });
       }
 
-      // 3. Tracks (Gabriel Beats 1-5)
+      // 3. Tracks
       const mockTracks: Partial<Track>[] = [
         { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel' },
         { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel' },
@@ -151,15 +189,14 @@ export default function HomePage() {
         await setDoc(doc(db, 'tracks', t.id!), t, { merge: true });
       }
 
-      // 4. Games (Global x3, Gabriel x3)
+      // 4. Games
       const mockGames: Partial<Game>[] = [
         { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1, minRole: 'free' },
         { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, minRole: 'admin' },
         { id: 'global-notation-pro', studioId: 'learn-center', name: 'Notation Pro', type: 'notation-pro', difficulty: 1, minRole: 'admin' },
-        // Gabriel's 3 Games
         { id: 'game-g1', studioId: 'std-gabriel', name: 'Soul Session 1', type: 'rhythm-producer', difficulty: 1, minRole: 'free', trackId: 'tr-g1' },
         { id: 'game-g2', studioId: 'std-gabriel', name: 'Soul Session 2', type: 'rhythm-producer', difficulty: 2, minRole: 'free', trackId: 'tr-g2' },
-        { id: 'game-g3', studioId: 'std-gabriel', name: 'Soul Session 3', type: 'rhythm-producer', difficulty: 3, minRole: 'pro', trackId: 'tr-g3' }
+        { id: 'game-g3', studioId: 'std-gabriel', name: 'Soul Session 3', type: 'rhythm-producer', difficulty: 3, minRole: 'admin', trackId: 'tr-g3' }
       ];
 
       for (const g of mockGames) {
@@ -183,9 +220,9 @@ export default function HomePage() {
         }
       }
 
-      // 5. Knowledge Base Articles
+      // 5. Knowledge Base
       const articles: Partial<Article>[] = [
-        { id: 'article-producing', categoryId: 'intro', title: 'Producing Basics', minRole: 'free', content: `Was ist Producing? Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.\n\n# Die Phasen der Musikproduktion\n\nPHASE:COMPOSING|*Ideenfindung und Songwriting:*\nZu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.|article-composing\n\nPHASE:RECORDING|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente.|article-recording\n\nPHASE:EDITING|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen.|article-editing\n\nPHASE:ARRANGEMENT|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat.|article-arrangement\n\nPHASE:SOUNDDESIGN|In dieser Phase geht es darum, die perfekten Klänge zu kreieren oder auszuwählen, um dem Track eine einzigartige Atmosphäre.|article-sounddesign\n\nPHASE:MIXING / MASTERING|Im Mixing werden alle Spuren harmonisch abgestimmt. Das abschließende Mastering stellt sicher, dass der Song professionell klingt.|article-mixing-mastering\n\nEin Beat in 3 Minuten:\nhttps://www.youtube.com/watch?v=ihyTXOak27c\n\nLustiges Video eines Audio Engineers:\nhttps://youtu.be/G2Rhh_4GZmU?si=csvyixY5qhDmL5_P` },
+        { id: 'article-producing', categoryId: 'intro', title: 'Producing Basics', minRole: 'free', content: `Was ist Producing? Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.\n\n# Die Phasen der Musikproduktion\n\nPHASE:COMPOSING|*Ideenfindung und Songwriting:*\nZu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.|article-composing\n\nPHASE:RECORDING|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente.|article-recording\n\nPHASE:EDITING|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen.|article-editing\n\nPHASE:ARRANGEMENT|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat.|article-arrangement\n\nPHASE:SOUNDDESIGN|In dieser Phase geht es darum, die perfekten Klänge zu kreieren oder auszuwählen, um dem Track eine einzigartige Atmosphäre zu verleihen.|article-sounddesign\n\nPHASE:MIXING / MASTERING|Im Mixing werden alle Spuren harmonisch abgestimmt. Das abschließende Mastering stellt sicher, dass der Song professionell klingt.|article-mixing-mastering\n\nEin Beat in 3 Minuten:\nhttps://www.youtube.com/watch?v=ihyTXOak27c\n\nLustiges Video eines Audio Engineers:\nhttps://youtu.be/G2Rhh_4GZmU?si=csvyixY5qhDmL5_P` },
         { id: 'article-composing', categoryId: 'composing', title: 'Composing Deep Dive', minRole: 'admin', content: `Composing ist das Herzstück deiner musikalischen Identität.\n\n# Melodien & Harmonien\nIn diesem Guide lernst du, wie du eingängige Melodien entwickelst und die richtigen Akkorde wählst.` },
         { id: 'article-recording', categoryId: 'recording', title: 'Recording Deep Dive', minRole: 'admin', content: `Die Qualität deiner Aufnahme bestimmt das Endergebnis.\n\n# Das perfekte Signal\nLerne alles über Mikrofonpositionierung, Gain-Staging und die Akustik deines Raumes.` },
         { id: 'article-editing', categoryId: 'recording', title: 'Editing Basics', minRole: 'admin', content: `Präzision im Detail.\n\n# Schneiden & Korrigieren\nLerne, wie du Aufnahmen perfektionierst.` },
@@ -194,7 +231,7 @@ export default function HomePage() {
         { id: 'article-mixing-mastering', categoryId: 'recording', title: 'Mixing & Mastering', minRole: 'admin', content: `Der finale Schliff.\n\n# Transparenz & Druck\nSorge dafür, dass dein Track überall fett klingt.` },
         { id: 'article-daws', categoryId: 'daws', title: 'Digital Audio Workstations', minRole: 'admin', content: `Deine DAW ist deine Schaltzentrale.\n\n# Die Wahl der Waffe\nOb Ableton Live, FL Studio oder Logic Pro – lerne die Grundlagen deiner Software kennen.` },
         { id: 'article-effects', categoryId: 'effects', title: 'Effekte & Plugins', minRole: 'admin', content: `Effekte geben deinem Sound Charakter.\n\n# Dynamik & Modulation\nReverb, Delay, Distortion – lerne, wie du diese Werkzeuge gezielt einsetzt.` },
-        { id: 'article-djing', categoryId: 'djing', title: 'DJing & Performance', minRole: 'admin', content: `Bringe deine Musik auf die Bühne.\n\n# Beatmatching & Mixing\nLerne, wie du Tracks nahtlos verbindest und die Grabbe kontrollierst.` },
+        { id: 'article-djing', categoryId: 'djing', title: 'DJing & Performance', minRole: 'admin', content: `Bringe deine Musik auf die Bühne.\n\n# Beatmatching & Mixing\nLerne, wie du Tracks nahtlos verbindest und die Crowd kontrollierst.` },
         { id: 'article-brand', categoryId: 'brand', title: 'Brand & Marketing', minRole: 'admin', content: `Werde zur Marke.\n\n# Deine Identität\nWie du dich als Artist präsentierst und deine Community aufbaust.` },
         { id: 'article-release', categoryId: 'release', title: 'Release Strategie', minRole: 'admin', content: `Der Weg zum ersten Release.\n\n# Distribution & Promotion\nSpotify, Apple Music & Co. – so bringst du deine Musik unter die Leute.` },
         { id: 'article-rights', categoryId: 'rights', title: 'Rechte & Business', minRole: 'admin', content: `Schütze deine Werke.\n\n# Urheberrecht & Verträge\nWas du über GEMA, Samples und Lizenzen wissen musst.` },
@@ -205,7 +242,7 @@ export default function HomePage() {
         await setDoc(doc(db, 'articles', art.id!), art, { merge: true });
       }
 
-      toast({ title: "Rack Synchronized!", description: "Laboratory structure restored." });
+      toast({ title: "Rack Synchronized!", description: "Laboratory structure restored with media assets." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
