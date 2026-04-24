@@ -35,10 +35,16 @@ export default function StudioPage() {
   const { data: games } = useCollection<Game>(gamesQuery);
 
   const tracksQuery = useMemoFirebase(() => {
+    if (!db || !studioId) return null;
+    return query(collection(db, 'tracks'), where('studioId', '==', studioId));
+  }, [db, studioId]);
+  const { data: studioTracks } = useCollection<Track>(tracksQuery);
+
+  const allTracksQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'tracks'));
   }, [db]);
-  const { data: allTracks } = useCollection<Track>(tracksQuery);
+  const { data: allTracks } = useCollection<Track>(allTracksQuery);
 
   const allLevelsQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -76,13 +82,6 @@ export default function StudioPage() {
       audio.pause();
     };
   }, [audio]);
-
-  const studioTracks = useMemo(() => {
-    if (!games || !allTracks) return [];
-    // Filter tracks that are either linked via trackId in games of this studio
-    const usedTrackIds = new Set(games.map(g => g.trackId).filter(Boolean));
-    return allTracks.filter(t => usedTrackIds.has(t.id));
-  }, [games, allTracks]);
 
   const getTrackName = (game: Game) => {
     if (game.trackId && allTracks) {
@@ -144,7 +143,7 @@ export default function StudioPage() {
             <Music className="w-6 h-6 text-primary" />
             <h2 className="text-xs font-black uppercase tracking-[0.5em] text-white">STUDIO TRACKS</h2>
           </div>
-          {studioTracks.length > 0 ? (
+          {studioTracks && studioTracks.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {studioTracks.map((track, idx) => (
                 <div key={track.id} className="gemini-border-primary group">

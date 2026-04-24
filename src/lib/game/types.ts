@@ -17,6 +17,7 @@ export interface Studio {
 
 export interface Track {
   id: string;
+  studioId?: string;
   name: string;
   url: string;
   author?: string;

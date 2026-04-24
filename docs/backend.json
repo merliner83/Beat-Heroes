@@ -25,9 +25,10 @@
     "Track": {
       "title": "Track",
       "type": "object",
-      "description": "Ein Audio-Track, der als Backing-Track für Spiele dient.",
+      "description": "Ein Audio-Track, der als Backing-Track für Spiele oder Vorschau dient.",
       "properties": {
         "id": { "type": "string" },
+        "studioId": { "type": "string", "description": "Zugehörigkeit zu einem Studio." },
         "name": { "type": "string" },
         "author": { "type": "string", "description": "Der Produzent des Tracks." },
         "duration": { "type": "number", "description": "Länge in Sekunden." },
