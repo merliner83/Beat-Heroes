@@ -140,29 +140,25 @@ export default function HomePage() {
 
 # Die Phasen der Musikproduktion
 
-Tutorial: Ein Beat in 3 Minuten (Zaytoven)
-https://youtu.be/G2Rhh_4GZmU?si=csvyixY5qhDmL5_P
+PHASE:Ideenfindung und Songwriting (Composing)|Zu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben. In diesem Schritt werden auch die Struktur und das Arrangement des Songs festgelegt.
 
-1. Ideenfindung und Songwriting (Composing):
-Zu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.
+PHASE:Pre-Produktion|In dieser Phase werden die Details der Aufnahmeplanung besprochen. Welche Instrumente sollen verwendet werden? Welche Sounds sind gewünscht? Hier wird der Plan für die Aufnahme und Produktion festgelegt.
 
-2. Pre-Produktion:
-In dieser Phase werden die Details der Aufnahmeplanung besprochen. Welche Instrumente sollen verwendet werden? Welche Sounds sind gewünscht?
+PHASE:Recording (Aufnahme)|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente. Ein Producer sorgt dafür, dass die Aufnahmen klar und hochwertig sind.
 
-3. Recording (Aufnahme):
-Hier werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente.
+PHASE:Editing|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen (z. B. Timing-Korrekturen).
 
-4. Editing:
-Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren (Schneiden, Korrigieren, Optimieren).
+PHASE:Arrangement und Sounddesign|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat. Hier geht es darum, die richtigen Instrumente und Sounds auszuwählen.
 
-5. Arrangement und Sounddesign:
-Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat.
+PHASE:Mixing|Im Mixing-Prozess werden alle aufgenommenen Spuren zusammengeführt und ausgewogen. Ziel ist es, alle Elemente harmonisch und klar miteinander zu verbinden.
 
-6. Mixing:
-Alle aufgenommenen Spuren werden zusammengeführt und ausgewogen, sodass der Song in seiner Gesamtheit gut klingt.
+PHASE:Mastering|Mastering ist der letzte Schritt und stellt sicher, dass der Song auf allen Wiedergabegeräten (Club, Kopfhörer, Radio) professionell und konsistent klingt.
 
-7. Mastering:
-Mastering ist der letzte Schritt und stellt sicher, dass der Song auf allen Wiedergabegeräten (Club, Kopfhörer, Radio) professionell klingt.`,
+Ein Beat in 3 Minuten:
+https://www.youtube.com/watch?v=ihyTXOak27c
+
+Lustiges Video eines Audio Engineers:
+https://youtu.be/G2Rhh_4GZmU?si=csvyixY5qhDmL5_P`,
         imageUrls: [],
         videoUrl: ""
       };

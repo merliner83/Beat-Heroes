@@ -4,19 +4,66 @@
 import React from 'react';
 import { Article } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Video, Image as ImageIcon } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Video, 
+  Image as ImageIcon, 
+  Music, 
+  FileText, 
+  Mic, 
+  Scissors, 
+  Layers, 
+  Sliders, 
+  Disc,
+  Play
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 interface ArticleViewProps {
   article: Article;
 }
 
+const PHASE_ICONS: Record<string, any> = {
+  'Composing': Music,
+  'Pre-Produktion': FileText,
+  'Recording': Mic,
+  'Editing': Scissors,
+  'Arrangement': Layers,
+  'Mixing': Sliders,
+  'Mastering': Disc,
+};
+
 export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
   const renderContent = (content: string) => {
     const blocks = content.split('\n\n');
     return blocks.map((block, idx) => {
-      // Check for YouTube Link (Standard, Share-Link or Embed)
+      // Check for Phase Card Marker (Format: PHASE:Title|Content)
+      if (block.startsWith('PHASE:')) {
+        const [titleAndPhase, description] = block.replace('PHASE:', '').split('|');
+        const phaseName = titleAndPhase.includes('(') 
+          ? titleAndPhase.split('(')[1].replace(')', '').trim()
+          : titleAndPhase.trim();
+        
+        const Icon = PHASE_ICONS[phaseName] || Play;
+
+        return (
+          <div key={idx} className="mb-6 gemini-border animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="p-6 bg-black/40 backdrop-blur-xl flex flex-col md:flex-row gap-6">
+              <div className="w-14 h-14 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5">
+                <Icon className="w-7 h-7 text-primary" />
+              </div>
+              <div>
+                <h4 className="text-lg font-black uppercase italic tracking-tighter text-white mb-2">{titleAndPhase}</h4>
+                <p className="text-sm md:text-base text-white/60 leading-relaxed font-normal">{description}</p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Check for YouTube Link
       const ytMatch = block.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
       
       if (ytMatch) {
@@ -48,22 +95,21 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       // Standard text block
       if (block.startsWith('#')) {
         return (
-          <div key={idx} className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white mb-4 pr-10">
+          <div key={idx} className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white mb-4 pr-10 border-b border-white/5 pb-2">
               {block.replace(/^#+\s*/, '')}
             </h3>
           </div>
         );
       }
 
-      // Special handling for the very first paragraph (intro) to be extra readable
       const isIntro = idx === 0;
       
       return (
         <div key={idx} className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <p className={isIntro 
-            ? "text-lg md:text-2xl text-white/90 leading-relaxed font-normal" 
-            : "text-base md:text-lg text-white/60 leading-relaxed font-normal"}>
+            ? "text-lg md:text-2xl text-white/90 leading-relaxed font-normal pr-8" 
+            : "text-base md:text-lg text-white/60 leading-relaxed font-normal pr-8"}>
             {block}
           </p>
         </div>
@@ -93,14 +139,12 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       </header>
 
       <main className="max-w-4xl mx-auto p-6 md:p-12 space-y-16 pb-32">
-        {/* Content Section */}
         <section>
           <div className="bg-white/2 border border-white/5 p-8 md:p-12 rounded-[2.5rem] backdrop-blur-sm shadow-2xl">
             {renderContent(article.content)}
           </div>
         </section>
 
-        {/* Video Section (Portrait) - Conditional */}
         {hasVideo && (
           <section className="animate-in fade-in slide-in-from-bottom-6 duration-700">
             <div className="flex items-center gap-3 mb-8 justify-center">
@@ -122,7 +166,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
           </section>
         )}
 
-        {/* Gallery Section - Conditional */}
         {hasImages && (
           <section className="animate-in fade-in slide-in-from-bottom-6 duration-700">
             <div className="flex items-center gap-3 mb-8">
