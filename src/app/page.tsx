@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
-import { Studio, Game, Article } from '@/lib/game/types';
+import { Studio, Game, Article, Track, Sound, TriggerPattern } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -120,25 +120,65 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     try {
-      // Setup global games with database-driven permissions
-      const learnGames: Partial<Game>[] = [
+      // 1. Sync Trigger Patterns
+      await setDoc(doc(db, 'patterns', 'pattern-4onfloor'), {
+        id: 'pattern-4onfloor',
+        name: '4-on-the-Floor',
+        steps: [0, 16, 32, 48, 64, 80, 96, 112]
+      }, { merge: true });
+
+      // 2. Sync Studios (Skip imageUrl)
+      const mockStudios: Partial<Studio>[] = [
+        { id: 'std-neon', name: 'Neon Heights', description: 'The core of futuristic beats.', coverColor: '#993DEB', district: 'X-District', tags: ['Techno', 'Electro'] },
+        { id: 'std-bass', name: 'Bass Bunker', description: 'Deep vibes only.', coverColor: '#3838FA', district: 'Underground', tags: ['Bass', 'Trap'] },
+        { id: 'std-synth', name: 'Synth Wave', description: 'Retro-future soul.', coverColor: '#EB3D99', district: 'Skyline', tags: ['Retrowave', 'Synth'] }
+      ];
+      for (const s of mockStudios) {
+        await setDoc(doc(db, 'studios', s.id!), s, { merge: true });
+      }
+
+      // 3. Sync Tracks (Skip url)
+      const mockTracks: Partial<Track>[] = [
+        { id: 'tr-cyber', name: 'Cyber Drift', author: 'PulseMaster' },
+        { id: 'tr-echo', name: 'Deep Echo', author: 'SubVoid' }
+      ];
+      for (const t of mockTracks) {
+        await setDoc(doc(db, 'tracks', t.id!), t, { merge: true });
+      }
+
+      // 4. Sync Games (Skip backingTrackUrl, bpm)
+      const mockGames: Partial<Game>[] = [
         { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1, minRole: 'free' },
-        { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, bpm: 120, minRole: 'admin', backingTrackUrl: 'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg' },
+        { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, minRole: 'admin' },
         { id: 'global-notation-pro', studioId: 'learn-center', name: 'Notation Pro', type: 'notation-pro', difficulty: 1, minRole: 'admin' },
+        { id: 'game-neon-1', studioId: 'std-neon', name: 'Pulse Producer', type: 'rhythm-producer', difficulty: 1, minRole: 'free', trackId: 'tr-cyber' },
+        { id: 'game-bass-1', studioId: 'std-bass', name: 'Vinyl Hunter', type: 'sample-hunter', difficulty: 2, minRole: 'pro', trackId: 'tr-echo' }
       ];
 
-      for (const lg of learnGames) {
-        await setDoc(doc(db, 'games', lg.id!), lg, { merge: true });
-        const targetLevelId = lg.id!.includes('ear') ? 'global-ear-training' : `global-${lg.id === 'global-notation-pro' ? 'notation' : 'rhythm'}-1`;
-        await setDoc(doc(db, 'levels', targetLevelId), {
-          id: targetLevelId,
-          gameId: lg.id,
+      for (const g of mockGames) {
+        await setDoc(doc(db, 'games', g.id!), g, { merge: true });
+        
+        // 5. Sync Levels
+        const levelId = g.id === 'global-ear-training' ? 'global-ear-training' : `${g.id}-lvl1`;
+        await setDoc(doc(db, 'levels', levelId), {
+          id: levelId,
+          gameId: g.id,
           difficulty: 1,
           name: 'Basics'
         }, { merge: true });
+
+        // 6. Sync Sounds (Skip sampleUrl)
+        if (g.type === 'rhythm-producer') {
+          const sounds: Partial<Sound>[] = [
+            { id: `${levelId}-kick`, levelId, type: 'kick', patternIds: ['pattern-4onfloor'] }
+          ];
+          for (const snd of sounds) {
+             await setDoc(doc(db, 'levels', levelId, 'sounds', snd.id!), snd, { merge: true });
+          }
+        }
       }
 
-      // Detailed Articles with database-driven permissions
+      // 7. Sync Articles (Skip videoUrl, imageUrls)
       const phaseDetailArticles: Partial<Article>[] = [
         { id: 'article-composing', categoryId: 'composing', title: 'Composing Deep Dive', minRole: 'admin', content: `Composing ist das Herzstück deiner musikalischen Identität.\n\n# Melodien & Harmonien\nIn diesem Guide lernst du, wie du eingängige Melodien entwickelst und die richtigen Akkorde wählst, um Emotionen zu wecken.\n\nPHASE:COMPOSING|Entwickle deine eigene musikalische Sprache durch Experimente mit Skalen und Rhythmen.` },
         { id: 'article-recording', categoryId: 'recording', title: 'Recording Deep Dive', minRole: 'admin', content: `Die Qualität deiner Aufnahme bestimmt das Endergebnis.\n\n# Das perfekte Signal\nLerne alles über Mikrofonpositionierung, Gain-Staging und die Akustik deines Raumes.\n\nPHASE:RECORDING|Nur eine saubere Aufnahme lässt sich später professionell bearbeiten.` }
@@ -157,15 +197,7 @@ export default function HomePage() {
       };
       await setDoc(doc(db, 'articles', producingArticle.id!), producingArticle, { merge: true });
 
-      const mockArticles: Partial<Article>[] = [
-        { id: 'article-sampling', categoryId: 'intro', title: 'The Art of Sampling', minRole: 'admin', content: `Sampling ist die Wiederverwendung eines Teils einer Tonaufnahme.` },
-        { id: 'article-djing', categoryId: 'intro', title: 'The Art of DJing', minRole: 'admin', content: `DJing ist mehr als nur Songs abspielen.` }
-      ];
-      for (const article of mockArticles) {
-        await setDoc(doc(db, 'articles', article.id!), article, { merge: true });
-      }
-
-      toast({ title: "Rack Synchronized!", description: "Database permissions and Studios updated." });
+      toast({ title: "Rack Synchronized!", description: "Metadata and structure updated (Media omitted)." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
