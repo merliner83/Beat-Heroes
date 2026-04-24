@@ -6,7 +6,7 @@ import { Game, Level, Sound, GameScore, SoundType } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Trophy, Loader2, Sparkles, XCircle, Disc, Mic, Speaker, ArrowLeft, Percent, LayoutGrid } from 'lucide-react';
+import { Trophy, Loader2, Sparkles, XCircle, Disc, Mic, Speaker, ArrowLeft, Percent, LayoutGrid, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -79,7 +79,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const SESSION_DURATION = (24 * 4 * 60) / bpm; // 24 Bars
   const FADE_DURATION = 2;
 
-  // Difficulty scaling for note lifetime
   const SAMPLE_LIFETIME = 
     level.difficulty === 1 ? 3000 : 
     level.difficulty === 2 ? 2200 : 
@@ -135,13 +134,11 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
     const currentTime = audioEngine?.getCurrentTime() || 0;
 
-    // Trigger fade AFTER 24 bars
     if (currentTime >= SESSION_DURATION && !hasStartedFade) {
       setHasStartedFade(true);
       audioEngine?.fadeBackingTrack(FADE_DURATION);
     }
 
-    // End session AFTER fade
     if (currentTime >= SESSION_DURATION + FADE_DURATION) {
       setIsPlaying(false);
       setIsFinished(true);
@@ -157,7 +154,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         rotation: p.rotation + 15
       })).filter(p => p.y > -10 && p.x > -10 && p.x < 110);
 
-      // Stop spawning and processing samples once the main session is over
       if (currentTime < SESSION_DURATION && activeNote && activeNote.status === 'active') {
         const hitProjectile = next.find(p => {
           const dx = p.x - activeNote.pos.x;
@@ -506,9 +502,9 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
       <footer className="p-4 text-center shrink-0 z-50 bg-black/40 backdrop-blur-md border-t border-white/5 rounded-b-[2.5rem]">
         <div className="flex items-center justify-center gap-4 opacity-20">
-          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.5em] italic">MPC Slingshot v3.0 • Release to Fire</p>
-          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+          <Zap className="w-4 h-4 text-primary animate-pulse" />
+          <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.5em] italic">MPC Slingshot v4.0 • Release to Fire</p>
+          <Zap className="w-4 h-4 text-primary animate-pulse" />
         </div>
       </footer>
     </div>

@@ -30,9 +30,11 @@ const TOTAL_ROUNDS = 5;
 
 const SOUND_MAPPING: Record<string, string> = {
   'kick': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57',
-  'clap': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_Clap_01.wav?alt=media&token=6d31cec5-6412-47af-a039-2d980d669929',
-  'hats': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_HiHat_03.wav?alt=media&token=a5e7b4ac-3af8-49ab-bb6b-557a6e3551bd',
-  'clave': 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg'
+  'clap': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClap%201.mp3?alt=media&token=59073468-4861-40f3-9df2-f8c5f59d79df',
+  'hats': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2F808%20CL-HAT%20%20.mp3?alt=media&token=facd4a85-949e-4bca-86d5-0da27199402d',
+  'shaker': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FTR-808Shaker01.mp3?alt=media&token=01784737-dec8-4872-a825-7fe4a88499b1',
+  'clave': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClaves.mp3?alt=media&token=1162b3f6-19d7-4a41-a3b6-9c243cd5d36a',
+  'dubstep': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FDubstep%20One%20Shot%2014%20-%20E.mp3?alt=media&token=6862850e-7434-451b-80d7-8b6f063295eb'
 };
 
 interface RhythmTrainerViewProps {
@@ -84,9 +86,12 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   }, []);
 
   const getSoundForPattern = (patternId: string) => {
-    if (patternId.includes('kick')) return SOUND_MAPPING['kick'];
-    if (patternId.includes('clap')) return SOUND_MAPPING['clap'];
-    if (patternId.includes('hats')) return SOUND_MAPPING['hats'];
+    const id = patternId.toLowerCase();
+    if (id.includes('kick')) return SOUND_MAPPING['kick'];
+    if (id.includes('clap')) return SOUND_MAPPING['clap'];
+    if (id.includes('hats')) return SOUND_MAPPING['hats'];
+    if (id.includes('shaker')) return SOUND_MAPPING['shaker'];
+    if (id.includes('dubstep')) return SOUND_MAPPING['dubstep'];
     return SOUND_MAPPING['clave'];
   };
 
@@ -130,7 +135,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
         audioEngine.playOneShot(audioEngine.constructor.METRONOME_URL);
       }
 
-      // We only play/show the first 16 steps (1 bar) for the Rhythm Master trainer
       if (pattern.steps.includes(currentStep)) {
         audioEngine.playOneShot(soundUrl);
       }
@@ -191,7 +195,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
         if (step % 4 === 0) {
           audioEngine?.playOneShot(audioEngine.constructor.METRONOME_URL);
         }
-        // Only first 16 steps
         if (pattern.steps.includes(step)) {
           audioEngine?.playOneShot(soundUrl);
         }
@@ -268,7 +271,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       <main className="flex-1 flex flex-col items-center justify-start p-6 md:p-12 relative overflow-y-auto">
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
 
-        {/* Mode Toggle */}
         {status === 'IDLE' && !lastGuess && sessionScores.length === 0 && (
           <div className="flex p-1.5 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-xl mb-12 animate-in fade-in slide-in-from-top-4">
             <Button 
@@ -296,7 +298,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
         {mode === 'explore' && (
           <div className="w-full max-w-4xl space-y-12 animate-in zoom-in-95 duration-500">
-            {/* Visualizer Header */}
             <div className="text-center">
               <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter mb-6 text-gradient">
                 {isPlaying ? 'PLAYING...' : 'PREVIEW'}
@@ -322,7 +323,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               </div>
             </div>
 
-            {/* Central Tap Pad */}
             <div className="flex justify-center mb-8">
               <Button
                 onPointerDown={handleTap}
@@ -337,7 +337,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               </Button>
             </div>
 
-            {/* Pattern Selection Buttons */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {patterns?.map(p => (
                 <Button
@@ -394,7 +393,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
             {(status === 'COUNT_IN' || status === 'QUIZ_PLAYING' || status === 'IDLE' || status === 'FEEDBACK') && targetPatternId && (
               <div className="space-y-12 pt-8 animate-in fade-in">
-                {/* Visualizer Header */}
                 <div className="text-center">
                    <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter mb-6 text-gradient">
                      {status === 'COUNT_IN' ? countIn : status === 'QUIZ_PLAYING' ? 'SCANNING...' : 'IDENTIFY'}
@@ -413,7 +411,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                    </div>
                 </div>
 
-                {/* Central Tap Pad in Quiz */}
                 <div className="flex justify-center mb-10">
                   <Button
                     onPointerDown={handleTap}

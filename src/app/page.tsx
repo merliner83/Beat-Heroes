@@ -158,22 +158,24 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     try {
+      // Instrument Sample URLs
       const kickUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57';
-      const clapUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_Clap_01.wav?alt=media&token=6d31cec5-6412-47af-a039-2d980d669929';
-      const hatsUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_HiHat_03.wav?alt=media&token=a5e7b4ac-3af8-49ab-bb6b-557a6e3551bd';
-      const miscUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.wav?alt=media&token=bf90be29-fd25-4fad-bc2c-9483840246ba';
+      const clapUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClap%201.mp3?alt=media&token=59073468-4861-40f3-9df2-f8c5f59d79df';
+      const hatsUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2F808%20CL-HAT%20%20.mp3?alt=media&token=facd4a85-949e-4bca-86d5-0da27199402d';
+      const miscUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.mp3?alt=media&token=82c3e18f-c7e0-458b-93d3-09c00a9fe6a1';
+      
       const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
       const patterns = [
-        { id: 'kick-intro', data: { id: 'kick-intro', name: 'Kick Intro (Sparse)', steps: [0, 64] } },
-        { id: 'kick-verse', data: { id: 'kick-verse', name: 'Kick Verse (Standard)', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
-        { id: 'kick-refrain', data: { id: 'kick-refrain', name: 'Kick Refrain (Energetic)', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120] } },
+        { id: 'kick-intro', data: { id: 'kick-intro', name: 'Straight Four (Kick)', steps: [0, 32, 64, 96] } },
+        { id: 'kick-verse', data: { id: 'kick-verse', name: 'Kick Verse', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
+        { id: 'kick-refrain', data: { id: 'kick-refrain', name: 'Kick Refrain', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120] } },
         { id: 'clap-intro', data: { id: 'clap-intro', name: 'Clap Intro', steps: [48, 112] } },
         { id: 'clap-verse', data: { id: 'clap-verse', name: 'Clap Verse', steps: [16, 48, 80, 112] } },
         { id: 'clap-refrain', data: { id: 'clap-refrain', name: 'Clap Refrain', steps: [16, 32, 48, 80, 96, 112] } },
-        { id: 'hats-verse', data: { id: 'hats-verse', name: 'Hats Verse', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120] } },
-        { id: 'hats-refrain', data: { id: 'hats-refrain', name: 'Hats Refrain', steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124] } },
-        { id: 'misc-fill', data: { id: 'misc-fill', name: 'Misc Fill', steps: [60, 124] } },
+        { id: 'hats-verse', data: { id: 'hats-verse', name: '8th Shaker', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120] } },
+        { id: 'hats-refrain', data: { id: 'hats-refrain', name: 'Trap Hi-Hats', steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124] } },
+        { id: 'misc-fill', data: { id: 'misc-fill', name: 'DubStep / Clave', steps: [60, 124] } },
       ];
 
       for (const p of patterns) {
@@ -213,16 +215,6 @@ export default function HomePage() {
         });
       }
 
-      const daveTracks: Track[] = [
-        { id: 'tr-d1', studioId: 'std-dave', name: 'Ambient Void', author: 'Dave', url: '' }
-      ];
-      for (const t of daveTracks) {
-        const tRef = doc(db, 'tracks', t.id);
-        setDoc(tRef, t, { merge: true }).catch(e => {
-          errorEmitter.emit('permission-error', new FirestorePermissionError({ path: tRef.path, operation: 'write', requestResourceData: t }));
-        });
-      }
-
       const globalGames: Game[] = [
         { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1, minRole: 'free', backingTrackUrl: '', backgroundImageUrl: '', bpm: 128 },
         { id: 'global-rhythm-trainer', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-trainer', difficulty: 1, minRole: 'free', backingTrackUrl: '', backgroundImageUrl: '', bpm: 128 },
@@ -255,7 +247,6 @@ export default function HomePage() {
           let gameBpm = 128;
           let gameBackingUrl = '';
           
-          // Specific Overrides for Gabriel Beats
           if (s.id === 'std-gabriel') {
             if (isBeatHero) {
               gameBpm = 148;
@@ -284,47 +275,43 @@ export default function HomePage() {
               errorEmitter.emit('permission-error', new FirestorePermissionError({ path: lRef.path, operation: 'write', requestResourceData: lData }));
             });
 
-            if (config.type !== 'ear-training' && config.type !== 'notation-pro' && config.type !== 'rhythm-trainer') {
+            if (isBeatHero || isSampleCatcher || isVinylHunter) {
+               // Level 1-4: Always KICK
                const kickData = {
                  id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: kickUrl,
                  patternIds: ['kick-intro', 'kick-verse', 'kick-refrain']
                };
                const sKickRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`);
-               setDoc(sKickRef, kickData, { merge: true }).catch(e => {
-                 errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sKickRef.path, operation: 'write', requestResourceData: kickData }));
-               });
+               setDoc(sKickRef, kickData, { merge: true });
 
+               // Level 2-4: Add CLAP
                if (i >= 2) {
                  const clapData = {
                    id: `${levelId}-clap`, levelId, type: 'clap', sampleUrl: clapUrl,
                    patternIds: ['clap-intro', 'clap-verse', 'clap-refrain']
                  };
                  const sClapRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`);
-                 setDoc(sClapRef, clapData, { merge: true }).catch(e => {
-                   errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sClapRef.path, operation: 'write', requestResourceData: clapData }));
-                 });
+                 setDoc(sClapRef, clapData, { merge: true });
                }
 
+               // Level 3-4: Add HATS (mapped to 'percs' type)
                if (i >= 3) {
                  const hatsData = {
                    id: `${levelId}-hats`, levelId, type: 'percs', sampleUrl: hatsUrl,
                    patternIds: ['hats-verse', 'hats-verse', 'hats-refrain']
                  };
                  const sHatsRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`);
-                 setDoc(sHatsRef, hatsData, { merge: true }).catch(e => {
-                   errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sHatsRef.path, operation: 'write', requestResourceData: hatsData }));
-                 });
+                 setDoc(sHatsRef, hatsData, { merge: true });
                }
 
+               // Level 4: Add MISC (oooh.mp3)
                if (i >= 4) {
                  const miscData = {
                    id: `${levelId}-misc`, levelId, type: 'misc', sampleUrl: miscUrl,
                    patternIds: ['misc-fill', 'misc-fill', 'misc-fill']
                  };
                  const sMiscRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`);
-                 setDoc(sMiscRef, miscData, { merge: true }).catch(e => {
-                   errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sMiscRef.path, operation: 'write', requestResourceData: miscData }));
-                 });
+                 setDoc(sMiscRef, miscData, { merge: true });
                }
             }
           }
@@ -355,7 +342,7 @@ export default function HomePage() {
         });
       }
 
-      toast({ title: "Rack Fully Synced!", description: "All attributes including Gabriel Beats custom tracks and game settings are now active." });
+      toast({ title: "Rack Fully Synced!", description: "High-quality samples and precise levels are now active." });
     } catch (e) {
       toast({ variant: "destructive", title: "Sync Failed" });
     }
