@@ -65,6 +65,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     user: null,
     profile: null,
     isUserLoading: true,
+    userError: null,
   });
 
   useEffect(() => {
@@ -73,31 +74,38 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       return;
     }
 
+    let unsubscribeProfile: (() => void) | undefined;
+
     const unsubscribeAuth = onAuthStateChanged(
       auth,
       (firebaseUser) => {
+        // Clean up any existing profile listener from a previous session
+        if (unsubscribeProfile) {
+          unsubscribeProfile();
+          unsubscribeProfile = undefined;
+        }
+
         if (firebaseUser) {
           // Listen to the user's profile document
           const profileRef = doc(firestore, 'users', firebaseUser.uid);
-          const unsubscribeProfile = onSnapshot(
+          
+          unsubscribeProfile = onSnapshot(
             profileRef, 
             (snapshot) => {
               if (snapshot.exists()) {
-                setUserAuthState(prev => ({ 
-                  ...prev, 
+                setUserAuthState({ 
                   user: firebaseUser, 
                   profile: snapshot.data() as UserProfile, 
                   isUserLoading: false, 
                   userError: null 
-                }));
+                });
               } else {
-                setUserAuthState(prev => ({ 
-                  ...prev, 
+                setUserAuthState({ 
                   user: firebaseUser, 
                   profile: null, 
                   isUserLoading: false, 
                   userError: null 
-                }));
+                });
               }
             },
             (error) => {
@@ -109,7 +117,6 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
               errorEmitter.emit('permission-error', contextualError);
             }
           );
-          return () => unsubscribeProfile();
         } else {
           setUserAuthState({ user: null, profile: null, isUserLoading: false, userError: null });
         }
@@ -118,7 +125,13 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
         setUserAuthState({ user: null, profile: null, isUserLoading: false, userError: error });
       }
     );
-    return () => unsubscribeAuth();
+
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+      }
+    };
   }, [auth, firestore]);
 
   const contextValue = useMemo((): FirebaseContextState => {
