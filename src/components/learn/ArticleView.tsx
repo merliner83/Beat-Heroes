@@ -15,7 +15,8 @@ import {
   Layers, 
   Sliders, 
   Disc,
-  Play
+  Play,
+  Sparkles
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -26,13 +27,12 @@ interface ArticleViewProps {
 }
 
 const PHASE_ICONS: Record<string, any> = {
-  'Composing': Music,
-  'Pre-Produktion': FileText,
-  'Recording': Mic,
-  'Editing': Scissors,
-  'Arrangement': Layers,
-  'Mixing': Sliders,
-  'Mastering': Disc,
+  'COMPOSING': Music,
+  'RECORDING': Mic,
+  'EDITING': Scissors,
+  'ARRANGEMENT': Layers,
+  'SOUNDDESIGN': Sparkles,
+  'MIXING / MASTERING': Sliders,
 };
 
 export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
@@ -42,22 +42,30 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       // Check for Phase Card Marker (Format: PHASE:Title|Content)
       if (block.startsWith('PHASE:')) {
         const [titleAndPhase, description] = block.replace('PHASE:', '').split('|');
-        const phaseName = titleAndPhase.includes('(') 
-          ? titleAndPhase.split('(')[1].replace(')', '').trim()
-          : titleAndPhase.trim();
-        
-        const Icon = PHASE_ICONS[phaseName] || Play;
+        const Icon = PHASE_ICONS[titleAndPhase.trim()] || Play;
+
+        // Extract first line for potential italic formatting if it starts/ends with *
+        const formattedDescription = description.split('\n').map((line, lIdx) => {
+          if (line.startsWith('*') && line.endsWith('*')) {
+            return <em key={lIdx} className="block mb-1 text-white/80 not-italic font-medium">{line.replace(/\*/g, '')}</em>;
+          }
+          return <span key={lIdx}>{line}</span>;
+        });
 
         return (
           <div key={idx} className="mb-6 gemini-border animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="p-6 bg-black/40 backdrop-blur-xl flex flex-col md:flex-row gap-6">
-              <div className="w-14 h-14 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5">
-                <Icon className="w-7 h-7 text-primary" />
+            <div className="p-6 bg-black/40 backdrop-blur-xl">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 shrink-0 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 shadow-inner">
+                  <Icon className="w-6 h-6 text-primary" />
+                </div>
+                <h4 className="text-xl font-black uppercase italic tracking-tighter text-white leading-none pr-4">
+                  {titleAndPhase}
+                </h4>
               </div>
-              <div>
-                <h4 className="text-lg font-black uppercase italic tracking-tighter text-white mb-2">{titleAndPhase}</h4>
-                <p className="text-sm md:text-base text-white/60 leading-relaxed font-normal">{description}</p>
-              </div>
+              <p className="text-sm md:text-base text-white/60 leading-relaxed font-normal">
+                {formattedDescription}
+              </p>
             </div>
           </div>
         );
@@ -107,9 +115,10 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       
       return (
         <div key={idx} className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <p className={isIntro 
-            ? "text-lg md:text-2xl text-white/90 leading-relaxed font-normal pr-8" 
-            : "text-base md:text-lg text-white/60 leading-relaxed font-normal pr-8"}>
+          <p className={cn(
+            "text-white/60 leading-relaxed font-normal pr-8",
+            isIntro ? "text-lg md:text-xl text-white/90" : "text-base md:text-lg"
+          )}>
             {block}
           </p>
         </div>

@@ -140,19 +140,18 @@ export default function HomePage() {
 
 # Die Phasen der Musikproduktion
 
-PHASE:Ideenfindung und Songwriting (Composing)|Zu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben. In diesem Schritt werden auch die Struktur und das Arrangement des Songs festgelegt.
+PHASE:COMPOSING|*Ideenfindung und Songwriting:*
+Zu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben. In diesem Schritt werden auch die Struktur und das Arrangement des Songs festgelegt.
 
-PHASE:Pre-Produktion|In dieser Phase werden die Details der Aufnahmeplanung besprochen. Welche Instrumente sollen verwendet werden? Welche Sounds sind gewünscht? Hier wird der Plan für die Aufnahme und Produktion festgelegt.
+PHASE:RECORDING|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente. Ein Producer sorgt dafür, dass die Aufnahmen klar und hochwertig sind.
 
-PHASE:Recording (Aufnahme)|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente. Ein Producer sorgt dafür, dass die Aufnahmen klar und hochwertig sind.
+PHASE:EDITING|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen (z. B. Timing-Korrekturen).
 
-PHASE:Editing|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen (z. B. Timing-Korrekturen).
+PHASE:ARRANGEMENT|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat. Hier geht es darum, die richtigen Instrumente und Sounds auszuwählen.
 
-PHASE:Arrangement und Sounddesign|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat. Hier geht es darum, die richtigen Instrumente und Sounds auszuwählen.
+PHASE:SOUNDDESIGN|In dieser Phase geht es darum, die perfekten Klänge zu kreieren oder auszuwählen, um dem Track eine einzigartige Atmosphäre und Charakter zu verleihen.
 
-PHASE:Mixing|Im Mixing-Prozess werden alle aufgenommenen Spuren zusammengeführt und ausgewogen. Ziel ist es, alle Elemente harmonisch und klar miteinander zu verbinden.
-
-PHASE:Mastering|Mastering ist der letzte Schritt und stellt sicher, dass der Song auf allen Wiedergabegeräten (Club, Kopfhörer, Radio) professionell und konsistent klingt.
+PHASE:MIXING / MASTERING|Im Mixing werden alle Spuren harmonisch abgestimmt. Das abschließende Mastering stellt sicher, dass der Song auf allen Wiedergabegeräten (Club, Kopfhörer, Radio) professionell und konsistent klingt.
 
 Ein Beat in 3 Minuten:
 https://www.youtube.com/watch?v=ihyTXOak27c
