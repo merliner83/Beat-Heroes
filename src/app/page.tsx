@@ -144,28 +144,39 @@ export default function HomePage() {
       const miscUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.wav?alt=media&token=bf90be29-fd25-4fad-bc2c-9483840246ba';
       const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
-      await setDoc(doc(db, 'patterns', 'pattern-4onfloor'), {
-        id: 'pattern-4onfloor',
-        name: '4-on-the-Floor',
-        steps: [0, 16, 32, 48, 64, 80, 96, 112]
+      // --- KICK PATTERNS ---
+      await setDoc(doc(db, 'patterns', 'kick-intro'), {
+        id: 'kick-intro', name: 'Kick Intro (Sparse)', steps: [0, 64]
+      }, { merge: true });
+      await setDoc(doc(db, 'patterns', 'kick-verse'), {
+        id: 'kick-verse', name: 'Kick Verse (Standard)', steps: [0, 16, 32, 48, 64, 80, 96, 112]
+      }, { merge: true });
+      await setDoc(doc(db, 'patterns', 'kick-refrain'), {
+        id: 'kick-refrain', name: 'Kick Refrain (Energetic)', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120]
       }, { merge: true });
 
-      await setDoc(doc(db, 'patterns', 'pattern-offbeat'), {
-        id: 'pattern-offbeat',
-        name: 'Offbeat Claps',
-        steps: [16, 48, 80, 112]
+      // --- CLAP PATTERNS ---
+      await setDoc(doc(db, 'patterns', 'clap-intro'), {
+        id: 'clap-intro', name: 'Clap Intro', steps: [48, 112]
+      }, { merge: true });
+      await setDoc(doc(db, 'patterns', 'clap-verse'), {
+        id: 'clap-verse', name: 'Clap Verse', steps: [16, 48, 80, 112]
+      }, { merge: true });
+      await setDoc(doc(db, 'patterns', 'clap-refrain'), {
+        id: 'clap-refrain', name: 'Clap Refrain', steps: [16, 32, 48, 80, 96, 112]
       }, { merge: true });
 
-      await setDoc(doc(db, 'patterns', 'pattern-8ths'), {
-        id: 'pattern-8ths',
-        name: '8th Note Hats',
-        steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120]
+      // --- HATS PATTERNS ---
+      await setDoc(doc(db, 'patterns', 'hats-verse'), {
+        id: 'hats-verse', name: 'Hats Verse', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120]
+      }, { merge: true });
+      await setDoc(doc(db, 'patterns', 'hats-refrain'), {
+        id: 'hats-refrain', name: 'Hats Refrain', steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124]
       }, { merge: true });
 
-      await setDoc(doc(db, 'patterns', 'pattern-onehit'), {
-        id: 'pattern-onehit',
-        name: 'End Highlight',
-        steps: [60, 124]
+      // --- MISC PATTERNS ---
+      await setDoc(doc(db, 'patterns', 'misc-fill'), {
+        id: 'misc-fill', name: 'Misc Fill', steps: [60, 124]
       }, { merge: true });
 
       const studios: Studio[] = [
@@ -214,46 +225,40 @@ export default function HomePage() {
           const isVinylHunter = config.type === 'sample-hunter';
           
           await setDoc(doc(db, 'games', gameId), {
-            id: gameId,
-            studioId: s.id,
-            name: config.name,
-            type: config.type,
-            difficulty: 1,
-            minRole: isSampleCatcher ? 'admin' : 'free',
-            bpm: 120,
-            backingTrackUrl: '',
-            backgroundImageUrl: isVinylHunter ? vinylHunterBg : ''
+            id: gameId, studioId: s.id, name: config.name, type: config.type,
+            difficulty: 1, minRole: isSampleCatcher ? 'admin' : 'free', bpm: 120,
+            backingTrackUrl: '', backgroundImageUrl: isVinylHunter ? vinylHunterBg : ''
           }, { merge: true });
 
           for (let i = 1; i <= 4; i++) {
             const levelId = `${gameId}-lvl${i}`;
-            await setDoc(doc(db, 'levels', levelId), {
-              id: levelId,
-              gameId: gameId,
-              difficulty: i,
-              name: `Level ${i}`
-            }, { merge: true });
+            await setDoc(doc(db, 'levels', levelId), { id: levelId, gameId: gameId, difficulty: i, name: `Level ${i}` }, { merge: true });
 
             if (config.type !== 'ear-training' && config.type !== 'notation-pro') {
+               // Sequence for 24 bars (3 x 8 bars)
                await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), {
-                 id: `${levelId}-kick`, levelId, type: 'kick', patternIds: ['pattern-4onfloor', 'pattern-4onfloor'], sampleUrl: kickUrl
+                 id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: kickUrl,
+                 patternIds: ['kick-intro', 'kick-verse', 'kick-refrain']
                }, { merge: true });
 
                if (i >= 2) {
                  await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`), {
-                   id: `${levelId}-clap`, levelId, type: 'clap', patternIds: ['pattern-offbeat', 'pattern-offbeat'], sampleUrl: clapUrl
+                   id: `${levelId}-clap`, levelId, type: 'clap', sampleUrl: clapUrl,
+                   patternIds: ['clap-intro', 'clap-verse', 'clap-refrain']
                  }, { merge: true });
                }
 
                if (i >= 3) {
                  await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`), {
-                   id: `${levelId}-hats`, levelId, type: 'percs', patternIds: ['pattern-8ths', 'pattern-8ths'], sampleUrl: hatsUrl
+                   id: `${levelId}-hats`, levelId, type: 'percs', sampleUrl: hatsUrl,
+                   patternIds: ['hats-verse', 'hats-verse', 'hats-refrain']
                  }, { merge: true });
                }
 
                if (i >= 4) {
                  await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`), {
-                   id: `${levelId}-misc`, levelId, type: 'misc', patternIds: ['pattern-onehit', 'pattern-onehit'], sampleUrl: miscUrl
+                   id: `${levelId}-misc`, levelId, type: 'misc', sampleUrl: miscUrl,
+                   patternIds: ['misc-fill', 'misc-fill', 'misc-fill']
                  }, { merge: true });
                }
             }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -69,8 +70,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const { toast } = useToast();
 
   const bpm = game.bpm || 120;
-  const TOTAL_STEPS = 256; // 16 Bars * 16 steps
-  const SESSION_DURATION = (16 * 4 * 60) / bpm; // 16 Bars
+  const TOTAL_STEPS = 384; // 24 Bars * 16 steps
+  const SESSION_DURATION = (24 * 4 * 60) / bpm; // 24 Bars
   const FADE_DURATION = 2;
 
   const activeSoundTypes: SoundType[] = ['kick'];
@@ -207,7 +208,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
           const tolerance = level.difficulty <= 2 ? 1.8 : 1.4;
 
-          // Fade starts AFTER 16 bars
+          // Fade starts AFTER 24 bars
           if (t >= SESSION_DURATION && !hasStartedFade) {
             setHasStartedFade(true);
             audioEngine.fadeBackingTrack(FADE_DURATION);
@@ -335,7 +336,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
         {isFinished && (
           <div className="absolute inset-0 bg-black/98 flex items-center justify-center p-8 z-50">
-            <div className="text-center space-y-8 max-w-md">
+            <div className="text-center space-y-8 max-md">
               {score.accuracy >= PASS_THRESHOLD ? (
                 <>
                   <Trophy className="w-20 h-20 text-[#FFEA00] mx-auto drop-shadow-[0_0_30px_#FFEA00]" />
