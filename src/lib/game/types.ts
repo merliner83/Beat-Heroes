@@ -1,6 +1,7 @@
 
 export type SoundType = 'kick' | 'clap' | 'percs' | 'misc';
 export type GameType = 'rhythm-producer' | 'sample-hunter' | 'disk-dash' | 'ear-training' | 'notation-pro';
+export type UserRole = 'admin' | 'producer' | 'pro' | 'free';
 
 export interface Studio {
   id: string;
@@ -67,6 +68,12 @@ export interface LevelProgress {
   levelId: string;
   accuracy: number;
   completedAt?: any;
+}
+
+export interface UserProfile {
+  uid: string;
+  role: UserRole;
+  streetCred: number;
 }
 
 export interface Article {

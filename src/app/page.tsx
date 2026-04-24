@@ -4,9 +4,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
-import { Studio } from '@/lib/game/types';
+import { Studio, UserProfile } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -52,14 +52,13 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
 export default function HomePage() {
   const db = useFirestore();
   const auth = useAuth();
-  const { user } = useUser();
+  const { user, profile } = useUser();
   const { toast } = useToast();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState('All');
   const [activeTab, setActiveTab] = useState('studios');
 
-  // Load persisted tab state
   useEffect(() => {
     const savedTab = localStorage.getItem('beathero_active_tab');
     if (savedTab === 'studios' || savedTab === 'learn') {
@@ -83,19 +82,13 @@ export default function HomePage() {
       const userRef = doc(db, 'users', user.uid);
       getDoc(userRef).then(snap => {
         if (!snap.exists()) {
-          setDoc(userRef, { uid: user.uid, streetCred: 0 }, { merge: true });
+          setDoc(userRef, { uid: user.uid, streetCred: 0, role: 'free' }, { merge: true });
         }
       });
     }
   }, [user, db]);
 
-  const userDocRef = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return doc(db, 'users', user.uid);
-  }, [db, user]);
-  
-  const { data: userProfile } = useDoc<any>(userDocRef);
-  const streetCred = userProfile?.streetCred || 0;
+  const streetCred = profile?.streetCred || 0;
 
   const studiosQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -127,15 +120,16 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     try {
-      // Global Learn Games setup
+      // Setup global games
       const learnGames = [
         { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1 },
         { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, bpm: 120, backingTrackUrl: 'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg' },
+        { id: 'global-notation-pro', studioId: 'learn-center', name: 'Notation Pro', type: 'notation-pro', difficulty: 1 },
       ];
 
       for (const lg of learnGames) {
         await setDoc(doc(db, 'games', lg.id), lg, { merge: true });
-        const targetLevelId = lg.id === 'global-ear-training' ? 'global-ear-training' : `global-${lg.type === 'ear-training' ? 'ear' : 'rhythm'}-1`;
+        const targetLevelId = lg.id.includes('ear') ? 'global-ear-training' : `global-${lg.id === 'global-notation-pro' ? 'notation' : 'rhythm'}-1`;
         await setDoc(doc(db, 'levels', targetLevelId), {
           id: targetLevelId,
           gameId: lg.id,
@@ -144,178 +138,31 @@ export default function HomePage() {
         }, { merge: true });
       }
 
-      // Detailed Articles for Phasen
+      // Detailed Articles
       const phaseDetailArticles = [
-        { id: 'article-composing', categoryId: 'composing', title: 'Composing Deep Dive', content: `Composing ist das Herzstück deiner musikalischen Identität.
-
-# Melodien & Harmonien
-In diesem Guide lernst du, wie du eingängige Melodien entwickelst und die richtigen Akkorde wählst, um Emotionen zu wecken.
-
-PHASE:COMPOSING|Entwickle deine eigene musikalische Sprache durch Experimente mit Skalen und Rhythmen.` },
-        { id: 'article-recording', categoryId: 'recording', title: 'Recording Deep Dive', content: `Die Qualität deiner Aufnahme bestimmt das Endergebnis.
-
-# Das perfekte Signal
-Lerne alles über Mikrofonpositionierung, Gain-Staging und die Akustik deines Raumes.
-
-PHASE:RECORDING|Nur eine saubere Aufnahme lässt sich später professionell bearbeiten.` },
-        { id: 'article-editing', categoryId: 'editing', title: 'Editing Deep Dive', content: `Editing ist die unsichtbare Kunst der Perfektion.
-
-# Timing & Tuning
-Vocal Alignment, Drum-Quantisierung und Pitch-Korrektur sind hier die Hauptthemen.` },
-        { id: 'article-arrangement', categoryId: 'composing', title: 'Arrangement Deep Dive', content: `Arrangement gibt deinem Song die nötige Spannung.
-
-# Energiefluss
-Wie baust du einen Drop? Wo macht eine Bridge Sinn? Lerne die Strukturen moderner Hits kennen.` },
-        { id: 'article-sounddesign', categoryId: 'composing', title: 'Sounddesign Deep Dive', content: `Erschaffe Klänge, die noch niemand gehört hat.
-
-# Synthese & Layering
-Von Sub-Bässen bis zu granularen Texturen – hier dreht sich alles um die Kreation einzigartiger Sounds.` },
-        { id: 'article-mixing-mastering', categoryId: 'intro', title: 'Mixing & Mastering Deep Dive', content: `Der finale Schliff für deinen Track.
-
-# Die Balance finden
-EQing, Kompression und Limiting. Sorge dafür, dass dein Beat überall massiv klingt.` }
+        { id: 'article-composing', categoryId: 'composing', title: 'Composing Deep Dive', content: `Composing ist das Herzstück deiner musikalischen Identität.\n\n# Melodien & Harmonien\nIn diesem Guide lernst du, wie du eingängige Melodien entwickelst und die richtigen Akkorde wählst, um Emotionen zu wecken.\n\nPHASE:COMPOSING|Entwickle deine eigene musikalische Sprache durch Experimente mit Skalen und Rhythmen.` },
+        { id: 'article-recording', categoryId: 'recording', title: 'Recording Deep Dive', content: `Die Qualität deiner Aufnahme bestimmt das Endergebnis.\n\n# Das perfekte Signal\nLerne alles über Mikrofonpositionierung, Gain-Staging und die Akustik deines Raumes.\n\nPHASE:RECORDING|Nur eine saubere Aufnahme lässt sich später professionell bearbeiten.` }
       ];
 
       for (const art of phaseDetailArticles) {
         await setDoc(doc(db, 'articles', art.id), art, { merge: true });
       }
 
-      // Main Producing Article with Links
       const producingArticle = {
         id: 'article-producing',
         categoryId: 'intro',
         title: 'Producing Basics',
-        content: `Was ist Producing? Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.
-
-# Die Phasen der Musikproduktion
-
-PHASE:COMPOSING|*Ideenfindung und Songwriting:*
-Zu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben. In diesem Schritt werden auch die Struktur und das Arrangement des Songs festgelegt.|article-composing
-
-PHASE:RECORDING|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente. Ein Producer sorgt dafür, dass die Aufnahmen klar und hochwertig sind.|article-recording
-
-PHASE:EDITING|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen (z. B. Timing-Korrekturen).|article-editing
-
-PHASE:ARRANGEMENT|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat. Hier geht es darum, die richtigen Instrumente und Sounds auszuwählen.|article-arrangement
-
-PHASE:SOUNDDESIGN|In dieser Phase geht es darum, die perfekten Klänge zu kreieren oder auszuwählen, um dem Track eine einzigartige Atmosphäre und Charakter zu verleihen.|article-sounddesign
-
-PHASE:MIXING / MASTERING|Im Mixing werden alle Spuren harmonisch abgestimmt. Das abschließende Mastering stellt sicher, dass der Song auf allen Wiedergabegeräten (Club, Kopfhörer, Radio) professionell und konsistent klingt.|article-mixing-mastering
-
-Ein Beat in 3 Minuten:
-https://www.youtube.com/watch?v=ihyTXOak27c
-
-Lustiges Video eines Audio Engineers:
-https://youtu.be/G2Rhh_4GZmU?si=csvyixY5qhDmL5_P`,
+        content: `Was ist Producing? Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.\n\n# Die Phasen der Musikproduktion\n\nPHASE:COMPOSING|*Ideenfindung und Songwriting:*\nZu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.|article-composing\n\nPHASE:RECORDING|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente.|article-recording\n\nPHASE:EDITING|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen.|article-editing\n\nPHASE:ARRANGEMENT|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat.|article-arrangement\n\nPHASE:SOUNDDESIGN|In dieser Phase geht es darum, die perfekten Klänge zu kreieren oder auszuwählen, um dem Track eine einzigartige Atmosphäre.|article-sounddesign\n\nPHASE:MIXING / MASTERING|Im Mixing werden alle Spuren harmonisch abgestimmt. Das abschließende Mastering stellt sicher, dass der Song professionell klingt.|article-mixing-mastering\n\nEin Beat in 3 Minuten:\nhttps://www.youtube.com/watch?v=ihyTXOak27c\n\nLustiges Video eines Audio Engineers:\nhttps://youtu.be/G2Rhh_4GZmU?si=csvyixY5qhDmL5_P`,
         imageUrls: [],
         videoUrl: ""
       };
-
       await setDoc(doc(db, 'articles', producingArticle.id), producingArticle, { merge: true });
 
-      // Mock Articles for Knowledge Base
       const mockArticles = [
-        {
-          id: 'article-sampling',
-          categoryId: 'intro',
-          title: 'The Art of Sampling',
-          content: `Sampling ist die Wiederverwendung eines Teils einer Tonaufnahme in einer neuen Aufnahme.
-
-In diesem Lab lernst du, wie du Samples schneidest und sie in frische Beats verwandelst. Denk daran: Kreatives Flippen ist besser als nur Loopen!`,
-          imageUrls: [],
-          videoUrl: ""
-        }
+        { id: 'article-sampling', categoryId: 'intro', title: 'The Art of Sampling', content: `Sampling ist die Wiederverwendung eines Teils einer Tonaufnahme.` }
       ];
-
       for (const article of mockArticles) {
         await setDoc(doc(db, 'articles', article.id), article, { merge: true });
-      }
-
-      // Local definitions for generation logic
-      const tracks = [
-        { id: 'track-glitch', name: 'Glitch Power', author: 'BeatBot', duration: 64, url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' },
-        { id: 'track-hum', name: 'System Hum', author: 'Cyborg', duration: 120, url: 'https://actions.google.com/sounds/v1/science_fiction/low_power_hum.ogg' },
-        { id: 'track-techno', name: 'Techno Core', author: 'Neon', duration: 90, url: 'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg' },
-        { id: 'track-space', name: 'Space Drift', author: 'Astro', duration: 180, url: 'https://actions.google.com/sounds/v1/science_fiction/deep_space_drone.ogg' }
-      ];
-
-      const studios = [
-        { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', tags: ['Urban', 'Hip-Hop'], coverColor: '#FF3399', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/gabriel-beats/800/800', linkUrl: 'https://instagram.com/beathero', linkLabel: 'Instagram' },
-        { id: 'yoan-beats', name: 'Yoan Beats', description: 'Electronic textures and clean rhythm.', tags: ['Electronic', 'House'], coverColor: '#FFEA00', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/yoan-beats/800/800', linkUrl: 'https://soundcloud.com', linkLabel: 'SoundCloud' },
-        { id: 'noxxos', name: 'Noxxos', description: 'Experimental soundscapes.', tags: ['Experimental', 'Electronic'], coverColor: '#FF3D00', district: 'Oberemmental', imageUrl: 'https://picsum.photos/seed/noxxos/800/800', linkUrl: 'https://noxxos.music', linkLabel: 'Website' },
-        { id: 'dave-beats', name: 'Dave Beats', description: 'Heavy boom bap and Hip-Hop.', tags: ['Hip-Hop', 'Urban'], coverColor: '#FF9100', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/dave-beats/800/800' },
-        { id: 'nintu-music', name: 'Nintu Music', description: 'Deep House and tech vibes.', tags: ['House', 'Electronic'], coverColor: '#00E676', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/nintu-music/800/800' },
-        { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', tags: ['House'], coverColor: '#00B0FF', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/dj-avox/800/800' },
-        { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', tags: ['Hip-Hop'], coverColor: '#FF6D00', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/nelio-beats/800/800' }
-      ];
-
-      const patterns = [
-        { id: 'kick-p1', name: 'Kick Progression', steps: [0, 14, 16, 30, 32, 46, 48, 62, 64, 78, 80, 84, 96, 110, 112, 114, 126] },
-        { id: 'kick-p2', name: 'Kick Main 4/4', steps: Array.from({ length: 32 }, (_, i) => i * 4) },
-        { id: 'clap-p1', name: 'Clap Basic', steps: [4, 12, 20, 28, 36, 44, 52, 60, 68, 76, 84, 92, 100, 108, 116, 124] },
-        { id: 'clap-p2', name: 'Clap Var', steps: [4, 12, 14, 20, 28, 30, 36, 44, 46, 52, 60, 62, 68, 76, 78, 84, 92, 94, 100, 108, 110, 116, 124, 126] },
-        { id: 'perc-p1', name: 'Perc Basic', steps: [18, 22, 50, 54, 82, 86, 114, 118] },
-        { id: 'perc-p2', name: 'Perc Active', steps: Array.from({ length: 16 }, (_, i) => (i * 8) + 18) },
-        { id: 'misc-p1', name: 'Misc Ambience', steps: [0, 64] },
-        { id: 'misc-p2', name: 'Misc Accents', steps: [16, 48, 80, 112] },
-      ];
-
-      for (const p of patterns) {
-        await setDoc(doc(db, 'patterns', p.id), p, { merge: true });
-      }
-
-      for (const studio of studios) {
-        const gameConfigs = [
-          { id: 'beat-hero', name: 'Beat Hero', type: 'rhythm-producer', bpm: 120 },
-          { id: 'vinyl-hunter', name: 'Vinyl Hunter', type: 'sample-hunter', bpm: 128 },
-          { id: 'sonic-dash', name: 'Sonic Dash', type: 'disk-dash', bpm: 124 }
-        ];
-
-        for (const config of gameConfigs) {
-          const gameId = `${studio.id}-${config.id}`;
-          const trackIndex = (studios.indexOf(studio) + gameConfigs.indexOf(config)) % tracks.length;
-          const selectedTrack = tracks[trackIndex];
-
-          await setDoc(doc(db, 'games', gameId), {
-            id: gameId,
-            studioId: studio.id,
-            name: config.name,
-            type: config.type,
-            bpm: config.bpm,
-            difficulty: 1,
-            trackId: selectedTrack.id,
-            backingTrackUrl: selectedTrack.url
-          }, { merge: true });
-
-          for (let i = 1; i <= 4; i++) {
-            const levelId = `${gameId}-lvl-${i}`;
-            await setDoc(doc(db, 'levels', levelId), {
-              id: levelId,
-              gameId: gameId,
-              difficulty: i,
-              name: `lvl ${i}`
-            }, { merge: true });
-
-            const soundSet = [
-              { type: 'kick', sample: 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg', pIds: ['kick-p1', 'kick-p2'] },
-              { type: 'clap', sample: 'https://actions.google.com/sounds/v1/doors/door_knock_3.ogg', pIds: ['clap-p1', 'clap-p2'] },
-              { type: 'percs', sample: 'https://actions.google.com/sounds/v1/cartoon/clown_horn.ogg', pIds: ['perc-p1', 'perc-p2'] },
-              { type: 'misc', sample: 'https://actions.google.com/sounds/v1/swishes/air_whoosh.ogg', pIds: ['misc-p1', 'misc-p2'] },
-            ];
-
-            for (let j = 0; j < i; j++) {
-              const s = soundSet[j];
-              const soundId = `sound-${levelId}-${s.type}`;
-              await setDoc(doc(db, 'levels', levelId, 'sounds', soundId), {
-                id: soundId,
-                levelId: levelId,
-                type: s.type,
-                sampleUrl: s.sample,
-                patternIds: s.pIds
-              }, { merge: true });
-            }
-          }
-        }
       }
 
       toast({ title: "Rack Synchronized!", description: "Knowledge Base and Studios updated." });
@@ -332,21 +179,17 @@ In diesem Lab lernst du, wie du Samples schneidest und sie in frische Beats verw
       <header className="sticky top-0 p-4 md:p-8 flex flex-col items-center z-50 shrink-0 bg-black/80 backdrop-blur-xl border-b border-white/5">
         <div className="flex flex-col items-center gap-6 w-full max-w-7xl">
           <div className="flex items-center justify-center w-full">
-            <h1 className="text-4xl md:text-7xl font-black tracking-[-0.05em] uppercase italic leading-none text-gradient pr-4">
-              BeatHero
-            </h1>
+            <h1 className="text-4xl md:text-7xl font-black tracking-[-0.05em] uppercase italic leading-none text-gradient pr-4">BeatHero</h1>
           </div>
 
           <div className="flex items-center justify-center w-full relative">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-auto">
               <TabsList className="bg-white/5 border border-white/5 rounded-full p-1 h-12 md:h-14">
                 <TabsTrigger value="studios" className="rounded-full px-6 md:px-12 data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase italic tracking-tighter transition-all">
-                  <LayoutGrid className="w-4 h-4 mr-2 hidden sm:inline" />
-                  Studios
+                  <LayoutGrid className="w-4 h-4 mr-2 hidden sm:inline" /> Studios
                 </TabsTrigger>
                 <TabsTrigger value="learn" className="rounded-full px-6 md:px-12 data-[state=active]:bg-[#00E676] data-[state=active]:text-black font-black uppercase italic tracking-tighter transition-all">
-                  <GraduationCap className="w-4 h-4 mr-2 hidden sm:inline" />
-                  Learn
+                  <GraduationCap className="w-4 h-4 mr-2 hidden sm:inline" /> Learn
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -382,9 +225,7 @@ In diesem Lab lernst du, wie du Samples schneidest und sie in frische Beats verw
                   onClick={() => setSelectedTag(tag)}
                   className={cn(
                     "rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.15em] px-5 h-9 md:h-10 border transition-all shrink-0",
-                    selectedTag === tag 
-                      ? "bg-primary border-primary text-white" 
-                      : "bg-white/5 border-white/5 text-white/40 hover:bg-white/10"
+                    selectedTag === tag ? "bg-primary border-primary text-white" : "bg-white/5 border-white/5 text-white/40 hover:bg-white/10"
                   )}
                 >
                   {tag}
@@ -410,13 +251,6 @@ In diesem Lab lernst du, wie du Samples schneidest und sie in frische Beats verw
                     <StudioCard studio={studio} />
                   </Link>
                 ))}
-                
-                {filteredStudios.length === 0 && (
-                  <div className="col-span-full py-20 text-center opacity-20">
-                    <Radio className="w-12 h-12 mx-auto mb-4" />
-                    <p className="text-sm md:text-base font-black uppercase tracking-widest italic">No studios matching search criteria</p>
-                  </div>
-                )}
               </div>
             )}
           </TabsContent>
@@ -432,11 +266,6 @@ In diesem Lab lernst du, wie du Samples schneidest und sie in frische Beats verw
           <span className="text-[10px] md:text-xs uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack System Online</span>
         </div>
         <div className="flex items-center gap-4">
-          {activeTab === 'studios' && (
-            <p className="text-[11px] md:text-sm font-black uppercase tracking-widest text-white/30 hidden md:block italic">
-              {filteredStudios.length} Active Studios
-            </p>
-          )}
           <Button 
             variant="outline" 
             size="sm" 

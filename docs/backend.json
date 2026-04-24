@@ -99,9 +99,10 @@
     "UserProfile": {
       "title": "UserProfile",
       "type": "object",
-      "description": "Nutzer-Statistiken und Street Credibilities.",
+      "description": "Nutzer-Statistiken, Rollen und Street Credibilities.",
       "properties": {
         "uid": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" },
         "streetCred": { "type": "number", "default": 0 }
       },
       "required": ["uid"]
