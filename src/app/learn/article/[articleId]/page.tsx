@@ -5,7 +5,7 @@ import React from 'react';
 import { useParams } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useDoc, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { Article } from '@/lib/game/types';
+import { Article, hasAccess } from '@/lib/game/types';
 import { ArticleView } from '@/components/learn/ArticleView';
 import { Loader2, AlertCircle, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,8 +23,7 @@ export default function ArticlePage() {
 
   const { data: article, isLoading: isLoadingArticle } = useDoc<Article>(articleRef);
 
-  const isAdmin = profile?.role === 'admin';
-  const isLocked = articleId !== 'article-producing' && !isAdmin;
+  const isLocked = article && !hasAccess(profile?.role, article.minRole || 'free');
 
   if (isUserLoading || isLoadingArticle) {
     return (
@@ -40,7 +39,9 @@ export default function ArticlePage() {
       <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white p-6 text-center">
         <Lock className="w-16 h-16 text-primary mb-6" />
         <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2 text-gradient">Access Denied</h2>
-        <p className="text-sm opacity-50 mb-8 max-w-xs font-medium uppercase tracking-widest">Admin Authorization Required</p>
+        <p className="text-sm opacity-50 mb-8 max-w-xs font-medium uppercase tracking-widest">
+          {article?.minRole?.toUpperCase()} Authorization Required
+        </p>
         <Link href="/">
           <Button className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Back to Hub</Button>
         </Link>

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
-import { Studio, UserProfile } from '@/lib/game/types';
+import { Studio, Game, Article } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -120,16 +120,16 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     try {
-      // Setup global games
-      const learnGames = [
-        { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1 },
-        { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, bpm: 120, backingTrackUrl: 'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg' },
-        { id: 'global-notation-pro', studioId: 'learn-center', name: 'Notation Pro', type: 'notation-pro', difficulty: 1 },
+      // Setup global games with database-driven permissions
+      const learnGames: Partial<Game>[] = [
+        { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1, minRole: 'free' },
+        { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, bpm: 120, minRole: 'admin', backingTrackUrl: 'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg' },
+        { id: 'global-notation-pro', studioId: 'learn-center', name: 'Notation Pro', type: 'notation-pro', difficulty: 1, minRole: 'admin' },
       ];
 
       for (const lg of learnGames) {
-        await setDoc(doc(db, 'games', lg.id), lg, { merge: true });
-        const targetLevelId = lg.id.includes('ear') ? 'global-ear-training' : `global-${lg.id === 'global-notation-pro' ? 'notation' : 'rhythm'}-1`;
+        await setDoc(doc(db, 'games', lg.id!), lg, { merge: true });
+        const targetLevelId = lg.id!.includes('ear') ? 'global-ear-training' : `global-${lg.id === 'global-notation-pro' ? 'notation' : 'rhythm'}-1`;
         await setDoc(doc(db, 'levels', targetLevelId), {
           id: targetLevelId,
           gameId: lg.id,
@@ -138,34 +138,34 @@ export default function HomePage() {
         }, { merge: true });
       }
 
-      // Detailed Articles
-      const phaseDetailArticles = [
-        { id: 'article-composing', categoryId: 'composing', title: 'Composing Deep Dive', content: `Composing ist das Herzstück deiner musikalischen Identität.\n\n# Melodien & Harmonien\nIn diesem Guide lernst du, wie du eingängige Melodien entwickelst und die richtigen Akkorde wählst, um Emotionen zu wecken.\n\nPHASE:COMPOSING|Entwickle deine eigene musikalische Sprache durch Experimente mit Skalen und Rhythmen.` },
-        { id: 'article-recording', categoryId: 'recording', title: 'Recording Deep Dive', content: `Die Qualität deiner Aufnahme bestimmt das Endergebnis.\n\n# Das perfekte Signal\nLerne alles über Mikrofonpositionierung, Gain-Staging und die Akustik deines Raumes.\n\nPHASE:RECORDING|Nur eine saubere Aufnahme lässt sich später professionell bearbeiten.` }
+      // Detailed Articles with database-driven permissions
+      const phaseDetailArticles: Partial<Article>[] = [
+        { id: 'article-composing', categoryId: 'composing', title: 'Composing Deep Dive', minRole: 'admin', content: `Composing ist das Herzstück deiner musikalischen Identität.\n\n# Melodien & Harmonien\nIn diesem Guide lernst du, wie du eingängige Melodien entwickelst und die richtigen Akkorde wählst, um Emotionen zu wecken.\n\nPHASE:COMPOSING|Entwickle deine eigene musikalische Sprache durch Experimente mit Skalen und Rhythmen.` },
+        { id: 'article-recording', categoryId: 'recording', title: 'Recording Deep Dive', minRole: 'admin', content: `Die Qualität deiner Aufnahme bestimmt das Endergebnis.\n\n# Das perfekte Signal\nLerne alles über Mikrofonpositionierung, Gain-Staging und die Akustik deines Raumes.\n\nPHASE:RECORDING|Nur eine saubere Aufnahme lässt sich später professionell bearbeiten.` }
       ];
 
       for (const art of phaseDetailArticles) {
-        await setDoc(doc(db, 'articles', art.id), art, { merge: true });
+        await setDoc(doc(db, 'articles', art.id!), art, { merge: true });
       }
 
-      const producingArticle = {
+      const producingArticle: Partial<Article> = {
         id: 'article-producing',
         categoryId: 'intro',
         title: 'Producing Basics',
+        minRole: 'free',
         content: `Was ist Producing? Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.\n\n# Die Phasen der Musikproduktion\n\nPHASE:COMPOSING|*Ideenfindung und Songwriting:*\nZu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.|article-composing\n\nPHASE:RECORDING|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente.|article-recording\n\nPHASE:EDITING|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen.|article-editing\n\nPHASE:ARRANGEMENT|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat.|article-arrangement\n\nPHASE:SOUNDDESIGN|In dieser Phase geht es darum, die perfekten Klänge zu kreieren oder auszuwählen, um dem Track eine einzigartige Atmosphäre.|article-sounddesign\n\nPHASE:MIXING / MASTERING|Im Mixing werden alle Spuren harmonisch abgestimmt. Das abschließende Mastering stellt sicher, dass der Song professionell klingt.|article-mixing-mastering\n\nEin Beat in 3 Minuten:\nhttps://www.youtube.com/watch?v=ihyTXOak27c\n\nLustiges Video eines Audio Engineers:\nhttps://youtu.be/G2Rhh_4GZmU?si=csvyixY5qhDmL5_P`,
-        imageUrls: [],
-        videoUrl: ""
       };
-      await setDoc(doc(db, 'articles', producingArticle.id), producingArticle, { merge: true });
+      await setDoc(doc(db, 'articles', producingArticle.id!), producingArticle, { merge: true });
 
-      const mockArticles = [
-        { id: 'article-sampling', categoryId: 'intro', title: 'The Art of Sampling', content: `Sampling ist die Wiederverwendung eines Teils einer Tonaufnahme.` }
+      const mockArticles: Partial<Article>[] = [
+        { id: 'article-sampling', categoryId: 'intro', title: 'The Art of Sampling', minRole: 'admin', content: `Sampling ist die Wiederverwendung eines Teils einer Tonaufnahme.` },
+        { id: 'article-djing', categoryId: 'intro', title: 'The Art of DJing', minRole: 'admin', content: `DJing ist mehr als nur Songs abspielen.` }
       ];
       for (const article of mockArticles) {
-        await setDoc(doc(db, 'articles', article.id), article, { merge: true });
+        await setDoc(doc(db, 'articles', article.id!), article, { merge: true });
       }
 
-      toast({ title: "Rack Synchronized!", description: "Knowledge Base and Studios updated." });
+      toast({ title: "Rack Synchronized!", description: "Database permissions and Studios updated." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });

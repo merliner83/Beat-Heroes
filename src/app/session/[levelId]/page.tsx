@@ -5,7 +5,7 @@ import React from 'react';
 import { useParams } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useDoc, useCollection, useUser } from '@/firebase';
 import { doc, collection, query } from 'firebase/firestore';
-import { Game, Level, Sound, TriggerPattern } from '@/lib/game/types';
+import { Game, Level, Sound, TriggerPattern, hasAccess } from '@/lib/game/types';
 import { GameView } from '@/components/game/GameView';
 import { SampleHunterView } from '@/components/game/SampleHunterView';
 import { DiskDashView } from '@/components/game/DiskDashView';
@@ -37,9 +37,7 @@ export default function GameSessionPage() {
   }, [db]);
   const { data: patterns, isLoading: isLoadingPatterns } = useCollection<TriggerPattern>(patternsQuery);
 
-  const isAdmin = profile?.role === 'admin';
-  const isRestrictedGame = game?.id === 'global-rhythm-game' || game?.id === 'global-notation-pro';
-  const isLocked = isRestrictedGame && !isAdmin;
+  const isLocked = game && !hasAccess(profile?.role, game.minRole || 'free');
 
   const isLoading = isUserLoading || isLoadingLevel || isLoadingGame || (game?.type !== 'ear-training' && (isLoadingSounds || isLoadingPatterns));
 
@@ -57,7 +55,9 @@ export default function GameSessionPage() {
       <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white p-6 text-center">
         <Lock className="w-16 h-16 text-primary mb-6" />
         <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2 text-gradient">Access Denied</h2>
-        <p className="text-sm opacity-50 mb-8 max-w-xs font-medium uppercase tracking-widest">Admin Authorization Required</p>
+        <p className="text-sm opacity-50 mb-8 max-w-xs font-medium uppercase tracking-widest">
+          {game?.minRole?.toUpperCase()} Authorization Required
+        </p>
         <Link href="/">
           <Button className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Back to Hub</Button>
         </Link>

@@ -43,12 +43,13 @@
         "id": { "type": "string" },
         "studioId": { "type": "string" },
         "name": { "type": "string" },
-        "type": { "type": "string", "enum": ["rhythm-producer", "sample-hunter", "disk-dash", "ear-training"], "description": "Der technische Typ des Spiels." },
+        "type": { "type": "string", "enum": ["rhythm-producer", "sample-hunter", "disk-dash", "ear-training", "notation-pro"], "description": "Der technische Typ des Spiels." },
         "bpm": { "type": "number", "description": "Spezifisch für Rhythm Producer." },
         "difficulty": { "type": "number", "description": "Schwierigkeitsgrad (1-4)" },
         "trackId": { "type": "string", "description": "ID des zugehörigen Tracks aus der tracks Collection." },
         "backingTrackUrl": { "type": "string", "format": "uri", "description": "Fallback URL für den Backing Track." },
-        "backgroundImageUrl": { "type": "string", "format": "uri", "description": "Hintergrundbild für das Spiel-Interface." }
+        "backgroundImageUrl": { "type": "string", "format": "uri", "description": "Hintergrundbild für das Spiel-Interface." },
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free", "description": "Mindestens erforderliche Rolle für dieses Spiel." }
       },
       "required": ["id", "studioId", "name", "type"]
     },
@@ -132,7 +133,8 @@
           "type": "array", 
           "items": { "type": "string" },
           "description": "Bis zu 3 Bilder für die Galerie."
-        }
+        },
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free", "description": "Mindestens erforderliche Rolle für diesen Artikel." }
       },
       "required": ["id", "title"]
     }
