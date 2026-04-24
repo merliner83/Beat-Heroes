@@ -179,25 +179,28 @@ export default function HomePage() {
       }
 
       // 7. Sync Articles (Skip videoUrl, imageUrls)
-      const phaseDetailArticles: Partial<Article>[] = [
+      const articles: Partial<Article>[] = [
+        { id: 'article-producing', categoryId: 'intro', title: 'Producing Basics', minRole: 'free', content: `Was ist Producing? Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.\n\n# Die Phasen der Musikproduktion\n\nPHASE:COMPOSING|*Ideenfindung und Songwriting:*\nZu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.|article-composing\n\nPHASE:RECORDING|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente.|article-recording\n\nPHASE:EDITING|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen.|article-editing\n\nPHASE:ARRANGEMENT|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat.|article-arrangement\n\nPHASE:SOUNDDESIGN|In dieser Phase geht es darum, die perfekten Klänge zu kreieren oder auszuwählen, um dem Track eine einzigartige Atmosphäre.|article-sounddesign\n\nPHASE:MIXING / MASTERING|Im Mixing werden alle Spuren harmonisch abgestimmt. Das abschließende Mastering stellt sicher, dass der Song professionell klingt.|article-mixing-mastering\n\nEin Beat in 3 Minuten:\nhttps://www.youtube.com/watch?v=ihyTXOak27c\n\nLustiges Video eines Audio Engineers:\nhttps://youtu.be/G2Rhh_4GZmU?si=csvyixY5qhDmL5_P` },
         { id: 'article-composing', categoryId: 'composing', title: 'Composing Deep Dive', minRole: 'admin', content: `Composing ist das Herzstück deiner musikalischen Identität.\n\n# Melodien & Harmonien\nIn diesem Guide lernst du, wie du eingängige Melodien entwickelst und die richtigen Akkorde wählst, um Emotionen zu wecken.\n\nPHASE:COMPOSING|Entwickle deine eigene musikalische Sprache durch Experimente mit Skalen und Rhythmen.` },
-        { id: 'article-recording', categoryId: 'recording', title: 'Recording Deep Dive', minRole: 'admin', content: `Die Qualität deiner Aufnahme bestimmt das Endergebnis.\n\n# Das perfekte Signal\nLerne alles über Mikrofonpositionierung, Gain-Staging und die Akustik deines Raumes.\n\nPHASE:RECORDING|Nur eine saubere Aufnahme lässt sich später professionell bearbeiten.` }
+        { id: 'article-recording', categoryId: 'recording', title: 'Recording Deep Dive', minRole: 'admin', content: `Die Qualität deiner Aufnahme bestimmt das Endergebnis.\n\n# Das perfekte Signal\nLerne alles über Mikrofonpositionierung, Gain-Staging und die Akustik deines Raumes.\n\nPHASE:RECORDING|Nur eine saubere Aufnahme lässt sich später professionell bearbeiten.` },
+        { id: 'article-daws', categoryId: 'daws', title: 'Digital Audio Workstations', minRole: 'admin', content: `Deine DAW ist deine Schaltzentrale.\n\n# Die Wahl der Waffe\nOb Ableton Live, FL Studio oder Logic Pro – lerne die Grundlagen deiner Software kennen.` },
+        { id: 'article-effects', categoryId: 'effects', title: 'Effekte & Plugins', minRole: 'admin', content: `Effekte geben deinem Sound Charakter.\n\n# Dynamik & Modulation\nReverb, Delay, Distortion – lerne, wie du diese Werkzeuge gezielt einsetzt.` },
+        { id: 'article-djing', categoryId: 'djing', title: 'DJing & Performance', minRole: 'admin', content: `Bringe deine Musik auf die Bühne.\n\n# Beatmatching & Mixing\nLerne, wie du Tracks nahtlos verbindest und die Crowd kontrollierst.` },
+        { id: 'article-brand', categoryId: 'brand', title: 'Brand & Marketing', minRole: 'admin', content: `Werde zur Marke.\n\n# Deine Identität\nWie du dich als Artist präsentierst und deine Community aufbaust.` },
+        { id: 'article-release', categoryId: 'release', title: 'Release Strategie', minRole: 'admin', content: `Der Weg zum ersten Release.\n\n# Distribution & Promotion\nSpotify, Apple Music & Co. – so bringst du deine Musik unter die Leute.` },
+        { id: 'article-rights', categoryId: 'rights', title: 'Rechte & Business', minRole: 'admin', content: `Schütze deine Werke.\n\n# Urheberrecht & Verträge\nWas du über GEMA, Samples und Lizenzen wissen musst.` },
+        { id: 'article-others', categoryId: 'others', title: 'Weitere Themen', minRole: 'admin', content: `Noch mehr Know-How.\n\n# Studio-Akustik & Gear\nZusätzliche Infos für dein perfektes Setup.` },
+        { id: 'article-editing', categoryId: 'recording', title: 'Editing Basics', minRole: 'admin', content: `Präzision im Detail.\n\n# Schneiden & Korrigieren\nLerne, wie du Aufnahmen perfektionierst.` },
+        { id: 'article-arrangement', categoryId: 'composing', title: 'Arrangement Guide', minRole: 'admin', content: `Struktur & Flow.\n\n# Song-Aufbau\nVerse, Chorus, Bridge – so baust du Spannung auf.` },
+        { id: 'article-sounddesign', categoryId: 'composing', title: 'Sound Design 101', minRole: 'admin', content: `Erschaffe neue Welten.\n\n# Synthese & Sampling\nLerne, wie du einzigartige Klänge von Grund auf erstellst.` },
+        { id: 'article-mixing-mastering', categoryId: 'recording', title: 'Mixing & Mastering', minRole: 'admin', content: `Der finale Schliff.\n\n# Transparenz & Druck\nSorge dafür, dass dein Track überall fett klingt.` }
       ];
 
-      for (const art of phaseDetailArticles) {
+      for (const art of articles) {
         await setDoc(doc(db, 'articles', art.id!), art, { merge: true });
       }
 
-      const producingArticle: Partial<Article> = {
-        id: 'article-producing',
-        categoryId: 'intro',
-        title: 'Producing Basics',
-        minRole: 'free',
-        content: `Was ist Producing? Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.\n\n# Die Phasen der Musikproduktion\n\nPHASE:COMPOSING|*Ideenfindung und Songwriting:*\nZu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.|article-composing\n\nPHASE:RECORDING|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente.|article-recording\n\nPHASE:EDITING|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen.|article-editing\n\nPHASE:ARRANGEMENT|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat.|article-arrangement\n\nPHASE:SOUNDDESIGN|In dieser Phase geht es darum, die perfekten Klänge zu kreieren oder auszuwählen, um dem Track eine einzigartige Atmosphäre.|article-sounddesign\n\nPHASE:MIXING / MASTERING|Im Mixing werden alle Spuren harmonisch abgestimmt. Das abschließende Mastering stellt sicher, dass der Song professionell klingt.|article-mixing-mastering\n\nEin Beat in 3 Minuten:\nhttps://www.youtube.com/watch?v=ihyTXOak27c\n\nLustiges Video eines Audio Engineers:\nhttps://youtu.be/G2Rhh_4GZmU?si=csvyixY5qhDmL5_P`,
-      };
-      await setDoc(doc(db, 'articles', producingArticle.id!), producingArticle, { merge: true });
-
-      toast({ title: "Rack Synchronized!", description: "Metadata and structure updated (Media omitted)." });
+      toast({ title: "Rack Synchronized!", description: "Metadata, Structure and Knowledge Base updated (Media omitted)." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
