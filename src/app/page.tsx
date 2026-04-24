@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -12,11 +13,12 @@ import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { cn } from '@/lib/utils';
-import { Radio, RefreshCw, Loader2, Zap, Search } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, Zap, Search, LayoutGrid, GraduationCap } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LearnView } from '@/components/learn/LearnView';
 
 const StudioCard = ({ studio }: { studio: Studio }) => (
   <div className="relative group cursor-pointer transition-all duration-500 overflow-hidden rounded-lg border border-white/5 bg-black/40 hover:border-primary/50 shadow-2xl aspect-square w-full">
-    {/* Background Image - Fully Visible */}
     <div className="absolute inset-0 overflow-hidden">
       {studio.imageUrl ? (
         <Image
@@ -32,17 +34,14 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
       )}
     </div>
 
-    {/* Gradient Overlay for Text Legibility (Fades from dark bottom to transparent top) */}
     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10" />
     
-    {/* Studio Info Overlay - Centered Horizontally */}
-    <div className="absolute inset-0 p-4 md:p-6 flex flex-col justify-end items-center text-center z-20 pb-4 md:pb-6">
-      <h3 className="text-xl md:text-2xl lg:text-3xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-[0.85] break-words drop-shadow-lg">
+    <div className="absolute inset-0 p-4 flex flex-col justify-end items-center text-center z-20 pb-6">
+      <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-[0.85] break-words drop-shadow-lg">
         {studio.name}
       </h3>
     </div>
     
-    {/* Subtle Glow interaction */}
     <div 
       className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-1000 pointer-events-none z-0"
       style={{ backgroundColor: studio.coverColor }}
@@ -58,6 +57,7 @@ export default function HomePage() {
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState('All');
+  const [activeTab, setActiveTab] = useState('studios');
 
   useEffect(() => {
     if (!user && auth) {
@@ -237,59 +237,84 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative w-full md:w-80 group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors" />
-            <Input 
-              placeholder="Search Studios..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 md:h-12 bg-white/5 border-white/10 rounded-full focus:ring-primary focus:border-primary placeholder:text-white/10 text-xs md:text-sm font-bold uppercase tracking-widest"
-            />
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
+              <TabsList className="bg-white/5 border border-white/5 rounded-full p-1 h-12 md:h-14">
+                <TabsTrigger value="studios" className="rounded-full px-6 md:px-10 data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase italic tracking-tighter transition-all">
+                  <LayoutGrid className="w-4 h-4 mr-2 hidden sm:inline" />
+                  Studios
+                </TabsTrigger>
+                <TabsTrigger value="learn" className="rounded-full px-6 md:px-10 data-[state=active]:bg-[#00E676] data-[state=active]:text-black font-black uppercase italic tracking-tighter transition-all">
+                  <GraduationCap className="w-4 h-4 mr-2 hidden sm:inline" />
+                  Learn
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
         </div>
 
-        <div className="flex gap-2 mt-4 overflow-x-auto w-full max-w-7xl pb-1 scrollbar-hide no-scrollbar">
-          {dynamicTags.map(tag => (
-            <Button
-              key={tag}
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedTag(tag)}
-              className={cn(
-                "rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.15em] px-5 h-9 md:h-10 border transition-all shrink-0",
-                selectedTag === tag 
-                  ? "bg-primary border-primary text-white" 
-                  : "bg-white/5 border-white/5 text-white/40 hover:bg-white/10"
-              )}
-            >
-              {tag}
-            </Button>
-          ))}
-        </div>
+        {activeTab === 'studios' && (
+          <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-7xl mt-6">
+            <div className="relative w-full md:w-80 group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors" />
+              <Input 
+                placeholder="Search Studios..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-10 md:h-12 bg-white/5 border-white/10 rounded-full focus:ring-primary focus:border-primary placeholder:text-white/10 text-xs md:text-sm font-bold uppercase tracking-widest"
+              />
+            </div>
+            <div className="flex gap-2 overflow-x-auto w-full pb-1 scrollbar-hide no-scrollbar">
+              {dynamicTags.map(tag => (
+                <Button
+                  key={tag}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedTag(tag)}
+                  className={cn(
+                    "rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.15em] px-5 h-9 md:h-10 border transition-all shrink-0",
+                    selectedTag === tag 
+                      ? "bg-primary border-primary text-white" 
+                      : "bg-white/5 border-white/5 text-white/40 hover:bg-white/10"
+                  )}
+                >
+                  {tag}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
       </header>
 
       <main className="relative flex-1 w-full max-w-7xl mx-auto py-6 md:py-10 px-4 md:px-6">
-        {isLoadingStudios ? (
-          <div className="h-64 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="w-10 h-10 animate-spin text-primary" />
-            <p className="text-xs md:text-sm font-black uppercase tracking-[0.4em] opacity-30">Connecting to Rack...</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            {filteredStudios.map((studio) => (
-              <Link key={studio.id} href={`/studio/${studio.id}`} className="block transform transition-transform hover:scale-[1.03] active:scale-95">
-                <StudioCard studio={studio} />
-              </Link>
-            ))}
-            
-            {filteredStudios.length === 0 && (
-              <div className="col-span-full py-20 text-center opacity-20">
-                 <Radio className="w-12 h-12 mx-auto mb-4" />
-                 <p className="text-sm md:text-base font-black uppercase tracking-widest italic">No studios matching search criteria</p>
+        <Tabs value={activeTab} className="w-full">
+          <TabsContent value="studios" className="m-0 focus-visible:ring-0 outline-none">
+            {isLoadingStudios ? (
+              <div className="h-64 flex flex-col items-center justify-center gap-4">
+                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                <p className="text-xs md:text-sm font-black uppercase tracking-[0.4em] opacity-30">Connecting to Rack...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                {filteredStudios.map((studio) => (
+                  <Link key={studio.id} href={`/studio/${studio.id}`} className="block transform transition-transform hover:scale-[1.03] active:scale-95">
+                    <StudioCard studio={studio} />
+                  </Link>
+                ))}
+                
+                {filteredStudios.length === 0 && (
+                  <div className="col-span-full py-20 text-center opacity-20">
+                    <Radio className="w-12 h-12 mx-auto mb-4" />
+                    <p className="text-sm md:text-base font-black uppercase tracking-widest italic">No studios matching search criteria</p>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
+          </TabsContent>
+          <TabsContent value="learn" className="m-0 focus-visible:ring-0 outline-none">
+            <LearnView />
+          </TabsContent>
+        </Tabs>
       </main>
 
       <footer className="sticky bottom-0 p-3 md:p-4 border-t border-white/5 bg-black/95 backdrop-blur-2xl flex justify-between items-center z-50 shrink-0">
@@ -298,9 +323,11 @@ export default function HomePage() {
           <span className="text-[10px] md:text-xs uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack System Online</span>
         </div>
         <div className="flex items-center gap-4">
-          <p className="text-[11px] md:text-sm font-black uppercase tracking-widest text-white/30 hidden md:block italic">
-            {filteredStudios.length} Active Studios
-          </p>
+          {activeTab === 'studios' && (
+            <p className="text-[11px] md:text-sm font-black uppercase tracking-widest text-white/30 hidden md:block italic">
+              {filteredStudios.length} Active Studios
+            </p>
+          )}
           <Button 
             variant="outline" 
             size="sm" 
@@ -314,3 +341,4 @@ export default function HomePage() {
     </div>
   );
 }
+

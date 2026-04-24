@@ -1,5 +1,6 @@
+
 export type SoundType = 'kick' | 'clap' | 'percs' | 'misc';
-export type GameType = 'rhythm-producer' | 'sample-hunter' | 'disk-dash';
+export type GameType = 'rhythm-producer' | 'sample-hunter' | 'disk-dash' | 'ear-training' | 'notation-pro';
 
 export interface Studio {
   id: string;
@@ -66,4 +67,11 @@ export interface LevelProgress {
   levelId: string;
   accuracy: number;
   completedAt?: any;
+}
+
+export interface LearnCategory {
+  id: string;
+  title: string;
+  topics: string[];
+  iconName: string;
 }
