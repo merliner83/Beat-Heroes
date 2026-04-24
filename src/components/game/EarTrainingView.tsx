@@ -17,7 +17,7 @@ import {
   CheckCircle2, 
   XCircle,
   BarChart3,
-  Search
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -52,7 +52,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
   const [lastGuess, setLastGuess] = useState<number | null>(null);
   const [sessionScores, setSessionScores] = useState<number[]>([]);
 
-  // Fetch previous progress for Weekly Average
+  // Fetch previous progress
   const progressQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return query(
@@ -113,13 +113,19 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
     generateNewTarget();
   };
 
+  const cancelQuiz = () => {
+    setQuizStatus('IDLE');
+    setMode('explore');
+    audioEngine?.stopNoise();
+    setIsPlaying(false);
+  };
+
   const generateNewTarget = () => {
     const randomFreq = FREQUENCY_STEPS[Math.floor(Math.random() * FREQUENCY_STEPS.length)];
     setTargetFreq(randomFreq);
     setQuizStatus('PLAYING');
     setLastGuess(null);
     setIsPlaying(false);
-    // Auto-play noise for the new round
     setTimeout(() => toggleNoise(randomFreq), 300);
   };
 
@@ -160,28 +166,30 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
     }
   };
 
-  const formatFreq = (freq: number) => {
-    if (freq >= 1000) {
-      return `${freq / 1000} KHZ`;
-    }
-    return `${freq} HZ`;
+  const formatFreqValue = (freq: number) => {
+    if (freq >= 1000) return `${freq / 1000}`;
+    return `${freq}`;
+  };
+
+  const getFreqUnit = (freq: number) => {
+    return freq >= 1000 ? "KHZ" : "HZ";
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#050505] text-white p-4 font-body overflow-hidden">
-      <header className="flex justify-between items-center h-20 md:h-24 shrink-0 z-50 px-6 md:px-12 bg-black/40 backdrop-blur-xl border-b border-white/5 rounded-t-3xl">
-        <div className="flex items-center gap-4 md:gap-8">
+    <div className="flex flex-col h-screen bg-[#050505] text-white p-4 font-body overflow-hidden selection:bg-primary">
+      <header className="flex justify-between items-center h-20 md:h-24 shrink-0 z-50 px-6 md:px-10 bg-black/40 backdrop-blur-xl border-b border-white/5 rounded-t-3xl">
+        <div className="flex items-center gap-4 md:gap-6">
           <Link href="/">
             <ArrowLeft className="w-6 h-6 text-white/40 hover:text-white transition-all hover:scale-110" />
           </Link>
           <div className="pr-4">
-            <h1 className="text-xl md:text-3xl font-black uppercase italic tracking-tighter text-gradient leading-none whitespace-nowrap">
-              Ear Training
+            <h1 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-gradient leading-none whitespace-nowrap">
+              EAR TRAINING
             </h1>
-            <p className="text-[10px] opacity-30 uppercase font-black tracking-[0.2em] mt-1">Master the Spectrum</p>
+            <p className="text-[9px] opacity-30 uppercase font-black tracking-[0.2em] mt-1">Master the Spectrum</p>
           </div>
         </div>
-        <div className="hidden sm:flex items-center gap-3 opacity-30 text-[10px] md:text-xs font-black uppercase tracking-widest">
+        <div className="hidden sm:flex items-center gap-3 opacity-30 text-[10px] md:text-xs font-black uppercase tracking-widest mr-4">
            <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
            Rack Connected
         </div>
@@ -190,7 +198,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
       <main className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 relative overflow-y-auto">
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
 
-        {/* Mode Toggle with Rack Style */}
+        {/* Mode Toggle */}
         {(quizStatus === 'IDLE' || mode === 'explore') && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-500">
             <div className="inline-flex p-1.5 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-xl shadow-2xl">
@@ -199,10 +207,8 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   variant="ghost" 
                   onClick={() => { setMode('explore'); setQuizStatus('IDLE'); }}
                   className={cn(
-                    "rounded-xl px-6 md:px-10 py-5 md:py-7 text-xs md:text-xl font-black uppercase tracking-widest transition-all duration-300 border-none",
-                    mode === 'explore' 
-                      ? "bg-white/10 text-white" 
-                      : "text-white/20 hover:text-white/40"
+                    "rounded-xl px-6 md:px-12 py-6 md:py-8 text-sm md:text-xl font-black uppercase tracking-widest transition-all duration-300 border-none",
+                    mode === 'explore' ? "bg-white/10 text-white" : "text-white/20 hover:text-white/40"
                   )}
                 >
                   Explore
@@ -213,10 +219,8 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   variant="ghost" 
                   onClick={() => { setMode('quiz'); if(quizStatus === 'RESULTS' || quizStatus === 'IDLE') setQuizStatus('IDLE'); }}
                   className={cn(
-                    "rounded-xl px-6 md:px-10 py-5 md:py-7 text-xs md:text-xl font-black uppercase tracking-widest transition-all duration-300 border-none",
-                    mode === 'quiz' 
-                      ? "bg-primary text-white" 
-                      : "text-white/20 hover:text-white/40"
+                    "rounded-xl px-6 md:px-12 py-6 md:py-8 text-sm md:text-xl font-black uppercase tracking-widest transition-all duration-300 border-none",
+                    mode === 'quiz' ? "bg-primary text-white" : "text-white/20 hover:text-white/40"
                   )}
                 >
                   Quiz Mode
@@ -226,21 +230,39 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
           </div>
         )}
 
+        {/* Quiz Cancel Button */}
+        {(quizStatus === 'PLAYING' || quizStatus === 'FEEDBACK') && (
+          <div className="absolute top-4 right-4 md:right-8 z-50">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={cancelQuiz}
+              className="w-12 h-12 rounded-full text-white/20 hover:text-white hover:bg-white/10 transition-all border border-white/5"
+            >
+              <X className="w-6 h-6" />
+            </Button>
+          </div>
+        )}
+
         {mode === 'explore' && (
-          <div className="w-full max-w-2xl space-y-8 animate-in fade-in zoom-in-95 duration-700 mt-16">
+          <div className="w-full max-w-2xl space-y-10 animate-in fade-in zoom-in-95 duration-700 mt-16">
             <div className="text-center">
-              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10 shadow-[0_0_50px_rgba(255,51,153,0.1)]">
+              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/10 shadow-[0_0_50px_rgba(255,51,153,0.1)]">
                 <Activity className={cn("w-8 h-8 transition-all", isPlaying ? "text-[#00E676] scale-110" : "text-white/20")} />
               </div>
-              <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-1">Scanner</h2>
-              <p className="text-[10px] opacity-40 uppercase tracking-widest">Train your ears by selecting specific frequency bands</p>
+              <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2">Scanner</h2>
+              <p className="text-[10px] opacity-40 uppercase tracking-[0.3em]">Train your ears by peaking specific bands</p>
             </div>
 
             <div className="gemini-border-primary">
-              <div className="p-8 bg-black/60 backdrop-blur-3xl space-y-6 rounded-xl border border-white/5">
-                <div className="flex justify-between items-end pr-2">
-                  <span className="text-[10px] font-black opacity-20 uppercase tracking-[0.3em]">Current Peek</span>
-                  <span className="text-3xl md:text-4xl font-black italic text-gradient whitespace-nowrap">{formatFreq(currentFreq)}</span>
+              <div className="p-8 bg-black/60 backdrop-blur-3xl space-y-8 rounded-xl border border-white/5">
+                <div className="flex flex-col items-center">
+                  <span className="text-6xl md:text-8xl font-black italic text-gradient leading-none">
+                    {formatFreqValue(currentFreq)}
+                  </span>
+                  <span className="text-xl md:text-2xl font-black opacity-20 uppercase tracking-[0.4em] mt-2">
+                    {getFreqUnit(currentFreq)}
+                  </span>
                 </div>
                 <Slider 
                   min={0} 
@@ -265,7 +287,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                 isPlaying ? "bg-[#FF3D00] text-white" : "bg-white text-black"
               )}
             >
-              {isPlaying ? <><Pause className="mr-3 w-5 h-5" fill="currentColor" /> Stop Engine</> : <><Play className="mr-3 w-5 h-5" fill="currentColor" /> Play Pink Noise</>}
+              {isPlaying ? <><Pause className="mr-3 w-5 h-5" fill="currentColor" /> Stop Engine</> : <><Play className="mr-3 w-5 h-5" fill="currentColor" /> Play Noise</>}
             </Button>
           </div>
         )}
@@ -273,17 +295,17 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
         {mode === 'quiz' && (
           <div className="w-full max-w-2xl animate-in slide-in-from-bottom-8 duration-700">
             {quizStatus === 'IDLE' && (
-              <div className="text-center space-y-6 mt-16">
+              <div className="text-center space-y-8 mt-16">
                 <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto border border-primary/20">
                   <Headphones className="w-10 h-10 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-1">Golden Ears</h2>
-                  <p className="text-xs opacity-40 uppercase tracking-widest">6 Rounds of pure frequency identification</p>
+                  <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-2">Golden Ears</h2>
+                  <p className="text-xs opacity-40 uppercase tracking-[0.3em]">6 Rounds frequency identification</p>
                 </div>
                 <Button 
                   onClick={startQuizSession}
-                  className="w-full h-16 md:h-20 bg-primary text-white text-xl font-black uppercase italic rounded-3xl hover:scale-105 transition-all shadow-2xl shadow-primary/30"
+                  className="w-full h-18 md:h-24 bg-primary text-white text-2xl font-black uppercase italic rounded-3xl hover:scale-105 transition-all shadow-2xl shadow-primary/30"
                 >
                   Start Quiz
                 </Button>
@@ -297,48 +319,47 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
             )}
 
             {(quizStatus === 'PLAYING' || quizStatus === 'FEEDBACK') && (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                   <div className="bg-white/5 px-4 py-2 rounded-full border border-white/5 text-[10px] font-black uppercase tracking-widest opacity-40">
+              <div className="space-y-8">
+                <div className="flex justify-between items-center bg-white/5 px-6 py-3 rounded-2xl border border-white/5 backdrop-blur-md">
+                   <div className="text-[11px] font-black uppercase tracking-widest opacity-40">
                      Round {round} / {TOTAL_ROUNDS}
                    </div>
                    <Button 
                      variant="ghost" 
                      onClick={() => toggleNoise()}
-                     className={cn("h-10 rounded-full px-6 text-[10px] font-black uppercase tracking-widest border border-white/10", isPlaying ? "bg-primary text-white" : "bg-white/5")}
+                     className={cn(
+                       "h-10 rounded-xl px-6 text-[10px] font-black uppercase tracking-widest border transition-all",
+                       isPlaying ? "bg-primary text-white border-primary" : "bg-white/5 border-white/10"
+                     )}
                    >
-                     {isPlaying ? "Pause Reference" : "Play Sound"}
+                     {isPlaying ? "Pause" : "Play Sound"}
                    </Button>
                 </div>
 
                 <div className="text-center">
-                   <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-1">
-                     Identify Target
+                   <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-1">
+                     Identify Peak
                    </h2>
-                   <p className="text-[10px] opacity-40 uppercase tracking-widest">Which frequency has the peak?</p>
+                   <p className="text-[10px] opacity-40 uppercase tracking-[0.3em]">Which frequency is highlighted?</p>
                 </div>
 
-                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
+                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
                   {FREQUENCY_STEPS.map(freq => {
                     const isCorrect = freq === targetFreq;
                     const isGuessed = freq === lastGuess;
                     
                     let containerClass = "bg-white/5 border-white/10 hover:border-white/20 transition-all duration-300";
-                    let textClass = "text-white opacity-40";
                     let isNeon = !lastGuess;
 
                     if (quizStatus === 'FEEDBACK') {
                       if (isCorrect) {
-                        containerClass = "bg-[#00E676] border-[#00E676] scale-105 z-10 shadow-[0_0_30px_#00E67644]";
-                        textClass = "text-black opacity-100 font-black";
+                        containerClass = "bg-[#00E676] border-[#00E676] scale-105 z-10 shadow-[0_0_30px_#00E67644] text-black";
                         isNeon = true;
                       } else if (isGuessed) {
-                        containerClass = "bg-[#FF3D00] border-[#FF3D00] opacity-100";
-                        textClass = "text-white opacity-100 font-black";
+                        containerClass = "bg-[#FF3D00] border-[#FF3D00] text-white";
                         isNeon = false;
                       } else {
-                        containerClass = "bg-transparent border-white/5 opacity-10";
-                        textClass = "text-white opacity-10";
+                        containerClass = "bg-transparent border-white/5 opacity-10 text-white";
                         isNeon = false;
                       }
                     }
@@ -349,12 +370,15 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                           disabled={quizStatus === 'FEEDBACK'}
                           onClick={() => handleGuess(freq)}
                           className={cn(
-                            "w-full h-16 md:h-20 rounded-xl border text-xs md:text-sm font-black italic flex items-center justify-center transition-all duration-300",
+                            "w-full h-20 md:h-24 rounded-xl border flex flex-col items-center justify-center transition-all duration-300 gap-1",
                             containerClass
                           )}
                         >
-                          <span className={cn("text-center leading-tight", textClass)}>
-                            {formatFreq(freq)}
+                          <span className="text-sm md:text-lg font-black italic leading-none">
+                            {formatFreqValue(freq)}
+                          </span>
+                          <span className="text-[9px] font-black opacity-40 uppercase tracking-widest">
+                            {getFreqUnit(freq)}
                           </span>
                         </Button>
                       </div>
@@ -363,20 +387,20 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                 </div>
 
                 {quizStatus === 'FEEDBACK' && (
-                  <div className="flex flex-col items-center gap-4 animate-in zoom-in-95 duration-300">
+                  <div className="flex flex-col items-center gap-6 animate-in zoom-in-95 duration-300">
                     <div className={cn(
-                      "flex items-center gap-3 px-6 md:px-8 py-3 md:py-4 rounded-full border-2 text-xl md:text-2xl font-black uppercase italic tracking-tighter",
+                      "flex items-center gap-4 px-10 py-5 rounded-full border-2 text-2xl font-black uppercase italic tracking-tighter",
                       lastGuess === targetFreq ? "border-[#00E676] text-[#00E676] bg-[#00E676]/5" : "border-[#FF3D00] text-[#FF3D00] bg-[#FF3D00]/5"
                     )}>
                       {lastGuess === targetFreq ? (
-                        <><CheckCircle2 className="w-6 h-6" /> Match</>
+                        <><CheckCircle2 className="w-8 h-8" /> Match</>
                       ) : (
-                        <><XCircle className="w-6 h-6" /> Miss</>
+                        <><XCircle className="w-8 h-8" /> Miss</>
                       )}
                     </div>
                     <Button 
                       onClick={nextRound}
-                      className="w-full h-14 md:h-16 bg-white text-black text-lg font-black uppercase italic rounded-2xl shadow-xl hover:scale-105 transition-all"
+                      className="w-full h-16 bg-white text-black text-xl font-black uppercase italic rounded-2xl shadow-xl hover:scale-105 transition-all"
                     >
                       {round < TOTAL_ROUNDS ? "Next Round" : "View Results"}
                     </Button>
@@ -386,40 +410,40 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
             )}
 
             {quizStatus === 'RESULTS' && (
-              <div className="text-center space-y-8 animate-in zoom-in-95">
+              <div className="text-center space-y-10 animate-in zoom-in-95">
                 <div className="relative inline-block">
-                  <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shadow-[0_0_60px_rgba(255,51,153,0.15)]">
-                    <Trophy className={cn("w-12 h-12", sessionScores.filter(s => s === 100).length >= 4 ? "text-[#FFEA00]" : "text-white/20")} />
+                  <div className="w-28 h-28 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shadow-[0_0_60px_rgba(255,51,153,0.15)]">
+                    <Trophy className={cn("w-14 h-14", sessionScores.filter(s => s === 100).length >= 4 ? "text-[#FFEA00]" : "text-white/20")} />
                   </div>
-                  <Zap className="absolute -top-1 -right-1 w-8 h-8 text-[#FFEA00] animate-pulse" fill="currentColor" />
+                  <Zap className="absolute -top-1 -right-1 w-10 h-10 text-[#FFEA00] animate-pulse" fill="currentColor" />
                 </div>
 
                 <div>
-                  <h3 className="text-5xl font-black italic uppercase tracking-tighter mb-1">
+                  <h3 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter mb-1 text-gradient">
                     {Math.round(sessionScores.reduce((a,b) => a+b, 0) / TOTAL_ROUNDS)}%
                   </h3>
                   <p className="text-[10px] uppercase font-black tracking-[0.5em] opacity-30">Session Accuracy</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-6">
                   <div className="gemini-border-primary">
-                    <div className="p-4 md:p-6 bg-black/60 rounded-xl border border-white/5">
-                      <p className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-1">Weekly Average</p>
-                      <p className="text-2xl font-black italic text-[#00E676]">{weeklyAverage}%</p>
+                    <div className="p-6 bg-black/60 rounded-xl border border-white/5">
+                      <p className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-2">Weekly Average</p>
+                      <p className="text-3xl font-black italic text-[#00E676]">{weeklyAverage}%</p>
                     </div>
                   </div>
                   <div className="gemini-border-primary">
-                    <div className="p-4 md:p-6 bg-black/60 rounded-xl border border-white/5">
-                      <p className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-1">Matches</p>
-                      <p className="text-2xl font-black italic text-primary">{sessionScores.filter(s => s === 100).length} / {TOTAL_ROUNDS}</p>
+                    <div className="p-6 bg-black/60 rounded-xl border border-white/5">
+                      <p className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-2">Matches</p>
+                      <p className="text-3xl font-black italic text-primary">{sessionScores.filter(s => s === 100).length} / {TOTAL_ROUNDS}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex gap-4">
-                  <Button onClick={startQuizSession} variant="outline" className="flex-1 h-14 rounded-2xl border-white/10 uppercase font-black italic text-base hover:bg-white/5">New Quiz</Button>
+                  <Button onClick={startQuizSession} variant="outline" className="flex-1 h-16 rounded-2xl border-white/10 uppercase font-black italic text-lg hover:bg-white/5">New Quiz</Button>
                   <Link href="/" className="flex-1">
-                    <Button className="w-full h-14 bg-white text-black rounded-2xl font-black uppercase italic text-base shadow-xl">Finish</Button>
+                    <Button className="w-full h-16 bg-white text-black rounded-2xl font-black uppercase italic text-lg shadow-xl">Finish</Button>
                   </Link>
                 </div>
               </div>
@@ -431,7 +455,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
       <footer className="p-4 md:p-8 shrink-0 flex justify-center opacity-20">
         <div className="flex items-center gap-3">
           <Headphones className="w-4 h-4" />
-          <span className="text-[10px] font-black uppercase tracking-[0.4em]">Optimized for Studio Monitors</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.5em]">Optimized for Studio Monitors</span>
         </div>
       </footer>
     </div>
