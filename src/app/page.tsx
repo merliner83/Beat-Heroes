@@ -200,11 +200,11 @@ export default function HomePage() {
       }
 
       const gabrielTracks: Track[] = [
-        { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel', url: '' },
-        { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel', url: '' },
-        { id: 'tr-g3', studioId: 'std-gabriel', name: 'Track 3', author: 'Gabriel', url: '' },
-        { id: 'tr-g4', studioId: 'std-gabriel', name: 'Track 4', author: 'Gabriel', url: '' },
-        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel', url: '' }
+        { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%201_140bpm.mp3?alt=media&token=0d094a95-7a8c-40a4-8e17-c1eebf721540' },
+        { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%202_148bpm.mp3?alt=media&token=1f877a36-c331-4286-97ce-aad7f1edf807' },
+        { id: 'tr-g3', studioId: 'std-gabriel', name: 'Track 3', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%204%20150bpm%20scratch.mp3?alt=media&token=d4a447a1-5c31-4aeb-acab-146fccc039b8' },
+        { id: 'tr-g4', studioId: 'std-gabriel', name: 'Track 4', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%205%20162bpm.mp3?alt=media&token=deefca2b-1ace-4e53-948f-8ce581aca7f6' },
+        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%208%20160bpm.mp3?alt=media&token=385d3a0c-c51c-4801-8ec4-18b0f9eedf2f' }
       ];
       for (const t of gabrielTracks) {
         const tRef = doc(db, 'tracks', t.id);
@@ -250,11 +250,26 @@ export default function HomePage() {
           const gameId = `${s.id}-${config.type}`;
           const isSampleCatcher = config.type === 'disk-dash';
           const isVinylHunter = config.type === 'sample-hunter';
+          const isBeatHero = config.type === 'rhythm-producer';
           
+          let gameBpm = 128;
+          let gameBackingUrl = '';
+          
+          // Specific Overrides for Gabriel Beats
+          if (s.id === 'std-gabriel') {
+            if (isBeatHero) {
+              gameBpm = 148;
+              gameBackingUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%202_148bpm.mp3?alt=media&token=1f877a36-c331-4286-97ce-aad7f1edf807';
+            } else if (isVinylHunter) {
+              gameBpm = 150;
+              gameBackingUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%204%20150bpm%20scratch.mp3?alt=media&token=d4a447a1-5c31-4aeb-acab-146fccc039b8';
+            }
+          }
+
           const gData = {
             id: gameId, studioId: s.id, name: config.name, type: config.type,
-            difficulty: 1, minRole: isSampleCatcher ? 'admin' : 'free', bpm: 128,
-            backingTrackUrl: '', backgroundImageUrl: isVinylHunter ? vinylHunterBg : ''
+            difficulty: 1, minRole: isSampleCatcher ? 'admin' : 'free', bpm: gameBpm,
+            backingTrackUrl: gameBackingUrl, backgroundImageUrl: isVinylHunter ? vinylHunterBg : ''
           };
           const gRef = doc(db, 'games', gameId);
           setDoc(gRef, gData, { merge: true }).catch(e => {
@@ -340,7 +355,7 @@ export default function HomePage() {
         });
       }
 
-      toast({ title: "Rack Fully Synced!", description: "All attributes including RHYTHM Lab are now present at 128 BPM." });
+      toast({ title: "Rack Fully Synced!", description: "All attributes including Gabriel Beats custom tracks and game settings are now active." });
     } catch (e) {
       toast({ variant: "destructive", title: "Sync Failed" });
     }
