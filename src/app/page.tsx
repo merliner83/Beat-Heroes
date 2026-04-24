@@ -128,6 +128,8 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     try {
+      const kickSampleUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57';
+
       // 1. Patterns
       await setDoc(doc(db, 'patterns', 'pattern-4onfloor'), {
         id: 'pattern-4onfloor',
@@ -170,7 +172,13 @@ export default function HomePage() {
         const levelId = g.id === 'global-ear-training' ? 'global-ear-training' : `${g.id}-lvl1`;
         await setDoc(doc(db, 'levels', levelId), { id: levelId, gameId: g.id, difficulty: 1, name: 'Basics' }, { merge: true });
         if (g.type === 'rhythm-producer') {
-          await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), { id: `${levelId}-kick`, levelId, type: 'kick', patternIds: ['pattern-4onfloor'], sampleUrl: '' }, { merge: true });
+          await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), { 
+            id: `${levelId}-kick`, 
+            levelId, 
+            type: 'kick', 
+            patternIds: ['pattern-4onfloor'], 
+            sampleUrl: kickSampleUrl 
+          }, { merge: true });
         }
       }
 
@@ -216,7 +224,7 @@ export default function HomePage() {
                  levelId,
                  type: 'kick',
                  patternIds: ['pattern-4onfloor'],
-                 sampleUrl: ''
+                 sampleUrl: kickSampleUrl
                }, { merge: true });
             }
           }
@@ -245,7 +253,7 @@ export default function HomePage() {
         await setDoc(doc(db, 'articles', art.id!), art, { merge: true });
       }
 
-      toast({ title: "Rack Fully Synced!", description: "All modules restored. Sample Catcher deactivated for non-admins." });
+      toast({ title: "Rack Fully Synced!", description: "All modules restored with Kick samples. Sample Catcher deactivated for non-admins." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
