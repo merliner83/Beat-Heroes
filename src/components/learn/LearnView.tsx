@@ -40,16 +40,12 @@ const CATEGORY_MAP = [
 ];
 
 const GAME_ICON_MAP: Record<string, any> = {
-  'rhythm-producer': Gamepad2,
   'ear-training': Headphones,
-  'notation-pro': Keyboard,
   'rhythm-trainer': Target
 };
 
 const GAME_COLOR_MAP: Record<string, string> = {
-  'rhythm-producer': '#FF3399',
   'ear-training': '#00E676',
-  'notation-pro': '#FFEA00',
   'rhythm-trainer': '#FFEA00'
 };
 

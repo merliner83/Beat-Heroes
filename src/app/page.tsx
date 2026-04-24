@@ -226,8 +226,6 @@ export default function HomePage() {
       const globalGames: Game[] = [
         { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1, minRole: 'free', backingTrackUrl: '', backgroundImageUrl: '', bpm: 128 },
         { id: 'global-rhythm-trainer', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-trainer', difficulty: 1, minRole: 'free', backingTrackUrl: '', backgroundImageUrl: '', bpm: 128 },
-        { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Beat Hero Pro', type: 'rhythm-producer', difficulty: 1, minRole: 'admin', backingTrackUrl: '', backgroundImageUrl: '', bpm: 128 },
-        { id: 'global-notation-pro', studioId: 'learn-center', name: 'Notation Pro', type: 'notation-pro', difficulty: 1, minRole: 'admin', backingTrackUrl: '', backgroundImageUrl: '', bpm: 128 },
       ];
       for (const g of globalGames) {
         const gRef = doc(db, 'games', g.id);
