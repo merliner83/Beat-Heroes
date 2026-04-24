@@ -69,7 +69,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const clearedNotesRef = useRef<Set<string>>(new Set());
   const { toast } = useToast();
 
-  const bpm = game.bpm || 120;
+  const bpm = game.bpm || 128;
   const TOTAL_STEPS = 384; // 24 Bars * 16 steps
   const SESSION_DURATION = (24 * 4 * 60) / bpm; // 24 Bars
   const FADE_DURATION = 2;

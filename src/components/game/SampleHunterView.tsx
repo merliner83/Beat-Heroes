@@ -75,7 +75,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const containerRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>(null);
 
-  const bpm = game.bpm || 120;
+  const bpm = game.bpm || 128;
   const SESSION_DURATION = (24 * 4 * 60) / bpm; // 24 Bars
   const FADE_DURATION = 2;
 

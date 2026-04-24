@@ -89,7 +89,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const playheadRef = useRef(0);
 
   const selectedPattern = RHYTHM_CONFIG.find(p => p.id === selectedPatternId)!;
-  const bpm = game.bpm || 120;
+  const bpm = game.bpm || 128;
   const stepTime = (60 / bpm) / 4 * 1000;
 
   useEffect(() => {
@@ -273,7 +273,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
         {mode === 'explore' && (
           <div className="w-full max-w-4xl space-y-12 animate-in zoom-in-95 duration-500">
-            {/* MIDI Single Row Raster - FIXED: Horizontal Grid */}
+            {/* MIDI Single Row Raster */}
             <div className="gemini-border-primary">
               <div className="p-8 md:p-12 bg-black/60 backdrop-blur-3xl rounded-2xl border border-white/5">
                 <div className="flex flex-col gap-6 mb-10">
@@ -282,7 +282,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">Resolution: 8th/16th</span>
                   </div>
                   
-                  {/* Grid using arbitrary tailwind values for 16 columns to ensure horizontal layout */}
                   <div className="grid grid-cols-[repeat(16,minmax(0,1fr))] gap-1 md:gap-2 h-14 md:h-20">
                     {Array.from({ length: 16 }).map((_, i) => {
                       const isStep = selectedPattern.steps.includes(i);

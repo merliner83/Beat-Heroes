@@ -56,7 +56,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
   const frameRef = useRef<number>(null);
   const lastSpawnRef = useRef<number>(0);
 
-  const bpm = game.bpm || 120;
+  const bpm = game.bpm || 128;
   const SESSION_DURATION = (24 * 4 * 60) / bpm; // 24 Bars
   const FADE_DURATION = 2;
   const FLIGHT_TIME = 1500; // ms to reach target
