@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -9,12 +10,21 @@ import { Studio, Game, Article, Track, Sound, TriggerPattern, hasAccess } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
+import { initiateAnonymousSignIn, initiateGoogleSignIn, initiateSignOut } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { cn } from '@/lib/utils';
-import { Radio, RefreshCw, Loader2, Zap, Search, LayoutGrid, GraduationCap, Lock } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, Zap, Search, LayoutGrid, GraduationCap, Lock, User as UserIcon, LogOut, LogIn } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LearnView } from '@/components/learn/LearnView';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const StudioCard = ({ studio, isLocked }: { studio: Studio; isLocked: boolean }) => (
   <div className={cn(
@@ -292,14 +302,77 @@ export default function HomePage() {
     }
   };
 
+  const isAnonymous = user?.isAnonymous;
+
   return (
     <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col relative select-none">
       <div className="fixed inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '60px 60px' }} />
       
       <header className="sticky top-0 p-4 md:p-8 flex flex-col items-center z-50 shrink-0 bg-black/80 backdrop-blur-xl border-b border-white/5">
-        <div className="flex flex-col items-center gap-6 w-full max-w-7xl">
-          <div className="flex items-center justify-center w-full">
+        <div className="flex flex-col items-center gap-6 w-full max-w-7xl relative">
+          <div className="flex items-center justify-between w-full">
             <h1 className="text-4xl md:text-7xl font-black tracking-[-0.05em] uppercase italic leading-none text-gradient pr-4">BeatHero</h1>
+            
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex gemini-border gemini-glow-accent p-1.5 px-6 bg-black/80 backdrop-blur-3xl border border-white/5 shrink-0">
+                <div className="text-white font-black text-xl md:text-3xl leading-none tracking-tighter flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
+                  {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
+                </div>
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-12 w-12 rounded-full p-0 border border-white/10 hover:bg-white/5">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "User"} />
+                      <AvatarFallback className="bg-primary/20 text-primary font-black">
+                        {user?.displayName ? user.displayName.charAt(0).toUpperCase() : <UserIcon className="w-6 h-6" />}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-black/90 border-white/10 text-white backdrop-blur-xl rounded-xl" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-black uppercase italic tracking-tighter leading-none">
+                        {user?.displayName || (isAnonymous ? "Guest Mode" : "Music Producer")}
+                      </p>
+                      <p className="text-[10px] leading-none opacity-40 font-bold uppercase tracking-widest">
+                        {user?.email || `ID: ${user?.uid.substring(0, 8)}...`}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem className="focus:bg-primary/20 focus:text-white cursor-pointer py-3">
+                    <Zap className="mr-2 h-4 w-4 text-[#FFEA00]" />
+                    <span className="font-black uppercase italic tracking-tighter text-xs">{streetCred} Street Cred</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="focus:bg-primary/20 focus:text-white cursor-pointer py-3">
+                    <GraduationCap className="mr-2 h-4 w-4" />
+                    <span className="font-black uppercase italic tracking-tighter text-xs">Role: {profile?.role?.toUpperCase() || "FREE"}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  {isAnonymous ? (
+                    <DropdownMenuItem 
+                      className="focus:bg-[#00E676]/20 focus:text-[#00E676] cursor-pointer py-3"
+                      onClick={() => auth && initiateGoogleSignIn(auth)}
+                    >
+                      <LogIn className="mr-2 h-4 w-4" />
+                      <span className="font-black uppercase italic tracking-tighter text-xs">Login with Google</span>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem 
+                      className="focus:bg-destructive/20 focus:text-destructive cursor-pointer py-3"
+                      onClick={() => auth && initiateSignOut(auth)}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span className="font-black uppercase italic tracking-tighter text-xs">Sign Out</span>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
           <div className="flex items-center justify-center w-full relative">
@@ -313,15 +386,6 @@ export default function HomePage() {
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-
-            <div className="absolute right-0 hidden md:block">
-              <div className="gemini-border gemini-glow-accent p-1.5 px-6 bg-black/80 backdrop-blur-3xl border border-white/5 shrink-0">
-                <div className="text-white font-black text-xl md:text-3xl leading-none tracking-tighter flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
-                  {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
