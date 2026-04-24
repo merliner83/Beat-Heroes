@@ -137,46 +137,43 @@ export default function HomePage() {
         categoryId: 'intro',
         title: 'Producing Basics',
         content: `# Was ist Producing?
-Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird. Dabei werden Melodien komponiert, Arrangements entwickelt, Instrumente aufgenommen und schließlich alles abgemischt.
+Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.
 
-# Die Kernbereiche
-Musikproduktion vereint künstlerische Inspiration mit moderner Technologie:
+# Kernbereiche der Produktion
+Musikproduktion vereint künstlerische Inspiration mit modernster Technologie und umfasst viele Schritte:
 • Composing: Das Schreiben von Melodien und Akkorden.
 • Recording: Die Aufnahme von Gesang und Instrumenten.
 • Editing: Bearbeiten von Timing, Tönen und Klang.
-• Mixing: Abstimmen von Lautstärke und Effekten.
-• Mastering: Letzter Feinschliff für die Veröffentlichung.
-
-Ein Beat in 3 Minuten (Zaytoven):
-https://www.youtube.com/watch?v=UAs3p3y2_yI
+• Mixing: Abstimmen von Lautstärke, Effekten und Klangfarben.
+• Mastering: Feinschliff für die Veröffentlichung.
 
 # Die Schritte im Detail
 
-1. Composing & Songwriting:
-Alles beginnt mit einer Idee. In diesem Schritt legst du Melodien, Akkorde und die Struktur des Songs (Intro, Vers, Chorus) fest.
+1. Ideenfindung und Songwriting (Composing):
+Zu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.
+
+Ein Beat in 3 Minuten (Zaytoven):
+https://youtu.be/G2Rhh_4GZmU?si=csvyixY5qhDmL5_P
 
 2. Pre-Produktion:
-Planung ist alles. Welche Instrumente? Welcher Vibe? Hier bereitest du die eigentliche Aufnahme vor.
+In dieser Phase werden die Details der Aufnahmeplanung besprochen. Welche Instrumente sollen verwendet werden? Welche Sounds sind gewünscht?
 
-3. Recording:
-Hier nimmst du Vocals, Gitarren oder Synths auf. Ein Producer sorgt dafür, dass die Signale sauber und hochwertig klingen.
+3. Recording (Aufnahme):
+Hier werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente.
 
-Hilfreiche Insights eines Audio Engineers:
-https://www.youtube.com/watch?v=0_fO82Y6lqI
+4. Editing:
+Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren (Schneiden, Korrigieren, Optimieren).
 
-4. Editing & Sounddesign:
-Nach der Aufnahme optimierst du das Timing und den Klang. Du fügst Effekte hinzu und suchst die perfekten Sounds für dein Arrangement.
+5. Arrangement und Sounddesign:
+Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat.
 
-5. Mixing:
-Alle Spuren werden zusammengeführt. Du passt Lautstärken an und sorgst dafür, dass jedes Instrument seinen Platz im Stereo-Bild hat.
+6. Mixing:
+Alle aufgenommenen Spuren werden zusammengeführt und ausgewogen, sodass der Song in seiner Gesamtheit gut klingt.
 
-6. Mastering:
-Der finale Schritt. Hier wird der Song so optimiert, dass er auf allen Geräten – vom Radio bis zum Club – professionell und druckvoll klingt.`,
-        imageUrls: [
-          'https://picsum.photos/seed/studio-setup/1200/800',
-          'https://picsum.photos/seed/mixing-desk/1200/800',
-          'https://picsum.photos/seed/monitor-speakers/1200/800'
-        ]
+7. Mastering:
+Mastering ist der letzte Schritt und stellt sicher, dass der Song auf allen Wiedergabegeräten (Club, Kopfhörer, Radio) professionell klingt.`,
+        imageUrls: [],
+        videoUrl: ""
       };
 
       await setDoc(doc(db, 'articles', producingArticle.id), producingArticle, { merge: true });
@@ -191,10 +188,8 @@ Der finale Schritt. Hier wird der Song so optimiert, dass er auf allen Geräten 
 Sampling ist die Wiederverwendung eines Teils einer Tonaufnahme in einer neuen Aufnahme.
 
 In diesem Lab lernst du, wie du Samples schneidest und sie in frische Beats verwandelst. Denk daran: Kreatives Flippen ist besser als nur Loopen!`,
-          imageUrls: [
-            'https://picsum.photos/seed/sampling-1/800/600',
-            'https://picsum.photos/seed/sampling-2/800/600'
-          ]
+          imageUrls: [],
+          videoUrl: ""
         }
       ];
 

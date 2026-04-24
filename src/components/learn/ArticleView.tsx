@@ -16,17 +16,18 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
   const renderContent = (content: string) => {
     const blocks = content.split('\n\n');
     return blocks.map((block, idx) => {
-      // Check for YouTube Link
-      const ytMatch = block.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      // Check for YouTube Link (Standard, Share-Link or Embed)
+      const ytMatch = block.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
       
       if (ytMatch) {
         const videoId = ytMatch[1];
-        const titleMatch = block.split('\n')[0]; // First line might be title
+        const lines = block.split('\n');
+        const titleLine = lines[0].includes('http') ? '' : lines[0];
         
         return (
           <div key={idx} className="my-10 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {titleMatch && !titleMatch.includes('http') && (
-              <h4 className="text-xs font-black uppercase tracking-[0.3em] text-primary/60 italic">{titleMatch}</h4>
+            {titleLine && (
+              <h4 className="text-xs font-black uppercase tracking-[0.3em] text-primary/60 italic">{titleLine}</h4>
             )}
             <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-black aspect-video shadow-2xl group">
               <iframe
@@ -82,12 +83,12 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       <main className="max-w-4xl mx-auto p-6 md:p-12 space-y-16 pb-32">
         {/* Content Section */}
         <section>
-          <div className="bg-white/2 border border-white/5 p-8 md:p-12 rounded-[2.5rem] backdrop-blur-sm">
+          <div className="bg-white/2 border border-white/5 p-8 md:p-12 rounded-[2.5rem] backdrop-blur-sm shadow-2xl">
             {renderContent(article.content)}
           </div>
         </section>
 
-        {/* Video Section (Portrait) */}
+        {/* Video Section (Portrait) - Conditional */}
         {article.videoUrl && (
           <section className="animate-in fade-in slide-in-from-bottom-6 duration-700">
             <div className="flex items-center gap-3 mb-8 justify-center">
@@ -109,7 +110,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
           </section>
         )}
 
-        {/* Gallery Section */}
+        {/* Gallery Section - Conditional */}
         {article.imageUrls && article.imageUrls.length > 0 && (
           <section className="animate-in fade-in slide-in-from-bottom-6 duration-700">
             <div className="flex items-center gap-3 mb-8">
@@ -126,7 +127,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
                     fill 
                     className="object-cover group-hover:scale-110 transition-transform duration-700"
                     sizes="(max-width: 768px) 100vw, 33vw"
-                    data-ai-hint="music equipment"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
