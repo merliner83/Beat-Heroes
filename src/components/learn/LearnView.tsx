@@ -98,7 +98,7 @@ const LEARN_CATEGORIES = [
 
 const LEARN_GAMES = [
   { id: 'rhythm', name: 'Rhythm Master', type: 'Learn-Game', icon: Gamepad2, color: '#FF3399', levelId: 'global-rhythm-1' },
-  { id: 'ear', name: 'Ear Training', type: 'Learn-Game', icon: Headphones, color: '#00E676', levelId: 'global-ear-1' },
+  { id: 'ear', name: 'Ear Training', type: 'Learn-Game', icon: Headphones, color: '#00E676', levelId: 'global-ear-training' },
   { id: 'notation', name: 'Notation Pro', type: 'Learn-Game', icon: Keyboard, color: '#FFEA00', levelId: 'global-notation-1' }
 ];
 

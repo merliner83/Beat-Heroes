@@ -160,9 +160,6 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
     }
   };
 
-  const logToFreq = (val: number) => Math.pow(10, val);
-  const freqToLog = (freq: number) => Math.log10(freq);
-
   const formatFreq = (freq: number) => {
     if (freq >= 1000) {
       return `${freq / 1000}k`;
@@ -202,13 +199,13 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   variant="ghost" 
                   onClick={() => { setMode('explore'); setQuizStatus('IDLE'); }}
                   className={cn(
-                    "rounded-xl px-10 py-7 text-sm md:text-lg font-black uppercase tracking-widest transition-all duration-300 border-none",
+                    "rounded-xl px-10 py-7 text-sm md:text-2xl font-black uppercase tracking-widest transition-all duration-300 border-none",
                     mode === 'explore' 
                       ? "bg-white/10 text-white" 
                       : "text-white/20 hover:text-white/40"
                   )}
                 >
-                  <Search className="w-5 h-5 mr-3" />
+                  <Search className="w-6 h-6 mr-3" />
                   Explore
                 </Button>
               </div>
@@ -217,13 +214,13 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   variant="ghost" 
                   onClick={() => { setMode('quiz'); if(quizStatus === 'RESULTS' || quizStatus === 'IDLE') setQuizStatus('IDLE'); }}
                   className={cn(
-                    "rounded-xl px-10 py-7 text-sm md:text-lg font-black uppercase tracking-widest transition-all duration-300 border-none",
+                    "rounded-xl px-10 py-7 text-sm md:text-2xl font-black uppercase tracking-widest transition-all duration-300 border-none",
                     mode === 'quiz' 
                       ? "bg-primary text-white" 
                       : "text-white/20 hover:text-white/40"
                   )}
                 >
-                  <Headphones className="w-5 h-5 mr-3" />
+                  <Headphones className="w-6 h-6 mr-3" />
                   Quiz Mode
                 </Button>
               </div>
@@ -238,7 +235,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                 <Activity className={cn("w-10 h-10 transition-all", isPlaying ? "text-[#00E676] scale-110" : "text-white/20")} />
               </div>
               <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-2">Scanner</h2>
-              <p className="text-xs opacity-40 uppercase tracking-widest">Train your ears by sweeping through the bands</p>
+              <p className="text-xs opacity-40 uppercase tracking-widest">Train your ears by selecting specific frequency bands</p>
             </div>
 
             <div className="gemini-border-primary">
@@ -248,17 +245,17 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   <span className="text-5xl font-black italic text-gradient">{formatFreq(currentFreq)}<span className="text-xs ml-1.5 not-italic opacity-30">{currentFreq >= 1000 ? 'Hz' : 'Hz'}</span></span>
                 </div>
                 <Slider 
-                  min={freqToLog(20)} 
-                  max={freqToLog(20000)} 
-                  step={0.01} 
-                  value={[freqToLog(currentFreq)]} 
-                  onValueChange={(v) => handleFrequencyChange([logToFreq(v[0])])}
+                  min={0} 
+                  max={FREQUENCY_STEPS.length - 1} 
+                  step={1} 
+                  value={[FREQUENCY_STEPS.indexOf(currentFreq)]} 
+                  onValueChange={(v) => handleFrequencyChange([FREQUENCY_STEPS[v[0]]])}
                   className="py-4"
                 />
                 <div className="flex justify-between text-[10px] font-black opacity-20 uppercase tracking-widest">
-                  <span>20 Hz</span>
+                  <span>63 Hz</span>
                   <span>1k Hz</span>
-                  <span>20k Hz</span>
+                  <span>16k Hz</span>
                 </div>
               </div>
             </div>
