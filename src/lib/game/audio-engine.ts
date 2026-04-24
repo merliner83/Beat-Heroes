@@ -3,8 +3,7 @@
 
 /**
  * AudioEngine handles loading, decoding, and playback.
- * Optimized for CD Quality (44.1kHz).
- * Robust error handling to prevent blocking game state.
+ * Extended with Noise Generation and Real-time Filtering for Ear Training.
  */
 export class AudioEngine {
   private context: AudioContext | null = null;
@@ -16,11 +15,14 @@ export class AudioEngine {
   private startTime: number = 0;
   private loadingStatus: Map<string, 'loading' | 'ready' | 'failed'> = new Map();
   
+  // Ear Training specific nodes
+  private noiseSource: AudioBufferSourceNode | null = null;
+  private noiseFilter: BiquadFilterNode | null = null;
+  private noiseGain: GainNode | null = null;
+
   public static readonly METRONOME_URL = 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg';
 
-  constructor() {
-    // Initialized only when window is available
-  }
+  constructor() {}
 
   async resume(): Promise<boolean> {
     if (typeof window === "undefined") return false;
@@ -91,6 +93,79 @@ export class AudioEngine {
     }));
   }
 
+  /**
+   * Generates a 2-second Pink Noise buffer.
+   * Pink noise has equal energy per octave, making it ideal for ear training.
+   */
+  private createPinkNoiseBuffer(): AudioBuffer {
+    const bufferSize = 2 * this.context!.sampleRate;
+    const buffer = this.context!.createBuffer(1, bufferSize, this.context!.sampleRate);
+    const output = buffer.getChannelData(0);
+    let b0, b1, b2, b3, b4, b5, b6;
+    b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
+    
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.96900 * b2 + white * 0.1538520;
+      b3 = 0.86650 * b3 + white * 0.3104856;
+      b4 = 0.55000 * b4 + white * 0.5329522;
+      b5 = -0.7616 * b5 - white * 0.0168980;
+      output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+      output[i] *= 0.11; // scaling to prevent clipping
+      b6 = white * 0.115926;
+    }
+    return buffer;
+  }
+
+  async startNoise(frequency: number = 1000, q: number = 1, type: BiquadFilterType = 'peaking') {
+    await this.resume();
+    this.stopNoise();
+
+    if (!this.context) return;
+
+    this.noiseGain = this.context.createGain();
+    this.noiseGain.gain.setValueAtTime(0, this.context.currentTime);
+    this.noiseGain.gain.linearRampToValueAtTime(0.5, this.context.currentTime + 0.1);
+
+    this.noiseFilter = this.context.createBiquadFilter();
+    this.noiseFilter.type = type;
+    this.noiseFilter.frequency.setValueAtTime(frequency, this.context.currentTime);
+    this.noiseFilter.Q.setValueAtTime(q, this.context.currentTime);
+    this.noiseFilter.gain.setValueAtTime(15, this.context.currentTime); // High gain for peaking visibility
+
+    this.noiseSource = this.context.createBufferSource();
+    this.noiseSource.buffer = this.createPinkNoiseBuffer();
+    this.noiseSource.loop = true;
+
+    this.noiseSource.connect(this.noiseFilter);
+    this.noiseFilter.connect(this.noiseGain);
+    this.noiseGain.connect(this.masterGain!);
+
+    this.noiseSource.start();
+  }
+
+  updateFilter(frequency: number, q: number = 1) {
+    if (this.noiseFilter && this.context) {
+      this.noiseFilter.frequency.setTargetAtTime(frequency, this.context.currentTime, 0.05);
+      this.noiseFilter.Q.setTargetAtTime(q, this.context.currentTime, 0.05);
+    }
+  }
+
+  stopNoise() {
+    if (this.noiseGain && this.context) {
+      this.noiseGain.gain.linearRampToValueAtTime(0, this.context.currentTime + 0.1);
+      const source = this.noiseSource;
+      setTimeout(() => {
+        try { source?.stop(); } catch(e) {}
+      }, 150);
+    }
+    this.noiseSource = null;
+    this.noiseFilter = null;
+    this.noiseGain = null;
+  }
+
   async playOneShot(url: string) {
     await this.resume();
     const buffer = this.buffers.get(url);
@@ -144,7 +219,6 @@ export class AudioEngine {
     }
 
     try {
-      // Reset gain to full volume
       this.backingGain.gain.cancelScheduledValues(this.context.currentTime);
       this.backingGain.gain.setValueAtTime(1, this.context.currentTime);
 
@@ -174,6 +248,7 @@ export class AudioEngine {
 
   stop() {
     this.stopBackingTrack();
+    this.stopNoise();
     this.sources.forEach(s => { try { s.stop(); } catch(e) {} });
     this.sources.clear();
   }

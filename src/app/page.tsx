@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -113,6 +114,22 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     try {
+      // Global Learn Games setup
+      const learnGames = [
+        { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1 },
+        { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, bpm: 120, backingTrackUrl: 'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg' },
+      ];
+
+      for (const lg of learnGames) {
+        await setDoc(doc(db, 'games', lg.id), lg, { merge: true });
+        await setDoc(doc(db, 'levels', `global-${lg.type === 'ear-training' ? 'ear' : 'rhythm'}-1`), {
+          id: `global-${lg.type === 'ear-training' ? 'ear' : 'rhythm'}-1`,
+          gameId: lg.id,
+          difficulty: 1,
+          name: 'Basics'
+        }, { merge: true });
+      }
+
       const tracks = [
         { id: 'track-glitch', name: 'Glitch Power', author: 'BeatBot', duration: 64, url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' },
         { id: 'track-hum', name: 'System Hum', author: 'Cyborg', duration: 120, url: 'https://actions.google.com/sounds/v1/science_fiction/low_power_hum.ogg' },

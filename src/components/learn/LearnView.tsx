@@ -2,6 +2,7 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -96,9 +97,9 @@ const LEARN_CATEGORIES = [
 ];
 
 const LEARN_GAMES = [
-  { id: 'rhythm', name: 'Rhythm Master', type: 'Learn-Game', icon: Gamepad2, color: '#FF3399' },
-  { id: 'ear', name: 'Ear Training', type: 'Learn-Game', icon: Headphones, color: '#00E676' },
-  { id: 'notation', name: 'Notation Pro', type: 'Learn-Game', icon: Keyboard, color: '#FFEA00' }
+  { id: 'rhythm', name: 'Rhythm Master', type: 'Learn-Game', icon: Gamepad2, color: '#FF3399', levelId: 'global-rhythm-1' },
+  { id: 'ear', name: 'Ear Training', type: 'Learn-Game', icon: Headphones, color: '#00E676', levelId: 'global-ear-1' },
+  { id: 'notation', name: 'Notation Pro', type: 'Learn-Game', icon: Keyboard, color: '#FFEA00', levelId: 'global-notation-1' }
 ];
 
 export const LearnView = () => {
@@ -121,17 +122,19 @@ export const LearnView = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {LEARN_GAMES.map((game) => (
-            <div key={game.id} className="gemini-border group cursor-pointer transition-transform hover:scale-[1.02] active:scale-95">
-              <div className="p-6 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                  <game.icon className="w-8 h-8" style={{ color: game.color }} />
-                </div>
-                <div>
-                  <h4 className="text-lg font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">{game.name}</h4>
-                  <p className="text-[10px] uppercase font-bold tracking-widest opacity-30 mt-1">{game.type}</p>
+            <Link key={game.id} href={`/session/${game.levelId}`}>
+              <div className="gemini-border group cursor-pointer transition-transform hover:scale-[1.02] active:scale-95">
+                <div className="p-6 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                    <game.icon className="w-8 h-8" style={{ color: game.color }} />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">{game.name}</h4>
+                    <p className="text-[10px] uppercase font-bold tracking-widest opacity-30 mt-1">{game.type}</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>

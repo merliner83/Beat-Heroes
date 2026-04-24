@@ -9,6 +9,7 @@ import { Game, Level, Sound, TriggerPattern } from '@/lib/game/types';
 import { GameView } from '@/components/game/GameView';
 import { SampleHunterView } from '@/components/game/SampleHunterView';
 import { DiskDashView } from '@/components/game/DiskDashView';
+import { EarTrainingView } from '@/components/game/EarTrainingView';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -35,7 +36,7 @@ export default function GameSessionPage() {
   }, [db]);
   const { data: patterns, isLoading: isLoadingPatterns } = useCollection<TriggerPattern>(patternsQuery);
 
-  const isLoading = isLoadingLevel || isLoadingGame || isLoadingSounds || isLoadingPatterns;
+  const isLoading = isLoadingLevel || isLoadingGame || (game?.type !== 'ear-training' && (isLoadingSounds || isLoadingPatterns));
 
   if (isLoading) {
     return (
@@ -61,7 +62,9 @@ export default function GameSessionPage() {
 
   return (
     <div className="h-screen bg-[#050505] overflow-hidden">
-      {sounds && (
+      {game.type === 'ear-training' ? (
+        <EarTrainingView game={game} level={level} />
+      ) : sounds ? (
         game.type === 'sample-hunter' ? (
           <SampleHunterView game={game} level={level} sounds={sounds} />
         ) : game.type === 'disk-dash' ? (
@@ -69,7 +72,7 @@ export default function GameSessionPage() {
         ) : (
           <GameView game={game} level={level} sounds={sounds} patterns={patterns || []} />
         )
-      )}
+      ) : null}
     </div>
   );
 }
