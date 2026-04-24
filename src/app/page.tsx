@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -25,6 +24,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const StudioCard = ({ studio, isLocked }: { studio: Studio; isLocked: boolean }) => (
   <div className={cn(
@@ -69,7 +70,7 @@ const StudioCard = ({ studio, isLocked }: { studio: Studio; isLocked: boolean })
 export default function HomePage() {
   const db = useFirestore();
   const auth = useAuth();
-  const { user, profile } = useUser();
+  const { user, profile, isUserLoading } = useUser();
   const { toast } = useToast();
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -95,15 +96,20 @@ export default function HomePage() {
   }, [user, auth]);
 
   useEffect(() => {
-    if (user && db) {
+    if (user && db && !profile && !isUserLoading) {
       const userRef = doc(db, 'users', user.uid);
-      getDoc(userRef).then(snap => {
-        if (!snap.exists()) {
-          setDoc(userRef, { uid: user.uid, streetCred: 0, role: 'free' }, { merge: true });
-        }
-      });
+      const data = { uid: user.uid, streetCred: 0, role: 'free' };
+      setDoc(userRef, data, { merge: true })
+        .catch(async (error) => {
+          const permissionError = new FirestorePermissionError({
+            path: userRef.path,
+            operation: 'write',
+            requestResourceData: data,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+        });
     }
-  }, [user, db]);
+  }, [user, profile, isUserLoading, db]);
 
   const isAdmin = profile?.role === 'admin';
   const streetCred = profile?.streetCred || 0;
@@ -144,40 +150,25 @@ export default function HomePage() {
       const miscUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.wav?alt=media&token=bf90be29-fd25-4fad-bc2c-9483840246ba';
       const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
-      // --- KICK PATTERNS ---
-      await setDoc(doc(db, 'patterns', 'kick-intro'), {
-        id: 'kick-intro', name: 'Kick Intro (Sparse)', steps: [0, 64]
-      }, { merge: true });
-      await setDoc(doc(db, 'patterns', 'kick-verse'), {
-        id: 'kick-verse', name: 'Kick Verse (Standard)', steps: [0, 16, 32, 48, 64, 80, 96, 112]
-      }, { merge: true });
-      await setDoc(doc(db, 'patterns', 'kick-refrain'), {
-        id: 'kick-refrain', name: 'Kick Refrain (Energetic)', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120]
-      }, { merge: true });
+      // Pattern Creation Logic
+      const patterns = [
+        { id: 'kick-intro', data: { id: 'kick-intro', name: 'Kick Intro (Sparse)', steps: [0, 64] } },
+        { id: 'kick-verse', data: { id: 'kick-verse', name: 'Kick Verse (Standard)', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
+        { id: 'kick-refrain', data: { id: 'kick-refrain', name: 'Kick Refrain (Energetic)', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120] } },
+        { id: 'clap-intro', data: { id: 'clap-intro', name: 'Clap Intro', steps: [48, 112] } },
+        { id: 'clap-verse', data: { id: 'clap-verse', name: 'Clap Verse', steps: [16, 48, 80, 112] } },
+        { id: 'clap-refrain', data: { id: 'clap-refrain', name: 'Clap Refrain', steps: [16, 32, 48, 80, 96, 112] } },
+        { id: 'hats-verse', data: { id: 'hats-verse', name: 'Hats Verse', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120] } },
+        { id: 'hats-refrain', data: { id: 'hats-refrain', name: 'Hats Refrain', steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124] } },
+        { id: 'misc-fill', data: { id: 'misc-fill', name: 'Misc Fill', steps: [60, 124] } },
+      ];
 
-      // --- CLAP PATTERNS ---
-      await setDoc(doc(db, 'patterns', 'clap-intro'), {
-        id: 'clap-intro', name: 'Clap Intro', steps: [48, 112]
-      }, { merge: true });
-      await setDoc(doc(db, 'patterns', 'clap-verse'), {
-        id: 'clap-verse', name: 'Clap Verse', steps: [16, 48, 80, 112]
-      }, { merge: true });
-      await setDoc(doc(db, 'patterns', 'clap-refrain'), {
-        id: 'clap-refrain', name: 'Clap Refrain', steps: [16, 32, 48, 80, 96, 112]
-      }, { merge: true });
-
-      // --- HATS PATTERNS ---
-      await setDoc(doc(db, 'patterns', 'hats-verse'), {
-        id: 'hats-verse', name: 'Hats Verse', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120]
-      }, { merge: true });
-      await setDoc(doc(db, 'patterns', 'hats-refrain'), {
-        id: 'hats-refrain', name: 'Hats Refrain', steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124]
-      }, { merge: true });
-
-      // --- MISC PATTERNS ---
-      await setDoc(doc(db, 'patterns', 'misc-fill'), {
-        id: 'misc-fill', name: 'Misc Fill', steps: [60, 124]
-      }, { merge: true });
+      for (const p of patterns) {
+        const pRef = doc(db, 'patterns', p.id);
+        setDoc(pRef, p.data, { merge: true }).catch(e => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({ path: pRef.path, operation: 'write', requestResourceData: p.data }));
+        });
+      }
 
       const studios: Studio[] = [
         { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: ['Hip-Hop', 'Soul'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f', linkUrl: '', linkLabel: '' },
@@ -187,7 +178,10 @@ export default function HomePage() {
         { id: 'std-noxxos', name: 'Noxxos', description: 'Futuristic club anthems.', coverColor: '#FF3D00', district: 'Skyline', tags: ['Electro', 'House'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FNoxxos%20Studio.png?alt=media&token=fa9f78bc-965b-4af2-bfde-4f0383a87d98', linkUrl: '', linkLabel: '' }
       ];
       for (const s of studios) {
-        await setDoc(doc(db, 'studios', s.id), s, { merge: true });
+        const sRef = doc(db, 'studios', s.id);
+        setDoc(sRef, s, { merge: true }).catch(e => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sRef.path, operation: 'write', requestResourceData: s }));
+        });
       }
 
       const gabrielTracks: Track[] = [
@@ -198,7 +192,10 @@ export default function HomePage() {
         { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel', url: '' }
       ];
       for (const t of gabrielTracks) {
-        await setDoc(doc(db, 'tracks', t.id), t, { merge: true });
+        const tRef = doc(db, 'tracks', t.id);
+        setDoc(tRef, t, { merge: true }).catch(e => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({ path: tRef.path, operation: 'write', requestResourceData: t }));
+        });
       }
 
       const globalGames: Game[] = [
@@ -207,9 +204,15 @@ export default function HomePage() {
         { id: 'global-notation-pro', studioId: 'learn-center', name: 'Notation Pro', type: 'notation-pro', difficulty: 1, minRole: 'admin', backingTrackUrl: '', backgroundImageUrl: '', bpm: 120 },
       ];
       for (const g of globalGames) {
-        await setDoc(doc(db, 'games', g.id), g, { merge: true });
+        const gRef = doc(db, 'games', g.id);
+        setDoc(gRef, g, { merge: true }).catch(e => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({ path: gRef.path, operation: 'write', requestResourceData: g }));
+        });
         const levelId = g.id === 'global-ear-training' ? 'global-ear-training' : `${g.id}-lvl1`;
-        await setDoc(doc(db, 'levels', levelId), { id: levelId, gameId: g.id, difficulty: 1, name: 'Basics' }, { merge: true });
+        const lRef = doc(db, 'levels', levelId);
+        setDoc(lRef, { id: levelId, gameId: g.id, difficulty: 1, name: 'Basics' }, { merge: true }).catch(e => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({ path: lRef.path, operation: 'write' }));
+        });
       }
 
       const gameConfigs = [
@@ -224,42 +227,65 @@ export default function HomePage() {
           const isSampleCatcher = config.type === 'disk-dash';
           const isVinylHunter = config.type === 'sample-hunter';
           
-          await setDoc(doc(db, 'games', gameId), {
+          const gData = {
             id: gameId, studioId: s.id, name: config.name, type: config.type,
             difficulty: 1, minRole: isSampleCatcher ? 'admin' : 'free', bpm: 120,
             backingTrackUrl: '', backgroundImageUrl: isVinylHunter ? vinylHunterBg : ''
-          }, { merge: true });
+          };
+          const gRef = doc(db, 'games', gameId);
+          setDoc(gRef, gData, { merge: true }).catch(e => {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: gRef.path, operation: 'write', requestResourceData: gData }));
+          });
 
           for (let i = 1; i <= 4; i++) {
             const levelId = `${gameId}-lvl${i}`;
-            await setDoc(doc(db, 'levels', levelId), { id: levelId, gameId: gameId, difficulty: i, name: `Level ${i}` }, { merge: true });
+            const lData = { id: levelId, gameId: gameId, difficulty: i, name: `Level ${i}` };
+            const lRef = doc(db, 'levels', levelId);
+            setDoc(lRef, lData, { merge: true }).catch(e => {
+              errorEmitter.emit('permission-error', new FirestorePermissionError({ path: lRef.path, operation: 'write', requestResourceData: lData }));
+            });
 
             if (config.type !== 'ear-training' && config.type !== 'notation-pro') {
-               // Sequence for 24 bars (3 x 8 bars)
-               await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), {
+               const kickData = {
                  id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: kickUrl,
                  patternIds: ['kick-intro', 'kick-verse', 'kick-refrain']
-               }, { merge: true });
+               };
+               const sKickRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`);
+               setDoc(sKickRef, kickData, { merge: true }).catch(e => {
+                 errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sKickRef.path, operation: 'write', requestResourceData: kickData }));
+               });
 
                if (i >= 2) {
-                 await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`), {
+                 const clapData = {
                    id: `${levelId}-clap`, levelId, type: 'clap', sampleUrl: clapUrl,
                    patternIds: ['clap-intro', 'clap-verse', 'clap-refrain']
-                 }, { merge: true });
+                 };
+                 const sClapRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`);
+                 setDoc(sClapRef, clapData, { merge: true }).catch(e => {
+                   errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sClapRef.path, operation: 'write', requestResourceData: clapData }));
+                 });
                }
 
                if (i >= 3) {
-                 await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`), {
+                 const hatsData = {
                    id: `${levelId}-hats`, levelId, type: 'percs', sampleUrl: hatsUrl,
                    patternIds: ['hats-verse', 'hats-verse', 'hats-refrain']
-                 }, { merge: true });
+                 };
+                 const sHatsRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`);
+                 setDoc(sHatsRef, hatsData, { merge: true }).catch(e => {
+                   errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sHatsRef.path, operation: 'write', requestResourceData: hatsData }));
+                 });
                }
 
                if (i >= 4) {
-                 await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`), {
+                 const miscData = {
                    id: `${levelId}-misc`, levelId, type: 'misc', sampleUrl: miscUrl,
                    patternIds: ['misc-fill', 'misc-fill', 'misc-fill']
-                 }, { merge: true });
+                 };
+                 const sMiscRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`);
+                 setDoc(sMiscRef, miscData, { merge: true }).catch(e => {
+                   errorEmitter.emit('permission-error', new FirestorePermissionError({ path: sMiscRef.path, operation: 'write', requestResourceData: miscData }));
+                 });
                }
             }
           }
@@ -284,12 +310,14 @@ export default function HomePage() {
       ];
 
       for (const art of articles) {
-        await setDoc(doc(db, 'articles', art.id), art, { merge: true });
+        const aRef = doc(db, 'articles', art.id);
+        setDoc(aRef, art, { merge: true }).catch(e => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({ path: aRef.path, operation: 'write', requestResourceData: art }));
+        });
       }
 
       toast({ title: "Rack Fully Synced!", description: "All attributes are now present in Firestore." });
     } catch (e) {
-      console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
     }
   };

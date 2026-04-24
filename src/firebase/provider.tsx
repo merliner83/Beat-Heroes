@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
@@ -7,6 +6,8 @@ import { Firestore, doc, onSnapshot } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
 import { UserProfile } from '@/lib/game/types';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -78,25 +79,36 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
         if (firebaseUser) {
           // Listen to the user's profile document
           const profileRef = doc(firestore, 'users', firebaseUser.uid);
-          const unsubscribeProfile = onSnapshot(profileRef, (snapshot) => {
-            if (snapshot.exists()) {
-              setUserAuthState(prev => ({ 
-                ...prev, 
-                user: firebaseUser, 
-                profile: snapshot.data() as UserProfile, 
-                isUserLoading: false, 
-                userError: null 
-              }));
-            } else {
-              setUserAuthState(prev => ({ 
-                ...prev, 
-                user: firebaseUser, 
-                profile: null, 
-                isUserLoading: false, 
-                userError: null 
-              }));
+          const unsubscribeProfile = onSnapshot(
+            profileRef, 
+            (snapshot) => {
+              if (snapshot.exists()) {
+                setUserAuthState(prev => ({ 
+                  ...prev, 
+                  user: firebaseUser, 
+                  profile: snapshot.data() as UserProfile, 
+                  isUserLoading: false, 
+                  userError: null 
+                }));
+              } else {
+                setUserAuthState(prev => ({ 
+                  ...prev, 
+                  user: firebaseUser, 
+                  profile: null, 
+                  isUserLoading: false, 
+                  userError: null 
+                }));
+              }
+            },
+            (error) => {
+              const contextualError = new FirestorePermissionError({
+                path: profileRef.path,
+                operation: 'get',
+              });
+              setUserAuthState(prev => ({ ...prev, isUserLoading: false, userError: contextualError }));
+              errorEmitter.emit('permission-error', contextualError);
             }
-          });
+          );
           return () => unsubscribeProfile();
         } else {
           setUserAuthState({ user: null, profile: null, isUserLoading: false, userError: null });
