@@ -75,6 +75,7 @@ export interface LevelProgress {
 
 export interface UserProfile {
   uid: string;
+  email?: string;
   role: UserRole;
   streetCred: number;
 }

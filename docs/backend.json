@@ -105,6 +105,7 @@
       "description": "Nutzer-Statistiken, Rollen und Street Credibilities.",
       "properties": {
         "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
         "role": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" },
         "streetCred": { "type": "number", "default": 0 }
       },
@@ -136,7 +137,7 @@
           "items": { "type": "string" },
           "description": "Bis zu 3 Bilder für die Galerie."
         },
-        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free", "description": "Mindestens erforderliche Rolle für diesen Artikel." }
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free", "description": "Mindestens erforderliche Rolle für dieses Artikel." }
       },
       "required": ["id", "title"]
     }

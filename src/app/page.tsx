@@ -98,7 +98,12 @@ export default function HomePage() {
   useEffect(() => {
     if (user && db && !profile && !isUserLoading) {
       const userRef = doc(db, 'users', user.uid);
-      const data = { uid: user.uid, streetCred: 0, role: 'free' };
+      const data = { 
+        uid: user.uid, 
+        email: user.email || '', 
+        streetCred: 0, 
+        role: 'free' 
+      };
       setDoc(userRef, data, { merge: true })
         .catch(async (error) => {
           const permissionError = new FirestorePermissionError({
