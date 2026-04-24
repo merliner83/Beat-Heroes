@@ -97,7 +97,6 @@ export default function HomePage() {
 
   useEffect(() => {
     if (user && db && !isUserLoading) {
-      // Sync email if missing or changed, or initialize profile if it doesn't exist
       const needsSync = !profile || (profile.email !== (user.email ?? ''));
 
       if (needsSync) {
@@ -107,7 +106,6 @@ export default function HomePage() {
           email: user.email ?? '', 
         };
 
-        // Set default stats only if the profile is completely new
         if (!profile) {
           data.streetCred = 0;
           data.role = 'free';
@@ -165,7 +163,6 @@ export default function HomePage() {
       const miscUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.wav?alt=media&token=bf90be29-fd25-4fad-bc2c-9483840246ba';
       const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
-      // Pattern Creation Logic
       const patterns = [
         { id: 'kick-intro', data: { id: 'kick-intro', name: 'Kick Intro (Sparse)', steps: [0, 64] } },
         { id: 'kick-verse', data: { id: 'kick-verse', name: 'Kick Verse (Standard)', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
@@ -185,12 +182,14 @@ export default function HomePage() {
         });
       }
 
+      const commonTags = ['Hip-Hop', 'Electro'];
+
       const studios: Studio[] = [
-        { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: ['Hip-Hop', 'Soul'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f', linkUrl: '', linkLabel: '' },
-        { id: 'std-nintu', name: 'Nintu Music', description: 'Deep melodic explorations.', coverColor: '#993DEB', district: 'Melody District', tags: ['Melodic', 'Techno'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudioo.png?alt=media&token=9a547bdf-a3bf-4a9a-a132-222383e88b1f', linkUrl: '', linkLabel: '' },
-        { id: 'std-yoan', name: 'Yoan Beats', description: 'Raw urban textures.', coverColor: '#3838FA', district: 'Underground', tags: ['Trap', 'Urban'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FYoan%20Beats.png?alt=media&token=984099f0-f45b-4836-81d0-35241d774d83', linkUrl: '', linkLabel: '' },
-        { id: 'std-dave', name: 'Dave Beats', description: 'Experimental soundscapes.', coverColor: '#EB3D99', district: 'The Lab', tags: ['Glitch', 'Ambient'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudio%202.png?alt=media&token=96cb0afc-36e3-4c58-8e5d-45a68cd4673a', linkUrl: '', linkLabel: '' },
-        { id: 'std-noxxos', name: 'Noxxos', description: 'Futuristic club anthems.', coverColor: '#FF3D00', district: 'Skyline', tags: ['Electro', 'House'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FNoxxos%20Studio.png?alt=media&token=fa9f78bc-965b-4af2-bfde-4f0383a87d98', linkUrl: '', linkLabel: '' }
+        { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: commonTags, minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f', linkUrl: '', linkLabel: '' },
+        { id: 'std-nintu', name: 'Nintu Music', description: 'Deep melodic explorations.', coverColor: '#993DEB', district: 'Melody District', tags: commonTags, minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudioo.png?alt=media&token=9a547bdf-a3bf-4a9a-a132-222383e88b1f', linkUrl: '', linkLabel: '' },
+        { id: 'std-yoan', name: 'Yoan Beats', description: 'Raw urban textures.', coverColor: '#3838FA', district: 'Underground', tags: commonTags, minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FYoan%20Beats.png?alt=media&token=984099f0-f45b-4836-81d0-35241d774d83', linkUrl: '', linkLabel: '' },
+        { id: 'std-dave', name: 'Dave Beats', description: 'Experimental soundscapes.', coverColor: '#EB3D99', district: 'The Lab', tags: commonTags, minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudio%202.png?alt=media&token=96cb0afc-36e3-4c58-8e5d-45a68cd4673a', linkUrl: '', linkLabel: '' },
+        { id: 'std-noxxos', name: 'Noxxos', description: 'Futuristic club anthems.', coverColor: '#FF3D00', district: 'Skyline', tags: commonTags, minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FNoxxos%20Studio.png?alt=media&token=fa9f78bc-965b-4af2-bfde-4f0383a87d98', linkUrl: '', linkLabel: '' }
       ];
       for (const s of studios) {
         const sRef = doc(db, 'studios', s.id);
