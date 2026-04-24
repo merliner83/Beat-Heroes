@@ -130,16 +130,13 @@ export default function HomePage() {
         }, { merge: true });
       }
 
+      // Local definitions for generation logic, but not syncing to collection directly
       const tracks = [
         { id: 'track-glitch', name: 'Glitch Power', author: 'BeatBot', duration: 64, url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' },
         { id: 'track-hum', name: 'System Hum', author: 'Cyborg', duration: 120, url: 'https://actions.google.com/sounds/v1/science_fiction/low_power_hum.ogg' },
         { id: 'track-techno', name: 'Techno Core', author: 'Neon', duration: 90, url: 'https://actions.google.com/sounds/v1/science_fiction/techno_ambience.ogg' },
         { id: 'track-space', name: 'Space Drift', author: 'Astro', duration: 180, url: 'https://actions.google.com/sounds/v1/science_fiction/deep_space_drone.ogg' }
       ];
-
-      for (const t of tracks) {
-        await setDoc(doc(db, 'tracks', t.id), t, { merge: true });
-      }
 
       const studios = [
         { id: 'gabriel-beats', name: 'Gabriel Beats', description: 'Urban grooves and heavy bass.', tags: ['Urban', 'Hip-Hop'], coverColor: '#FF3399', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/gabriel-beats/800/800', linkUrl: 'https://instagram.com/beathero', linkLabel: 'Instagram' },
@@ -150,10 +147,6 @@ export default function HomePage() {
         { id: 'dj-avox', name: 'DJ Avox', description: 'Deep house and vocal grooves.', tags: ['House'], coverColor: '#00B0FF', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/dj-avox/800/800' },
         { id: 'nelio-beats', name: 'Nelio Beats', description: 'Classic hip-hop and soul.', tags: ['Hip-Hop'], coverColor: '#FF6D00', district: 'Bantiger', imageUrl: 'https://picsum.photos/seed/nelio-beats/800/800' }
       ];
-
-      for (const s of studios) {
-        await setDoc(doc(db, 'studios', s.id), s, { merge: true });
-      }
 
       const patterns = [
         { id: 'kick-p1', name: 'Kick Progression', steps: [0, 14, 16, 30, 32, 46, 48, 62, 64, 78, 80, 84, 96, 110, 112, 114, 126] },
@@ -224,7 +217,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Rack Synchronized!", description: "All studios updated." });
+      toast({ title: "Rack Synchronized!", description: "Games, levels and patterns updated." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
