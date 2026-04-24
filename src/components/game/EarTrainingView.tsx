@@ -165,18 +165,20 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-4 font-body overflow-hidden">
-      <header className="flex justify-between items-center h-16 shrink-0 z-50 px-4 md:px-8 bg-black/40 backdrop-blur-xl border-b border-white/5 rounded-t-3xl">
-        <div className="flex items-center gap-4">
+      <header className="flex justify-between items-center h-20 md:h-24 shrink-0 z-50 px-4 md:px-8 bg-black/40 backdrop-blur-xl border-b border-white/5 rounded-t-3xl">
+        <div className="flex items-center gap-6">
           <Link href="/">
-            <ArrowLeft className="w-5 h-5 text-white/40 hover:text-white transition-all" />
+            <ArrowLeft className="w-6 h-6 text-white/40 hover:text-white transition-all hover:scale-110" />
           </Link>
           <div>
-            <h1 className="text-sm font-black uppercase italic tracking-tighter text-gradient">Ear Training</h1>
-            <p className="text-[10px] opacity-30 uppercase font-black tracking-widest">Master the Spectrum</p>
+            <h1 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-gradient leading-none">
+              Ear Training
+            </h1>
+            <p className="text-[10px] md:text-xs opacity-30 uppercase font-black tracking-[0.2em] mt-1">Master the Spectrum</p>
           </div>
         </div>
-        <div className="hidden sm:flex items-center gap-2 opacity-30 text-[10px] font-black uppercase tracking-widest">
-           <Zap className="w-3 h-3 text-[#FFEA00]" fill="currentColor" />
+        <div className="hidden sm:flex items-center gap-3 opacity-30 text-[10px] md:text-xs font-black uppercase tracking-widest">
+           <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
            Rack Connected
         </div>
       </header>
