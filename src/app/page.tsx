@@ -24,7 +24,7 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
           alt={studio.name}
           fill
           className="object-cover opacity-100 group-hover:scale-110 transition-all duration-1000"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           data-ai-hint="music studio"
         />
       ) : (
@@ -37,7 +37,7 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
     
     {/* Studio Info Overlay - Centered Horizontally */}
     <div className="absolute inset-0 p-4 md:p-6 flex flex-col justify-end items-center text-center z-20 pb-4 md:pb-6">
-      <h3 className="text-lg md:text-xl lg:text-2xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-[0.85] break-words drop-shadow-lg">
+      <h3 className="text-xl md:text-2xl lg:text-3xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-[0.85] break-words drop-shadow-lg">
         {studio.name}
       </h3>
     </div>
@@ -275,7 +275,7 @@ export default function HomePage() {
             <p className="text-xs md:text-sm font-black uppercase tracking-[0.4em] opacity-30">Connecting to Rack...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 md:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             {filteredStudios.map((studio) => (
               <Link key={studio.id} href={`/studio/${studio.id}`} className="block transform transition-transform hover:scale-[1.03] active:scale-95">
                 <StudioCard studio={studio} />
