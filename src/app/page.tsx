@@ -4,15 +4,15 @@ import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
-import { Studio, Game, Article, Track, Sound, TriggerPattern, hasAccess } from '@/lib/game/types';
+import { collection, query, doc, setDoc } from 'firebase/firestore';
+import { Studio, Game, Article, Track, hasAccess } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn, initiateGoogleSignIn, initiateSignOut } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { cn } from '@/lib/utils';
-import { Radio, RefreshCw, Loader2, Zap, Search, LayoutGrid, GraduationCap, Lock, User as UserIcon, LogOut, LogIn } from 'lucide-react';
+import { RefreshCw, Loader2, Zap, Search, LayoutGrid, GraduationCap, Lock, User as UserIcon, LogOut, LogIn } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LearnView } from '@/components/learn/LearnView';
 import {
@@ -206,6 +206,16 @@ export default function HomePage() {
         { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel', url: '' }
       ];
       for (const t of gabrielTracks) {
+        const tRef = doc(db, 'tracks', t.id);
+        setDoc(tRef, t, { merge: true }).catch(e => {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({ path: tRef.path, operation: 'write', requestResourceData: t }));
+        });
+      }
+
+      const daveTracks: Track[] = [
+        { id: 'tr-d1', studioId: 'std-dave', name: 'Ambient Void', author: 'Dave', url: '' }
+      ];
+      for (const t of daveTracks) {
         const tRef = doc(db, 'tracks', t.id);
         setDoc(tRef, t, { merge: true }).catch(e => {
           errorEmitter.emit('permission-error', new FirestorePermissionError({ path: tRef.path, operation: 'write', requestResourceData: t }));
