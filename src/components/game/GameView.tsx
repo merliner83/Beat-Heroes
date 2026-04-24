@@ -16,6 +16,8 @@ import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
 // Constant for sync offset
 export const SYNC_OFFSET = 0.0;
+// Shared hit position for the timing bar and note lanes
+export const HIT_POSITION = 450; 
 
 const PAD_COLORS: Record<SoundType, string> = {
   kick: '#993DEB',
@@ -58,6 +60,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const [isFinished, setIsFinished] = useState(false);
   const [hasStartedFade, setHasStartedFade] = useState(false);
   
+  const [globalFlash, setGlobalFlash] = useState<{ type: FlashType, key: number }>({ type: null, key: 0 });
   const [padFlashes, setPadFlashes] = useState<Record<SoundType, { type: FlashType, key: number }>>({
     kick: { type: null, key: 0 },
     clap: { type: null, key: 0 },
@@ -118,10 +121,12 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   }, [filteredSounds, game.backingTrackUrl]);
 
   const triggerPadFlash = (type: SoundType, flashType: FlashType) => {
+    const key = Date.now();
     setPadFlashes(prev => ({
       ...prev,
-      [type]: { type: flashType, key: Date.now() }
+      [type]: { type: flashType, key }
     }));
+    setGlobalFlash({ type: flashType, key });
   };
 
   const handlePadPress = useCallback((type: SoundType) => {
@@ -287,7 +292,19 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
       </header>
 
       <main className="relative flex-1 gemini-border gemini-glow overflow-hidden flex flex-col bg-black/40 rounded-3xl md:rounded-[3rem]">
-        <div className="flex-1 flex px-2">
+        <div className="flex-1 flex px-2 relative">
+          {/* Timing Bar Visualization */}
+          <div 
+            key={globalFlash.key}
+            className={cn(
+              "absolute left-0 right-0 h-1.5 z-40 pointer-events-none transition-all duration-300 rounded-full",
+              globalFlash.type === 'hit' && "bg-[#00E676] shadow-[0_0_30px_#00E676] opacity-100",
+              globalFlash.type === 'miss' && "bg-[#FF3D00] shadow-[0_0_30px_#FF3D00] opacity-100",
+              !globalFlash.type && "bg-white/20 opacity-30"
+            )}
+            style={{ top: `${HIT_POSITION}px` }}
+          />
+
           {activeSoundTypes.map((type) => {
             const sound = soundsWithPatterns.find(s => s.type === type);
             return (
@@ -296,11 +313,12 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           })}
         </div>
 
-        <div className="p-4 md:p-12 bg-black/60 border-t border-white/5 shrink-0">
+        {/* Moved Sampler Pads Up with compact padding */}
+        <div className="p-4 md:p-8 bg-black/60 border-t border-white/5 shrink-0 z-50">
           <div className={cn(
-            "grid gap-4 md:gap-8 max-w-xl mx-auto",
-            activeSoundTypes.length === 1 ? "grid-cols-1 max-w-[150px]" :
-            activeSoundTypes.length === 2 ? "grid-cols-2 max-w-[300px]" :
+            "grid gap-4 md:gap-6 max-w-xl mx-auto",
+            activeSoundTypes.length === 1 ? "grid-cols-1 max-w-[140px]" :
+            activeSoundTypes.length === 2 ? "grid-cols-2 max-w-[280px]" :
             "grid-cols-4"
           )}>
             {activeSoundTypes.map((type) => (
@@ -321,7 +339,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-50 backdrop-blur-sm">
             <div className="text-center mx-6">
               <Sparkles className="w-16 h-16 text-[#993DEB] mx-auto mb-6 animate-pulse-neon" />
-              <h2 className="text-2xl md:text-5xl font-black mb-10 uppercase italic tracking-tighter">Sync Interface</h2>
+              <h2 className="text-2xl md:text-5xl font-black mb-10 uppercase italic tracking-tighter text-gradient">Sync Interface</h2>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-56 md:w-80 h-16 md:h-24 text-base md:text-3xl font-black uppercase italic bg-white text-black rounded-3xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)]">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Pulse"}
               </Button>
@@ -336,7 +354,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         )}
 
         {isFinished && (
-          <div className="absolute inset-0 bg-black/98 flex items-center justify-center p-8 z-50">
+          <div className="absolute inset-0 bg-black/98 flex items-center justify-center p-8 z-[60]">
             <div className="text-center space-y-8 max-md">
               {score.accuracy >= PASS_THRESHOLD ? (
                 <>

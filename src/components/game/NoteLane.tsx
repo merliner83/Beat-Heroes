@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { SYNC_OFFSET } from './GameView';
+import { SYNC_OFFSET, HIT_POSITION } from './GameView';
 
 interface NoteLaneProps {
   notes: number[];
@@ -18,27 +18,26 @@ export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isA
   const secondsPerStep = secondsPerBeat / 4; // 16th notes
   
   const speed = 400; // pixels per second
-  const hitPosition = 500; 
+  const hitPosition = HIT_POSITION; 
 
   return (
     <div className="relative h-full w-full border-x border-white/5 overflow-hidden group">
-      {/* Target Zone */}
+      {/* Visual Marker on the lane itself */}
       <div 
-        className="absolute left-1/2 -translate-x-1/2 w-14 h-4 rounded-full border-2 opacity-20"
+        className="absolute left-1/2 -translate-x-1/2 w-full h-[1px] opacity-10"
         style={{ 
-          top: `${hitPosition - 8}px`,
-          borderColor: color,
-          boxShadow: `0 0 10px ${color}`
+          top: `${hitPosition}px`,
+          backgroundColor: color,
         }}
       />
 
       {/* Falling Notes */}
       {notes.map((step, idx) => {
         const noteTime = step * secondsPerStep;
-        // Synchronisierte relative Zeit unter Einbeziehung des Latenz-Offsets
+        // Synchronized relative time including latency offset
         const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
         
-        // Culling: Verhindert das Rendern von Noten weit außerhalb des Sichtfelds
+        // Culling: Prevent rendering of notes far outside the viewport
         if (relativeTime < -0.5 || relativeTime > 2.5) return null;
 
         const top = hitPosition - (relativeTime * speed) - 6;
@@ -47,7 +46,7 @@ export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isA
           <div
             key={idx}
             className={cn(
-              "absolute left-1/2 -translate-x-1/2 w-14 h-3 rounded-full transition-opacity",
+              "absolute left-1/2 -translate-x-1/2 w-14 h-3 rounded-full transition-opacity shadow-lg",
               isActive ? "opacity-100" : "opacity-30"
             )}
             style={{ 
