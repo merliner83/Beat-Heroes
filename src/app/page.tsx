@@ -122,15 +122,17 @@ export default function HomePage() {
 
       for (const lg of learnGames) {
         await setDoc(doc(db, 'games', lg.id), lg, { merge: true });
-        await setDoc(doc(db, 'levels', `global-${lg.type === 'ear-training' ? 'ear' : 'rhythm'}-1`), {
-          id: `global-${lg.type === 'ear-training' ? 'ear' : 'rhythm'}-1`,
+        // Correct level IDs to match LearnView links
+        const targetLevelId = lg.id === 'global-ear-training' ? 'global-ear-training' : `global-${lg.type === 'ear-training' ? 'ear' : 'rhythm'}-1`;
+        await setDoc(doc(db, 'levels', targetLevelId), {
+          id: targetLevelId,
           gameId: lg.id,
           difficulty: 1,
           name: 'Basics'
         }, { merge: true });
       }
 
-      // Local definitions for generation logic, but not syncing to collection directly
+      // Local definitions for generation logic
       const tracks = [
         { id: 'track-glitch', name: 'Glitch Power', author: 'BeatBot', duration: 64, url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' },
         { id: 'track-hum', name: 'System Hum', author: 'Cyborg', duration: 120, url: 'https://actions.google.com/sounds/v1/science_fiction/low_power_hum.ogg' },

@@ -162,9 +162,9 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
 
   const formatFreq = (freq: number) => {
     if (freq >= 1000) {
-      return `${freq / 1000}k`;
+      return `${freq / 1000} KHZ`;
     }
-    return Math.round(freq).toString();
+    return `${freq} HZ`;
   };
 
   return (
@@ -175,7 +175,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
             <ArrowLeft className="w-6 h-6 text-white/40 hover:text-white transition-all hover:scale-110" />
           </Link>
           <div>
-            <h1 className="text-3xl md:text-6xl font-black uppercase italic tracking-tighter text-gradient leading-none">
+            <h1 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-gradient leading-none">
               Ear Training
             </h1>
             <p className="text-[10px] md:text-xs opacity-30 uppercase font-black tracking-[0.2em] mt-1.5">Master the Spectrum</p>
@@ -242,7 +242,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
               <div className="p-10 bg-black/60 backdrop-blur-3xl space-y-8 rounded-xl border border-white/5">
                 <div className="flex justify-between items-end">
                   <span className="text-[10px] font-black opacity-20 uppercase tracking-[0.3em]">Current Peek</span>
-                  <span className="text-5xl font-black italic text-gradient">{formatFreq(currentFreq)}<span className="text-xs ml-1.5 not-italic opacity-30">{currentFreq >= 1000 ? 'Hz' : 'Hz'}</span></span>
+                  <span className="text-4xl md:text-5xl font-black italic text-gradient">{formatFreq(currentFreq)}</span>
                 </div>
                 <Slider 
                   min={0} 
@@ -253,9 +253,9 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   className="py-4"
                 />
                 <div className="flex justify-between text-[10px] font-black opacity-20 uppercase tracking-widest">
-                  <span>20 Hz</span>
-                  <span>1k Hz</span>
-                  <span>20k Hz</span>
+                  <span>20 HZ</span>
+                  <span>1 KHZ</span>
+                  <span>20 KHZ</span>
                 </div>
               </div>
             </div>
@@ -349,7 +349,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                           disabled={quizStatus === 'FEEDBACK'}
                           onClick={() => handleGuess(freq)}
                           className={cn(
-                            "w-full h-20 rounded-xl border text-lg font-black italic flex items-center justify-center transition-all duration-300",
+                            "w-full h-20 rounded-xl border text-base md:text-lg font-black italic flex items-center justify-center transition-all duration-300",
                             containerClass
                           )}
                         >
