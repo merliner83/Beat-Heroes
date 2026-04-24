@@ -52,31 +52,31 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         // Extract first line for potential italic formatting if it starts/ends with *
         const formattedDescription = description.split('\n').map((line, lIdx) => {
           if (line.startsWith('*') && line.endsWith('*')) {
-            return <em key={lIdx} className="block mb-1 text-white/80 not-italic font-medium">{line.replace(/\*/g, '')}</em>;
+            return <em key={lIdx} className="block mb-1 text-white/80 not-italic font-bold">{line.replace(/\*/g, '')}</em>;
           }
           return <span key={lIdx}>{line}</span>;
         });
 
         return (
-          <div key={idx} className="mb-6 gemini-border animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="p-6 bg-black/40 backdrop-blur-xl">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 shrink-0 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 shadow-inner">
-                  <Icon className="w-6 h-6 text-primary" />
+          <div key={idx} className="mb-8 gemini-border animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="p-8 bg-black/40 backdrop-blur-xl">
+              <div className="flex items-center gap-5 mb-5">
+                <div className="w-14 h-14 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 shadow-inner">
+                  <Icon className="w-7 h-7 text-primary" />
                 </div>
-                <h4 className="text-xl font-black uppercase italic tracking-tighter text-white leading-none pr-4">
+                <h4 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white leading-none pr-4">
                   {titleAndPhase}
                 </h4>
               </div>
-              <p className="text-sm md:text-base text-white/60 leading-relaxed font-normal">
+              <p className="text-base md:text-xl text-white/60 leading-relaxed font-normal">
                 {formattedDescription}
               </p>
               
               {linkId && (
-                <Link href={`/learn/article/${linkId}`} className="mt-6 block">
-                  <Button variant="ghost" size="sm" className="w-full justify-between h-10 px-4 rounded-lg bg-primary/5 hover:bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary transition-all">
+                <Link href={`/learn/article/${linkId}`} className="mt-8 block">
+                  <Button variant="ghost" size="sm" className="w-full justify-between h-12 px-6 rounded-xl bg-primary/5 hover:bg-primary/10 border border-primary/20 text-[11px] font-black uppercase tracking-widest text-primary transition-all">
                     Deep Dive: {titleAndPhase}
-                    <ArrowRight className="w-3.5 h-3.5 ml-2" />
+                    <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
               )}
@@ -98,7 +98,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
             {titleLine && (
               <h4 className="text-xs font-black uppercase tracking-[0.3em] text-primary/60 italic">{titleLine}</h4>
             )}
-            <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-black aspect-video shadow-2xl group">
+            <div className="relative rounded-[2.5rem] overflow-hidden border border-white/10 bg-black aspect-video shadow-2xl group">
               <iframe
                 width="100%"
                 height="100%"
@@ -117,8 +117,8 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       // Standard text block
       if (block.startsWith('#')) {
         return (
-          <div key={idx} className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white mb-4 pr-10 border-b border-white/5 pb-2">
+          <div key={idx} className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white mb-6 pr-10 border-b border-white/5 pb-2">
               {block.replace(/^#+\s*/, '')}
             </h3>
           </div>
@@ -128,10 +128,10 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       const isIntro = idx === 0;
       
       return (
-        <div key={idx} className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div key={idx} className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <p className={cn(
             "text-white/60 leading-relaxed font-normal pr-8",
-            isIntro ? "text-lg md:text-xl text-white/90" : "text-base md:text-lg"
+            isIntro ? "text-xl md:text-2xl text-white/90" : "text-lg md:text-xl"
           )}>
             {block}
           </p>
@@ -161,9 +161,9 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-6 md:p-12 space-y-16 pb-32">
+      <main className="max-w-4xl mx-auto p-6 md:p-16 space-y-16 pb-32">
         <section>
-          <div className="bg-white/2 border border-white/5 p-8 md:p-12 rounded-[2.5rem] backdrop-blur-sm shadow-2xl">
+          <div className="bg-white/2 border border-white/5 p-10 md:p-16 rounded-[3rem] backdrop-blur-sm shadow-2xl">
             {renderContent(article.content)}
           </div>
         </section>
