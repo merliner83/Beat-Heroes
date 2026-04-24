@@ -19,7 +19,8 @@ import {
   Play, 
   Gamepad2,
   Headphones,
-  Keyboard
+  Keyboard,
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -27,70 +28,107 @@ const LEARN_CATEGORIES = [
   {
     id: 'intro',
     title: 'Introduction',
-    topics: ['Producing', 'Sampling', 'DJing', 'Equipment'],
+    topics: [
+      { name: 'Producing', id: 'article-producing' },
+      { name: 'Sampling', id: 'article-sampling' },
+      { name: 'DJing', id: 'article-djing' },
+      { name: 'Equipment', id: 'article-equipment' }
+    ],
     icon: BookOpen,
     color: 'text-primary'
   },
   {
     id: 'daws',
     title: 'DAWs',
-    topics: ['GarageBand', 'Cubase', 'Ableton Live', 'Audio Logic'],
+    topics: [
+      { name: 'GarageBand', id: 'article-gb' },
+      { name: 'Cubase', id: 'article-cubase' },
+      { name: 'Ableton Live', id: 'article-ableton' },
+      { name: 'Audio Logic', id: 'article-logic' }
+    ],
     icon: Cpu,
     color: 'text-[#00E676]'
   },
   {
     id: 'composing',
     title: 'Composing',
-    topics: ['Arrangement', 'Sounddesign'],
+    topics: [
+      { name: 'Arrangement', id: 'article-arrangement' },
+      { name: 'Sounddesign', id: 'article-sounddesign' }
+    ],
     icon: Music,
     color: 'text-[#FFEA00]'
   },
   {
     id: 'recording',
     title: 'Recording',
-    topics: ['Basics', 'Instrumente'],
+    topics: [
+      { name: 'Basics', id: 'article-rec-basics' },
+      { name: 'Instrumente', id: 'article-rec-instruments' }
+    ],
     icon: Mic2,
     color: 'text-[#FF3D00]'
   },
   {
     id: 'effects',
     title: 'Effekte',
-    topics: ['Insert-Effekte', 'Send-Effekte', 'Kreative Effekte'],
+    topics: [
+      { name: 'Insert-Effekte', id: 'article-inserts' },
+      { name: 'Send-Effekte', id: 'article-sends' },
+      { name: 'Kreative Effekte', id: 'article-creative-fx' }
+    ],
     icon: Wand2,
     color: 'text-[#3838FA]'
   },
   {
     id: 'djing',
     title: 'DJing',
-    topics: ['Techniques', 'Gear', 'Performance'],
+    topics: [
+      { name: 'Techniques', id: 'article-dj-tech' },
+      { name: 'Gear', id: 'article-dj-gear' },
+      { name: 'Performance', id: 'article-dj-perf' }
+    ],
     icon: Disc,
     color: 'text-primary'
   },
   {
     id: 'brand',
     title: 'Brand',
-    topics: ['Social Media', 'Homepage/App', 'Artwork'],
+    topics: [
+      { name: 'Social Media', id: 'article-sm' },
+      { name: 'Homepage/App', id: 'article-app' },
+      { name: 'Artwork', id: 'article-artwork' }
+    ],
     icon: Share2,
     color: 'text-[#00FFFF]'
   },
   {
     id: 'release',
     title: 'Release',
-    topics: ['Distribution', 'Platforms'],
+    topics: [
+      { name: 'Distribution', id: 'article-dist' },
+      { name: 'Platforms', id: 'article-platforms' }
+    ],
     icon: Play,
     color: 'text-[#FF9100]'
   },
   {
     id: 'rights',
     title: 'Rechte',
-    topics: ['Copyright', 'Licensing'],
+    topics: [
+      { name: 'Copyright', id: 'article-copyright' },
+      { name: 'Licensing', id: 'article-licensing' }
+    ],
     icon: Lock,
     color: 'text-[#EB3D99]'
   },
   {
     id: 'others',
     title: 'Weitere Themen',
-    topics: ['AI', 'Free Plugins'],
+    topics: [
+      { name: 'AI', id: 'article-ai' },
+      { name: 'Free Plugins', id: 'article-plugins' }
+    ],
     icon: Sparkles,
     color: 'text-white'
   }
@@ -104,7 +142,7 @@ const LEARN_GAMES = [
 
 export const LearnView = () => {
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-20">
       {/* Introduction Header */}
       <section className="relative p-8 rounded-[2rem] bg-gradient-to-br from-primary/10 via-black to-black border border-white/5 overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] -z-10" />
@@ -147,25 +185,24 @@ export const LearnView = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {LEARN_CATEGORIES.map((cat) => (
-            <Card key={cat.id} className="bg-black/40 border-white/5 hover:border-white/10 transition-all duration-300 group overflow-hidden">
+            <Card key={cat.id} className="bg-black/40 border-white/5 hover:border-white/10 transition-all duration-300 group overflow-hidden rounded-[2rem]">
               <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
                 <div className={cn("p-2.5 rounded-xl bg-white/5 group-hover:scale-110 transition-transform", cat.color)}>
                   <cat.icon className="w-6 h-6" />
                 </div>
                 <CardTitle className="text-xl font-black uppercase italic tracking-tighter">{cat.title}</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {cat.topics.map((topic) => (
-                    <Badge 
-                      key={topic} 
-                      variant="outline" 
-                      className="bg-white/5 border-white/10 text-[10px] font-bold uppercase tracking-widest px-3 py-1 hover:bg-white/10 transition-colors"
-                    >
-                      {topic}
-                    </Badge>
-                  ))}
-                </div>
+              <CardContent className="space-y-3">
+                {cat.topics.map((topic) => (
+                  <Link key={topic.id} href={`/learn/article/${topic.id}`}>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-primary/10 hover:border-primary/20 transition-all group/topic mb-2">
+                      <span className="text-[11px] font-black uppercase tracking-widest opacity-50 group-hover/topic:opacity-100 group-hover/topic:text-primary italic transition-all">
+                        {topic.name}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-white/10 group-hover/topic:text-primary transition-all" />
+                    </div>
+                  </Link>
+                ))}
               </CardContent>
             </Card>
           ))}

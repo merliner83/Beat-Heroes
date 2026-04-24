@@ -131,6 +131,36 @@ export default function HomePage() {
         }, { merge: true });
       }
 
+      // Mock Articles for Knowledge Base
+      const mockArticles = [
+        {
+          id: 'article-producing',
+          categoryId: 'intro',
+          title: 'Producing Basics',
+          content: 'Music production is the process of creating a musical recording. This lab covers everything from arrangement to sound design.\n\nFirst, you need to understand your DAW (Digital Audio Workstation). It is your digital studio where all the magic happens.',
+          videoUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/samples%2Ftutorial-portrait.mp4?alt=media', // Fallback placeholder logic needed or actual url
+          imageUrls: [
+            'https://picsum.photos/seed/producing-1/800/600',
+            'https://picsum.photos/seed/producing-2/800/600',
+            'https://picsum.photos/seed/producing-3/800/600'
+          ]
+        },
+        {
+          id: 'article-sampling',
+          categoryId: 'intro',
+          title: 'The Art of Sampling',
+          content: 'Sampling is the reuse of a portion of a sound recording in another recording.\n\nIn this lab, you learn how to chop samples and turn them into fresh beats. Remember: creative flipping is better than just looping!',
+          imageUrls: [
+            'https://picsum.photos/seed/sampling-1/800/600',
+            'https://picsum.photos/seed/sampling-2/800/600'
+          ]
+        }
+      ];
+
+      for (const article of mockArticles) {
+        await setDoc(doc(db, 'articles', article.id), article, { merge: true });
+      }
+
       // Local definitions for generation logic
       const tracks = [
         { id: 'track-glitch', name: 'Glitch Power', author: 'BeatBot', duration: 64, url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' },
@@ -218,7 +248,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Rack Synchronized!", description: "Games, levels and patterns updated." });
+      toast({ title: "Rack Synchronized!", description: "Knowledge Base and Studios updated." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });

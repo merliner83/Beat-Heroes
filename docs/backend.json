@@ -43,7 +43,7 @@
         "id": { "type": "string" },
         "studioId": { "type": "string" },
         "name": { "type": "string" },
-        "type": { "type": "string", "enum": ["rhythm-producer", "sample-hunter", "disk-dash"], "description": "Der technische Typ des Spiels." },
+        "type": { "type": "string", "enum": ["rhythm-producer", "sample-hunter", "disk-dash", "ear-training"], "description": "Der technische Typ des Spiels." },
         "bpm": { "type": "number", "description": "Spezifisch für Rhythm Producer." },
         "difficulty": { "type": "number", "description": "Schwierigkeitsgrad (1-4)" },
         "trackId": { "type": "string", "description": "ID des zugehörigen Tracks aus der tracks Collection." },
@@ -116,6 +116,24 @@
         "completedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["levelId", "accuracy"]
+    },
+    "Article": {
+      "title": "Article",
+      "type": "object",
+      "description": "Ein KnowHow-Artikel für die Knowledge Base.",
+      "properties": {
+        "id": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string", "description": "Der Fließtext des Artikels." },
+        "videoUrl": { "type": "string", "format": "uri", "description": "Hochformat-Video URL." },
+        "imageUrls": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "Bis zu 3 Bilder für die Galerie."
+        }
+      },
+      "required": ["id", "title"]
     }
   },
   "auth": {
@@ -153,6 +171,10 @@
     "/users/{userId}/progress/{levelId}": {
       "schema": "#/backend/entities/LevelProgress",
       "description": "Fortschritt des Nutzers."
+    },
+    "/articles/{articleId}": {
+      "schema": "#/backend/entities/Article",
+      "description": "Wissensartikel."
     }
   }
 }

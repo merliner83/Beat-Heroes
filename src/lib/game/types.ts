@@ -69,9 +69,11 @@ export interface LevelProgress {
   completedAt?: any;
 }
 
-export interface LearnCategory {
+export interface Article {
   id: string;
+  categoryId: string;
   title: string;
-  topics: string[];
-  iconName: string;
+  content: string;
+  videoUrl?: string;
+  imageUrls?: string[];
 }
