@@ -18,7 +18,8 @@ import {
   X,
   Volume2,
   Brain,
-  Music
+  Music,
+  Target
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -78,6 +79,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const [isPlaying, setIsPlaying] = useState(false);
   const [playhead, setPlayhead] = useState(0); // 0-15
   const [countIn, setCountIn] = useState<number | null>(null);
+  const [isPadPressed, setIsPadPressed] = useState(false);
 
   // Quiz State
   const [round, setRound] = useState(1);
@@ -97,6 +99,29 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       stopPlayback();
     };
   }, []);
+
+  const handleTap = useCallback(() => {
+    if (!audioEngine) return;
+    const soundUrl = mode === 'quiz' && targetPatternId 
+      ? RHYTHM_CONFIG.find(p => p.id === targetPatternId)?.soundUrl 
+      : selectedPattern.soundUrl;
+    
+    if (soundUrl) {
+      audioEngine.playOneShot(soundUrl);
+    }
+    setIsPadPressed(true);
+    setTimeout(() => setIsPadPressed(false), 100);
+  }, [mode, targetPatternId, selectedPattern.soundUrl]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === 'a') {
+        handleTap();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleTap]);
 
   const startPlayback = async (pattern: RhythmPattern) => {
     if (!audioEngine) return;
@@ -236,6 +261,14 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
             <p className="text-[10px] opacity-30 uppercase font-black tracking-[0.2em] mt-1">MIDI Lab Interface</p>
           </div>
         </div>
+        
+        {mode === 'quiz' && status !== 'RESULTS' && status !== 'IDLE' && (
+           <div className="hidden sm:flex items-center gap-3 bg-white/5 px-6 py-2 rounded-full border border-white/10">
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">Round</span>
+              <span className="text-lg font-black italic text-primary">{round} / {TOTAL_ROUNDS}</span>
+           </div>
+        )}
+
         <div className="hidden sm:flex items-center gap-3 opacity-30 text-[10px] md:text-xs font-black uppercase tracking-widest">
            <Music className="w-4 h-4 text-primary" />
            Sync Active
@@ -246,7 +279,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
 
         {/* Mode Toggle */}
-        {status === 'IDLE' && (
+        {status === 'IDLE' && !lastGuess && sessionScores.length === 0 && (
           <div className="flex p-1.5 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-xl mb-12 animate-in fade-in slide-in-from-top-4">
             <Button 
               variant="ghost" 
@@ -273,12 +306,12 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
         {mode === 'explore' && (
           <div className="w-full max-w-4xl space-y-12 animate-in zoom-in-95 duration-500">
-            {/* Visualizer Header - Same as Quiz */}
+            {/* Visualizer Header */}
             <div className="text-center">
               <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter mb-6 text-gradient">
                 {isPlaying ? 'PLAYING...' : 'PREVIEW'}
               </h2>
-              <div className="flex gap-2 justify-center max-w-md mx-auto mb-16">
+              <div className="flex gap-2 justify-center max-w-md mx-auto mb-12">
                 {Array.from({ length: 16 }).map((_, i) => {
                   const isStep = selectedPattern.steps.includes(i);
                   const isCurrent = playhead === i && isPlaying;
@@ -297,6 +330,21 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                   );
                 })}
               </div>
+            </div>
+
+            {/* Central Tap Pad */}
+            <div className="flex justify-center mb-8">
+              <Button
+                onPointerDown={handleTap}
+                className={cn(
+                  "w-48 h-48 md:w-64 md:h-64 rounded-[2.5rem] border-4 flex flex-col items-center justify-center transition-all duration-75 select-none touch-none bg-black/40",
+                  isPadPressed ? "scale-90 border-primary shadow-[0_0_50px_rgba(255,51,153,0.5)] brightness-125" : "border-white/10 hover:border-white/20"
+                )}
+              >
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30 mb-2">Trigger [A]</div>
+                <Music className={cn("w-12 h-12 mb-4 transition-colors", isPadPressed ? "text-primary" : "text-white/20")} />
+                <span className="text-xs font-black uppercase italic tracking-widest opacity-40">Tap Pad</span>
+              </Button>
             </div>
 
             {/* Pattern Selection Buttons */}
@@ -354,28 +402,14 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               </div>
             )}
 
-            {(status === 'COUNT_IN' || status === 'QUIZ_PLAYING' || status === 'IDLE') && targetPatternId && (
+            {(status === 'COUNT_IN' || status === 'QUIZ_PLAYING' || status === 'IDLE' || status === 'FEEDBACK') && targetPatternId && (
               <div className="space-y-12 pt-8 animate-in fade-in">
-                <div className="flex justify-between items-center bg-white/5 p-6 rounded-2xl border border-white/5 backdrop-blur-xl">
-                   <div className="text-xs font-black uppercase tracking-widest opacity-40 italic">
-                     Round {round} / {TOTAL_ROUNDS}
-                   </div>
-                   {status === 'IDLE' && (
-                     <Button 
-                      variant="ghost" 
-                      onClick={() => playPatternOnce(RHYTHM_CONFIG.find(p => p.id === targetPatternId)!)}
-                      className="h-10 px-8 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10"
-                     >
-                       Replay Sound
-                     </Button>
-                   )}
-                </div>
-
+                {/* Visualizer Header */}
                 <div className="text-center">
                    <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter mb-6 text-gradient">
                      {status === 'COUNT_IN' ? countIn : status === 'QUIZ_PLAYING' ? 'SCANNING...' : 'IDENTIFY'}
                    </h2>
-                   <div className="flex gap-2 justify-center max-w-md mx-auto">
+                   <div className="flex gap-2 justify-center max-w-md mx-auto mb-12">
                      {Array.from({ length: 16 }).map((_, i) => (
                        <div 
                         key={i} 
@@ -389,30 +423,34 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {RHYTHM_CONFIG.map(p => {
-                    const isCorrect = p.id === targetPatternId;
-                    const isGuessed = p.id === lastGuess;
-                    
-                    let variantClass = "bg-white/5 border-white/5 hover:border-white/20";
-                    if (lastGuess) {
-                      if (isCorrect) variantClass = "bg-[#00E676] border-[#00E676] text-black shadow-[0_0_30px_#00E67644] scale-105 z-10";
-                      else if (isGuessed) variantClass = "bg-destructive border-destructive text-white";
-                      else variantClass = "opacity-10";
-                    }
+                {/* Central Tap Pad in Quiz */}
+                <div className="flex justify-center mb-10">
+                  <Button
+                    onPointerDown={handleTap}
+                    className={cn(
+                      "w-48 h-48 md:w-56 md:h-56 rounded-[2.5rem] border-4 flex flex-col items-center justify-center transition-all duration-75 select-none touch-none bg-black/40",
+                      isPadPressed ? "scale-90 border-primary shadow-[0_0_40px_rgba(255,51,153,0.4)] brightness-125" : "border-white/5 hover:border-white/10"
+                    )}
+                  >
+                    <div className="text-[10px] font-black uppercase tracking-[0.3em] opacity-20 mb-2">Trigger [A]</div>
+                    <Target className={cn("w-10 h-10 mb-4 transition-colors", isPadPressed ? "text-primary" : "text-white/10")} />
+                    <span className="text-[10px] font-black uppercase italic tracking-widest opacity-20">Tap to test</span>
+                  </Button>
+                </div>
 
-                    return (
+                {status === 'IDLE' && !lastGuess && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in slide-in-from-bottom-4 duration-500">
+                    {RHYTHM_CONFIG.map(p => (
                       <Button
                         key={p.id}
-                        disabled={!!lastGuess || status !== 'IDLE'}
                         onClick={() => handleGuess(p.id)}
-                        className={cn("h-24 rounded-2xl font-black uppercase italic tracking-widest transition-all text-sm md:text-base border-2", variantClass)}
+                        className="h-20 rounded-2xl bg-white/5 border-2 border-white/5 hover:border-primary/50 font-black uppercase italic tracking-widest transition-all text-sm"
                       >
                         {p.name}
                       </Button>
-                    );
-                  })}
-                </div>
+                    ))}
+                  </div>
+                )}
 
                 {status === 'FEEDBACK' && (
                   <div className="flex flex-col items-center gap-8 animate-in zoom-in-95">
