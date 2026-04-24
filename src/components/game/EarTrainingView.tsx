@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -198,7 +199,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
             <ArrowLeft className="w-6 h-6 text-white/40 hover:text-white transition-all hover:scale-110" />
           </Link>
           <div className="pr-12">
-            <h1 className="text-lg md:text-xl font-black uppercase italic tracking-tighter text-gradient leading-none whitespace-nowrap pr-8">
+            <h1 className="text-lg md:text-xl font-black uppercase italic tracking-tighter text-gradient leading-none whitespace-nowrap pr-10">
               EAR TRAINING
             </h1>
             <p className="text-[10px] opacity-30 uppercase font-black tracking-[0.2em] mt-1">Master the Spectrum</p>
@@ -273,7 +274,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
               <div className="p-10 md:p-14 bg-black/60 backdrop-blur-3xl space-y-8 rounded-xl border border-white/5 overflow-hidden">
                 <div className="flex flex-col items-center px-4">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl md:text-6xl font-black italic text-gradient leading-tight">
+                    <span className="text-4xl md:text-6xl font-black italic text-gradient leading-tight pr-10">
                       {formatFreqValue(currentFreq)}
                     </span>
                     <span className="text-lg md:text-xl font-black opacity-20 uppercase tracking-[0.4em]">
