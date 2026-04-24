@@ -16,7 +16,8 @@ import {
   Activity, 
   CheckCircle2, 
   XCircle,
-  BarChart3
+  BarChart3,
+  Search
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -130,7 +131,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
     
     setLastGuess(freq);
     const isMatch = freq === targetFreq;
-    const score = isMatch ? 100 : 0; // Binary match/miss for quiz rounds
+    const score = isMatch ? 100 : 0;
     
     setSessionScores(prev => [...prev, score]);
     setQuizStatus('FEEDBACK');
@@ -174,36 +175,56 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
             <p className="text-[10px] opacity-30 uppercase font-black tracking-widest">Master the Spectrum</p>
           </div>
         </div>
-        <div className="flex gap-2 bg-white/5 p-1 rounded-full border border-white/5">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => { setMode('explore'); setQuizStatus('IDLE'); }}
-            className={cn("rounded-full px-6 text-[10px] font-black uppercase tracking-widest h-8 transition-all", mode === 'explore' ? "bg-white/10 text-white" : "text-white/30")}
-          >
-            Explore
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => { setMode('quiz'); if(quizStatus === 'RESULTS' || quizStatus === 'IDLE') setQuizStatus('IDLE'); }}
-            className={cn("rounded-full px-6 text-[10px] font-black uppercase tracking-widest h-8 transition-all", mode === 'quiz' ? "bg-primary text-white" : "text-white/30")}
-          >
-            Quiz
-          </Button>
+        <div className="hidden sm:flex items-center gap-2 opacity-30 text-[10px] font-black uppercase tracking-widest">
+           <Zap className="w-3 h-3 text-[#FFEA00]" fill="currentColor" />
+           Rack Connected
         </div>
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 relative overflow-y-auto">
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
 
+        {/* Prominent Mode Toggle */}
+        {(quizStatus === 'IDLE' || mode === 'explore') && (
+          <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="inline-flex p-1.5 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-xl shadow-2xl">
+              <Button 
+                variant="ghost" 
+                onClick={() => { setMode('explore'); setQuizStatus('IDLE'); }}
+                className={cn(
+                  "rounded-xl px-8 py-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                  mode === 'explore' 
+                    ? "bg-white/10 text-white" 
+                    : "text-white/30 hover:text-white/60"
+                )}
+              >
+                <Search className="w-3.5 h-3.5 mr-2" />
+                Explore
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => { setMode('quiz'); if(quizStatus === 'RESULTS' || quizStatus === 'IDLE') setQuizStatus('IDLE'); }}
+                className={cn(
+                  "rounded-xl px-8 py-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                  mode === 'quiz' 
+                    ? "bg-primary text-white shadow-[0_0_20px_rgba(255,51,153,0.3)]" 
+                    : "text-white/30 hover:text-white/60"
+                )}
+              >
+                <Headphones className="w-3.5 h-3.5 mr-2" />
+                Quiz Mode
+              </Button>
+            </div>
+          </div>
+        )}
+
         {mode === 'explore' && (
-          <div className="w-full max-w-2xl space-y-10 animate-in fade-in zoom-in-95 duration-700">
+          <div className="w-full max-w-2xl space-y-10 animate-in fade-in zoom-in-95 duration-700 mt-16">
             <div className="text-center">
               <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/10 shadow-[0_0_50px_rgba(255,51,153,0.1)]">
                 <Activity className={cn("w-10 h-10 transition-all", isPlaying ? "text-[#00E676] scale-110" : "text-white/20")} />
               </div>
-              <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-2">Frequency Scanner</h2>
+              <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-2">Scanner</h2>
               <p className="text-xs opacity-40 uppercase tracking-widest">Train your ears by sweeping through the bands</p>
             </div>
 
@@ -242,12 +263,12 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
         {mode === 'quiz' && (
           <div className="w-full max-w-2xl animate-in slide-in-from-bottom-8 duration-700">
             {quizStatus === 'IDLE' && (
-              <div className="text-center space-y-8">
+              <div className="text-center space-y-8 mt-16">
                 <div className="w-28 h-28 bg-primary/10 rounded-full flex items-center justify-center mx-auto border border-primary/20">
                   <Headphones className="w-12 h-12 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-5xl font-black uppercase italic tracking-tighter mb-2">Golden Ears Quiz</h2>
+                  <h2 className="text-5xl font-black uppercase italic tracking-tighter mb-2">Golden Ears</h2>
                   <p className="text-sm opacity-40 uppercase tracking-widest">6 Rounds of pure frequency identification</p>
                 </div>
                 <Button 
@@ -294,9 +315,14 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                     
                     let btnClass = "bg-white/5 hover:bg-white/10 border-white/5";
                     if (quizStatus === 'FEEDBACK') {
-                      if (isCorrect) btnClass = "bg-[#00E676] text-black border-[#00E676] scale-105 z-10 shadow-[0_0_30px_#00E67644]";
-                      else if (isGuessed) btnClass = "bg-[#FF3D00] text-white border-[#FF3D00] opacity-100";
-                      else btnClass = "opacity-20";
+                      if (isCorrect) {
+                        btnClass = "bg-[#00E676] text-black border-[#00E676] scale-105 z-10 shadow-[0_0_30px_#00E67644]";
+                      } else if (isGuessed) {
+                        // Nur den tatsächlich gewählten falschen Button rot färben
+                        btnClass = "bg-[#FF3D00] text-white border-[#FF3D00] opacity-100";
+                      } else {
+                        btnClass = "opacity-20 border-white/5";
+                      }
                     } else if (isGuessed) {
                       btnClass = "bg-primary border-primary text-white";
                     }
