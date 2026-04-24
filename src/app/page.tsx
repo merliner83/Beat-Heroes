@@ -128,13 +128,35 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     try {
-      const kickSampleUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57';
+      // 0. Define Sound URLs
+      const kickUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57';
+      const clapUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_Clap_01.wav?alt=media&token=6d31cec5-6412-47af-a039-2d980d669929';
+      const hatsUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_HiHat_03.wav?alt=media&token=a5e7b4ac-3af8-49ab-bb6b-557a6e3551bd';
+      const miscUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.wav?alt=media&token=bf90be29-fd25-4fad-bc2c-9483840246ba';
 
       // 1. Patterns
       await setDoc(doc(db, 'patterns', 'pattern-4onfloor'), {
         id: 'pattern-4onfloor',
         name: '4-on-the-Floor',
         steps: [0, 16, 32, 48, 64, 80, 96, 112]
+      }, { merge: true });
+
+      await setDoc(doc(db, 'patterns', 'pattern-offbeat'), {
+        id: 'pattern-offbeat',
+        name: 'Offbeat Claps',
+        steps: [16, 48, 80, 112]
+      }, { merge: true });
+
+      await setDoc(doc(db, 'patterns', 'pattern-8ths'), {
+        id: 'pattern-8ths',
+        name: '8th Note Hats',
+        steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120]
+      }, { merge: true });
+
+      await setDoc(doc(db, 'patterns', 'pattern-onehit'), {
+        id: 'pattern-onehit',
+        name: 'End Highlight',
+        steps: [60, 124]
       }, { merge: true });
 
       // 2. Studios
@@ -177,7 +199,7 @@ export default function HomePage() {
             levelId, 
             type: 'kick', 
             patternIds: ['pattern-4onfloor'], 
-            sampleUrl: kickSampleUrl 
+            sampleUrl: kickUrl 
           }, { merge: true });
         }
       }
@@ -185,7 +207,7 @@ export default function HomePage() {
       // 5. Studio Games (3 per Studio, 4 Levels each)
       const gameConfigs = [
         { type: 'rhythm-producer' as const, name: 'Beat Hero' },
-        { type: 'disk-dash' as const, name: 'Sample Catcher' }, // This will be admin-only
+        { type: 'disk-dash' as const, name: 'Sample Catcher' },
         { type: 'sample-hunter' as const, name: 'Vinyl Hunter' }
       ];
 
@@ -203,7 +225,7 @@ export default function HomePage() {
             name: config.name,
             type: config.type,
             difficulty: 1,
-            minRole: isSampleCatcher ? 'admin' : 'free', // Deactivate Sample Catcher
+            minRole: isSampleCatcher ? 'admin' : 'free',
             bpm: 120,
             backgroundImageUrl: isVinylHunter ? vinylHunterBg : ''
           }, { merge: true });
@@ -219,13 +241,47 @@ export default function HomePage() {
             }, { merge: true });
 
             if (config.type === 'rhythm-producer' || config.type === 'disk-dash' || config.type === 'sample-hunter') {
-               await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-base`), {
-                 id: `${levelId}-base`,
+               // Always Add Kick
+               await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), {
+                 id: `${levelId}-kick`,
                  levelId,
                  type: 'kick',
                  patternIds: ['pattern-4onfloor'],
-                 sampleUrl: kickSampleUrl
+                 sampleUrl: kickUrl
                }, { merge: true });
+
+               // Add Clap for Level 2+
+               if (i >= 2) {
+                 await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`), {
+                   id: `${levelId}-clap`,
+                   levelId,
+                   type: 'clap',
+                   patternIds: ['pattern-offbeat'],
+                   sampleUrl: clapUrl
+                 }, { merge: true });
+               }
+
+               // Add Hats (Percs) for Level 3+
+               if (i >= 3) {
+                 await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`), {
+                   id: `${levelId}-hats`,
+                   levelId,
+                   type: 'percs',
+                   patternIds: ['pattern-8ths'],
+                   sampleUrl: hatsUrl
+                 }, { merge: true });
+               }
+
+               // Add Misc for Level 4
+               if (i >= 4) {
+                 await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`), {
+                   id: `${levelId}-misc`,
+                   levelId,
+                   type: 'misc',
+                   patternIds: ['pattern-onehit'],
+                   sampleUrl: miscUrl
+                 }, { merge: true });
+               }
             }
           }
         }
@@ -253,7 +309,7 @@ export default function HomePage() {
         await setDoc(doc(db, 'articles', art.id!), art, { merge: true });
       }
 
-      toast({ title: "Rack Fully Synced!", description: "All modules restored with Kick samples. Sample Catcher deactivated for non-admins." });
+      toast({ title: "Rack Fully Synced!", description: "All modules restored with multi-layer sounds. Sample Catcher deactivated for non-admins." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
