@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -37,8 +36,8 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10" />
     
     {/* Studio Info Overlay - Centered Horizontally */}
-    <div className="absolute inset-0 p-4 md:p-6 flex flex-col justify-end items-center text-center z-20 pb-6 md:pb-8">
-      <h3 className="text-xl md:text-3xl lg:text-4xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-[0.85] break-words drop-shadow-lg">
+    <div className="absolute inset-0 p-4 md:p-6 flex flex-col justify-end items-center text-center z-20 pb-4 md:pb-6">
+      <h3 className="text-lg md:text-xl lg:text-2xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors leading-[0.85] break-words drop-shadow-lg">
         {studio.name}
       </h3>
     </div>

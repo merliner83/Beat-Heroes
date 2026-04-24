@@ -113,10 +113,10 @@ export default function StudioPage() {
                )}
                <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent" />
             </div>
-            <h1 className="text-4xl md:text-7xl font-black mb-5 md:mb-7 uppercase italic tracking-tighter leading-none text-white">
+            <h1 className="text-3xl md:text-6xl font-black mb-5 md:mb-7 uppercase italic tracking-tighter leading-none text-white">
               {studio.name}
             </h1>
-            <p className="text-base md:text-lg opacity-40 font-medium max-w-2xl leading-relaxed mb-8">
+            <p className="text-sm md:text-lg opacity-40 font-medium max-w-2xl leading-relaxed mb-8">
               {studio.description}
             </p>
 
@@ -125,12 +125,12 @@ export default function StudioPage() {
                 href={studio.linkUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-8 py-4 transition-all group"
+                className="inline-flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-6 py-3 transition-all group"
               >
-                <span className="text-sm font-black uppercase tracking-widest text-primary italic">
+                <span className="text-xs font-black uppercase tracking-widest text-primary italic">
                   {studio.linkLabel || 'Visit Studio'}
                 </span>
-                <ExternalLink className="w-5 h-5 text-white/40 group-hover:text-white transition-colors" />
+                <ExternalLink className="w-4 h-4 text-white/40 group-hover:text-white transition-colors" />
               </a>
             )}
           </div>
@@ -140,7 +140,7 @@ export default function StudioPage() {
         <div className="mb-14 md:mb-20">
           <div className="flex items-center gap-3 mb-6">
             <Music className="w-6 h-6 text-primary" />
-            <h2 className="text-sm font-black uppercase tracking-[0.5em] text-white">TRACKS</h2>
+            <h2 className="text-xs font-black uppercase tracking-[0.5em] text-white">TRACKS</h2>
           </div>
           {studioTracks.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -151,7 +151,7 @@ export default function StudioPage() {
                       <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[11px] font-black italic text-white/20">
                         {(idx + 1).toString().padStart(2, '0')}
                       </div>
-                      <h4 className="text-base md:text-lg font-black italic uppercase tracking-tight group-hover:text-primary transition-colors">{track.name}</h4>
+                      <h4 className="text-sm md:text-base font-black italic uppercase tracking-tight group-hover:text-primary transition-colors">{track.name}</h4>
                     </div>
                     <Button 
                       size="icon" 
@@ -180,7 +180,7 @@ export default function StudioPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Zap className="w-6 h-6 text-[#FFEA00]" />
-              <h2 className="text-sm font-black uppercase tracking-[0.5em] text-white">GAMES</h2>
+              <h2 className="text-xs font-black uppercase tracking-[0.5em] text-white">GAMES</h2>
             </div>
             {isLoadingLevels && <Loader2 className="w-5 h-5 animate-spin opacity-20" />}
           </div>
@@ -202,13 +202,13 @@ export default function StudioPage() {
                     <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
                       <div className="flex-1 w-full">
                         <div className="flex flex-wrap items-center gap-4 mb-4">
-                          <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter leading-none group-hover:text-primary transition-colors">
+                          <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter leading-none group-hover:text-primary transition-colors">
                             {game.name}
                           </h3>
                           
                           <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded border border-white/5">
-                            <Music className="w-3.5 h-3.5 text-primary" />
-                            <span className="text-[11px] font-black italic uppercase text-white/40">
+                            <Music className="w-3 h-3 text-primary" />
+                            <span className="text-[10px] font-black italic uppercase text-white/40">
                               {getTrackName(game)}
                             </span>
                           </div>
@@ -222,7 +222,7 @@ export default function StudioPage() {
                               {diffInfo.label}
                             </Badge>
                             {game.bpm && (
-                              <span className="text-sm font-black italic text-[#FFEA00]">
+                              <span className="text-xs font-black italic text-[#FFEA00]">
                                 {game.bpm} BPM
                               </span>
                             )}
@@ -233,13 +233,13 @@ export default function StudioPage() {
                           <div className="flex justify-between items-center mb-2">
                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Mastery</span>
                             <span className={cn(
-                              "text-xs font-black italic",
+                              "text-[10px] font-black italic",
                               overallProgress >= 80 ? "text-[#00E676]" : "text-primary"
                             )}>
                               {overallProgress}%
                             </span>
                           </div>
-                          <Progress value={overallProgress} className="h-2 bg-white/5" />
+                          <Progress value={overallProgress} className="h-1.5 bg-white/5" />
                         </div>
                       </div>
                     </div>
@@ -254,17 +254,17 @@ export default function StudioPage() {
                             className="block"
                           >
                             <div className={cn(
-                              "h-16 md:h-20 border flex flex-col items-center justify-center transition-all rounded-xl relative overflow-hidden group/level",
+                              "h-14 md:h-16 border flex flex-col items-center justify-center transition-all rounded-xl relative overflow-hidden group/level",
                               progress ? "border-[#00E676]/30 bg-[#00E676]/5" : "border-white/5 bg-white/2 hover:bg-white/5 hover:border-white/10"
                             )}>
-                              <div className="text-xs md:text-base flex items-center gap-1.5 uppercase italic font-black transition-colors group-hover/level:text-primary">
+                              <div className="text-xs md:text-sm flex items-center gap-1.5 uppercase italic font-black transition-colors group-hover/level:text-primary">
                                 LVL {level.difficulty}
-                                <ChevronRight className="w-4 h-4" />
+                                <ChevronRight className="w-3 h-3" />
                               </div>
                               {progress && (
                                 <div className="mt-1 flex items-center gap-1 bg-[#00E676]/20 px-2 py-0.5 rounded-full border border-[#00E676]/30">
-                                  <Trophy className="w-3 h-3 text-[#00E676]" />
-                                  <span className="text-[10px] font-black text-[#00E676]">{progress.accuracy}%</span>
+                                  <Trophy className="w-2.5 h-2.5 text-[#00E676]" />
+                                  <span className="text-[9px] font-black text-[#00E676]">{progress.accuracy}%</span>
                                 </div>
                               )}
                             </div>
