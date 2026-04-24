@@ -96,23 +96,33 @@ export default function HomePage() {
   }, [user, auth]);
 
   useEffect(() => {
-    if (user && db && !profile && !isUserLoading) {
-      const userRef = doc(db, 'users', user.uid);
-      const data = { 
-        uid: user.uid, 
-        email: user.email || '', 
-        streetCred: 0, 
-        role: 'free' 
-      };
-      setDoc(userRef, data, { merge: true })
-        .catch(async (error) => {
-          const permissionError = new FirestorePermissionError({
-            path: userRef.path,
-            operation: 'write',
-            requestResourceData: data,
+    if (user && db && !isUserLoading) {
+      // Sync email if missing or changed, or initialize profile if it doesn't exist
+      const needsSync = !profile || (profile.email !== (user.email ?? ''));
+
+      if (needsSync) {
+        const userRef = doc(db, 'users', user.uid);
+        const data: any = { 
+          uid: user.uid, 
+          email: user.email ?? '', 
+        };
+
+        // Set default stats only if the profile is completely new
+        if (!profile) {
+          data.streetCred = 0;
+          data.role = 'free';
+        }
+
+        setDoc(userRef, data, { merge: true })
+          .catch(async (error) => {
+            const permissionError = new FirestorePermissionError({
+              path: userRef.path,
+              operation: 'write',
+              requestResourceData: data,
+            });
+            errorEmitter.emit('permission-error', permissionError);
           });
-          errorEmitter.emit('permission-error', permissionError);
-        });
+      }
     }
   }, [user, profile, isUserLoading, db]);
 
