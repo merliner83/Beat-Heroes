@@ -131,7 +131,8 @@ export default function HomePage() {
       const mockStudios: Partial<Studio>[] = [
         { id: 'std-neon', name: 'Neon Heights', description: 'The core of futuristic beats.', coverColor: '#993DEB', district: 'X-District', tags: ['Techno', 'Electro'] },
         { id: 'std-bass', name: 'Bass Bunker', description: 'Deep vibes only.', coverColor: '#3838FA', district: 'Underground', tags: ['Bass', 'Trap'] },
-        { id: 'std-synth', name: 'Synth Wave', description: 'Retro-future soul.', coverColor: '#EB3D99', district: 'Skyline', tags: ['Retrowave', 'Synth'] }
+        { id: 'std-synth', name: 'Synth Wave', description: 'Retro-future soul.', coverColor: '#EB3D99', district: 'Skyline', tags: ['Retrowave', 'Synth'] },
+        { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: ['Hip-Hop', 'Soul'] }
       ];
       for (const s of mockStudios) {
         await setDoc(doc(db, 'studios', s.id!), s, { merge: true });
@@ -140,7 +141,12 @@ export default function HomePage() {
       // 3. Sync Tracks (Skip url)
       const mockTracks: Partial<Track>[] = [
         { id: 'tr-cyber', name: 'Cyber Drift', author: 'PulseMaster' },
-        { id: 'tr-echo', name: 'Deep Echo', author: 'SubVoid' }
+        { id: 'tr-echo', name: 'Deep Echo', author: 'SubVoid' },
+        { id: 'tr-g1', name: 'Track 1', author: 'Gabriel' },
+        { id: 'tr-g2', name: 'Track 2', author: 'Gabriel' },
+        { id: 'tr-g3', name: 'Track 3', author: 'Gabriel' },
+        { id: 'tr-g4', name: 'Track 4', author: 'Gabriel' },
+        { id: 'tr-g5', name: 'Track 5', author: 'Gabriel' }
       ];
       for (const t of mockTracks) {
         await setDoc(doc(db, 'tracks', t.id!), t, { merge: true });
@@ -152,13 +158,18 @@ export default function HomePage() {
         { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, minRole: 'admin' },
         { id: 'global-notation-pro', studioId: 'learn-center', name: 'Notation Pro', type: 'notation-pro', difficulty: 1, minRole: 'admin' },
         { id: 'game-neon-1', studioId: 'std-neon', name: 'Pulse Producer', type: 'rhythm-producer', difficulty: 1, minRole: 'free', trackId: 'tr-cyber' },
-        { id: 'game-bass-1', studioId: 'std-bass', name: 'Vinyl Hunter', type: 'sample-hunter', difficulty: 2, minRole: 'pro', trackId: 'tr-echo' }
+        { id: 'game-bass-1', studioId: 'std-bass', name: 'Vinyl Hunter', type: 'sample-hunter', difficulty: 2, minRole: 'pro', trackId: 'tr-echo' },
+        // Gabriel's Games
+        { id: 'game-g1', studioId: 'std-gabriel', name: 'Soul Session 1', type: 'rhythm-producer', difficulty: 1, minRole: 'free', trackId: 'tr-g1' },
+        { id: 'game-g2', studioId: 'std-gabriel', name: 'Soul Session 2', type: 'rhythm-producer', difficulty: 2, minRole: 'free', trackId: 'tr-g2' },
+        { id: 'game-g3', studioId: 'std-gabriel', name: 'Soul Session 3', type: 'rhythm-producer', difficulty: 3, minRole: 'pro', trackId: 'tr-g3' },
+        { id: 'game-g4', studioId: 'std-gabriel', name: 'Soul Session 4', type: 'rhythm-producer', difficulty: 4, minRole: 'producer', trackId: 'tr-g4' },
+        { id: 'game-g5', studioId: 'std-gabriel', name: 'Soul Session 5', type: 'rhythm-producer', difficulty: 4, minRole: 'producer', trackId: 'tr-g5' }
       ];
 
       for (const g of mockGames) {
         await setDoc(doc(db, 'games', g.id!), g, { merge: true });
         
-        // 5. Sync Levels
         const levelId = g.id === 'global-ear-training' ? 'global-ear-training' : `${g.id}-lvl1`;
         await setDoc(doc(db, 'levels', levelId), {
           id: levelId,
@@ -167,7 +178,6 @@ export default function HomePage() {
           name: 'Basics'
         }, { merge: true });
 
-        // 6. Sync Sounds (Skip sampleUrl)
         if (g.type === 'rhythm-producer') {
           const sounds: Partial<Sound>[] = [
             { id: `${levelId}-kick`, levelId, type: 'kick', patternIds: ['pattern-4onfloor'] }
@@ -200,7 +210,7 @@ export default function HomePage() {
         await setDoc(doc(db, 'articles', art.id!), art, { merge: true });
       }
 
-      toast({ title: "Rack Synchronized!", description: "Metadata, Structure and Knowledge Base updated (Media omitted)." });
+      toast({ title: "Rack Synchronized!", description: "Studio 'Gabriel Beats' and 5 tracks added (Media omitted)." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
