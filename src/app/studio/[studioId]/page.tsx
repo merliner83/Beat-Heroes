@@ -89,14 +89,6 @@ export default function StudioPage() {
     };
   }, [audio]);
 
-  const getTrackName = (game: Game) => {
-    if (game.trackId && allTracks) {
-      const track = allTracks.find(t => t.id === game.trackId);
-      if (track) return track.name;
-    }
-    return game.backingTrackUrl?.split('/').pop()?.replace('.ogg', '') || 'Generic Track';
-  };
-
   const getLevelProgress = (levelId: string) => {
     return userProgress?.find(p => p.levelId === levelId);
   };
@@ -242,13 +234,6 @@ export default function StudioPage() {
                             {game.name}
                           </h3>
                           
-                          <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded border border-white/5">
-                            <Music className="w-3 h-3 text-primary" />
-                            <span className="text-[10px] font-black italic uppercase text-white/40">
-                              {getTrackName(game)}
-                            </span>
-                          </div>
-
                           <div className="flex items-center gap-3">
                             <Badge 
                               variant="outline" 
