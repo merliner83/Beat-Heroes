@@ -23,9 +23,20 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, increment, setDoc, serverTimestamp, collection, query, where } from 'firebase/firestore';
 
-const FREQUENCY_STEPS = [
-  20, 40, 60, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 18000, 20000
+const FREQUENCY_CONFIG = [
+  { freq: 31, label: 'Sub-Bass', q: 0.7 },
+  { freq: 63, label: 'Kick-Grundton', q: 0.8 },
+  { freq: 125, label: 'Mumpf', q: 0.9 },
+  { freq: 250, label: 'Boxiness', q: 1.0 },
+  { freq: 500, label: 'Körper', q: 1.1 },
+  { freq: 1000, label: 'Telefon', q: 1.2 },
+  { freq: 2000, label: 'Präsenz', q: 1.4 },
+  { freq: 4000, label: 'Klarheit', q: 1.6 },
+  { freq: 8000, label: 'Brillanz', q: 1.8 },
+  { freq: 16000, label: 'Luftigkeit', q: 2.0 },
 ];
+
+const FREQUENCY_STEPS = FREQUENCY_CONFIG.map(c => c.freq);
 
 const TOTAL_ROUNDS = 6;
 
@@ -91,16 +102,19 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
       setIsPlaying(false);
     } else {
       const freq = freqOverride !== undefined ? freqOverride : (mode === 'quiz' ? targetFreq : currentFreq);
-      await audioEngine.startNoise(freq, 2.5, 'peaking');
+      const config = FREQUENCY_CONFIG.find(c => c.freq === freq);
+      const q = config?.q || 1;
+      await audioEngine.startNoise(freq, q, 'peaking');
       setIsPlaying(true);
     }
   };
 
   const handleFrequencyChange = (val: number[]) => {
     const freq = FREQUENCY_STEPS[val[0]];
+    const config = FREQUENCY_CONFIG.find(c => c.freq === freq);
     setCurrentFreq(freq);
     if (mode === 'explore' && isPlaying) {
-      audioEngine?.updateFilter(freq, 1);
+      audioEngine?.updateFilter(freq, config?.q || 1);
     }
   };
 
@@ -174,6 +188,8 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
     return freq >= 1000 ? "KHZ" : "HZ";
   };
 
+  const currentConfig = FREQUENCY_CONFIG.find(c => c.freq === currentFreq);
+
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-4 font-body overflow-hidden selection:bg-primary">
       <header className="flex justify-between items-center h-20 shrink-0 z-50 px-6 md:px-10 bg-black/40 backdrop-blur-xl border-b border-white/5 rounded-t-3xl">
@@ -229,7 +245,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
           </div>
         )}
 
-        {/* Quiz Cancel Button - Outside of Quiz Content Flow */}
+        {/* Quiz Cancel Button */}
         {(quizStatus === 'PLAYING' || quizStatus === 'FEEDBACK') && (
           <div className="absolute top-4 right-4 md:right-10 z-[60]">
             <Button 
@@ -254,13 +270,18 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
             </div>
 
             <div className="gemini-border-primary">
-              <div className="p-10 md:p-14 bg-black/60 backdrop-blur-3xl space-y-10 rounded-xl border border-white/5 overflow-hidden">
+              <div className="p-10 md:p-14 bg-black/60 backdrop-blur-3xl space-y-8 rounded-xl border border-white/5 overflow-hidden">
                 <div className="flex flex-col items-center px-4">
-                  <span className="text-4xl md:text-6xl font-black italic text-gradient leading-tight pr-8">
-                    {formatFreqValue(currentFreq)}
-                  </span>
-                  <span className="text-lg md:text-xl font-black opacity-20 uppercase tracking-[0.4em] mt-3">
-                    {getFreqUnit(currentFreq)}
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl md:text-6xl font-black italic text-gradient leading-tight">
+                      {formatFreqValue(currentFreq)}
+                    </span>
+                    <span className="text-lg md:text-xl font-black opacity-20 uppercase tracking-[0.4em]">
+                      {getFreqUnit(currentFreq)}
+                    </span>
+                  </div>
+                  <span className="text-sm md:text-lg font-black opacity-40 uppercase tracking-widest mt-2">
+                    {currentConfig?.label}
                   </span>
                 </div>
                 <Slider 
@@ -272,9 +293,9 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   className="py-8"
                 />
                 <div className="flex justify-between text-[10px] font-black opacity-20 uppercase tracking-widest px-1">
-                  <span>20 HZ</span>
+                  <span>31 HZ</span>
                   <span>1 KHZ</span>
-                  <span>20 KHZ</span>
+                  <span>16 KHZ</span>
                 </div>
               </div>
             </div>
@@ -292,7 +313,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
         )}
 
         {mode === 'quiz' && (
-          <div className="w-full max-w-2xl animate-in slide-in-from-bottom-8 duration-700">
+          <div className="w-full max-w-3xl animate-in slide-in-from-bottom-8 duration-700">
             {quizStatus === 'IDLE' && (
               <div className="text-center space-y-10 mt-6">
                 <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto border border-primary/20">
@@ -318,7 +339,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
             )}
 
             {(quizStatus === 'PLAYING' || quizStatus === 'FEEDBACK') && (
-              <div className="space-y-16 pt-16 md:pt-20">
+              <div className="space-y-12 pt-16 md:pt-20">
                 <div className="flex justify-between items-center bg-white/5 px-8 py-5 rounded-xl border border-white/5 backdrop-blur-md">
                    <div className="text-[11px] font-black uppercase tracking-widest opacity-40">
                      Round {round} / {TOTAL_ROUNDS}
@@ -342,10 +363,11 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                    <p className="text-[10px] opacity-40 uppercase tracking-[0.3em]">Which frequency is highlighted?</p>
                 </div>
 
-                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                   {FREQUENCY_STEPS.map(freq => {
                     const isCorrect = freq === targetFreq;
                     const isGuessed = freq === lastGuess;
+                    const config = FREQUENCY_CONFIG.find(c => c.freq === freq);
                     
                     let containerClass = "bg-white/5 border-white/10 hover:border-white/20 transition-all duration-300";
                     let isNeon = !lastGuess;
@@ -369,15 +391,20 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                           disabled={quizStatus === 'FEEDBACK'}
                           onClick={() => handleGuess(freq)}
                           className={cn(
-                            "w-full h-18 md:h-24 rounded-lg border flex flex-col items-center justify-center transition-all duration-300 gap-1",
+                            "w-full h-24 md:h-32 rounded-lg border flex flex-col items-center justify-center transition-all duration-300 gap-1",
                             containerClass
                           )}
                         >
-                          <span className="text-lg md:text-2xl font-black italic leading-none pr-2">
-                            {formatFreqValue(freq)}
-                          </span>
-                          <span className="text-[9px] md:text-[10px] font-black opacity-50 uppercase tracking-widest">
-                            {getFreqUnit(freq)}
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-lg md:text-2xl font-black italic leading-none">
+                              {formatFreqValue(freq)}
+                            </span>
+                            <span className="text-[9px] md:text-[10px] font-black opacity-50 uppercase tracking-widest">
+                              {getFreqUnit(freq)}
+                            </span>
+                          </div>
+                          <span className="text-[10px] md:text-xs font-black opacity-40 uppercase tracking-tight line-clamp-1 text-center px-1">
+                            {config?.label}
                           </span>
                         </Button>
                       </div>
