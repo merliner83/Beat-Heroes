@@ -135,7 +135,7 @@ export default function HomePage() {
       const miscUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.wav?alt=media&token=bf90be29-fd25-4fad-bc2c-9483840246ba';
       const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
-      // 1. Patterns
+      // 1. Patterns (Each is 8 bars / 128 steps)
       await setDoc(doc(db, 'patterns', 'pattern-4onfloor'), {
         id: 'pattern-4onfloor',
         name: '4-on-the-Floor',
@@ -231,29 +231,31 @@ export default function HomePage() {
             }, { merge: true });
 
             if (config.type !== 'ear-training' && config.type !== 'notation-pro') {
+               // Each sound uses repeated patterns to cover 16 bars (2 x 8 bars)
+               
                // Level 1: Kick
                await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), {
-                 id: `${levelId}-kick`, levelId, type: 'kick', patternIds: ['pattern-4onfloor'], sampleUrl: kickUrl
+                 id: `${levelId}-kick`, levelId, type: 'kick', patternIds: ['pattern-4onfloor', 'pattern-4onfloor'], sampleUrl: kickUrl
                }, { merge: true });
 
                // Level 2+: Clap
                if (i >= 2) {
                  await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`), {
-                   id: `${levelId}-clap`, levelId, type: 'clap', patternIds: ['pattern-offbeat'], sampleUrl: clapUrl
+                   id: `${levelId}-clap`, levelId, type: 'clap', patternIds: ['pattern-offbeat', 'pattern-offbeat'], sampleUrl: clapUrl
                  }, { merge: true });
                }
 
                // Level 3+: Hats
                if (i >= 3) {
                  await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`), {
-                   id: `${levelId}-hats`, levelId, type: 'percs', patternIds: ['pattern-8ths'], sampleUrl: hatsUrl
+                   id: `${levelId}-hats`, levelId, type: 'percs', patternIds: ['pattern-8ths', 'pattern-8ths'], sampleUrl: hatsUrl
                  }, { merge: true });
                }
 
                // Level 4: Misc
                if (i >= 4) {
                  await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`), {
-                   id: `${levelId}-misc`, levelId, type: 'misc', patternIds: ['pattern-onehit'], sampleUrl: miscUrl
+                   id: `${levelId}-misc`, levelId, type: 'misc', patternIds: ['pattern-onehit', 'pattern-onehit'], sampleUrl: miscUrl
                  }, { merge: true });
                }
             }
@@ -283,7 +285,7 @@ export default function HomePage() {
         await setDoc(doc(db, 'articles', art.id), art, { merge: true });
       }
 
-      toast({ title: "Rack Fully Synced!", description: "All attributes are now present in Firestore and ready for your URLs." });
+      toast({ title: "Rack Fully Synced!", description: "All attributes are now present in Firestore and patterns cover 16 bars." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
