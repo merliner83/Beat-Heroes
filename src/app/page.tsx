@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -161,7 +160,8 @@ export default function HomePage() {
           description: 'Experimental soundscapes.', 
           coverColor: '#EB3D99', 
           district: 'The Lab', 
-          tags: ['Glitch', 'Ambient'] 
+          tags: ['Glitch', 'Ambient'],
+          imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudio%202.png?alt=media&token=96cb0afc-36e3-4c58-8e5d-45a68cd4673a'
         },
         { 
           id: 'std-noxxos', 
