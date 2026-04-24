@@ -144,7 +144,43 @@ export default function HomePage() {
         }, { merge: true });
       }
 
-      // Detailed Article for Producing
+      // Detailed Articles for Phasen
+      const phaseDetailArticles = [
+        { id: 'article-composing', categoryId: 'composing', title: 'Composing Deep Dive', content: `Composing ist das Herzstück deiner musikalischen Identität.
+
+# Melodien & Harmonien
+In diesem Guide lernst du, wie du eingängige Melodien entwickelst und die richtigen Akkorde wählst, um Emotionen zu wecken.
+
+PHASE:COMPOSING|Entwickle deine eigene musikalische Sprache durch Experimente mit Skalen und Rhythmen.` },
+        { id: 'article-recording', categoryId: 'recording', title: 'Recording Deep Dive', content: `Die Qualität deiner Aufnahme bestimmt das Endergebnis.
+
+# Das perfekte Signal
+Lerne alles über Mikrofonpositionierung, Gain-Staging und die Akustik deines Raumes.
+
+PHASE:RECORDING|Nur eine saubere Aufnahme lässt sich später professionell bearbeiten.` },
+        { id: 'article-editing', categoryId: 'editing', title: 'Editing Deep Dive', content: `Editing ist die unsichtbare Kunst der Perfektion.
+
+# Timing & Tuning
+Vocal Alignment, Drum-Quantisierung und Pitch-Korrektur sind hier die Hauptthemen.` },
+        { id: 'article-arrangement', categoryId: 'composing', title: 'Arrangement Deep Dive', content: `Arrangement gibt deinem Song die nötige Spannung.
+
+# Energiefluss
+Wie baust du einen Drop? Wo macht eine Bridge Sinn? Lerne die Strukturen moderner Hits kennen.` },
+        { id: 'article-sounddesign', categoryId: 'composing', title: 'Sounddesign Deep Dive', content: `Erschaffe Klänge, die noch niemand gehört hat.
+
+# Synthese & Layering
+Von Sub-Bässen bis zu granularen Texturen – hier dreht sich alles um die Kreation einzigartiger Sounds.` },
+        { id: 'article-mixing-mastering', categoryId: 'intro', title: 'Mixing & Mastering Deep Dive', content: `Der finale Schliff für deinen Track.
+
+# Die Balance finden
+EQing, Kompression und Limiting. Sorge dafür, dass dein Beat überall massiv klingt.` }
+      ];
+
+      for (const art of phaseDetailArticles) {
+        await setDoc(doc(db, 'articles', art.id), art, { merge: true });
+      }
+
+      // Main Producing Article with Links
       const producingArticle = {
         id: 'article-producing',
         categoryId: 'intro',
@@ -154,17 +190,17 @@ export default function HomePage() {
 # Die Phasen der Musikproduktion
 
 PHASE:COMPOSING|*Ideenfindung und Songwriting:*
-Zu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben. In diesem Schritt werden auch die Struktur und das Arrangement des Songs festgelegt.
+Zu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben. In diesem Schritt werden auch die Struktur und das Arrangement des Songs festgelegt.|article-composing
 
-PHASE:RECORDING|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente. Ein Producer sorgt dafür, dass die Aufnahmen klar und hochwertig sind.
+PHASE:RECORDING|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente. Ein Producer sorgt dafür, dass die Aufnahmen klar und hochwertig sind.|article-recording
 
-PHASE:EDITING|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen (z. B. Timing-Korrekturen).
+PHASE:EDITING|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen (z. B. Timing-Korrekturen).|article-editing
 
-PHASE:ARRANGEMENT|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat. Hier geht es darum, die richtigen Instrumente und Sounds auszuwählen.
+PHASE:ARRANGEMENT|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat. Hier geht es darum, die richtigen Instrumente und Sounds auszuwählen.|article-arrangement
 
-PHASE:SOUNDDESIGN|In dieser Phase geht es darum, die perfekten Klänge zu kreieren oder auszuwählen, um dem Track eine einzigartige Atmosphäre und Charakter zu verleihen.
+PHASE:SOUNDDESIGN|In dieser Phase geht es darum, die perfekten Klänge zu kreieren oder auszuwählen, um dem Track eine einzigartige Atmosphäre und Charakter zu verleihen.|article-sounddesign
 
-PHASE:MIXING / MASTERING|Im Mixing werden alle Spuren harmonisch abgestimmt. Das abschließende Mastering stellt sicher, dass der Song auf allen Wiedergabegeräten (Club, Kopfhörer, Radio) professionell und konsistent klingt.
+PHASE:MIXING / MASTERING|Im Mixing werden alle Spuren harmonisch abgestimmt. Das abschließende Mastering stellt sicher, dass der Song auf allen Wiedergabegeräten (Club, Kopfhörer, Radio) professionell und konsistent klingt.|article-mixing-mastering
 
 Ein Beat in 3 Minuten:
 https://www.youtube.com/watch?v=ihyTXOak27c

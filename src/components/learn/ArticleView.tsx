@@ -16,7 +16,8 @@ import {
   Sliders, 
   Disc,
   Play,
-  Sparkles
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -39,10 +40,14 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
   const renderContent = (content: string) => {
     const blocks = content.split('\n\n');
     return blocks.map((block, idx) => {
-      // Check for Phase Card Marker (Format: PHASE:Title|Content)
+      // Check for Phase Card Marker (Format: PHASE:Title|Content|linkId)
       if (block.startsWith('PHASE:')) {
-        const [titleAndPhase, description] = block.replace('PHASE:', '').split('|');
-        const Icon = PHASE_ICONS[titleAndPhase.trim()] || Play;
+        const parts = block.replace('PHASE:', '').split('|');
+        const titleAndPhase = parts[0]?.trim() || '';
+        const description = parts[1]?.trim() || '';
+        const linkId = parts[2]?.trim() || '';
+        
+        const Icon = PHASE_ICONS[titleAndPhase] || Play;
 
         // Extract first line for potential italic formatting if it starts/ends with *
         const formattedDescription = description.split('\n').map((line, lIdx) => {
@@ -66,6 +71,15 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
               <p className="text-sm md:text-base text-white/60 leading-relaxed font-normal">
                 {formattedDescription}
               </p>
+              
+              {linkId && (
+                <Link href={`/learn/article/${linkId}`} className="mt-6 block">
+                  <Button variant="ghost" size="sm" className="w-full justify-between h-10 px-4 rounded-lg bg-primary/5 hover:bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary transition-all">
+                    Deep Dive: {titleAndPhase}
+                    <ArrowRight className="w-3.5 h-3.5 ml-2" />
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         );
