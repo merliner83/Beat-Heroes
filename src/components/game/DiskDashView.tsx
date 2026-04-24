@@ -57,7 +57,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
   const lastSpawnRef = useRef<number>(0);
 
   const bpm = game.bpm || 128;
-  const SESSION_DURATION = (24 * 4 * 60) / bpm; // 24 Bars
+  const SESSION_DURATION = (20 * 4 * 60) / bpm; // 20 Bars
   const FADE_DURATION = 2;
   const FLIGHT_TIME = 1500; // ms to reach target
 
@@ -325,7 +325,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
 
         {isFinished && (
           <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[110] p-6 backdrop-blur-3xl">
-            <div className="text-center space-y-12 max-w-sm">
+            <div className="text-center space-y-12 max-sm">
               <div className="relative inline-block">
                 <Trophy className={cn("w-28 h-28 mx-auto", score.accuracy >= PASS_THRESHOLD ? "text-[#FFEA00] drop-shadow-[0_0_50px_rgba(255,234,0,0.5)]" : "text-white/10")} />
                 {score.accuracy >= PASS_THRESHOLD && <Sparkles className="absolute -top-4 -right-4 w-10 h-10 text-[#FFEA00] animate-pulse" />}

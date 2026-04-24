@@ -73,8 +73,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const { toast } = useToast();
 
   const bpm = game.bpm || 128;
-  const TOTAL_STEPS = 384; // 24 Bars * 16 steps
-  const SESSION_DURATION = (24 * 4 * 60) / bpm; // 24 Bars
+  const TOTAL_STEPS = 320; // 20 Bars * 16 steps
+  const SESSION_DURATION = (20 * 4 * 60) / bpm; // 20 Bars
   const FADE_DURATION = 2;
 
   const activeSoundTypes: SoundType[] = ['kick'];
@@ -86,11 +86,16 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   const soundsWithPatterns = filteredSounds.map(sound => {
     const uniqueSteps = new Set<number>();
+    
+    // Pattern Sequence: Intro (4 bars), Verse (8 bars), Refrain (8 bars)
+    // 4 bars = 64 steps
+    // 8 bars = 128 steps
+    const patternOffsets = [0, 64, 192]; 
+
     sound.patternIds?.forEach((pId, index) => {
       const pattern = patterns.find(p => p.id === pId);
-      if (pattern) {
-        // Offset each 8-bar pattern by 128 steps (16 steps/bar * 8 bars)
-        const offset = index * 128; 
+      if (pattern && index < patternOffsets.length) {
+        const offset = patternOffsets[index]; 
         pattern.steps.forEach(s => {
           const actualStep = s + offset;
           if (actualStep < TOTAL_STEPS) {
@@ -214,7 +219,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
           const tolerance = level.difficulty <= 2 ? 1.8 : 1.4;
 
-          // Fade starts AFTER 24 bars
+          // Fade starts AFTER 20 bars
           if (t >= SESSION_DURATION && !hasStartedFade) {
             setHasStartedFade(true);
             audioEngine.fadeBackingTrack(FADE_DURATION);

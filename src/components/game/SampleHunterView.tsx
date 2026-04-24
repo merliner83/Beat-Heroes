@@ -76,7 +76,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const requestRef = useRef<number>(null);
 
   const bpm = game.bpm || 128;
-  const SESSION_DURATION = (24 * 4 * 60) / bpm; // 24 Bars
+  const SESSION_DURATION = (20 * 4 * 60) / bpm; // 20 Bars
   const FADE_DURATION = 2;
 
   const SAMPLE_LIFETIME = 
@@ -454,7 +454,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 <LayoutGrid className="w-12 h-12 text-primary animate-pulse" />
               </div>
               <h2 className="text-3xl md:text-4xl font-black mb-3 uppercase italic tracking-tighter">Vinyl Hunter</h2>
-              <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 mb-6 leading-relaxed">24 Bars Session<br/>Capture as many as you can</p>
+              <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 mb-6 leading-relaxed">20 Bars Session<br/>Capture as many as you can</p>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-18 bg-white text-black font-black uppercase italic rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.1)]">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate MPC"}
               </Button>

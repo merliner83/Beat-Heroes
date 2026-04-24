@@ -166,16 +166,24 @@ export default function HomePage() {
       
       const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
+      // Pattern Creation (based on 16 steps per bar)
       const patterns = [
-        { id: 'kick-intro', data: { id: 'kick-intro', name: 'Straight Four (Kick)', steps: [0, 32, 64, 96] } },
-        { id: 'kick-verse', data: { id: 'kick-verse', name: 'Kick Verse', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
-        { id: 'kick-refrain', data: { id: 'kick-refrain', name: 'Kick Refrain', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120] } },
-        { id: 'clap-intro', data: { id: 'clap-intro', name: 'Clap Intro', steps: [48, 112] } },
-        { id: 'clap-verse', data: { id: 'clap-verse', name: 'Clap Verse', steps: [16, 48, 80, 112] } },
-        { id: 'clap-refrain', data: { id: 'clap-refrain', name: 'Clap Refrain', steps: [16, 32, 48, 80, 96, 112] } },
-        { id: 'hats-verse', data: { id: 'hats-verse', name: '8th Shaker', steps: [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120] } },
-        { id: 'hats-refrain', data: { id: 'hats-refrain', name: 'Trap Hi-Hats', steps: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124] } },
-        { id: 'misc-fill', data: { id: 'misc-fill', name: 'DubStep / Clave', steps: [60, 124] } },
+        // KICK
+        { id: 'kick-intro', data: { id: 'kick-intro', name: 'Intro Kick', steps: [0, 16, 32, 48] } }, // 1 Schlag pro Takt (4 Takte)
+        { id: 'kick-verse', data: { id: 'kick-verse', name: 'Verse Kick', steps: Array.from({length: 32}, (_, i) => i * 4) } }, // Viertel für 8 Takte (32 Schläge)
+        { id: 'kick-refrain', data: { id: 'kick-refrain', name: 'Refrain Kick', steps: Array.from({length: 64}, (_, i) => i * 2) } }, // Achtel für 8 Takte (64 Schläge)
+        
+        // CLAP
+        { id: 'clap-intro', data: { id: 'clap-intro', name: 'Intro Clap', steps: [48] } }, // Nur am Ende vom Intro
+        { id: 'clap-verse', data: { id: 'clap-verse', name: 'Verse Clap', steps: [16+4, 16+12, 32+4, 32+12, 48+4, 48+12, 64+4, 64+12, 80+4, 80+12, 96+4, 96+12, 112+4, 112+12] } }, // 2 und 4
+        { id: 'clap-refrain', data: { id: 'clap-refrain', name: 'Refrain Clap', steps: Array.from({length: 32}, (_, i) => i * 4 + 4) } }, // Jede 2 und 4 durchgehend
+        
+        // HATS
+        { id: 'hats-verse', data: { id: 'hats-verse', name: '8th Shaker', steps: Array.from({length: 64}, (_, i) => i * 2) } },
+        { id: 'hats-refrain', data: { id: 'hats-refrain', name: 'Trap Hi-Hats', steps: Array.from({length: 128}, (_, i) => i) } }, // 16tel
+        
+        // MISC
+        { id: 'misc-fill', data: { id: 'misc-fill', name: 'DubStep Fill', steps: [60, 124] } },
       ];
 
       for (const p of patterns) {
@@ -233,7 +241,7 @@ export default function HomePage() {
 
       const gameConfigs = [
         { type: 'rhythm-producer' as const, name: 'Beat Hero' },
-        { type: 'disk-dash' as const, name: 'Sample Catcher' },
+        { type: 'disk-dash' as const, name: 'Sonic Dash' },
         { type: 'sample-hunter' as const, name: 'Vinyl Hunter' }
       ];
 
@@ -298,7 +306,7 @@ export default function HomePage() {
                if (i >= 3) {
                  const hatsData = {
                    id: `${levelId}-hats`, levelId, type: 'percs', sampleUrl: hatsUrl,
-                   patternIds: ['hats-verse', 'hats-verse', 'hats-refrain']
+                   patternIds: ['clap-intro', 'hats-verse', 'hats-refrain'] // Intro silent, then 8ths, then 16ths
                  };
                  const sHatsRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`);
                  setDoc(sHatsRef, hatsData, { merge: true });
@@ -308,7 +316,7 @@ export default function HomePage() {
                if (i >= 4) {
                  const miscData = {
                    id: `${levelId}-misc`, levelId, type: 'misc', sampleUrl: miscUrl,
-                   patternIds: ['misc-fill', 'misc-fill', 'misc-fill']
+                   patternIds: ['clap-intro', 'misc-fill', 'misc-fill']
                  };
                  const sMiscRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`);
                  setDoc(sMiscRef, miscData, { merge: true });
