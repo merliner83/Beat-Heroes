@@ -133,6 +133,7 @@ export default function HomePage() {
       const clapUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_Clap_01.wav?alt=media&token=6d31cec5-6412-47af-a039-2d980d669929';
       const hatsUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_HiHat_03.wav?alt=media&token=a5e7b4ac-3af8-49ab-bb6b-557a6e3551bd';
       const miscUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.wav?alt=media&token=bf90be29-fd25-4fad-bc2c-9483840246ba';
+      const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
       // 1. Patterns
       await setDoc(doc(db, 'patterns', 'pattern-4onfloor'), {
@@ -160,48 +161,39 @@ export default function HomePage() {
       }, { merge: true });
 
       // 2. Studios
-      const studios: Partial<Studio>[] = [
-        { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: ['Hip-Hop', 'Soul'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f' },
-        { id: 'std-nintu', name: 'Nintu Music', description: 'Deep melodic explorations.', coverColor: '#993DEB', district: 'Melody District', tags: ['Melodic', 'Techno'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudioo.png?alt=media&token=9a547bdf-a3bf-4a9a-a132-222383e88b1f' },
-        { id: 'std-yoan', name: 'Yoan Beats', description: 'Raw urban textures.', coverColor: '#3838FA', district: 'Underground', tags: ['Trap', 'Urban'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FYoan%20Beats.png?alt=media&token=984099f0-f45b-4836-81d0-35241d774d83' },
-        { id: 'std-dave', name: 'Dave Beats', description: 'Experimental soundscapes.', coverColor: '#EB3D99', district: 'The Lab', tags: ['Glitch', 'Ambient'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudio%202.png?alt=media&token=96cb0afc-36e3-4c58-8e5d-45a68cd4673a' },
-        { id: 'std-noxxos', name: 'Noxxos', description: 'Futuristic club anthems.', coverColor: '#FF3D00', district: 'Skyline', tags: ['Electro', 'House'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FNoxxos%20Studio.png?alt=media&token=fa9f78bc-965b-4af2-bfde-4f0383a87d98' }
+      const studios: Studio[] = [
+        { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: ['Hip-Hop', 'Soul'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f', linkUrl: '', linkLabel: '' },
+        { id: 'std-nintu', name: 'Nintu Music', description: 'Deep melodic explorations.', coverColor: '#993DEB', district: 'Melody District', tags: ['Melodic', 'Techno'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudioo.png?alt=media&token=9a547bdf-a3bf-4a9a-a132-222383e88b1f', linkUrl: '', linkLabel: '' },
+        { id: 'std-yoan', name: 'Yoan Beats', description: 'Raw urban textures.', coverColor: '#3838FA', district: 'Underground', tags: ['Trap', 'Urban'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FYoan%20Beats.png?alt=media&token=984099f0-f45b-4836-81d0-35241d774d83', linkUrl: '', linkLabel: '' },
+        { id: 'std-dave', name: 'Dave Beats', description: 'Experimental soundscapes.', coverColor: '#EB3D99', district: 'The Lab', tags: ['Glitch', 'Ambient'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudio%202.png?alt=media&token=96cb0afc-36e3-4c58-8e5d-45a68cd4673a', linkUrl: '', linkLabel: '' },
+        { id: 'std-noxxos', name: 'Noxxos', description: 'Futuristic club anthems.', coverColor: '#FF3D00', district: 'Skyline', tags: ['Electro', 'House'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FNoxxos%20Studio.png?alt=media&token=fa9f78bc-965b-4af2-bfde-4f0383a87d98', linkUrl: '', linkLabel: '' }
       ];
       for (const s of studios) {
-        await setDoc(doc(db, 'studios', s.id!), s, { merge: true });
+        await setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
       // 3. Tracks for Gabriel Beats
-      const gabrielTracks: Partial<Track>[] = [
-        { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel' },
-        { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel' },
-        { id: 'tr-g3', studioId: 'std-gabriel', name: 'Track 3', author: 'Gabriel' },
-        { id: 'tr-g4', studioId: 'std-gabriel', name: 'Track 4', author: 'Gabriel' },
-        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel' }
+      const gabrielTracks: Track[] = [
+        { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel', url: '' },
+        { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel', url: '' },
+        { id: 'tr-g3', studioId: 'std-gabriel', name: 'Track 3', author: 'Gabriel', url: '' },
+        { id: 'tr-g4', studioId: 'std-gabriel', name: 'Track 4', author: 'Gabriel', url: '' },
+        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel', url: '' }
       ];
       for (const t of gabrielTracks) {
-        await setDoc(doc(db, 'tracks', t.id!), t, { merge: true });
+        await setDoc(doc(db, 'tracks', t.id), t, { merge: true });
       }
 
       // 4. Global Learn Games
-      const globalGames: Partial<Game>[] = [
-        { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1, minRole: 'free' },
-        { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, minRole: 'admin' },
-        { id: 'global-notation-pro', studioId: 'learn-center', name: 'Notation Pro', type: 'notation-pro', difficulty: 1, minRole: 'admin' },
+      const globalGames: Game[] = [
+        { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1, minRole: 'free', backingTrackUrl: '', backgroundImageUrl: '', bpm: 120 },
+        { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, minRole: 'admin', backingTrackUrl: '', backgroundImageUrl: '', bpm: 120 },
+        { id: 'global-notation-pro', studioId: 'learn-center', name: 'Notation Pro', type: 'notation-pro', difficulty: 1, minRole: 'admin', backingTrackUrl: '', backgroundImageUrl: '', bpm: 120 },
       ];
       for (const g of globalGames) {
-        await setDoc(doc(db, 'games', g.id!), g, { merge: true });
+        await setDoc(doc(db, 'games', g.id), g, { merge: true });
         const levelId = g.id === 'global-ear-training' ? 'global-ear-training' : `${g.id}-lvl1`;
         await setDoc(doc(db, 'levels', levelId), { id: levelId, gameId: g.id, difficulty: 1, name: 'Basics' }, { merge: true });
-        if (g.type === 'rhythm-producer') {
-          await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), { 
-            id: `${levelId}-kick`, 
-            levelId, 
-            type: 'kick', 
-            patternIds: ['pattern-4onfloor'], 
-            sampleUrl: kickUrl 
-          }, { merge: true });
-        }
       }
 
       // 5. Studio Games (3 per Studio, 4 Levels each)
@@ -211,8 +203,6 @@ export default function HomePage() {
         { type: 'sample-hunter' as const, name: 'Vinyl Hunter' }
       ];
 
-      const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
-
       for (const s of studios) {
         for (const config of gameConfigs) {
           const gameId = `${s.id}-${config.type}`;
@@ -221,16 +211,16 @@ export default function HomePage() {
           
           await setDoc(doc(db, 'games', gameId), {
             id: gameId,
-            studioId: s.id!,
+            studioId: s.id,
             name: config.name,
             type: config.type,
             difficulty: 1,
             minRole: isSampleCatcher ? 'admin' : 'free',
             bpm: 120,
+            backingTrackUrl: '',
             backgroundImageUrl: isVinylHunter ? vinylHunterBg : ''
           }, { merge: true });
 
-          // 4 Levels per game
           for (let i = 1; i <= 4; i++) {
             const levelId = `${gameId}-lvl${i}`;
             await setDoc(doc(db, 'levels', levelId), {
@@ -240,46 +230,30 @@ export default function HomePage() {
               name: `Level ${i}`
             }, { merge: true });
 
-            if (config.type === 'rhythm-producer' || config.type === 'disk-dash' || config.type === 'sample-hunter') {
-               // Always Add Kick
+            if (config.type !== 'ear-training' && config.type !== 'notation-pro') {
+               // Level 1: Kick
                await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), {
-                 id: `${levelId}-kick`,
-                 levelId,
-                 type: 'kick',
-                 patternIds: ['pattern-4onfloor'],
-                 sampleUrl: kickUrl
+                 id: `${levelId}-kick`, levelId, type: 'kick', patternIds: ['pattern-4onfloor'], sampleUrl: kickUrl
                }, { merge: true });
 
-               // Add Clap for Level 2+
+               // Level 2+: Clap
                if (i >= 2) {
                  await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`), {
-                   id: `${levelId}-clap`,
-                   levelId,
-                   type: 'clap',
-                   patternIds: ['pattern-offbeat'],
-                   sampleUrl: clapUrl
+                   id: `${levelId}-clap`, levelId, type: 'clap', patternIds: ['pattern-offbeat'], sampleUrl: clapUrl
                  }, { merge: true });
                }
 
-               // Add Hats (Percs) for Level 3+
+               // Level 3+: Hats
                if (i >= 3) {
                  await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`), {
-                   id: `${levelId}-hats`,
-                   levelId,
-                   type: 'percs',
-                   patternIds: ['pattern-8ths'],
-                   sampleUrl: hatsUrl
+                   id: `${levelId}-hats`, levelId, type: 'percs', patternIds: ['pattern-8ths'], sampleUrl: hatsUrl
                  }, { merge: true });
                }
 
-               // Add Misc for Level 4
+               // Level 4: Misc
                if (i >= 4) {
                  await setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`), {
-                   id: `${levelId}-misc`,
-                   levelId,
-                   type: 'misc',
-                   patternIds: ['pattern-onehit'],
-                   sampleUrl: miscUrl
+                   id: `${levelId}-misc`, levelId, type: 'misc', patternIds: ['pattern-onehit'], sampleUrl: miscUrl
                  }, { merge: true });
                }
             }
@@ -288,7 +262,7 @@ export default function HomePage() {
       }
 
       // 6. Knowledge Base
-      const articles: Partial<Article>[] = [
+      const articles: Article[] = [
         { id: 'article-producing', categoryId: 'intro', title: 'Producing Basics', minRole: 'free', content: `Was ist Producing? Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.\n\n# Die Phasen der Musikproduktion\n\nPHASE:COMPOSING|*Ideenfindung und Songwriting:*\nZu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.|article-composing\n\nPHASE:RECORDING|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente.|article-recording\n\nPHASE:EDITING|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen.|article-editing\n\nPHASE:ARRANGEMENT|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat.|article-arrangement\n\nPHASE:SOUNDDESIGN|In dieser Phase geht es darum, die perfekten Klänge zu kreieren oder auszuwählen, um dem Track eine einzigartige Atmosphäre zu verleihen.|article-sounddesign\n\nPHASE:MIXING / MASTERING|Im Mixing werden alle Spuren harmonisch abgestimmt. Das abschließende Mastering stellt sicher, dass der Song professionell klingt.|article-mixing-mastering` },
         { id: 'article-composing', categoryId: 'composing', title: 'Composing Deep Dive', minRole: 'admin', content: `Composing ist das Herzstück deiner musikalischen Identität.` },
         { id: 'article-recording', categoryId: 'recording', title: 'Recording Deep Dive', minRole: 'admin', content: `Die Qualität deiner Aufnahme bestimmt das Endergebnis.` },
@@ -306,10 +280,10 @@ export default function HomePage() {
       ];
 
       for (const art of articles) {
-        await setDoc(doc(db, 'articles', art.id!), art, { merge: true });
+        await setDoc(doc(db, 'articles', art.id), art, { merge: true });
       }
 
-      toast({ title: "Rack Fully Synced!", description: "All modules restored with multi-layer sounds. Sample Catcher deactivated for non-admins." });
+      toast({ title: "Rack Fully Synced!", description: "All attributes are now present in Firestore and ready for your URLs." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
