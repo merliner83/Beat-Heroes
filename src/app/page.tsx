@@ -131,25 +131,66 @@ export default function HomePage() {
         }, { merge: true });
       }
 
+      // Detailed Article for Producing
+      const producingArticle = {
+        id: 'article-producing',
+        categoryId: 'intro',
+        title: 'Producing Basics',
+        content: `# Was ist Producing?
+Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird. Dabei werden Melodien komponiert, Arrangements entwickelt, Instrumente aufgenommen und schließlich alles abgemischt.
+
+# Die Kernbereiche
+Musikproduktion vereint künstlerische Inspiration mit moderner Technologie:
+• Composing: Das Schreiben von Melodien und Akkorden.
+• Recording: Die Aufnahme von Gesang und Instrumenten.
+• Editing: Bearbeiten von Timing, Tönen und Klang.
+• Mixing: Abstimmen von Lautstärke und Effekten.
+• Mastering: Letzter Feinschliff für die Veröffentlichung.
+
+Ein Beat in 3 Minuten (Zaytoven):
+https://www.youtube.com/watch?v=UAs3p3y2_yI
+
+# Die Schritte im Detail
+
+1. Composing & Songwriting:
+Alles beginnt mit einer Idee. In diesem Schritt legst du Melodien, Akkorde und die Struktur des Songs (Intro, Vers, Chorus) fest.
+
+2. Pre-Produktion:
+Planung ist alles. Welche Instrumente? Welcher Vibe? Hier bereitest du die eigentliche Aufnahme vor.
+
+3. Recording:
+Hier nimmst du Vocals, Gitarren oder Synths auf. Ein Producer sorgt dafür, dass die Signale sauber und hochwertig klingen.
+
+Hilfreiche Insights eines Audio Engineers:
+https://www.youtube.com/watch?v=0_fO82Y6lqI
+
+4. Editing & Sounddesign:
+Nach der Aufnahme optimierst du das Timing und den Klang. Du fügst Effekte hinzu und suchst die perfekten Sounds für dein Arrangement.
+
+5. Mixing:
+Alle Spuren werden zusammengeführt. Du passt Lautstärken an und sorgst dafür, dass jedes Instrument seinen Platz im Stereo-Bild hat.
+
+6. Mastering:
+Der finale Schritt. Hier wird der Song so optimiert, dass er auf allen Geräten – vom Radio bis zum Club – professionell und druckvoll klingt.`,
+        imageUrls: [
+          'https://picsum.photos/seed/studio-setup/1200/800',
+          'https://picsum.photos/seed/mixing-desk/1200/800',
+          'https://picsum.photos/seed/monitor-speakers/1200/800'
+        ]
+      };
+
+      await setDoc(doc(db, 'articles', producingArticle.id), producingArticle, { merge: true });
+
       // Mock Articles for Knowledge Base
       const mockArticles = [
-        {
-          id: 'article-producing',
-          categoryId: 'intro',
-          title: 'Producing Basics',
-          content: 'Music production is the process of creating a musical recording. This lab covers everything from arrangement to sound design.\n\nFirst, you need to understand your DAW (Digital Audio Workstation). It is your digital studio where all the magic happens.',
-          videoUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/samples%2Ftutorial-portrait.mp4?alt=media', // Fallback placeholder logic needed or actual url
-          imageUrls: [
-            'https://picsum.photos/seed/producing-1/800/600',
-            'https://picsum.photos/seed/producing-2/800/600',
-            'https://picsum.photos/seed/producing-3/800/600'
-          ]
-        },
         {
           id: 'article-sampling',
           categoryId: 'intro',
           title: 'The Art of Sampling',
-          content: 'Sampling is the reuse of a portion of a sound recording in another recording.\n\nIn this lab, you learn how to chop samples and turn them into fresh beats. Remember: creative flipping is better than just looping!',
+          content: `# Was ist Sampling?
+Sampling ist die Wiederverwendung eines Teils einer Tonaufnahme in einer neuen Aufnahme.
+
+In diesem Lab lernst du, wie du Samples schneidest und sie in frische Beats verwandelst. Denk daran: Kreatives Flippen ist besser als nur Loopen!`,
           imageUrls: [
             'https://picsum.photos/seed/sampling-1/800/600',
             'https://picsum.photos/seed/sampling-2/800/600'
