@@ -59,6 +59,19 @@ export default function HomePage() {
   const [selectedTag, setSelectedTag] = useState('All');
   const [activeTab, setActiveTab] = useState('studios');
 
+  // Load persisted tab state
+  useEffect(() => {
+    const savedTab = localStorage.getItem('beathero_active_tab');
+    if (savedTab === 'studios' || savedTab === 'learn') {
+      setActiveTab(savedTab);
+    }
+  }, []);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    localStorage.setItem('beathero_active_tab', value);
+  };
+
   useEffect(() => {
     if (!user && auth) {
       initiateAnonymousSignIn(auth);
@@ -289,7 +302,7 @@ In diesem Lab lernst du, wie du Samples schneidest und sie in frische Beats verw
           </div>
 
           <div className="flex items-center justify-center w-full relative">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-auto">
               <TabsList className="bg-white/5 border border-white/5 rounded-full p-1 h-12 md:h-14">
                 <TabsTrigger value="studios" className="rounded-full px-6 md:px-12 data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase italic tracking-tighter transition-all">
                   <LayoutGrid className="w-4 h-4 mr-2 hidden sm:inline" />
