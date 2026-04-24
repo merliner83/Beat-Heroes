@@ -5,10 +5,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useCollection, useDoc, useUser } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
-import { Studio, Game, Level, LevelProgress, Track } from '@/lib/game/types';
+import { Studio, Game, Level, LevelProgress, Track, hasAccess } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, ChevronRight, Trophy, Loader2, Play, Pause, Music, Zap, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Trophy, Loader2, Play, Pause, Music, Zap, ExternalLink, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -23,10 +23,10 @@ const DIFFICULTY_MAP: Record<number, { label: string, color: string }> = {
 export default function StudioPage() {
   const { studioId } = useParams();
   const db = useFirestore();
-  const { user } = useUser();
+  const { user, profile, isUserLoading } = useUser();
 
   const studioRef = useMemoFirebase(() => studioId ? doc(db, 'studios', studioId as string) : null, [db, studioId]);
-  const { data: studio } = useDoc<Studio>(studioRef);
+  const { data: studio, isLoading: isLoadingStudio } = useDoc<Studio>(studioRef);
 
   const gamesQuery = useMemoFirebase(() => {
     if (!db || !studioId) return null;
@@ -61,6 +61,8 @@ export default function StudioPage() {
   const [playingTrack, setPlayingTrack] = useState<string | null>(null);
   const [audio] = useState(() => typeof Audio !== 'undefined' ? new Audio() : null);
 
+  const isLocked = studio && !hasAccess(profile?.role, studio.minRole || 'free');
+
   const toggleTrack = (url: string) => {
     if (!audio || !url) return;
     if (playingTrack === url) {
@@ -94,6 +96,30 @@ export default function StudioPage() {
   const getLevelProgress = (levelId: string) => {
     return userProgress?.find(p => p.levelId === levelId);
   };
+
+  if (isUserLoading || isLoadingStudio) {
+    return (
+      <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 italic">Syncing Rack...</p>
+      </div>
+    );
+  }
+
+  if (isLocked) {
+    return (
+      <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white p-6 text-center">
+        <Lock className="w-16 h-16 text-primary mb-6" />
+        <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2 text-gradient">Access Denied</h2>
+        <p className="text-sm opacity-50 mb-8 max-w-xs font-medium uppercase tracking-widest">
+          {studio?.minRole?.toUpperCase()} Authorization Required
+        </p>
+        <Link href="/">
+          <Button className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Back to Hub</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#050505] text-white p-6 md:p-16 font-body selection:bg-primary selection:text-white">

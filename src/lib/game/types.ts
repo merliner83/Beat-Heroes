@@ -13,6 +13,7 @@ export interface Studio {
   tags?: string[];
   linkUrl?: string;
   linkLabel?: string;
+  minRole?: UserRole;
 }
 
 export interface Track {

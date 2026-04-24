@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -5,19 +6,22 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
-import { Studio, Game, Article, Track, Sound, TriggerPattern } from '@/lib/game/types';
+import { Studio, Game, Article, Track, Sound, TriggerPattern, hasAccess } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { cn } from '@/lib/utils';
-import { Radio, RefreshCw, Loader2, Zap, Search, LayoutGrid, GraduationCap } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, Zap, Search, LayoutGrid, GraduationCap, Lock } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LearnView } from '@/components/learn/LearnView';
 
-const StudioCard = ({ studio }: { studio: Studio }) => (
-  <div className="relative group cursor-pointer transition-all duration-500 overflow-hidden rounded-lg border border-white/5 bg-black/40 hover:border-primary/50 shadow-2xl aspect-square w-full">
+const StudioCard = ({ studio, isLocked }: { studio: Studio; isLocked: boolean }) => (
+  <div className={cn(
+    "relative group cursor-pointer transition-all duration-500 overflow-hidden rounded-lg border border-white/5 bg-black/40 hover:border-primary/50 shadow-2xl aspect-square w-full",
+    isLocked && "opacity-60 grayscale-[0.5]"
+  )}>
     <div className="absolute inset-0 overflow-hidden">
       {studio.imageUrl ? (
         <Image
@@ -31,6 +35,12 @@ const StudioCard = ({ studio }: { studio: Studio }) => (
         <div className="absolute inset-0 opacity-100" style={{ backgroundColor: studio.coverColor }} />
       )}
     </div>
+
+    {isLocked && (
+      <div className="absolute top-4 right-4 z-30 bg-black/60 backdrop-blur-md p-1.5 rounded-full border border-white/10">
+        <Lock className="w-4 h-4 text-white/40" />
+      </div>
+    )}
 
     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10" />
     
@@ -134,6 +144,7 @@ export default function HomePage() {
           coverColor: '#FF9100', 
           district: 'Creative Hub', 
           tags: ['Hip-Hop', 'Soul'],
+          minRole: 'free',
           imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f'
         },
         { 
@@ -143,6 +154,7 @@ export default function HomePage() {
           coverColor: '#993DEB', 
           district: 'Melody District', 
           tags: ['Melodic', 'Techno'],
+          minRole: 'free',
           imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudioo.png?alt=media&token=9a547bdf-a3bf-4a9a-a132-222383e88b1f'
         },
         { 
@@ -152,6 +164,7 @@ export default function HomePage() {
           coverColor: '#3838FA', 
           district: 'Underground', 
           tags: ['Trap', 'Urban'],
+          minRole: 'free',
           imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FYoan%20Beats.png?alt=media&token=984099f0-f45b-4836-81d0-35241d774d83'
         },
         { 
@@ -161,6 +174,7 @@ export default function HomePage() {
           coverColor: '#EB3D99', 
           district: 'The Lab', 
           tags: ['Glitch', 'Ambient'],
+          minRole: 'free',
           imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudio%202.png?alt=media&token=96cb0afc-36e3-4c58-8e5d-45a68cd4673a'
         },
         { 
@@ -170,6 +184,7 @@ export default function HomePage() {
           coverColor: '#FF3D00', 
           district: 'Skyline', 
           tags: ['Electro', 'House'],
+          minRole: 'free',
           imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FNoxxos%20Studio.png?alt=media&token=fa9f78bc-965b-4af2-bfde-4f0383a87d98'
         }
       ];
@@ -231,7 +246,7 @@ export default function HomePage() {
         { id: 'article-mixing-mastering', categoryId: 'recording', title: 'Mixing & Mastering', minRole: 'admin', content: `Der finale Schliff.\n\n# Transparenz & Druck\nSorge dafür, dass dein Track überall fett klingt.` },
         { id: 'article-daws', categoryId: 'daws', title: 'Digital Audio Workstations', minRole: 'admin', content: `Deine DAW ist deine Schaltzentrale.\n\n# Die Wahl der Waffe\nOb Ableton Live, FL Studio oder Logic Pro – lerne die Grundlagen deiner Software kennen.` },
         { id: 'article-effects', categoryId: 'effects', title: 'Effekte & Plugins', minRole: 'admin', content: `Effekte geben deinem Sound Charakter.\n\n# Dynamik & Modulation\nReverb, Delay, Distortion – lerne, wie du diese Werkzeuge gezielt einsetzt.` },
-        { id: 'article-djing', categoryId: 'djing', title: 'DJing & Performance', minRole: 'admin', content: `Bringe deine Musik auf die Bühne.\n\n# Beatmatching & Mixing\nLerne, wie du Tracks nahtlos verbindest und die Crowd kontrollierst.` },
+        { id: 'article-djing', categoryId: 'djing', title: 'DJing & Performance', minRole: 'admin', content: `Bringe deine Musik auf die Bühne.\n\n# Beatmatching & Mixing\nLerne, wie du tracks nahtlos verbindest und die Crowd kontrollierst.` },
         { id: 'article-brand', categoryId: 'brand', title: 'Brand & Marketing', minRole: 'admin', content: `Werde zur Marke.\n\n# Deine Identität\nWie du dich als Artist präsentierst und deine Community aufbaust.` },
         { id: 'article-release', categoryId: 'release', title: 'Release Strategie', minRole: 'admin', content: `Der Weg zum ersten Release.\n\n# Distribution & Promotion\nSpotify, Apple Music & Co. – so bringst du deine Musik unter die Leute.` },
         { id: 'article-rights', categoryId: 'rights', title: 'Rechte & Business', minRole: 'admin', content: `Schütze deine Werke.\n\n# Urheberrecht & Verträge\nWas du über GEMA, Samples und Lizenzen wissen musst.` },
@@ -323,11 +338,21 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                {filteredStudios.map((studio) => (
-                  <Link key={studio.id} href={`/studio/${studio.id}`} className="block transform transition-transform hover:scale-[1.03] active:scale-95">
-                    <StudioCard studio={studio} />
-                  </Link>
-                ))}
+                {filteredStudios.map((studio) => {
+                  const isLocked = !hasAccess(profile?.role, studio.minRole || 'free');
+                  return (
+                    <Link 
+                      key={studio.id} 
+                      href={isLocked ? '#' : `/studio/${studio.id}`} 
+                      className={cn(
+                        "block transform transition-transform hover:scale-[1.03] active:scale-95",
+                        isLocked && "cursor-not-allowed"
+                      )}
+                    >
+                      <StudioCard studio={studio} isLocked={isLocked} />
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </TabsContent>

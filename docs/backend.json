@@ -18,7 +18,8 @@
           "description": "Stile oder Kategorien (z.B. Hip-Hop, Techno)." 
         },
         "linkUrl": { "type": "string", "format": "uri", "description": "Eine externe Webseite oder Social Media Link." },
-        "linkLabel": { "type": "string", "description": "Der Text, der für den Link angezeigt werden soll." }
+        "linkLabel": { "type": "string", "description": "Der Text, der für den Link angezeigt werden soll." },
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free", "description": "Mindestens erforderliche Rolle für dieses Studio." }
       },
       "required": ["id", "name"]
     },
