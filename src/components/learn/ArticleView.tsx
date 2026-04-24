@@ -4,7 +4,7 @@
 import React from 'react';
 import { Article } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Video, Image as ImageIcon, PlayCircle } from 'lucide-react';
+import { ArrowLeft, Video, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -46,21 +46,33 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       }
       
       // Standard text block
-      return (
-        <div key={idx} className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          {block.startsWith('#') ? (
-            <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white mb-4">
+      if (block.startsWith('#')) {
+        return (
+          <div key={idx} className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h3 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white mb-4 pr-10">
               {block.replace(/^#+\s*/, '')}
             </h3>
-          ) : (
-            <p className="text-lg md:text-xl text-white/70 leading-relaxed font-medium whitespace-pre-wrap">
-              {block}
-            </p>
-          )}
+          </div>
+        );
+      }
+
+      // Special handling for the very first paragraph (intro) to be extra readable
+      const isIntro = idx === 0;
+      
+      return (
+        <div key={idx} className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <p className={isIntro 
+            ? "text-lg md:text-2xl text-white/90 leading-relaxed font-normal" 
+            : "text-base md:text-lg text-white/60 leading-relaxed font-normal"}>
+            {block}
+          </p>
         </div>
       );
     });
   };
+
+  const hasVideo = !!article.videoUrl;
+  const hasImages = article.imageUrls && article.imageUrls.length > 0;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-primary font-body">
@@ -75,7 +87,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
           </Link>
           <div className="flex flex-col">
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">KnowHow Lab</span>
-            <h1 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter leading-none">{article.title}</h1>
+            <h1 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter leading-none pr-8">{article.title}</h1>
           </div>
         </div>
       </header>
@@ -89,7 +101,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         </section>
 
         {/* Video Section (Portrait) - Conditional */}
-        {article.videoUrl && (
+        {hasVideo && (
           <section className="animate-in fade-in slide-in-from-bottom-6 duration-700">
             <div className="flex items-center gap-3 mb-8 justify-center">
               <Video className="w-5 h-5 text-primary" />
@@ -111,7 +123,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         )}
 
         {/* Gallery Section - Conditional */}
-        {article.imageUrls && article.imageUrls.length > 0 && (
+        {hasImages && (
           <section className="animate-in fade-in slide-in-from-bottom-6 duration-700">
             <div className="flex items-center gap-3 mb-8">
               <ImageIcon className="w-5 h-5 text-[#00E676]" />
@@ -119,7 +131,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {article.imageUrls.map((url, idx) => (
+              {article.imageUrls?.map((url, idx) => (
                 <div key={idx} className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/5 group shadow-xl">
                   <Image 
                     src={url} 

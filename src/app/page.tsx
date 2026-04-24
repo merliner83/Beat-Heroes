@@ -136,11 +136,11 @@ export default function HomePage() {
         id: 'article-producing',
         categoryId: 'intro',
         title: 'Producing Basics',
-        content: `# Was ist Producing?
-Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.
+        content: `Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.
 
-# Kernbereiche der Produktion
-Musikproduktion vereint künstlerische Inspiration mit modernster Technologie und umfasst viele Schritte:
+# Die Phasen der Musikproduktion
+Der Weg zum fertigen Track vereint künstlerische Inspiration mit modernster Technologie und umfasst viele Schritte:
+
 • Composing: Das Schreiben von Melodien und Akkorden.
 • Recording: Die Aufnahme von Gesang und Instrumenten.
 • Editing: Bearbeiten von Timing, Tönen und Klang.
@@ -152,7 +152,7 @@ Musikproduktion vereint künstlerische Inspiration mit modernster Technologie un
 1. Ideenfindung und Songwriting (Composing):
 Zu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.
 
-Ein Beat in 3 Minuten (Zaytoven):
+Tutorial: Ein Beat in 3 Minuten (Zaytoven)
 https://youtu.be/G2Rhh_4GZmU?si=csvyixY5qhDmL5_P
 
 2. Pre-Produktion:
@@ -184,8 +184,7 @@ Mastering ist der letzte Schritt und stellt sicher, dass der Song auf allen Wied
           id: 'article-sampling',
           categoryId: 'intro',
           title: 'The Art of Sampling',
-          content: `# Was ist Sampling?
-Sampling ist die Wiederverwendung eines Teils einer Tonaufnahme in einer neuen Aufnahme.
+          content: `Sampling ist die Wiederverwendung eines Teils einer Tonaufnahme in einer neuen Aufnahme.
 
 In diesem Lab lernst du, wie du Samples schneidest und sie in frische Beats verwandelst. Denk daran: Kreatives Flippen ist besser als nur Loopen!`,
           imageUrls: [],
