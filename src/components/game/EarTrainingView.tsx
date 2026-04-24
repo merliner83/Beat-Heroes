@@ -195,13 +195,13 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   variant="ghost" 
                   onClick={() => { setMode('explore'); setQuizStatus('IDLE'); }}
                   className={cn(
-                    "rounded-xl px-8 py-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300 border-none",
+                    "rounded-xl px-8 py-6 text-xs md:text-sm font-black uppercase tracking-widest transition-all duration-300 border-none",
                     mode === 'explore' 
                       ? "bg-white/10 text-white" 
                       : "text-white/20 hover:text-white/40"
                   )}
                 >
-                  <Search className="w-3.5 h-3.5 mr-2" />
+                  <Search className="w-4 h-4 mr-2" />
                   Explore
                 </Button>
               </div>
@@ -210,13 +210,13 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   variant="ghost" 
                   onClick={() => { setMode('quiz'); if(quizStatus === 'RESULTS' || quizStatus === 'IDLE') setQuizStatus('IDLE'); }}
                   className={cn(
-                    "rounded-xl px-8 py-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300 border-none",
+                    "rounded-xl px-8 py-6 text-xs md:text-sm font-black uppercase tracking-widest transition-all duration-300 border-none",
                     mode === 'quiz' 
                       ? "bg-primary text-white" 
                       : "text-white/20 hover:text-white/40"
                   )}
                 >
-                  <Headphones className="w-3.5 h-3.5 mr-2" />
+                  <Headphones className="w-4 h-4 mr-2" />
                   Quiz Mode
                 </Button>
               </div>
