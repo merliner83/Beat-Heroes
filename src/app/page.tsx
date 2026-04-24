@@ -136,24 +136,15 @@ export default function HomePage() {
         id: 'article-producing',
         categoryId: 'intro',
         title: 'Producing Basics',
-        content: `Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.
+        content: `Was ist Producing? Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.
 
 # Die Phasen der Musikproduktion
-Der Weg zum fertigen Track vereint künstlerische Inspiration mit modernster Technologie und umfasst viele Schritte:
-
-• Composing: Das Schreiben von Melodien und Akkorden.
-• Recording: Die Aufnahme von Gesang und Instrumenten.
-• Editing: Bearbeiten von Timing, Tönen und Klang.
-• Mixing: Abstimmen von Lautstärke, Effekten und Klangfarben.
-• Mastering: Feinschliff für die Veröffentlichung.
-
-# Die Schritte im Detail
-
-1. Ideenfindung und Songwriting (Composing):
-Zu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.
 
 Tutorial: Ein Beat in 3 Minuten (Zaytoven)
 https://youtu.be/G2Rhh_4GZmU?si=csvyixY5qhDmL5_P
+
+1. Ideenfindung und Songwriting (Composing):
+Zu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.
 
 2. Pre-Produktion:
 In dieser Phase werden die Details der Aufnahmeplanung besprochen. Welche Instrumente sollen verwendet werden? Welche Sounds sind gewünscht?
