@@ -24,7 +24,7 @@ export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isA
     <div className="relative h-full w-full border-x border-white/5 overflow-hidden group">
       {/* Visual Marker on the lane itself */}
       <div 
-        className="absolute left-1/2 -translate-x-1/2 w-full h-[1px] opacity-10"
+        className="absolute left-1/2 -translate-x-1/2 w-full h-[2px] opacity-10"
         style={{ 
           top: `${hitPosition}px`,
           backgroundColor: color,
@@ -38,7 +38,8 @@ export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isA
         const relativeTime = noteTime - (currentTime - SYNC_OFFSET);
         
         // Culling: Prevent rendering of notes far outside the viewport
-        if (relativeTime < -0.5 || relativeTime > 2.5) return null;
+        // Notes continue to flow behind the pads (relativeTime < 0)
+        if (relativeTime < -2.0 || relativeTime > 2.5) return null;
 
         const top = hitPosition - (relativeTime * speed) - 6;
 
@@ -46,13 +47,15 @@ export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isA
           <div
             key={idx}
             className={cn(
-              "absolute left-1/2 -translate-x-1/2 w-14 h-3 rounded-full transition-opacity shadow-lg",
-              isActive ? "opacity-100" : "opacity-30"
+              "absolute left-1/2 -translate-x-1/2 w-14 h-4 rounded-full transition-opacity shadow-lg",
+              isActive ? "opacity-100" : "opacity-30",
+              relativeTime < 0 && "opacity-20 blur-[2px]" // Fade and blur slightly when passed the hit point
             )}
             style={{ 
               top: `${top}px`,
               backgroundColor: color,
-              boxShadow: `0 0 15px ${color}`
+              boxShadow: `0 0 20px ${color}`,
+              zIndex: relativeTime < 0 ? 5 : 10 // Ensure they go "under" the hit marker logic if needed, but above background
             }}
           />
         );
