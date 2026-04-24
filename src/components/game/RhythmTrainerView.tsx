@@ -273,71 +273,54 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
         {mode === 'explore' && (
           <div className="w-full max-w-4xl space-y-12 animate-in zoom-in-95 duration-500">
-            {/* MIDI Single Row Raster */}
-            <div className="gemini-border-primary">
-              <div className="p-8 md:p-12 bg-black/60 backdrop-blur-3xl rounded-2xl border border-white/5">
-                <div className="flex flex-col gap-6 mb-10">
-                  <div className="flex justify-between items-center px-1">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 italic">MIDI Raster (16-Steps)</span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">Resolution: 8th/16th</span>
-                  </div>
-                  
-                  <div className="grid grid-cols-[repeat(16,minmax(0,1fr))] gap-1 md:gap-2 h-14 md:h-20">
-                    {Array.from({ length: 16 }).map((_, i) => {
-                      const isStep = selectedPattern.steps.includes(i);
-                      const isCurrent = playhead === i && isPlaying;
-                      const isBeat = i % 4 === 0;
-                      const is8th = i % 2 === 0;
+            {/* Visualizer Header - Same as Quiz */}
+            <div className="text-center">
+              <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter mb-6 text-gradient">
+                {isPlaying ? 'PLAYING...' : 'PREVIEW'}
+              </h2>
+              <div className="flex gap-2 justify-center max-w-md mx-auto mb-16">
+                {Array.from({ length: 16 }).map((_, i) => {
+                  const isStep = selectedPattern.steps.includes(i);
+                  const isCurrent = playhead === i && isPlaying;
+                  const isBeat = i % 4 === 0;
 
-                      return (
-                        <div 
-                          key={i} 
-                          className={cn(
-                            "relative rounded-lg border-2 transition-all duration-75 flex items-center justify-center overflow-hidden",
-                            isStep ? "bg-primary/20 border-primary" : "bg-white/5 border-white/5",
-                            isCurrent && "scale-105 brightness-150 shadow-[0_0_20px_#FF3399] z-10",
-                            isBeat && !isStep && "border-white/20",
-                            !isBeat && is8th && !isStep && "border-white/10"
-                          )}
-                        >
-                          {isStep && (
-                            <div className={cn(
-                              "w-3 h-3 md:w-4 md:h-4 rounded-full transition-all",
-                              isCurrent ? "bg-white scale-125" : "bg-primary"
-                            )} />
-                          )}
-                          {isBeat && (
-                            <div className="absolute top-1 left-1 w-1 h-1 rounded-full bg-white/10" />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {RHYTHM_CONFIG.map(p => (
-                    <Button
-                      key={p.id}
-                      onClick={() => {
-                        setSelectedPatternId(p.id);
-                        if (isPlaying) {
-                          stopPlayback();
-                          startPlayback(p);
-                        }
-                      }}
+                  return (
+                    <div 
+                      key={i} 
                       className={cn(
-                        "h-16 md:h-20 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all",
-                        selectedPatternId === p.id 
-                          ? "bg-primary border-primary text-white shadow-[0_0_15px_rgba(255,51,153,0.3)]" 
-                          : "bg-white/5 border-white/5 hover:border-white/20 text-white/40"
-                      )}
-                    >
-                      <span className="text-xs font-black uppercase italic tracking-tighter">{p.name}</span>
-                    </Button>
-                  ))}
-                </div>
+                        "h-1.5 rounded-full transition-all duration-75 flex-1",
+                        isCurrent ? "bg-primary scale-y-[3] shadow-[0_0_20px_#FF3399]" : "bg-white/10",
+                        !isCurrent && isStep && "bg-primary/40",
+                        !isCurrent && !isStep && isBeat && "bg-white/30"
+                      )} 
+                    />
+                  );
+                })}
               </div>
+            </div>
+
+            {/* Pattern Selection Buttons */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {RHYTHM_CONFIG.map(p => (
+                <Button
+                  key={p.id}
+                  onClick={() => {
+                    setSelectedPatternId(p.id);
+                    if (isPlaying) {
+                      stopPlayback();
+                      startPlayback(p);
+                    }
+                  }}
+                  className={cn(
+                    "h-16 md:h-20 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all",
+                    selectedPatternId === p.id 
+                      ? "bg-primary border-primary text-white shadow-[0_0_15px_rgba(255,51,153,0.3)]" 
+                      : "bg-white/5 border-white/5 hover:border-white/20 text-white/40"
+                  )}
+                >
+                  <span className="text-xs font-black uppercase italic tracking-tighter">{p.name}</span>
+                </Button>
+              ))}
             </div>
 
             <Button 
