@@ -324,8 +324,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           })}
         </div>
 
-        {/* Sampler Pads */}
-        <div className="p-4 md:p-8 bg-black/60 border-t border-white/5 shrink-0 z-50">
+        {/* Sampler Pads - Moved up by increasing padding and pb on mobile */}
+        <div className="p-6 pb-20 md:p-8 md:pb-12 bg-black/60 border-t border-white/5 shrink-0 z-50">
           <div className={cn(
             "grid gap-4 md:gap-6 max-w-xl mx-auto",
             activeSoundTypes.length === 1 ? "grid-cols-1 max-w-[140px]" :
