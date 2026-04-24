@@ -188,32 +188,36 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
         {(quizStatus === 'IDLE' || mode === 'explore') && (
           <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-500">
             <div className="inline-flex p-1 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-xl shadow-2xl overflow-hidden">
-              <Button 
-                variant="ghost" 
-                onClick={() => { setMode('explore'); setQuizStatus('IDLE'); }}
-                className={cn(
-                  "rounded-xl px-8 py-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
-                  mode === 'explore' 
-                    ? "bg-white/10 text-white" 
-                    : "text-white/20 hover:text-white/40"
-                )}
-              >
-                <Search className="w-3.5 h-3.5 mr-2" />
-                Explore
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={() => { setMode('quiz'); if(quizStatus === 'RESULTS' || quizStatus === 'IDLE') setQuizStatus('IDLE'); }}
-                className={cn(
-                  "rounded-xl px-8 py-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
-                  mode === 'quiz' 
-                    ? "bg-primary text-white" 
-                    : "text-white/20 hover:text-white/40"
-                )}
-              >
-                <Headphones className="w-3.5 h-3.5 mr-2" />
-                Quiz Mode
-              </Button>
+              <div className={cn("rounded-xl transition-all", mode === 'explore' && "gemini-border")}>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => { setMode('explore'); setQuizStatus('IDLE'); }}
+                  className={cn(
+                    "rounded-xl px-8 py-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300 border-none",
+                    mode === 'explore' 
+                      ? "bg-white/10 text-white" 
+                      : "text-white/20 hover:text-white/40"
+                  )}
+                >
+                  <Search className="w-3.5 h-3.5 mr-2" />
+                  Explore
+                </Button>
+              </div>
+              <div className={cn("rounded-xl transition-all", mode === 'quiz' && "gemini-border")}>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => { setMode('quiz'); if(quizStatus === 'RESULTS' || quizStatus === 'IDLE') setQuizStatus('IDLE'); }}
+                  className={cn(
+                    "rounded-xl px-8 py-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300 border-none",
+                    mode === 'quiz' 
+                      ? "bg-primary text-white" 
+                      : "text-white/20 hover:text-white/40"
+                  )}
+                >
+                  <Headphones className="w-3.5 h-3.5 mr-2" />
+                  Quiz Mode
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -315,9 +319,9 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                     const isCorrect = freq === targetFreq;
                     const isGuessed = freq === lastGuess;
                     
-                    let containerClass = "bg-white/5 border-white/5 hover:border-white/10 transition-all duration-300";
+                    let containerClass = "bg-white/5 border-white/10 hover:border-white/20 transition-all duration-300";
                     let textClass = "text-white opacity-40";
-                    let isNeon = false;
+                    let isNeon = !lastGuess;
 
                     if (quizStatus === 'FEEDBACK') {
                       if (isCorrect) {
@@ -327,20 +331,18 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                         containerClass = "bg-[#FF3D00] border-[#FF3D00] opacity-100";
                         textClass = "text-white opacity-100 font-black";
                       } else {
-                        containerClass = "opacity-5 border-white/5";
+                        containerClass = "opacity-5 border-none";
                         textClass = "opacity-0";
                       }
-                    } else if (isGuessed) {
-                      isNeon = true;
                     }
 
                     return (
-                      <div key={freq} className={cn(isNeon && "gemini-border")}>
+                      <div key={freq} className={cn("rounded-xl transition-all", isNeon && "gemini-border-primary")}>
                         <Button
                           disabled={quizStatus === 'FEEDBACK'}
                           onClick={() => handleGuess(freq)}
                           className={cn(
-                            "w-full h-24 rounded-xl border text-xl font-black italic flex items-center justify-center",
+                            "w-full h-24 rounded-xl border text-xl font-black italic flex items-center justify-center transition-all duration-300",
                             containerClass
                           )}
                         >
