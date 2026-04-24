@@ -188,7 +188,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
         {(quizStatus === 'IDLE' || mode === 'explore') && (
           <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-500">
             <div className="inline-flex p-1 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-xl shadow-2xl overflow-hidden">
-              <div className={cn("rounded-xl transition-all", mode === 'explore' && "gemini-border")}>
+              <div className={cn("rounded-xl transition-all", mode === 'explore' && "gemini-border-primary")}>
                 <Button 
                   variant="ghost" 
                   onClick={() => { setMode('explore'); setQuizStatus('IDLE'); }}
@@ -203,7 +203,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   Explore
                 </Button>
               </div>
-              <div className={cn("rounded-xl transition-all", mode === 'quiz' && "gemini-border")}>
+              <div className={cn("rounded-xl transition-all", mode === 'quiz' && "gemini-border-primary")}>
                 <Button 
                   variant="ghost" 
                   onClick={() => { setMode('quiz'); if(quizStatus === 'RESULTS' || quizStatus === 'IDLE') setQuizStatus('IDLE'); }}
@@ -321,7 +321,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                     
                     let containerClass = "bg-white/5 border-white/10 hover:border-white/20 transition-all duration-300";
                     let textClass = "text-white opacity-40";
-                    let isNeon = !lastGuess;
+                    let isNeon = !lastGuess || (quizStatus === 'FEEDBACK' && isCorrect);
 
                     if (quizStatus === 'FEEDBACK') {
                       if (isCorrect) {
@@ -331,8 +331,10 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                         containerClass = "bg-[#FF3D00] border-[#FF3D00] opacity-100";
                         textClass = "text-white opacity-100 font-black";
                       } else {
-                        containerClass = "opacity-5 border-none";
-                        textClass = "opacity-0";
+                        // All other wrong buttons: Keep border, remove fill, lower opacity
+                        containerClass = "bg-transparent border-white/5 opacity-10";
+                        textClass = "text-white opacity-10";
+                        isNeon = false;
                       }
                     }
 
