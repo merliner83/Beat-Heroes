@@ -273,8 +273,8 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
             <div className="gemini-border-primary">
               <div className="p-10 md:p-14 bg-black/60 backdrop-blur-3xl space-y-8 rounded-xl border border-white/5 overflow-hidden">
                 <div className="flex flex-col items-center px-4">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl md:text-6xl font-black italic text-gradient leading-tight pr-10">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl md:text-6xl font-black italic text-gradient leading-tight pr-3">
                       {formatFreqValue(currentFreq)}
                     </span>
                     <span className="text-lg md:text-xl font-black opacity-20 uppercase tracking-[0.4em]">
