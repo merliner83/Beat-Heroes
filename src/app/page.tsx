@@ -181,10 +181,13 @@ export default function HomePage() {
         { type: 'sample-hunter' as const, name: 'Vinyl Hunter' }
       ];
 
+      const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
+
       for (const s of studios) {
         for (const config of gameConfigs) {
           const gameId = `${s.id}-${config.type}`;
           const isSampleCatcher = config.type === 'disk-dash';
+          const isVinylHunter = config.type === 'sample-hunter';
           
           await setDoc(doc(db, 'games', gameId), {
             id: gameId,
@@ -193,7 +196,8 @@ export default function HomePage() {
             type: config.type,
             difficulty: 1,
             minRole: isSampleCatcher ? 'admin' : 'free', // Deactivate Sample Catcher
-            bpm: 120
+            bpm: 120,
+            backgroundImageUrl: isVinylHunter ? vinylHunterBg : ''
           }, { merge: true });
 
           // 4 Levels per game
