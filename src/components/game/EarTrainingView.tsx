@@ -25,7 +25,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { doc, increment, setDoc, serverTimestamp, collection, query, where } from 'firebase/firestore';
 
 const FREQUENCY_STEPS = [
-  63, 125, 250, 500, 1000, 2000, 4000, 8000, 16000
+  20, 40, 60, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 18000, 20000
 ];
 
 const TOTAL_ROUNDS = 6;
@@ -98,7 +98,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
   };
 
   const handleFrequencyChange = (val: number[]) => {
-    const freq = val[0];
+    const freq = FREQUENCY_STEPS[val[0]];
     setCurrentFreq(freq);
     if (mode === 'explore' && isPlaying) {
       audioEngine?.updateFilter(freq, 1);
@@ -175,7 +175,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
             <ArrowLeft className="w-6 h-6 text-white/40 hover:text-white transition-all hover:scale-110" />
           </Link>
           <div>
-            <h1 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-gradient leading-none">
+            <h1 className="text-3xl md:text-6xl font-black uppercase italic tracking-tighter text-gradient leading-none">
               Ear Training
             </h1>
             <p className="text-[10px] md:text-xs opacity-30 uppercase font-black tracking-[0.2em] mt-1.5">Master the Spectrum</p>
@@ -190,7 +190,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
       <main className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 relative overflow-y-auto">
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
 
-        {/* Prominent Mode Toggle with Rack Style */}
+        {/* Mode Toggle with Rack Style */}
         {(quizStatus === 'IDLE' || mode === 'explore') && (
           <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-500">
             <div className="inline-flex p-1.5 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-xl shadow-2xl overflow-hidden">
@@ -199,7 +199,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   variant="ghost" 
                   onClick={() => { setMode('explore'); setQuizStatus('IDLE'); }}
                   className={cn(
-                    "rounded-xl px-10 py-7 text-sm md:text-2xl font-black uppercase tracking-widest transition-all duration-300 border-none",
+                    "rounded-xl px-10 py-7 text-sm md:text-3xl font-black uppercase tracking-widest transition-all duration-300 border-none",
                     mode === 'explore' 
                       ? "bg-white/10 text-white" 
                       : "text-white/20 hover:text-white/40"
@@ -214,7 +214,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   variant="ghost" 
                   onClick={() => { setMode('quiz'); if(quizStatus === 'RESULTS' || quizStatus === 'IDLE') setQuizStatus('IDLE'); }}
                   className={cn(
-                    "rounded-xl px-10 py-7 text-sm md:text-2xl font-black uppercase tracking-widest transition-all duration-300 border-none",
+                    "rounded-xl px-10 py-7 text-sm md:text-3xl font-black uppercase tracking-widest transition-all duration-300 border-none",
                     mode === 'quiz' 
                       ? "bg-primary text-white" 
                       : "text-white/20 hover:text-white/40"
@@ -249,13 +249,13 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   max={FREQUENCY_STEPS.length - 1} 
                   step={1} 
                   value={[FREQUENCY_STEPS.indexOf(currentFreq)]} 
-                  onValueChange={(v) => handleFrequencyChange([FREQUENCY_STEPS[v[0]]])}
+                  onValueChange={handleFrequencyChange}
                   className="py-4"
                 />
                 <div className="flex justify-between text-[10px] font-black opacity-20 uppercase tracking-widest">
-                  <span>63 Hz</span>
+                  <span>20 Hz</span>
                   <span>1k Hz</span>
-                  <span>16k Hz</span>
+                  <span>20k Hz</span>
                 </div>
               </div>
             </div>
@@ -320,7 +320,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                    <p className="text-xs opacity-40 uppercase tracking-widest">Which frequency has the peak?</p>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
                   {FREQUENCY_STEPS.map(freq => {
                     const isCorrect = freq === targetFreq;
                     const isGuessed = freq === lastGuess;
@@ -337,7 +337,6 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                         containerClass = "bg-[#FF3D00] border-[#FF3D00] opacity-100";
                         textClass = "text-white opacity-100 font-black";
                       } else {
-                        // All other wrong buttons: Keep border, remove fill, lower opacity
                         containerClass = "bg-transparent border-white/5 opacity-5";
                         textClass = "text-white opacity-5";
                         isNeon = false;
@@ -350,7 +349,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                           disabled={quizStatus === 'FEEDBACK'}
                           onClick={() => handleGuess(freq)}
                           className={cn(
-                            "w-full h-24 rounded-xl border text-xl font-black italic flex items-center justify-center transition-all duration-300",
+                            "w-full h-20 rounded-xl border text-lg font-black italic flex items-center justify-center transition-all duration-300",
                             containerClass
                           )}
                         >
