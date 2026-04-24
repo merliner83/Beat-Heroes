@@ -122,7 +122,6 @@ export default function HomePage() {
 
       for (const lg of learnGames) {
         await setDoc(doc(db, 'games', lg.id), lg, { merge: true });
-        // Correct level IDs to match LearnView links
         const targetLevelId = lg.id === 'global-ear-training' ? 'global-ear-training' : `global-${lg.type === 'ear-training' ? 'ear' : 'rhythm'}-1`;
         await setDoc(doc(db, 'levels', targetLevelId), {
           id: targetLevelId,
@@ -232,14 +231,12 @@ export default function HomePage() {
       
       <header className="sticky top-0 p-4 md:p-8 flex flex-col items-center z-50 shrink-0 bg-black/80 backdrop-blur-xl border-b border-white/5">
         <div className="flex flex-col items-center gap-6 w-full max-w-7xl">
-          {/* Central Logo */}
           <div className="flex items-center justify-center w-full">
             <h1 className="text-4xl md:text-7xl font-black tracking-[-0.05em] uppercase italic leading-none text-gradient pr-4">
               BeatHero
             </h1>
           </div>
 
-          {/* Navigation and SC */}
           <div className="flex items-center justify-center w-full relative">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
               <TabsList className="bg-white/5 border border-white/5 rounded-full p-1 h-12 md:h-14">
