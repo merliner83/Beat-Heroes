@@ -57,5 +57,11 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isSignedIn();
     }
+
+    // Articles (Knowledge Base)
+    match /articles/{articleId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
   }
 }
