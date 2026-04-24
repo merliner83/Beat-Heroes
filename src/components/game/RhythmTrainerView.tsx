@@ -17,7 +17,8 @@ import {
   BarChart3,
   X,
   Volume2,
-  Brain
+  Brain,
+  Music
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -39,16 +40,16 @@ const RHYTHM_CONFIG: RhythmPattern[] = [
     soundUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57' 
   },
   { 
-    id: 'off-hats', 
-    name: 'Off-Beat Hats', 
-    steps: [2, 6, 10, 14], 
-    soundUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_HiHat_03.wav?alt=media&token=a5e7b4ac-3af8-49ab-bb6b-557a6e3551bd' 
+    id: '8th-shaker', 
+    name: '8th Shaker', 
+    steps: [0, 2, 4, 6, 8, 10, 12, 14], 
+    soundUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.wav?alt=media&token=bf90be29-fd25-4fad-bc2c-9483840246ba' 
   },
   { 
-    id: '16th-shaker', 
-    name: 'Shaker Drive', 
+    id: '16th-trap-hats', 
+    name: 'Trap Hi-Hats', 
     steps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], 
-    soundUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.wav?alt=media&token=bf90be29-fd25-4fad-bc2c-9483840246ba' 
+    soundUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_HiHat_03.wav?alt=media&token=a5e7b4ac-3af8-49ab-bb6b-557a6e3551bd' 
   },
   { 
     id: 'clave', 
@@ -224,7 +225,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#050505] text-white p-4 font-body overflow-hidden">
+    <div className="flex flex-col h-screen bg-[#050505] text-white p-4 font-body overflow-hidden selection:bg-primary">
       <header className="flex justify-between items-center h-20 shrink-0 z-50 px-6 bg-black/40 backdrop-blur-xl border-b border-white/5 rounded-t-3xl">
         <div className="flex items-center gap-4">
           <Link href="/">
@@ -232,8 +233,12 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
           </Link>
           <div>
             <h1 className="text-xl font-black uppercase italic tracking-tighter text-gradient leading-none pr-8">RHYTHM MASTER</h1>
-            <p className="text-[10px] opacity-30 uppercase font-black tracking-[0.2em] mt-1">16-Step Pattern Lab</p>
+            <p className="text-[10px] opacity-30 uppercase font-black tracking-[0.2em] mt-1">MIDI Lab Interface</p>
           </div>
+        </div>
+        <div className="hidden sm:flex items-center gap-3 opacity-30 text-[10px] md:text-xs font-black uppercase tracking-widest">
+           <Music className="w-4 h-4 text-primary" />
+           Sync Active
         </div>
       </header>
 
@@ -267,28 +272,47 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
         )}
 
         {mode === 'explore' && (
-          <div className="w-full max-w-3xl space-y-12 animate-in zoom-in-95 duration-500">
-            {/* Pattern Grid */}
+          <div className="w-full max-w-4xl space-y-12 animate-in zoom-in-95 duration-500">
+            {/* MIDI Single Row Raster */}
             <div className="gemini-border-primary">
               <div className="p-8 md:p-12 bg-black/60 backdrop-blur-3xl rounded-2xl border border-white/5">
-                <div className="grid grid-cols-4 sm:grid-cols-8 md:grid-cols-16 gap-2 md:gap-3 mb-10">
-                  {Array.from({ length: 16 }).map((_, i) => {
-                    const isStep = selectedPattern.steps.includes(i);
-                    const isCurrent = playhead === i && isPlaying;
-                    return (
-                      <div 
-                        key={i} 
-                        className={cn(
-                          "aspect-square rounded-lg border-2 transition-all duration-75 flex items-center justify-center",
-                          isStep ? "bg-primary/20 border-primary" : "bg-white/5 border-white/5",
-                          isCurrent && "scale-110 brightness-150 shadow-[0_0_15px_var(--primary)]",
-                          i % 4 === 0 && !isStep && "border-white/10"
-                        )}
-                      >
-                        {isStep && <div className={cn("w-2 h-2 rounded-full", isCurrent ? "bg-white" : "bg-primary")} />}
-                      </div>
-                    );
-                  })}
+                <div className="flex flex-col gap-6 mb-10">
+                  <div className="flex justify-between items-center px-1">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 italic">MIDI Raster (16-Steps)</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">Resolution: 8th/16th</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-16 gap-1 md:gap-2 h-14 md:h-20">
+                    {Array.from({ length: 16 }).map((_, i) => {
+                      const isStep = selectedPattern.steps.includes(i);
+                      const isCurrent = playhead === i && isPlaying;
+                      const isBeat = i % 4 === 0;
+                      const is8th = i % 2 === 0;
+
+                      return (
+                        <div 
+                          key={i} 
+                          className={cn(
+                            "relative rounded-lg border-2 transition-all duration-75 flex items-center justify-center overflow-hidden",
+                            isStep ? "bg-primary/20 border-primary" : "bg-white/5 border-white/5",
+                            isCurrent && "scale-105 brightness-150 shadow-[0_0_20px_var(--primary)] z-10",
+                            isBeat && !isStep && "border-white/20",
+                            !isBeat && is8th && !isStep && "border-white/10"
+                          )}
+                        >
+                          {isStep && (
+                            <div className={cn(
+                              "w-3 h-3 md:w-4 md:h-4 rounded-full transition-all",
+                              isCurrent ? "bg-white scale-125" : "bg-primary"
+                            )} />
+                          )}
+                          {isBeat && (
+                            <div className="absolute top-1 left-1 w-1 h-1 rounded-full bg-white/10" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -303,11 +327,13 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                         }
                       }}
                       className={cn(
-                        "h-16 rounded-xl border flex flex-col gap-1 transition-all",
-                        selectedPatternId === p.id ? "bg-primary border-primary text-white" : "bg-white/5 border-white/10 hover:border-white/20 text-white/40"
+                        "h-16 md:h-20 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all",
+                        selectedPatternId === p.id 
+                          ? "bg-primary border-primary text-white shadow-[0_0_15px_rgba(255,51,153,0.3)]" 
+                          : "bg-white/5 border-white/5 hover:border-white/20 text-white/40"
                       )}
                     >
-                      <span className="text-[10px] font-black uppercase italic tracking-tighter">{p.name}</span>
+                      <span className="text-xs font-black uppercase italic tracking-tighter">{p.name}</span>
                     </Button>
                   ))}
                 </div>
@@ -317,12 +343,12 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
             <Button 
               onClick={toggleExplore}
               className={cn(
-                "w-full h-24 rounded-2xl text-2xl font-black uppercase italic transition-all active:scale-95 shadow-2xl shadow-primary/20",
+                "w-full h-24 rounded-3xl text-2xl font-black uppercase italic transition-all active:scale-95 shadow-2xl",
                 isPlaying ? "bg-destructive text-white" : "bg-white text-black"
               )}
             >
-              {isPlaying ? <Pause className="mr-4 w-8 h-8" fill="currentColor" /> : <Play className="mr-4 w-8 h-8" fill="currentColor" />}
-              {isPlaying ? "Stop Loop" : "Play Rhythm"}
+              {isPlaying ? <Pause className="mr-4 w-10 h-10" fill="currentColor" /> : <Play className="mr-4 w-10 h-10" fill="currentColor" />}
+              {isPlaying ? "Deactivate Pulse" : "Initiate Rhythm"}
             </Button>
           </div>
         )}
@@ -330,24 +356,24 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
         {mode === 'quiz' && (
           <div className="w-full max-w-2xl">
             {status === 'IDLE' && !lastGuess && sessionScores.length === 0 && (
-              <div className="text-center space-y-10 animate-in zoom-in-95">
-                <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto border border-primary/20">
-                  <Brain className="w-12 h-12 text-primary" />
+              <div className="text-center space-y-10 animate-in zoom-in-95 mt-10">
+                <div className="w-28 h-28 bg-primary/10 rounded-full flex items-center justify-center mx-auto border border-primary/20 shadow-[0_0_40px_rgba(255,51,153,0.1)]">
+                  <Brain className="w-14 h-14 text-primary" />
                 </div>
-                <h2 className="text-4xl font-black uppercase italic tracking-tighter">Rhythm Recognition</h2>
-                <p className="text-xs opacity-40 uppercase tracking-[0.3em] max-w-xs mx-auto">Hear the pattern, identify the steps. 5 Rounds.</p>
+                <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">Recognition Lab</h2>
+                <p className="text-[10px] opacity-40 uppercase tracking-[0.4em] max-w-xs mx-auto leading-relaxed">Listen to the MIDI stream.<br/>Identify the core pattern.</p>
                 <Button 
                   onClick={startQuiz}
-                  className="w-full h-24 bg-primary text-white text-2xl font-black uppercase italic rounded-2xl hover:scale-105 transition-all shadow-2xl"
+                  className="w-full h-28 bg-primary text-white text-2xl font-black uppercase italic rounded-3xl hover:scale-105 transition-all shadow-2xl shadow-primary/30"
                 >
-                  Start Quiz
+                  Enter Training
                 </Button>
               </div>
             )}
 
             {(status === 'COUNT_IN' || status === 'QUIZ_PLAYING' || status === 'IDLE') && targetPatternId && (
               <div className="space-y-12 pt-8 animate-in fade-in">
-                <div className="flex justify-between items-center bg-white/5 p-6 rounded-2xl border border-white/5">
+                <div className="flex justify-between items-center bg-white/5 p-6 rounded-2xl border border-white/5 backdrop-blur-xl">
                    <div className="text-xs font-black uppercase tracking-widest opacity-40 italic">
                      Round {round} / {TOTAL_ROUNDS}
                    </div>
@@ -355,7 +381,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                      <Button 
                       variant="ghost" 
                       onClick={() => playPatternOnce(RHYTHM_CONFIG.find(p => p.id === targetPatternId)!)}
-                      className="h-10 px-6 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest"
+                      className="h-10 px-8 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10"
                      >
                        Replay Sound
                      </Button>
@@ -363,17 +389,17 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                 </div>
 
                 <div className="text-center">
-                   <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter mb-4">
-                     {status === 'COUNT_IN' ? countIn : status === 'QUIZ_PLAYING' ? 'LISTENING...' : 'IDENTIFY'}
+                   <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter mb-6 text-gradient">
+                     {status === 'COUNT_IN' ? countIn : status === 'QUIZ_PLAYING' ? 'SCANNING...' : 'IDENTIFY'}
                    </h2>
-                   <div className="flex gap-2 justify-center">
+                   <div className="flex gap-2 justify-center max-w-md mx-auto">
                      {Array.from({ length: 16 }).map((_, i) => (
                        <div 
                         key={i} 
                         className={cn(
-                          "w-2 h-2 rounded-full transition-all duration-75",
-                          playhead === i && (status === 'QUIZ_PLAYING' || status === 'IDLE') ? "bg-primary scale-150" : "bg-white/10",
-                          i % 4 === 0 && "w-3 bg-white/20"
+                          "h-1.5 rounded-full transition-all duration-75 flex-1",
+                          playhead === i && (status === 'QUIZ_PLAYING' || status === 'IDLE') ? "bg-primary scale-y-150" : "bg-white/10",
+                          i % 4 === 0 && "bg-white/30"
                         )} 
                        />
                      ))}
@@ -385,11 +411,11 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                     const isCorrect = p.id === targetPatternId;
                     const isGuessed = p.id === lastGuess;
                     
-                    let variantClass = "bg-white/5 border-white/10 hover:border-white/30";
+                    let variantClass = "bg-white/5 border-white/5 hover:border-white/20";
                     if (lastGuess) {
-                      if (isCorrect) variantClass = "bg-[#00E676] border-[#00E676] text-black shadow-[0_0_20px_#00E67644] scale-105";
-                      else if (isGuessed) variantClass = "bg-destructive border-destructive text-white opacity-100";
-                      else variantClass = "opacity-20";
+                      if (isCorrect) variantClass = "bg-[#00E676] border-[#00E676] text-black shadow-[0_0_30px_#00E67644] scale-105 z-10";
+                      else if (isGuessed) variantClass = "bg-destructive border-destructive text-white";
+                      else variantClass = "opacity-10";
                     }
 
                     return (
@@ -397,7 +423,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                         key={p.id}
                         disabled={!!lastGuess || status !== 'IDLE'}
                         onClick={() => handleGuess(p.id)}
-                        className={cn("h-20 rounded-2xl font-black uppercase italic tracking-widest transition-all", variantClass)}
+                        className={cn("h-24 rounded-2xl font-black uppercase italic tracking-widest transition-all text-sm md:text-base border-2", variantClass)}
                       >
                         {p.name}
                       </Button>
@@ -408,13 +434,13 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                 {status === 'FEEDBACK' && (
                   <div className="flex flex-col items-center gap-8 animate-in zoom-in-95">
                     <div className={cn(
-                      "px-10 py-5 rounded-full border-2 text-2xl font-black uppercase italic tracking-tighter",
-                      lastGuess === targetPatternId ? "border-[#00E676] text-[#00E676]" : "border-destructive text-destructive"
+                      "px-14 py-6 rounded-full border-2 text-2xl font-black uppercase italic tracking-tighter shadow-2xl",
+                      lastGuess === targetPatternId ? "border-[#00E676] text-[#00E676] bg-[#00E676]/5" : "border-destructive text-destructive bg-destructive/5"
                     )}>
                       {lastGuess === targetPatternId ? "Pattern Match" : "Sync Error"}
                     </div>
-                    <Button onClick={nextRound} className="w-full h-20 bg-white text-black text-xl font-black uppercase italic rounded-2xl shadow-xl">
-                      {round < TOTAL_ROUNDS ? "Next Round" : "View Results"}
+                    <Button onClick={nextRound} className="w-full h-24 bg-white text-black text-2xl font-black uppercase italic rounded-3xl shadow-2xl hover:scale-105 transition-all">
+                      {round < TOTAL_ROUNDS ? "Next Round" : "Lab Results"}
                     </Button>
                   </div>
                 )}
@@ -422,18 +448,25 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
             )}
 
             {status === 'RESULTS' && (
-              <div className="text-center space-y-12 animate-in zoom-in-95 py-10">
-                <Trophy className="w-24 h-24 text-[#FFEA00] mx-auto drop-shadow-[0_0_40px_#FFEA0044]" />
+              <div className="text-center space-y-12 animate-in zoom-in-95 py-10 mt-6">
+                <div className="relative inline-block">
+                  <div className="w-28 h-28 bg-white/5 rounded-full flex items-center justify-center border border-white/5 shadow-[0_0_60px_rgba(255,234,0,0.2)]">
+                    <Trophy className="w-14 h-14 text-[#FFEA00]" />
+                  </div>
+                  <Zap className="absolute -top-2 -right-2 w-10 h-10 text-[#FFEA00] animate-pulse" fill="currentColor" />
+                </div>
+
                 <div>
-                  <h3 className="text-7xl font-black italic uppercase tracking-tighter text-gradient leading-none pr-10">
+                  <h3 className="text-7xl md:text-9xl font-black italic uppercase tracking-tighter text-gradient leading-none pr-10">
                     {Math.round(sessionScores.reduce((a,b) => a+b, 0) / TOTAL_ROUNDS)}%
                   </h3>
-                  <p className="text-xs uppercase font-black tracking-[0.4em] opacity-30 mt-4">Recognition Accuracy</p>
+                  <p className="text-[10px] uppercase font-black tracking-[0.5em] opacity-30 mt-6">Recognition Accuracy</p>
                 </div>
-                <div className="flex gap-4">
-                  <Button onClick={startQuiz} variant="outline" className="flex-1 h-20 rounded-xl border-white/10 uppercase font-black italic text-lg hover:bg-white/5">Retry</Button>
+                
+                <div className="flex gap-6 pt-10">
+                  <Button onClick={startQuiz} variant="outline" className="flex-1 h-20 rounded-2xl border-white/10 uppercase font-black italic text-xl hover:bg-white/5">Retry Lab</Button>
                   <Link href="/" className="flex-1">
-                    <Button className="w-full h-20 bg-white text-black rounded-xl font-black uppercase italic text-lg shadow-xl">Finish Lab</Button>
+                    <Button className="w-full h-20 bg-white text-black rounded-2xl font-black uppercase italic text-xl shadow-2xl">Return to Hub</Button>
                   </Link>
                 </div>
               </div>
@@ -445,7 +478,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       <footer className="p-8 shrink-0 flex justify-center opacity-20">
         <div className="flex items-center gap-4">
           <Volume2 className="w-5 h-5" />
-          <span className="text-[10px] font-black uppercase tracking-[0.5em]">Sample-Accurate Timing System</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.5em]">Sample-Accurate MIDI Engine • v4.0</span>
         </div>
       </footer>
     </div>
