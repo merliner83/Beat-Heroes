@@ -184,10 +184,10 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
       <main className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 relative overflow-y-auto">
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
 
-        {/* Prominent Mode Toggle */}
+        {/* Prominent Mode Toggle with Rack Style */}
         {(quizStatus === 'IDLE' || mode === 'explore') && (
           <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="inline-flex p-1.5 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-xl shadow-2xl">
+            <div className="inline-flex p-1 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-xl shadow-2xl overflow-hidden">
               <Button 
                 variant="ghost" 
                 onClick={() => { setMode('explore'); setQuizStatus('IDLE'); }}
@@ -195,7 +195,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   "rounded-xl px-8 py-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
                   mode === 'explore' 
                     ? "bg-white/10 text-white" 
-                    : "text-white/30 hover:text-white/60"
+                    : "text-white/20 hover:text-white/40"
                 )}
               >
                 <Search className="w-3.5 h-3.5 mr-2" />
@@ -207,8 +207,8 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                 className={cn(
                   "rounded-xl px-8 py-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
                   mode === 'quiz' 
-                    ? "bg-primary text-white shadow-[0_0_20px_rgba(255,51,153,0.3)]" 
-                    : "text-white/30 hover:text-white/60"
+                    ? "bg-primary text-white" 
+                    : "text-white/20 hover:text-white/40"
                 )}
               >
                 <Headphones className="w-3.5 h-3.5 mr-2" />
@@ -228,23 +228,25 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
               <p className="text-xs opacity-40 uppercase tracking-widest">Train your ears by sweeping through the bands</p>
             </div>
 
-            <div className="p-10 bg-black/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/5 space-y-8 shadow-2xl">
-              <div className="flex justify-between items-end">
-                <span className="text-[10px] font-black opacity-20 uppercase tracking-[0.3em]">Current Peek</span>
-                <span className="text-5xl font-black italic text-gradient">{Math.round(currentFreq)}<span className="text-xs ml-1 not-italic opacity-30">Hz</span></span>
-              </div>
-              <Slider 
-                min={freqToLog(20)} 
-                max={freqToLog(20000)} 
-                step={0.01} 
-                value={[freqToLog(currentFreq)]} 
-                onValueChange={(v) => handleFrequencyChange([logToFreq(v[0])])}
-                className="py-4"
-              />
-              <div className="flex justify-between text-[10px] font-black opacity-20 uppercase tracking-widest">
-                <span>20 Hz</span>
-                <span>1 kHz</span>
-                <span>20 kHz</span>
+            <div className="gemini-border-primary">
+              <div className="p-10 bg-black/60 backdrop-blur-3xl space-y-8 rounded-xl border border-white/5">
+                <div className="flex justify-between items-end">
+                  <span className="text-[10px] font-black opacity-20 uppercase tracking-[0.3em]">Current Peek</span>
+                  <span className="text-5xl font-black italic text-gradient">{Math.round(currentFreq)}<span className="text-xs ml-1 not-italic opacity-30">Hz</span></span>
+                </div>
+                <Slider 
+                  min={freqToLog(20)} 
+                  max={freqToLog(20000)} 
+                  step={0.01} 
+                  value={[freqToLog(currentFreq)]} 
+                  onValueChange={(v) => handleFrequencyChange([logToFreq(v[0])])}
+                  className="py-4"
+                />
+                <div className="flex justify-between text-[10px] font-black opacity-20 uppercase tracking-widest">
+                  <span>20 Hz</span>
+                  <span>1 kHz</span>
+                  <span>20 kHz</span>
+                </div>
               </div>
             </div>
 
@@ -252,7 +254,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
               onClick={() => toggleNoise()}
               className={cn(
                 "w-full h-20 rounded-[2rem] text-xl font-black uppercase italic transition-all active:scale-95 shadow-xl",
-                isPlaying ? "bg-[#FF3D00] text-white shadow-[#FF3D00]/20" : "bg-white text-black shadow-white/10"
+                isPlaying ? "bg-[#FF3D00] text-white" : "bg-white text-black"
               )}
             >
               {isPlaying ? <><Pause className="mr-3 w-6 h-6" fill="currentColor" /> Stop Engine</> : <><Play className="mr-3 w-6 h-6" fill="currentColor" /> Play Pink Noise</>}
@@ -313,32 +315,40 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                     const isCorrect = freq === targetFreq;
                     const isGuessed = freq === lastGuess;
                     
-                    let btnClass = "bg-white/5 hover:bg-white/10 border-white/5";
+                    let containerClass = "bg-white/5 border-white/5 hover:border-white/10 transition-all duration-300";
+                    let textClass = "text-white opacity-40";
+                    let isNeon = false;
+
                     if (quizStatus === 'FEEDBACK') {
                       if (isCorrect) {
-                        btnClass = "bg-[#00E676] text-black border-[#00E676] scale-105 z-10 shadow-[0_0_30px_#00E67644]";
+                        containerClass = "bg-[#00E676] border-[#00E676] scale-105 z-10 shadow-[0_0_30px_#00E67644]";
+                        textClass = "text-black opacity-100 font-black";
                       } else if (isGuessed) {
-                        // Nur den tatsächlich gewählten falschen Button rot färben
-                        btnClass = "bg-[#FF3D00] text-white border-[#FF3D00] opacity-100";
+                        containerClass = "bg-[#FF3D00] border-[#FF3D00] opacity-100";
+                        textClass = "text-white opacity-100 font-black";
                       } else {
-                        btnClass = "opacity-20 border-white/5";
+                        containerClass = "opacity-5 border-white/5";
+                        textClass = "opacity-0";
                       }
                     } else if (isGuessed) {
-                      btnClass = "bg-primary border-primary text-white";
+                      isNeon = true;
                     }
 
                     return (
-                      <Button
-                        key={freq}
-                        disabled={quizStatus === 'FEEDBACK'}
-                        onClick={() => handleGuess(freq)}
-                        className={cn(
-                          "h-24 rounded-2xl border text-xl font-black italic transition-all duration-300",
-                          btnClass
-                        )}
-                      >
-                        {freq >= 1000 ? `${freq/1000}k` : freq}
-                      </Button>
+                      <div key={freq} className={cn(isNeon && "gemini-border")}>
+                        <Button
+                          disabled={quizStatus === 'FEEDBACK'}
+                          onClick={() => handleGuess(freq)}
+                          className={cn(
+                            "w-full h-24 rounded-xl border text-xl font-black italic flex items-center justify-center",
+                            containerClass
+                          )}
+                        >
+                          <span className={textClass}>
+                            {freq >= 1000 ? `${freq/1000}k` : freq}
+                          </span>
+                        </Button>
+                      </div>
                     );
                   })}
                 </div>
@@ -383,13 +393,17 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
-                    <p className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-2">Weekly Average</p>
-                    <p className="text-3xl font-black italic text-[#00E676]">{weeklyAverage}%</p>
+                  <div className="gemini-border-primary">
+                    <div className="p-6 bg-black/60 rounded-xl border border-white/5">
+                      <p className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-2">Weekly Average</p>
+                      <p className="text-3xl font-black italic text-[#00E676]">{weeklyAverage}%</p>
+                    </div>
                   </div>
-                  <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
-                    <p className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-2">Matches</p>
-                    <p className="text-3xl font-black italic text-primary">{sessionScores.filter(s => s === 100).length} / {TOTAL_ROUNDS}</p>
+                  <div className="gemini-border-primary">
+                    <div className="p-6 bg-black/60 rounded-xl border border-white/5">
+                      <p className="text-[10px] font-black uppercase tracking-widest opacity-30 mb-2">Matches</p>
+                      <p className="text-3xl font-black italic text-primary">{sessionScores.filter(s => s === 100).length} / {TOTAL_ROUNDS}</p>
+                    </div>
                   </div>
                 </div>
 
