@@ -127,12 +127,13 @@ export default function HomePage() {
         steps: [0, 16, 32, 48, 64, 80, 96, 112]
       }, { merge: true });
 
-      // 2. Studios
+      // 2. Studios (Updated List)
       const mockStudios: Partial<Studio>[] = [
-        { id: 'std-neon', name: 'Neon Heights', description: 'The core of futuristic beats.', coverColor: '#993DEB', district: 'X-District', tags: ['Techno', 'Electro'] },
-        { id: 'std-bass', name: 'Bass Bunker', description: 'Deep vibes only.', coverColor: '#3838FA', district: 'Underground', tags: ['Bass', 'Trap'] },
-        { id: 'std-synth', name: 'Synth Wave', description: 'Retro-future soul.', coverColor: '#EB3D99', district: 'Skyline', tags: ['Retrowave', 'Synth'] },
-        { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: ['Hip-Hop', 'Soul'] }
+        { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: ['Hip-Hop', 'Soul'] },
+        { id: 'std-nintu', name: 'Nintu Music', description: 'Deep melodic explorations.', coverColor: '#993DEB', district: 'Melody District', tags: ['Melodic', 'Techno'] },
+        { id: 'std-yoan', name: 'Yoan Beats', description: 'Raw urban textures.', coverColor: '#3838FA', district: 'Underground', tags: ['Trap', 'Urban'] },
+        { id: 'std-dave', name: 'Dave Beats', description: 'Experimental soundscapes.', coverColor: '#EB3D99', district: 'The Lab', tags: ['Glitch', 'Ambient'] },
+        { id: 'std-noxxos', name: 'Noxxos', description: 'Futuristic club anthems.', coverColor: '#FF3D00', district: 'Skyline', tags: ['Electro', 'House'] }
       ];
       for (const s of mockStudios) {
         await setDoc(doc(db, 'studios', s.id!), s, { merge: true });
@@ -144,15 +145,13 @@ export default function HomePage() {
         { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel' },
         { id: 'tr-g3', studioId: 'std-gabriel', name: 'Track 3', author: 'Gabriel' },
         { id: 'tr-g4', studioId: 'std-gabriel', name: 'Track 4', author: 'Gabriel' },
-        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel' },
-        { id: 'tr-cyber', studioId: 'std-neon', name: 'Cyber Drift', author: 'PulseMaster' },
-        { id: 'tr-echo', studioId: 'std-bass', name: 'Deep Echo', author: 'SubVoid' }
+        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel' }
       ];
       for (const t of mockTracks) {
         await setDoc(doc(db, 'tracks', t.id!), t, { merge: true });
       }
 
-      // 4. Games
+      // 4. Games (Global x3, Gabriel x3)
       const mockGames: Partial<Game>[] = [
         { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1, minRole: 'free' },
         { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, minRole: 'admin' },
@@ -160,14 +159,12 @@ export default function HomePage() {
         // Gabriel's 3 Games
         { id: 'game-g1', studioId: 'std-gabriel', name: 'Soul Session 1', type: 'rhythm-producer', difficulty: 1, minRole: 'free', trackId: 'tr-g1' },
         { id: 'game-g2', studioId: 'std-gabriel', name: 'Soul Session 2', type: 'rhythm-producer', difficulty: 2, minRole: 'free', trackId: 'tr-g2' },
-        { id: 'game-g3', studioId: 'std-gabriel', name: 'Soul Session 3', type: 'rhythm-producer', difficulty: 3, minRole: 'pro', trackId: 'tr-g3' },
-        { id: 'game-neon-1', studioId: 'std-neon', name: 'Pulse Producer', type: 'rhythm-producer', difficulty: 1, minRole: 'free', trackId: 'tr-cyber' }
+        { id: 'game-g3', studioId: 'std-gabriel', name: 'Soul Session 3', type: 'rhythm-producer', difficulty: 3, minRole: 'pro', trackId: 'tr-g3' }
       ];
 
       for (const g of mockGames) {
         await setDoc(doc(db, 'games', g.id!), g, { merge: true });
         
-        // Initial Level
         const levelId = g.id === 'global-ear-training' ? 'global-ear-training' : `${g.id}-lvl1`;
         await setDoc(doc(db, 'levels', levelId), {
           id: levelId,
@@ -176,7 +173,6 @@ export default function HomePage() {
           name: 'Basics'
         }, { merge: true });
 
-        // Sounds for Rhythm Games
         if (g.type === 'rhythm-producer') {
           const sounds: Partial<Sound>[] = [
             { id: `${levelId}-kick`, levelId, type: 'kick', patternIds: ['pattern-4onfloor'] }
@@ -198,7 +194,7 @@ export default function HomePage() {
         { id: 'article-mixing-mastering', categoryId: 'recording', title: 'Mixing & Mastering', minRole: 'admin', content: `Der finale Schliff.\n\n# Transparenz & Druck\nSorge dafür, dass dein Track überall fett klingt.` },
         { id: 'article-daws', categoryId: 'daws', title: 'Digital Audio Workstations', minRole: 'admin', content: `Deine DAW ist deine Schaltzentrale.\n\n# Die Wahl der Waffe\nOb Ableton Live, FL Studio oder Logic Pro – lerne die Grundlagen deiner Software kennen.` },
         { id: 'article-effects', categoryId: 'effects', title: 'Effekte & Plugins', minRole: 'admin', content: `Effekte geben deinem Sound Charakter.\n\n# Dynamik & Modulation\nReverb, Delay, Distortion – lerne, wie du diese Werkzeuge gezielt einsetzt.` },
-        { id: 'article-djing', categoryId: 'djing', title: 'DJing & Performance', minRole: 'admin', content: `Bringe deine Musik auf die Bühne.\n\n# Beatmatching & Mixing\nLerne, wie du Tracks nahtlos verbindest und die Crowd kontrollierst.` },
+        { id: 'article-djing', categoryId: 'djing', title: 'DJing & Performance', minRole: 'admin', content: `Bringe deine Musik auf die Bühne.\n\n# Beatmatching & Mixing\nLerne, wie du Tracks nahtlos verbindest und die Grabbe kontrollierst.` },
         { id: 'article-brand', categoryId: 'brand', title: 'Brand & Marketing', minRole: 'admin', content: `Werde zur Marke.\n\n# Deine Identität\nWie du dich als Artist präsentierst und deine Community aufbaust.` },
         { id: 'article-release', categoryId: 'release', title: 'Release Strategie', minRole: 'admin', content: `Der Weg zum ersten Release.\n\n# Distribution & Promotion\nSpotify, Apple Music & Co. – so bringst du deine Musik unter die Leute.` },
         { id: 'article-rights', categoryId: 'rights', title: 'Rechte & Business', minRole: 'admin', content: `Schütze deine Werke.\n\n# Urheberrecht & Verträge\nWas du über GEMA, Samples und Lizenzen wissen musst.` },
