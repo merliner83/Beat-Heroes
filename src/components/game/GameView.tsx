@@ -95,11 +95,17 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     sound.patternIds?.forEach((pId, index) => {
       const pattern = patterns.find(p => p.id === pId);
       if (pattern && index < patternOffsets.length) {
-        const offset = patternOffsets[index]; 
+        const offset = patternOffsets[index];
+        // Only take the portion of the pattern that fits the section
+        // Intro section is 4 bars (64 steps), others are 8 bars (128 steps)
+        const maxStepsInSection = index === 0 ? 64 : 128;
+
         pattern.steps.forEach(s => {
-          const actualStep = s + offset;
-          if (actualStep < TOTAL_STEPS) {
-            uniqueSteps.add(actualStep);
+          if (s < maxStepsInSection) {
+            const actualStep = s + offset;
+            if (actualStep < TOTAL_STEPS) {
+              uniqueSteps.add(actualStep);
+            }
           }
         });
       }
@@ -318,7 +324,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           })}
         </div>
 
-        {/* Moved Sampler Pads Up with compact padding */}
+        {/* Sampler Pads */}
         <div className="p-4 md:p-8 bg-black/60 border-t border-white/5 shrink-0 z-50">
           <div className={cn(
             "grid gap-4 md:gap-6 max-w-xl mx-auto",

@@ -162,21 +162,23 @@ export default function HomePage() {
       const kickUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57';
       const clapUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClap%201.mp3?alt=media&token=59073468-4861-40f3-9df2-f8c5f59d79df';
       const hatsUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2F808%20CL-HAT%20%20.mp3?alt=media&token=facd4a85-949e-4bca-86d5-0da27199402d';
+      const percsUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_Percussion_33.mp3?alt=media&token=ca7af384-e47c-43af-8a69-7533c512d489';
       const miscUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.mp3?alt=media&token=82c3e18f-c7e0-458b-93d3-09c00a9fe6a1';
       
       const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
-      // Pattern Creation (based on 16 steps per bar)
+      // Pattern Creation (based on 16 steps per bar, 128 steps total for 8 bars)
       const patterns = [
         // KICK
         { id: 'kick-intro', data: { id: 'kick-intro', name: 'Intro Kick', steps: [0, 16, 32, 48] } }, // 1 Schlag pro Takt (4 Takte)
-        { id: 'kick-verse', data: { id: 'kick-verse', name: 'Verse Kick', steps: Array.from({length: 32}, (_, i) => i * 4) } }, // Viertel für 8 Takte (32 Schläge)
-        { id: 'kick-refrain', data: { id: 'kick-refrain', name: 'Refrain Kick', steps: Array.from({length: 64}, (_, i) => i * 2) } }, // Achtel für 8 Takte (64 Schläge)
+        { id: 'kick-verse', data: { id: 'kick-verse', name: 'Verse Kick', steps: Array.from({length: 16}, (_, i) => i * 8) } }, // 2 Schläge pro Takt (8 Takte = 16 Schläge)
+        { id: 'kick-refrain', data: { id: 'kick-refrain', name: 'Refrain Kick', steps: Array.from({length: 32}, (_, i) => i * 4) } }, // 4 Schläge pro Takt (8 Takte = 32 Schläge)
+        { id: 'kick-intro-long', data: { id: 'kick-intro-long', name: 'Intro 8 Bars', steps: Array.from({length: 8}, (_, i) => i * 16) } }, // 1 Schlag pro Takt über 8 Takte
         
         // CLAP
         { id: 'clap-intro', data: { id: 'clap-intro', name: 'Intro Clap', steps: [48] } }, // Nur am Ende vom Intro
-        { id: 'clap-verse', data: { id: 'clap-verse', name: 'Verse Clap', steps: [16+4, 16+12, 32+4, 32+12, 48+4, 48+12, 64+4, 64+12, 80+4, 80+12, 96+4, 96+12, 112+4, 112+12] } }, // 2 und 4
-        { id: 'clap-refrain', data: { id: 'clap-refrain', name: 'Refrain Clap', steps: Array.from({length: 32}, (_, i) => i * 4 + 4) } }, // Jede 2 und 4 durchgehend
+        { id: 'clap-verse', data: { id: 'clap-verse', name: 'Verse Clap', steps: Array.from({length: 8}, (_, i) => i * 16 + 8) } }, // Nur auf die 2 und 4 (halbe Noten Offset)
+        { id: 'clap-refrain', data: { id: 'clap-refrain', name: 'Refrain Clap', steps: Array.from({length: 16}, (_, i) => i * 8 + 4) } }, // Backbeat
         
         // HATS
         { id: 'hats-verse', data: { id: 'hats-verse', name: '8th Shaker', steps: Array.from({length: 64}, (_, i) => i * 2) } },
@@ -359,7 +361,7 @@ export default function HomePage() {
   const isAnonymous = user?.isAnonymous;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-body flex flex-col relative select-none">
+    <div className="min-h-screen bg-[#050505] text-white font-body font-normal flex flex-col relative select-none">
       <div className="fixed inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '60px 60px' }} />
       
       <header className="sticky top-0 p-4 md:p-8 flex flex-col items-center z-50 shrink-0 bg-black/80 backdrop-blur-xl border-b border-white/5">
