@@ -177,20 +177,22 @@ export default function HomePage() {
       // 5. Studio Games (3 per Studio, 4 Levels each)
       const gameConfigs = [
         { type: 'rhythm-producer' as const, name: 'Beat Hero' },
-        { type: 'disk-dash' as const, name: 'Sample Catcher' },
+        { type: 'disk-dash' as const, name: 'Sample Catcher' }, // This will be admin-only
         { type: 'sample-hunter' as const, name: 'Vinyl Hunter' }
       ];
 
       for (const s of studios) {
         for (const config of gameConfigs) {
           const gameId = `${s.id}-${config.type}`;
+          const isSampleCatcher = config.type === 'disk-dash';
+          
           await setDoc(doc(db, 'games', gameId), {
             id: gameId,
             studioId: s.id!,
             name: config.name,
             type: config.type,
             difficulty: 1,
-            minRole: 'free',
+            minRole: isSampleCatcher ? 'admin' : 'free', // Deactivate Sample Catcher
             bpm: 120
           }, { merge: true });
 
@@ -239,7 +241,7 @@ export default function HomePage() {
         await setDoc(doc(db, 'articles', art.id!), art, { merge: true });
       }
 
-      toast({ title: "Rack Fully Synced!", description: "All studios restored with 3 modules and 4 levels each." });
+      toast({ title: "Rack Fully Synced!", description: "All modules restored. Sample Catcher deactivated for non-admins." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
