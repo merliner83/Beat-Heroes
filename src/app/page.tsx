@@ -120,14 +120,14 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     try {
-      // 1. Sync Trigger Patterns
+      // 1. Patterns
       await setDoc(doc(db, 'patterns', 'pattern-4onfloor'), {
         id: 'pattern-4onfloor',
         name: '4-on-the-Floor',
         steps: [0, 16, 32, 48, 64, 80, 96, 112]
       }, { merge: true });
 
-      // 2. Sync Studios (Skip imageUrl)
+      // 2. Studios
       const mockStudios: Partial<Studio>[] = [
         { id: 'std-neon', name: 'Neon Heights', description: 'The core of futuristic beats.', coverColor: '#993DEB', district: 'X-District', tags: ['Techno', 'Electro'] },
         { id: 'std-bass', name: 'Bass Bunker', description: 'Deep vibes only.', coverColor: '#3838FA', district: 'Underground', tags: ['Bass', 'Trap'] },
@@ -138,36 +138,36 @@ export default function HomePage() {
         await setDoc(doc(db, 'studios', s.id!), s, { merge: true });
       }
 
-      // 3. Sync Tracks (Skip url)
+      // 3. Tracks (Gabriel Beats 1-5)
       const mockTracks: Partial<Track>[] = [
-        { id: 'tr-cyber', studioId: 'std-neon', name: 'Cyber Drift', author: 'PulseMaster' },
-        { id: 'tr-echo', studioId: 'std-bass', name: 'Deep Echo', author: 'SubVoid' },
         { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel' },
         { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel' },
         { id: 'tr-g3', studioId: 'std-gabriel', name: 'Track 3', author: 'Gabriel' },
         { id: 'tr-g4', studioId: 'std-gabriel', name: 'Track 4', author: 'Gabriel' },
-        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel' }
+        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel' },
+        { id: 'tr-cyber', studioId: 'std-neon', name: 'Cyber Drift', author: 'PulseMaster' },
+        { id: 'tr-echo', studioId: 'std-bass', name: 'Deep Echo', author: 'SubVoid' }
       ];
       for (const t of mockTracks) {
         await setDoc(doc(db, 'tracks', t.id!), t, { merge: true });
       }
 
-      // 4. Sync Games (Skip backingTrackUrl, bpm)
+      // 4. Games
       const mockGames: Partial<Game>[] = [
         { id: 'global-ear-training', studioId: 'learn-center', name: 'Ear Training', type: 'ear-training', difficulty: 1, minRole: 'free' },
         { id: 'global-rhythm-game', studioId: 'learn-center', name: 'Rhythm Master', type: 'rhythm-producer', difficulty: 1, minRole: 'admin' },
         { id: 'global-notation-pro', studioId: 'learn-center', name: 'Notation Pro', type: 'notation-pro', difficulty: 1, minRole: 'admin' },
-        { id: 'game-neon-1', studioId: 'std-neon', name: 'Pulse Producer', type: 'rhythm-producer', difficulty: 1, minRole: 'free', trackId: 'tr-cyber' },
-        { id: 'game-bass-1', studioId: 'std-bass', name: 'Vinyl Hunter', type: 'sample-hunter', difficulty: 2, minRole: 'pro', trackId: 'tr-echo' },
-        // Gabriel's Games (Only 3 as requested)
+        // Gabriel's 3 Games
         { id: 'game-g1', studioId: 'std-gabriel', name: 'Soul Session 1', type: 'rhythm-producer', difficulty: 1, minRole: 'free', trackId: 'tr-g1' },
         { id: 'game-g2', studioId: 'std-gabriel', name: 'Soul Session 2', type: 'rhythm-producer', difficulty: 2, minRole: 'free', trackId: 'tr-g2' },
-        { id: 'game-g3', studioId: 'std-gabriel', name: 'Soul Session 3', type: 'rhythm-producer', difficulty: 3, minRole: 'pro', trackId: 'tr-g3' }
+        { id: 'game-g3', studioId: 'std-gabriel', name: 'Soul Session 3', type: 'rhythm-producer', difficulty: 3, minRole: 'pro', trackId: 'tr-g3' },
+        { id: 'game-neon-1', studioId: 'std-neon', name: 'Pulse Producer', type: 'rhythm-producer', difficulty: 1, minRole: 'free', trackId: 'tr-cyber' }
       ];
 
       for (const g of mockGames) {
         await setDoc(doc(db, 'games', g.id!), g, { merge: true });
         
+        // Initial Level
         const levelId = g.id === 'global-ear-training' ? 'global-ear-training' : `${g.id}-lvl1`;
         await setDoc(doc(db, 'levels', levelId), {
           id: levelId,
@@ -176,6 +176,7 @@ export default function HomePage() {
           name: 'Basics'
         }, { merge: true });
 
+        // Sounds for Rhythm Games
         if (g.type === 'rhythm-producer') {
           const sounds: Partial<Sound>[] = [
             { id: `${levelId}-kick`, levelId, type: 'kick', patternIds: ['pattern-4onfloor'] }
@@ -186,29 +187,29 @@ export default function HomePage() {
         }
       }
 
-      // 7. Sync Articles (Skip videoUrl, imageUrls)
+      // 5. Knowledge Base Articles
       const articles: Partial<Article>[] = [
         { id: 'article-producing', categoryId: 'intro', title: 'Producing Basics', minRole: 'free', content: `Was ist Producing? Musikproduktion ist der kreative und technische Prozess, bei dem ein Song von der ersten Idee bis zur finalen Version gestaltet wird.\n\n# Die Phasen der Musikproduktion\n\nPHASE:COMPOSING|*Ideenfindung und Songwriting:*\nZu Beginn steht oft eine grobe Idee oder eine Melodie. Ein Producer kann diese Idee weiterentwickeln, neue Akkordfolgen hinzufügen oder einen Text schreiben.|article-composing\n\nPHASE:RECORDING|In der Aufnahmephase werden die einzelnen Spuren eines Songs aufgenommen, z. B. Gesang, Instrumente oder elektronische Elemente.|article-recording\n\nPHASE:EDITING|Nach den Aufnahmen folgt das Bearbeiten der einzelnen Spuren. Dies umfasst das Schneiden, Korrigieren und Optimieren der Aufnahmen.|article-editing\n\nPHASE:ARRANGEMENT|Der Producer fügt verschiedene Elemente zusammen und sorgt dafür, dass der Song eine ausgewogene Struktur hat.|article-arrangement\n\nPHASE:SOUNDDESIGN|In dieser Phase geht es darum, die perfekten Klänge zu kreieren oder auszuwählen, um dem Track eine einzigartige Atmosphäre.|article-sounddesign\n\nPHASE:MIXING / MASTERING|Im Mixing werden alle Spuren harmonisch abgestimmt. Das abschließende Mastering stellt sicher, dass der Song professionell klingt.|article-mixing-mastering\n\nEin Beat in 3 Minuten:\nhttps://www.youtube.com/watch?v=ihyTXOak27c\n\nLustiges Video eines Audio Engineers:\nhttps://youtu.be/G2Rhh_4GZmU?si=csvyixY5qhDmL5_P` },
-        { id: 'article-composing', categoryId: 'composing', title: 'Composing Deep Dive', minRole: 'admin', content: `Composing ist das Herzstück deiner musikalischen Identität.\n\n# Melodien & Harmonien\nIn diesem Guide lernst du, wie du eingängige Melodien entwickelst und die richtigen Akkorde wählst, um Emotionen zu wecken.\n\nPHASE:COMPOSING|Entwickle deine eigene musikalische Sprache durch experimente mit Skalen und Rhythmen.` },
-        { id: 'article-recording', categoryId: 'recording', title: 'Recording Deep Dive', minRole: 'admin', content: `Die Qualität deiner Aufnahme bestimmt das Endergebnis.\n\n# Das perfekte Signal\nLerne alles über Mikrofonpositionierung, Gain-Staging und die Akustik deines Raumes.\n\nPHASE:RECORDING|Nur eine saubere Aufnahme lässt sich später professionell bearbeiten.` },
+        { id: 'article-composing', categoryId: 'composing', title: 'Composing Deep Dive', minRole: 'admin', content: `Composing ist das Herzstück deiner musikalischen Identität.\n\n# Melodien & Harmonien\nIn diesem Guide lernst du, wie du eingängige Melodien entwickelst und die richtigen Akkorde wählst.` },
+        { id: 'article-recording', categoryId: 'recording', title: 'Recording Deep Dive', minRole: 'admin', content: `Die Qualität deiner Aufnahme bestimmt das Endergebnis.\n\n# Das perfekte Signal\nLerne alles über Mikrofonpositionierung, Gain-Staging und die Akustik deines Raumes.` },
+        { id: 'article-editing', categoryId: 'recording', title: 'Editing Basics', minRole: 'admin', content: `Präzision im Detail.\n\n# Schneiden & Korrigieren\nLerne, wie du Aufnahmen perfektionierst.` },
+        { id: 'article-arrangement', categoryId: 'composing', title: 'Arrangement Guide', minRole: 'admin', content: `Struktur & Flow.\n\n# Song-Aufbau\nVerse, Chorus, Bridge – so baust du Spannung auf.` },
+        { id: 'article-sounddesign', categoryId: 'composing', title: 'Sound Design 101', minRole: 'admin', content: `Erschaffe neue Welten.\n\n# Synthese & Sampling\nLerne, wie du einzigartige Klänge von Grund auf erstellst.` },
+        { id: 'article-mixing-mastering', categoryId: 'recording', title: 'Mixing & Mastering', minRole: 'admin', content: `Der finale Schliff.\n\n# Transparenz & Druck\nSorge dafür, dass dein Track überall fett klingt.` },
         { id: 'article-daws', categoryId: 'daws', title: 'Digital Audio Workstations', minRole: 'admin', content: `Deine DAW ist deine Schaltzentrale.\n\n# Die Wahl der Waffe\nOb Ableton Live, FL Studio oder Logic Pro – lerne die Grundlagen deiner Software kennen.` },
         { id: 'article-effects', categoryId: 'effects', title: 'Effekte & Plugins', minRole: 'admin', content: `Effekte geben deinem Sound Charakter.\n\n# Dynamik & Modulation\nReverb, Delay, Distortion – lerne, wie du diese Werkzeuge gezielt einsetzt.` },
         { id: 'article-djing', categoryId: 'djing', title: 'DJing & Performance', minRole: 'admin', content: `Bringe deine Musik auf die Bühne.\n\n# Beatmatching & Mixing\nLerne, wie du Tracks nahtlos verbindest und die Crowd kontrollierst.` },
         { id: 'article-brand', categoryId: 'brand', title: 'Brand & Marketing', minRole: 'admin', content: `Werde zur Marke.\n\n# Deine Identität\nWie du dich als Artist präsentierst und deine Community aufbaust.` },
         { id: 'article-release', categoryId: 'release', title: 'Release Strategie', minRole: 'admin', content: `Der Weg zum ersten Release.\n\n# Distribution & Promotion\nSpotify, Apple Music & Co. – so bringst du deine Musik unter die Leute.` },
         { id: 'article-rights', categoryId: 'rights', title: 'Rechte & Business', minRole: 'admin', content: `Schütze deine Werke.\n\n# Urheberrecht & Verträge\nWas du über GEMA, Samples und Lizenzen wissen musst.` },
-        { id: 'article-others', categoryId: 'others', title: 'Weitere Themen', minRole: 'admin', content: `Noch mehr Know-How.\n\n# Studio-Akustik & Gear\nZusätzliche Infos für dein perfektes Setup.` },
-        { id: 'article-editing', categoryId: 'recording', title: 'Editing Basics', minRole: 'admin', content: `Präzision im Detail.\n\n# Schneiden & Korrigieren\nLerne, wie du Aufnahmen perfektionierst.` },
-        { id: 'article-arrangement', categoryId: 'composing', title: 'Arrangement Guide', minRole: 'admin', content: `Struktur & Flow.\n\n# Song-Aufbau\nVerse, Chorus, Bridge – so baust du Spannung auf.` },
-        { id: 'article-sounddesign', categoryId: 'composing', title: 'Sound Design 101', minRole: 'admin', content: `Erschaffe neue Welten.\n\n# Synthese & Sampling\nLerne, wie du einzigartige Klänge von Grund auf erstellst.` },
-        { id: 'article-mixing-mastering', categoryId: 'recording', title: 'Mixing & Mastering', minRole: 'admin', content: `Der finale Schliff.\n\n# Transparenz & Druck\nSorge dafür, dass dein Track überall fett klingt.` }
+        { id: 'article-others', categoryId: 'others', title: 'Weitere Themen', minRole: 'admin', content: `Noch mehr Know-How.\n\n# Studio-Akustik & Gear\nZusätzliche Infos für dein perfektes Setup.` }
       ];
 
       for (const art of articles) {
         await setDoc(doc(db, 'articles', art.id!), art, { merge: true });
       }
 
-      toast({ title: "Rack Synchronized!", description: "Studio metadata updated. Media fields preserved." });
+      toast({ title: "Rack Synchronized!", description: "Laboratory structure restored." });
     } catch (e) {
       console.error(e);
       toast({ variant: "destructive", title: "Sync Failed" });
