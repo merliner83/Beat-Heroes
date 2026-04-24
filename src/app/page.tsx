@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -223,7 +222,7 @@ export default function HomePage() {
         <div className="flex flex-col items-center gap-6 w-full max-w-7xl">
           {/* Central Logo */}
           <div className="flex items-center justify-center w-full">
-            <h1 className="text-4xl md:text-7xl font-black tracking-[-0.05em] uppercase italic leading-none text-gradient">
+            <h1 className="text-4xl md:text-7xl font-black tracking-[-0.05em] uppercase italic leading-none text-gradient pr-4">
               BeatHero
             </h1>
           </div>
