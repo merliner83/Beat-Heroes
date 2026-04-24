@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -32,7 +31,7 @@ export default function StudioPage() {
     if (!db || !studioId) return null;
     return query(collection(db, 'games'), where('studioId', '==', studioId));
   }, [db, studioId]);
-  const { data: games } = useCollection<Game>(gamesQuery);
+  const { data: allGames } = useCollection<Game>(gamesQuery);
 
   const tracksQuery = useMemoFirebase(() => {
     if (!db || !studioId) return null;
@@ -61,7 +60,12 @@ export default function StudioPage() {
   const [playingTrack, setPlayingTrack] = useState<string | null>(null);
   const [audio] = useState(() => typeof Audio !== 'undefined' ? new Audio() : null);
 
-  const isLocked = studio && !hasAccess(profile?.role, studio.minRole || 'free');
+  const isStudioLocked = studio && !hasAccess(profile?.role, studio.minRole || 'free');
+
+  const filteredGames = useMemo(() => {
+    if (!allGames) return [];
+    return allGames.filter(game => hasAccess(profile?.role, game.minRole || 'free'));
+  }, [allGames, profile?.role]);
 
   const toggleTrack = (url: string) => {
     if (!audio || !url) return;
@@ -106,7 +110,7 @@ export default function StudioPage() {
     );
   }
 
-  if (isLocked) {
+  if (isStudioLocked) {
     return (
       <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white p-6 text-center">
         <Lock className="w-16 h-16 text-primary mb-6" />
@@ -218,7 +222,7 @@ export default function StudioPage() {
           </div>
           
           <div className="grid grid-cols-1 gap-10">
-            {games?.map((game) => {
+            {filteredGames.map((game) => {
               const gameLevels = allLevels?.filter(l => l.gameId === game.id) || [];
               const diffInfo = DIFFICULTY_MAP[game.difficulty || 1];
 

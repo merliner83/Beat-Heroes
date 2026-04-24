@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -96,6 +95,7 @@ export default function HomePage() {
     }
   }, [user, db]);
 
+  const isAdmin = profile?.role === 'admin';
   const streetCred = profile?.streetCred || 0;
 
   const studiosQuery = useMemoFirebase(() => {
@@ -396,14 +396,16 @@ export default function HomePage() {
           <span className="text-[10px] md:text-xs uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack System Online</span>
         </div>
         <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={setupStudios} 
-            className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_15px_rgba(255,234,0,0.2)] h-10 md:h-12 px-8 md:px-12 text-sm md:text-base transition-transform active:scale-95"
-          >
-            <RefreshCw className="w-4 h-4 md:w-5 md:h-5 mr-3" /> Rack Sync
-          </Button>
+          {isAdmin && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={setupStudios} 
+              className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_15px_rgba(255,234,0,0.2)] h-10 md:h-12 px-8 md:px-12 text-sm md:text-base transition-transform active:scale-95"
+            >
+              <RefreshCw className="w-4 h-4 md:w-5 md:h-5 mr-3" /> Rack Sync
+            </Button>
+          )}
         </div>
       </footer>
     </div>

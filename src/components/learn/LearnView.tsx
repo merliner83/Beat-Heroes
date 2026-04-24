@@ -1,7 +1,6 @@
-
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -60,7 +59,12 @@ export const LearnView = () => {
   const { data: allGames } = useCollection<Game>(gamesQuery);
   const { data: allArticles } = useCollection<Article>(articlesQuery);
 
-  const learnGames = allGames?.filter(g => g.studioId === 'learn-center') || [];
+  const filteredLearnGames = useMemo(() => {
+    if (!allGames) return [];
+    return allGames
+      .filter(g => g.studioId === 'learn-center')
+      .filter(g => hasAccess(profile?.role, g.minRole || 'free'));
+  }, [allGames, profile?.role]);
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-20">
@@ -73,51 +77,53 @@ export const LearnView = () => {
       </section>
 
       {/* Learn Games Section */}
-      <section>
-        <div className="flex items-center gap-3 mb-6">
-          <Gamepad2 className="w-5 h-5 text-primary" />
-          <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white/50">Learn-InApps</h3>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {learnGames.map((game) => {
-            const isLocked = !hasAccess(profile?.role, game.minRole || 'free');
-            const Icon = GAME_ICON_MAP[game.type] || Gamepad2;
-            const color = GAME_COLOR_MAP[game.type] || '#fff';
-            
-            return (
-              <Link 
-                key={game.id} 
-                href={isLocked ? '#' : `/session/${game.id === 'global-ear-training' ? 'global-ear-training' : (game.id === 'global-notation-pro' ? 'global-notation-1' : 'global-rhythm-1')}`}
-                className={cn(isLocked && "cursor-not-allowed")}
-              >
-                <div className="gemini-border group transition-transform hover:scale-[1.02] active:scale-95">
-                  <div className="p-6 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4 relative min-h-[160px] justify-center">
-                    {isLocked && (
-                      <div className="absolute top-4 right-4 text-white/20">
-                        <Lock className="w-5 h-5" />
+      {filteredLearnGames.length > 0 && (
+        <section>
+          <div className="flex items-center gap-3 mb-6">
+            <Gamepad2 className="w-5 h-5 text-primary" />
+            <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white/50">Learn-InApps</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {filteredLearnGames.map((game) => {
+              const isLocked = !hasAccess(profile?.role, game.minRole || 'free');
+              const Icon = GAME_ICON_MAP[game.type] || Gamepad2;
+              const color = GAME_COLOR_MAP[game.type] || '#fff';
+              
+              return (
+                <Link 
+                  key={game.id} 
+                  href={isLocked ? '#' : `/session/${game.id === 'global-ear-training' ? 'global-ear-training' : (game.id === 'global-notation-pro' ? 'global-notation-1' : 'global-rhythm-1')}`}
+                  className={cn(isLocked && "cursor-not-allowed")}
+                >
+                  <div className="gemini-border group transition-transform hover:scale-[1.02] active:scale-95">
+                    <div className="p-6 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4 relative min-h-[160px] justify-center">
+                      {isLocked && (
+                        <div className="absolute top-4 right-4 text-white/20">
+                          <Lock className="w-5 h-5" />
+                        </div>
+                      )}
+                      <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                        <Icon className={cn("w-8 h-8", isLocked && "opacity-20")} style={{ color: isLocked ? undefined : color }} />
                       </div>
-                    )}
-                    <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                      <Icon className={cn("w-8 h-8", isLocked && "opacity-20")} style={{ color: isLocked ? undefined : color }} />
-                    </div>
-                    <div>
-                      <h4 className={cn("text-lg font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors", isLocked && "opacity-20")}>
-                        {game.name}
-                      </h4>
-                      <p className="text-[10px] uppercase font-bold tracking-widest opacity-30 mt-1">Learn-Game</p>
+                      <div>
+                        <h4 className={cn("text-lg font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors", isLocked && "opacity-20")}>
+                          {game.name}
+                        </h4>
+                        <p className="text-[10px] uppercase font-bold tracking-widest opacity-30 mt-1">Learn-Game</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Knowledge Base Section */}
       <section>
         <div className="flex items-center gap-3 mb-6">
-          <BookOpen className="w-5 h-5 text-primary" />
+          < BookOpen className="w-5 h-5 text-primary" />
           <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white/50">Knowledge Base</h3>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
