@@ -221,24 +221,17 @@ export default function HomePage() {
       
       <header className="sticky top-0 p-4 md:p-6 flex flex-col items-center z-50 shrink-0 bg-black/80 backdrop-blur-xl border-b border-white/5">
         <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-7xl justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 self-start md:self-auto">
             <div className="gemini-border gemini-glow p-2 px-5 bg-black/80 backdrop-blur-3xl">
               <div className="flex items-center gap-2">
                 <Radio className="w-4 h-4 text-white animate-pulse" />
                 <h1 className="text-xl md:text-3xl font-black tracking-tighter uppercase italic leading-none text-white">BeatHero</h1>
               </div>
             </div>
-
-            <div className="gemini-border gemini-glow-accent p-1.5 px-4 bg-black/80 backdrop-blur-3xl border border-white/5">
-              <div className="text-white font-black text-base md:text-2xl leading-none tracking-tighter flex items-center gap-2">
-                <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
-                {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
-              </div>
-            </div>
           </div>
 
-          <div className="flex items-center gap-4 w-full md:w-auto">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
+          <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
               <TabsList className="bg-white/5 border border-white/5 rounded-full p-1 h-12 md:h-14">
                 <TabsTrigger value="studios" className="rounded-full px-6 md:px-10 data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase italic tracking-tighter transition-all">
                   <LayoutGrid className="w-4 h-4 mr-2 hidden sm:inline" />
@@ -250,6 +243,13 @@ export default function HomePage() {
                 </TabsTrigger>
               </TabsList>
             </Tabs>
+
+            <div className="gemini-border gemini-glow-accent p-1.5 px-4 bg-black/80 backdrop-blur-3xl border border-white/5 shrink-0">
+              <div className="text-white font-black text-base md:text-2xl leading-none tracking-tighter flex items-center gap-2">
+                <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
+                {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -341,4 +341,3 @@ export default function HomePage() {
     </div>
   );
 }
-
