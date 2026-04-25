@@ -79,7 +79,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const bpm = game.bpm || 128;
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
-  const MPC_POS = { x: 50, y: 75 };
+  const MPC_POS = { x: 50, y: 70 }; // Moved up slightly from 75
 
   const SAMPLE_LIFETIME = 
     level.difficulty === 1 ? 3000 : 
@@ -102,7 +102,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       sound: randomSound,
       pos: {
         x: Math.random() * 80 + 10,
-        y: Math.random() * 45 + 10
+        y: Math.random() * 45 + 5 // Adjusted spawn area
       },
       status: 'active',
       spawnTime: Date.now()
@@ -118,7 +118,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       const total = nextHits + prev.misses;
       return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
     });
-    setTimeout(spawnNextNote, 600); // Wait for suction animation
+    setTimeout(spawnNextNote, 600);
   }, [spawnNextNote]);
 
   const handleMiss = useCallback((noteId: string) => {
@@ -279,13 +279,13 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     if (dist < 20) return null;
 
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    return { angle, length: Math.min(dist, 300) };
+    return { angle, length: Math.min(dist * 1.5, 400) };
   };
 
   const aiming = getAimingLine();
   const pull = isDragging ? { 
-    x: (dragStart.x - dragCurrent.x) / 5, 
-    y: (dragStart.y - dragCurrent.y) / 5 
+    x: (dragStart.x - dragCurrent.x) / 6, 
+    y: (dragStart.y - dragCurrent.y) / 6 
   } : null;
 
   return (
@@ -319,7 +319,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       >
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
-        {/* Laser Aiming Line */}
+        {/* Improved Conic Aiming Line */}
         {aiming && (
           <div 
             className="absolute z-10 origin-left pointer-events-none"
@@ -328,16 +328,18 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               top: `${MPC_POS.y}%`, 
               width: `${aiming.length}px`,
               transform: `rotate(${aiming.angle}deg)`,
-              height: '4px',
-              background: 'linear-gradient(90deg, #FF3399, #00FFFF, transparent)',
-              boxShadow: '0 0 15px #FF3399, 0 0 5px #00FFFF',
-              borderRadius: '2px',
-              opacity: 0.8
+              height: '30px', // Total height for the cone
+              marginTop: '-15px', // Center vertically
+              background: 'linear-gradient(90deg, #FF3399 0%, #00FFFF 50%, transparent 100%)',
+              clipPath: 'polygon(0 45%, 100% 0, 100% 100%, 0 55%)',
+              boxShadow: '0 0 30px #FF339988',
+              opacity: 0.6,
+              filter: 'blur(2px)'
             }}
           />
         )}
 
-        {/* MPC Visual at Launcher Position */}
+        {/* High-Fidelity MPC Sampler Visual */}
         <div 
           className="absolute z-50 pointer-events-none transition-all duration-300"
           style={{ 
@@ -347,18 +349,37 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           }}
         >
           <div className="relative group">
-            <div className="absolute inset-0 bg-primary/20 blur-3xl animate-pulse rounded-full" />
-            <div className="relative w-24 h-24 md:w-32 md:h-32 border-2 border-white/10 rounded-2xl overflow-hidden bg-black shadow-2xl">
-              <Image 
-                src="https://picsum.photos/seed/beathero-mpc/400/400" 
-                alt="MPC" 
-                fill 
-                className="object-cover opacity-60"
-                data-ai-hint="drum machine"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent" />
+            <div className="absolute inset-0 bg-primary/20 blur-[80px] animate-pulse rounded-full" />
+            
+            {/* MPC Case */}
+            <div className="relative w-32 h-40 md:w-40 md:h-48 bg-[#1a1a1a] rounded-[1.5rem] border-[3px] border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.8)] p-3 flex flex-col gap-3">
+              {/* MPC Display */}
+              <div className="w-full h-12 bg-black border border-white/10 rounded-md overflow-hidden flex items-center justify-center">
+                 <div className="w-full h-full opacity-40 bg-[radial-gradient(#00E676_1px,transparent_1px)] bg-[size:4px_4px]" />
+                 <span className="absolute text-[8px] font-black text-[#00E676] uppercase tracking-[0.2em] animate-pulse">Sync Active</span>
+              </div>
+              
+              {/* Pad Grid Visual */}
+              <div className="grid grid-cols-4 grid-rows-4 gap-1.5 flex-1">
+                {Array.from({length: 16}).map((_, i) => (
+                  <div key={i} className={cn(
+                    "rounded-sm border border-white/5",
+                    i === 0 || i === 5 || i === 10 || i === 15 ? "bg-primary/20" : "bg-white/5"
+                  )} />
+                ))}
+              </div>
+
+              {/* MPC Bottom Section */}
+              <div className="h-4 flex justify-between items-center px-1">
+                 <div className="w-8 h-1 bg-white/10 rounded-full" />
+                 <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#00E676]" />
+                 </div>
+              </div>
             </div>
-            <div className="absolute -inset-4 border-2 border-primary/20 rounded-3xl border-dashed animate-spin-slow" />
+            
+            <div className="absolute -inset-6 border-2 border-primary/10 rounded-[2.5rem] border-dashed animate-spin-slow opacity-30" />
           </div>
         </div>
 
