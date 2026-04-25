@@ -27,7 +27,7 @@ import { doc, increment, setDoc, serverTimestamp, collection, query } from 'fire
 
 const SOUND_MAPPING: Record<string, string> = {
   'kick': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57',
-  'clave': 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg'
+  'clave': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClaves.mp3?alt=media&token=1162b3f6-19d7-4a41-a3b6-9c243cd5d36a'
 };
 
 interface RhythmTrainerViewProps {

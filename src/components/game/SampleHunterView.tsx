@@ -6,7 +6,7 @@ import { Game, Level, Sound, GameScore, SoundType } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Trophy, Loader2, Sparkles, XCircle, Zap, Target, Crosshair, Disc, ArrowLeft, Percent, LayoutGrid } from 'lucide-react';
+import { Trophy, Loader2, Sparkles, XCircle, Zap, Target, Crosshair, Disc, ArrowLeft, Percent, LayoutGrid, Music, Radio, Mic } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -17,10 +17,10 @@ const PASS_THRESHOLD = 80;
 const DIFFICULTY_REWARDS: Record<number, number> = { 1: 50, 2: 100, 3: 200, 4: 1000 };
 
 const OBJECT_ICONS: Record<SoundType, any> = {
-  kick: Target,
-  clap: Zap,
-  percs: Crosshair,
-  misc: Sparkles,
+  kick: Disc,
+  clap: Music,
+  percs: Radio,
+  misc: Mic,
 };
 
 const OBJECT_COLORS: Record<SoundType, string> = {
