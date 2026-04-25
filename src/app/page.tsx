@@ -5,7 +5,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, doc, setDoc } from 'firebase/firestore';
+import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
 import { Studio, Game, Article, Track, hasAccess, LearnApp } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -75,9 +75,8 @@ export default function HomePage() {
   const { user, profile, isUserLoading } = useUser();
   const { toast } = useToast();
   
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTag, setSelectedTag] = useState('All');
   const [activeTab, setActiveTab] = useState('studios');
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     const savedTab = localStorage.getItem('beathero_active_tab');
@@ -136,28 +135,30 @@ export default function HomePage() {
 
   const { data: allStudios, isLoading: isLoadingStudios } = useCollection<Studio>(studiosQuery);
 
-  const dynamicTags = useMemo(() => {
-    if (!allStudios) return ['All'];
-    const tagsSet = new Set<string>(['All']);
-    allStudios.forEach(s => {
-      s.tags?.forEach(tag => tagsSet.add(tag));
-    });
-    return Array.from(tagsSet);
-  }, [allStudios]);
-
   const filteredStudios = useMemo(() => {
     if (!allStudios) return [];
-    return allStudios.filter(s => {
-      const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                           s.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesTag = selectedTag === 'All' || 
-                        s.tags?.some(t => t.toLowerCase() === selectedTag.toLowerCase());
-      return matchesSearch && matchesTag;
-    });
-  }, [allStudios, searchQuery, selectedTag]);
+    return allStudios.sort((a, b) => a.name.localeCompare(b.name));
+  }, [allStudios]);
 
   const setupStudios = async () => {
     if (!db) return;
+    setIsSyncing(true);
+    let createdCount = 0;
+    let updatedCount = 0;
+
+    const syncItem = async (col: string, id: string, data: any) => {
+      const ref = doc(db, col, id);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, data);
+        createdCount++;
+      } else {
+        // Update only missing fields - Firestore is the source of truth
+        await setDoc(ref, data, { merge: true });
+        updatedCount++;
+      }
+    };
+
     try {
       // DEFINITIVE SOUND URLS
       const S_KICK = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57';
@@ -176,20 +177,20 @@ export default function HomePage() {
 
       // 1. Patterns
       const patternsArr = [
-        { id: 'kick-intro-1', data: { id: 'kick-intro-1', name: 'Intro 8-Bar Kick', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
-        { id: 'kick-verse-2', data: { id: 'kick-verse-2', name: 'Verse 2-Shot', steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) } }, 
-        { id: 'kick-refrain-4', data: { id: 'kick-refrain-4', name: 'Refrain 4-Shot', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) } }, 
-        { id: 'kick-hiphop-sync', data: { id: 'kick-hiphop-sync', name: 'HipHop Sync', steps: Array.from({length: 8}, (_, bar) => [0, 6, 10, 14].map(s => s + bar * 16)).flat() } },
-        { id: 'kick-buildup-fast', data: { id: 'kick-buildup-fast', name: 'Buildup Fast', steps: [0, 4, 8, 12, 16, 18, 20, 22, 24, 26, 28, 30, ...Array.from({length: 32}, (_, i) => i + 32)] } },
-        { id: 'kick-techno-4-4', data: { id: 'kick-techno-4-4', name: 'Techno 4-on-Floor', steps: Array.from({length: 8}, (_, bar) => [0, 4, 8, 12].map(s => s + bar * 16)).flat() } },
-        { id: 'clap-basic', data: { id: 'clap-basic', name: 'Clap 2-4', steps: Array.from({length: 8}, (_, bar) => [4, 12].map(s => s + bar * 16)).flat() } },
-        { id: 'clap-sync', data: { id: 'clap-sync', name: 'Clap Sync', steps: Array.from({length: 8}, (_, bar) => [4, 11, 14].map(s => s + bar * 16)).flat() } },
-        { id: 'hats-basic', data: { id: 'hats-basic', name: 'Hats 4th', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) } },
-        { id: 'hats-fast', data: { id: 'hats-fast', name: 'Hats 8th', steps: Array.from({length: 128}, (_, i) => i % 2 === 0 ? i : -1).filter(v => v !== -1) } },
-        { id: 'misc-accent', data: { id: 'misc-accent', name: 'Misc Accent', steps: [15, 31, 47, 63, 79, 95, 111, 127] } }
+        { id: 'kick-intro-1', name: 'Intro 8-Bar Kick', steps: [0, 16, 32, 48, 64, 80, 96, 112] },
+        { id: 'kick-verse-2', name: 'Verse 2-Shot', steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) }, 
+        { id: 'kick-refrain-4', name: 'Refrain 4-Shot', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) }, 
+        { id: 'kick-hiphop-sync', name: 'HipHop Sync', steps: Array.from({length: 8}, (_, bar) => [0, 6, 10, 14].map(s => s + bar * 16)).flat() },
+        { id: 'kick-buildup-fast', name: 'Buildup Fast', steps: [0, 4, 8, 12, 16, 18, 20, 22, 24, 26, 28, 30, ...Array.from({length: 32}, (_, i) => i + 32)] },
+        { id: 'kick-techno-4-4', name: 'Techno 4-on-Floor', steps: Array.from({length: 8}, (_, bar) => [0, 4, 8, 12].map(s => s + bar * 16)).flat() },
+        { id: 'clap-basic', name: 'Clap 2-4', steps: Array.from({length: 8}, (_, bar) => [4, 12].map(s => s + bar * 16)).flat() },
+        { id: 'clap-sync', name: 'Clap Sync', steps: Array.from({length: 8}, (_, bar) => [4, 11, 14].map(s => s + bar * 16)).flat() },
+        { id: 'hats-basic', name: 'Hats 4th', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) },
+        { id: 'hats-fast', name: 'Hats 8th', steps: Array.from({length: 128}, (_, i) => i % 2 === 0 ? i : -1).filter(v => v !== -1) },
+        { id: 'misc-accent', name: 'Misc Accent', steps: [15, 31, 47, 63, 79, 95, 111, 127] }
       ];
       for (const p of patternsArr) {
-        setDoc(doc(db, 'patterns', p.id), p.data, { merge: true });
+        await syncItem('patterns', p.id, p);
       }
 
       // 2. Studios
@@ -201,7 +202,7 @@ export default function HomePage() {
         { id: 'std-noxxos', name: 'Noxxos', description: 'Futuristic club anthems.', coverColor: '#FF3D00', district: 'Skyline', tags: ['Hip-Hop', 'Electro'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FNoxxos%20Studio.png?alt=media&token=fa9f78bc-965b-4af2-bfde-4f0383a87d98' }
       ];
       for (const s of studios) {
-        setDoc(doc(db, 'studios', s.id), s, { merge: true });
+        await syncItem('studios', s.id, s);
       }
 
       // 3. Tracks
@@ -222,7 +223,7 @@ export default function HomePage() {
         { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%208%20160bpm.mp3?alt=media&token=385d3a0c-c51c-4801-8ec4-18b0f9eedf2f' }
       ];
       for (const t of tracks) {
-        setDoc(doc(db, 'tracks', t.id), t, { merge: true });
+        await syncItem('tracks', t.id, t);
       }
 
       // 4. Games
@@ -252,48 +253,40 @@ export default function HomePage() {
             else if (isVinylHunter) { gameBpm = 94; gameBackingUrl = tracks.find(t => t.id === 'tr-y2')?.url || ''; }
             else { gameBpm = 120; gameBackingUrl = tracks.find(t => t.id === 'tr-y3')?.url || ''; }
           } else if (s.id === 'std-noxxos') {
-            gameBpm = 156;
-            if (isBeatHero || isSampleCatcher) gameBackingUrl = tracks.find(t => t.id === 'tr-n2')?.url || '';
-            else if (isVinylHunter) gameBpm = 128, gameBackingUrl = tracks.find(t => t.id === 'tr-n1')?.url || '';
+            if (isVinylHunter) { gameBpm = 128; gameBackingUrl = tracks.find(t => t.id === 'tr-n1')?.url || ''; }
+            else { gameBpm = 156; gameBackingUrl = tracks.find(t => t.id === 'tr-n2')?.url || ''; }
           } else if (s.id === 'std-gabriel') {
-            if (isBeatHero) {
-              gameBpm = 148;
-              gameBackingUrl = tracks.find(t => t.id === 'tr-g2')?.url || '';
-            } else if (isVinylHunter) {
-              gameBpm = 150;
-              gameBackingUrl = tracks.find(t => t.id === 'tr-g3')?.url || '';
-            } else {
-              gameBpm = 160;
-              gameBackingUrl = tracks.find(t => t.id === 'tr-g5')?.url || '';
-            }
+            if (isBeatHero) { gameBpm = 148; gameBackingUrl = tracks.find(t => t.id === 'tr-g2')?.url || ''; }
+            else if (isVinylHunter) { gameBpm = 150; gameBackingUrl = tracks.find(t => t.id === 'tr-g3')?.url || ''; }
+            else { gameBpm = 160; gameBackingUrl = tracks.find(t => t.id === 'tr-g5')?.url || ''; }
           }
 
-          setDoc(doc(db, 'games', gameId), {
+          await syncItem('games', gameId, {
             id: gameId, studioId: s.id, name: config.name, type: config.type,
             difficulty: 1, minRole: 'free', bpm: gameBpm,
             backingTrackUrl: gameBackingUrl, backgroundImageUrl: isVinylHunter ? VINYL_BG : ''
-          }, { merge: true });
+          });
 
           for (let i = 1; i <= 4; i++) {
             const levelId = `${gameId}-lvl${i}`;
-            setDoc(doc(db, 'levels', levelId), { id: levelId, gameId, difficulty: i, name: `Level ${i}` }, { merge: true });
+            await syncItem('levels', levelId, { id: levelId, gameId, difficulty: i, name: `Level ${i}` });
 
             if (isBeatHero) {
               const kickPatterns = s.id === 'std-dave' ? ['kick-hiphop-sync', 'kick-buildup-fast', 'kick-techno-4-4'] : ['kick-intro-1', 'kick-verse-2', 'kick-refrain-4'];
-              setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), { id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: S_KICK, patternIds: kickPatterns }, { merge: true });
-              if (i >= 2) setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`), { id: `${levelId}-clap`, levelId, type: 'clap', sampleUrl: S_CLAP, patternIds: ['clap-basic', 'clap-sync', 'clap-sync'] }, { merge: true });
-              if (i >= 3) setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`), { id: `${levelId}-hats`, levelId, type: 'percs', sampleUrl: S_HATS, patternIds: ['hats-basic', 'hats-fast', 'hats-fast'] }, { merge: true });
-              if (i === 4) setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`), { id: `${levelId}-misc`, levelId, type: 'misc', sampleUrl: S_DUBSTEP, patternIds: ['misc-accent', 'misc-accent', 'misc-accent'] }, { merge: true });
+              await syncItem('levels/' + levelId + '/sounds', `${levelId}-kick`, { id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: S_KICK, patternIds: kickPatterns });
+              if (i >= 2) await syncItem('levels/' + levelId + '/sounds', `${levelId}-clap`, { id: `${levelId}-clap`, levelId, type: 'clap', sampleUrl: S_CLAP, patternIds: ['clap-basic', 'clap-sync', 'clap-sync'] });
+              if (i >= 3) await syncItem('levels/' + levelId + '/sounds', `${levelId}-hats`, { id: `${levelId}-hats`, levelId, type: 'percs', sampleUrl: S_HATS, patternIds: ['hats-basic', 'hats-fast', 'hats-fast'] });
+              if (i === 4) await syncItem('levels/' + levelId + '/sounds', `${levelId}-misc`, { id: `${levelId}-misc`, levelId, type: 'misc', sampleUrl: S_DUBSTEP, patternIds: ['misc-accent', 'misc-accent', 'misc-accent'] });
             }
 
             if (isVinylHunter) {
               const lzs = [LAZER1, LAZER2, LAZER3, LAZER4];
-              setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), { id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: lzs[Math.min(i-1, 3)], patternIds: [] }, { merge: true });
+              await syncItem('levels/' + levelId + '/sounds', `${levelId}-kick`, { id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: lzs[Math.min(i-1, 3)], patternIds: [] });
             }
 
             if (isSampleCatcher) {
               const catchSamples = [S_PERCS, S_CLAP, S_KICK, S_MISC];
-              setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-catch`), { id: `${levelId}-catch`, levelId, type: 'percs', sampleUrl: catchSamples[i-1] || S_PERCS, patternIds: [] }, { merge: true });
+              await syncItem('levels/' + levelId + '/sounds', `${levelId}-catch`, { id: `${levelId}-catch`, levelId, type: 'percs', sampleUrl: catchSamples[i-1] || S_PERCS, patternIds: [] });
             }
           }
         }
@@ -305,12 +298,17 @@ export default function HomePage() {
         { id: 'learn-rhythm-trainer', name: 'RHYTHM MASTER', type: 'rhythm-trainer' as const, minRole: 'free' }
       ];
       for (const app of learnApps) {
-        setDoc(doc(db, 'learnApps', app.id), app, { merge: true });
+        await syncItem('learnApps', app.id, app);
       }
 
-      toast({ title: "Master Rack Synced!", description: "All modules and sounds are online." });
+      toast({ 
+        title: "Master Rack Synced!", 
+        description: `Firestore reconciled: ${createdCount} new, ${updatedCount} verified.` 
+      });
     } catch (e) {
       toast({ variant: "destructive", title: "Master Sync Failed" });
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -384,7 +382,10 @@ export default function HomePage() {
       </main>
       <footer className="sticky bottom-0 p-3 md:p-4 border-t border-white/5 bg-black/95 backdrop-blur-2xl flex justify-between items-center z-50 shrink-0">
         <div className="flex items-center gap-3 opacity-30"><Zap className="w-4 h-4 text-primary" /><span className="text-[10px] md:text-xs uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack System Online</span></div>
-        <div className="flex items-center gap-4">{isAdmin && (<Button variant="outline" size="sm" onClick={setupStudios} className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_15px_rgba(255,234,0,0.2)] h-10 md:h-12 px-8 md:px-12 text-sm md:text-base transition-transform active:scale-95"><RefreshCw className="w-4 h-4 md:w-5 md:h-5 mr-3" /> Rack Sync</Button>)}</div>
+        <div className="flex items-center gap-4">{isAdmin && (<Button variant="outline" size="sm" onClick={setupStudios} disabled={isSyncing} className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_15px_rgba(255,234,0,0.2)] h-10 md:h-12 px-8 md:px-12 text-sm md:text-base transition-transform active:scale-95">
+          {isSyncing ? <Loader2 className="w-4 h-4 md:w-5 md:h-5 mr-3 animate-spin" /> : <RefreshCw className="w-4 h-4 md:w-5 md:h-5 mr-3" />}
+          Rack Sync
+        </Button>)}</div>
       </footer>
     </div>
   );

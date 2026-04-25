@@ -79,7 +79,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const bpm = game.bpm || 128;
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
-  const MPC_POS = { x: 50, y: 65 }; // Moved up for better mobile aiming
+  const MPC_POS = { x: 50, y: 65 }; // High position for mobile
 
   const SAMPLE_LIFETIME = 
     level.difficulty === 1 ? 3000 : 
@@ -327,13 +327,13 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               top: `${MPC_POS.y}%`, 
               width: `${aiming.length}px`,
               transform: `rotate(${aiming.angle}deg)`,
-              height: '180px', // Wider laser beam
+              height: '180px', // Massive wide beam
               marginTop: '-90px', 
-              background: 'linear-gradient(90deg, rgba(255, 51, 153, 0.95) 0%, rgba(0, 255, 255, 0.6) 50%, transparent 100%)',
+              background: 'linear-gradient(90deg, rgba(255, 51, 153, 0.9) 0%, rgba(0, 255, 255, 0.4) 50%, transparent 100%)',
               clipPath: 'polygon(0 40%, 100% 0, 100% 100%, 0 60%)',
-              boxShadow: '0 0 80px rgba(255, 51, 153, 0.7)',
-              opacity: 0.7,
-              filter: 'blur(3px)'
+              boxShadow: '0 0 60px rgba(255, 51, 153, 0.5)',
+              opacity: 0.6,
+              filter: 'blur(2px)'
             }}
           />
         )}
@@ -346,13 +346,12 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             transform: `translate(-50%, -50%) ${pull ? `translate(${-pull.x}px, ${-pull.y}px)` : ''}`
           }}
         >
-          <div className="relative group w-48 h-32 md:w-64 md:h-44">
-            <div className="absolute inset-0 bg-primary/30 blur-[60px] animate-pulse-neon rounded-none" />
-            
-            <div className="relative w-full h-full rounded-none overflow-hidden border-[2px] border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.9)] bg-black">
+          <div className="relative w-48 h-32 md:w-64 md:h-44">
+            <div className="absolute -inset-10 bg-primary/20 blur-[80px] pointer-events-none" />
+            <div className="relative w-full h-full rounded-none overflow-hidden border-2 border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] bg-black">
                <Image 
                   src="https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010"
-                  alt="Drummachine"
+                  alt="808 Drummachine"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 192px, 256px"
