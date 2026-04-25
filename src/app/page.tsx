@@ -166,7 +166,6 @@ export default function HomePage() {
       const S_PERCS = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_Percussion_33.mp3?alt=media&token=ca7af384-e47c-43af-8a69-7533c512d489';
       const S_MISC = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.mp3?alt=media&token=82c3e18f-c7e0-458b-93d3-09c00a9fe6a1';
       const S_DUBSTEP = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FDubstep%20One%20Shot%2014%20-%20E.mp3?alt=media&token=6862850e-7434-451b-80d7-8b6f063295eb';
-      const S_CLAVES = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClaves.mp3?alt=media&token=1162b3f6-19d7-4a41-a3b6-9c243cd5d36a';
 
       const LAZER1 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%20001.mp3?alt=media&token=b73ec61d-740b-42f3-b5a3-41a44e2f4fee';
       const LAZER2 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%200010.mp3?alt=media&token=48271588-84b9-43be-acad-d9f6d8e38faf';
@@ -216,6 +215,8 @@ export default function HomePage() {
         { id: 'tr-y4', studioId: 'std-yoan', name: 'Yoan Power', author: 'Yoan', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2FYOAN%20Power%20260312.mp3?alt=media&token=8bb23617-b47d-4584-a658-13b53210b566' },
         { id: 'tr-n1', studioId: 'std-noxxos', name: 'One', author: 'Noxxos', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20One%20Master.mp3?alt=media&token=9ecc6a73-e45d-4f55-8e4b-cbc873474002' },
         { id: 'tr-n2', studioId: 'std-noxxos', name: 'Apple', author: 'Noxxos', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20-%20Apple.mp3?alt=media&token=3ecfffc6-b32d-44c4-97a0-80d15c7f1d49' },
+        { id: 'tr-g2', studioId: 'std-gabriel', name: 'Gabriel 2', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%202_148bpm.mp3?alt=media&token=1f877a36-c331-4286-97ce-aad7f1edf807' },
+        { id: 'tr-g4', studioId: 'std-gabriel', name: 'Gabriel 4', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%204%20150bpm%20scratch.mp3?alt=media&token=d4a447a1-5c31-4aeb-acab-146fccc039b8' },
         { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%208%20160bpm.mp3?alt=media&token=385d3a0c-c51c-4801-8ec4-18b0f9eedf2f' }
       ];
       for (const t of tracks) {
@@ -253,8 +254,16 @@ export default function HomePage() {
             if (isBeatHero || isSampleCatcher) gameBackingUrl = tracks.find(t => t.id === 'tr-n2')?.url || '';
             else if (isVinylHunter) gameBpm = 128, gameBackingUrl = tracks.find(t => t.id === 'tr-n1')?.url || '';
           } else if (s.id === 'std-gabriel') {
-            gameBpm = 160;
-            gameBackingUrl = tracks.find(t => t.id === 'tr-g5')?.url || '';
+            if (isBeatHero) {
+              gameBpm = 148;
+              gameBackingUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%202_148bpm.mp3?alt=media&token=1f877a36-c331-4286-97ce-aad7f1edf807';
+            } else if (isVinylHunter) {
+              gameBpm = 150;
+              gameBackingUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%204%20150bpm%20scratch.mp3?alt=media&token=d4a447a1-5c31-4aeb-acab-146fccc039b8';
+            } else {
+              gameBpm = 160;
+              gameBackingUrl = tracks.find(t => t.id === 'tr-g5')?.url || '';
+            }
           }
 
           setDoc(doc(db, 'games', gameId), {
@@ -270,7 +279,7 @@ export default function HomePage() {
             if (isBeatHero) {
               const kickPatterns = s.id === 'std-dave' ? ['kick-hiphop-sync', 'kick-buildup-fast', 'kick-techno-4-4'] : ['kick-intro-1', 'kick-verse-2', 'kick-refrain-4'];
               setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), { id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: S_KICK, patternIds: kickPatterns }, { merge: true });
-              if (i >= 2) setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`), { id: `${levelId}-clap`, levelId, type: 'clap', sampleUrl: S_CLAP, patternIds: ['clap-basic', 'clap-sync', 'clap-basic'] }, { merge: true });
+              if (i >= 2) setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`), { id: `${levelId}-clap`, levelId, type: 'clap', sampleUrl: S_CLAP, patternIds: ['clap-basic', 'clap-sync', 'clap-sync'] }, { merge: true });
               if (i >= 3) setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`), { id: `${levelId}-hats`, levelId, type: 'percs', sampleUrl: S_HATS, patternIds: ['hats-basic', 'hats-fast', 'hats-fast'] }, { merge: true });
               if (i === 4) setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`), { id: `${levelId}-misc`, levelId, type: 'misc', sampleUrl: S_DUBSTEP, patternIds: ['misc-accent', 'misc-accent', 'misc-accent'] }, { merge: true });
             }
