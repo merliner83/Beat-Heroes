@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Trophy, Loader2, Sparkles, XCircle, Zap, Target, Crosshair, Disc, ArrowLeft, Percent, LayoutGrid, Music, Radio, Mic } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -34,7 +35,7 @@ interface GameNote {
   id: string;
   sound: Sound;
   pos: { x: number, y: number };
-  status: 'active' | 'hit' | 'missed';
+  status: 'active' | 'hit' | 'missed' | 'sucking';
   spawnTime: number;
 }
 
@@ -78,6 +79,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const bpm = game.bpm || 128;
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
+  const MPC_POS = { x: 50, y: 75 };
 
   const SAMPLE_LIFETIME = 
     level.difficulty === 1 ? 3000 : 
@@ -109,14 +111,14 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   }, [sounds]);
 
   const handleHit = useCallback((note: GameNote) => {
-    setActiveNote(prev => prev ? { ...prev, status: 'hit' } : null);
+    setActiveNote(prev => prev ? { ...prev, status: 'sucking' } : null);
     audioEngine?.playOneShot(note.sound.sampleUrl);
     setScore(prev => {
       const nextHits = prev.hits + 1;
       const total = nextHits + prev.misses;
       return { hits: nextHits, misses: prev.misses, accuracy: Math.round((nextHits / total) * 100) };
     });
-    setTimeout(spawnNextNote, 200);
+    setTimeout(spawnNextNote, 600); // Wait for suction animation
   }, [spawnNextNote]);
 
   const handleMiss = useCallback((noteId: string) => {
@@ -211,8 +213,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       
       const newProjectile: Projectile = {
         id: `p-${Date.now()}`,
-        x: 50,
-        y: 75,
+        x: MPC_POS.x,
+        y: MPC_POS.y,
         vx: (Math.cos(angle) * power) / 2.5,
         vy: (Math.sin(angle) * power) / 2.5,
         rotation: 0
@@ -280,7 +282,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   };
 
   const pull = getPullVisuals();
-  const bgUrl = game.backgroundImageUrl || 'https://picsum.photos/seed/beathero-boombox/1080/1920';
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
@@ -311,16 +312,42 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         onPointerUp={handlePointerUp}
         className="flex-1 relative overflow-hidden rounded-b-[2.5rem] border-x border-b border-white/5 z-20 pointer-events-auto touch-none bg-gradient-to-b from-transparent to-black/40"
       >
+        {/* MPC Visual at Launcher Position */}
+        <div 
+          className="absolute z-50 pointer-events-none transition-all duration-300"
+          style={{ 
+            left: `${MPC_POS.x}%`, 
+            top: `${MPC_POS.y}%`, 
+            transform: `translate(-50%, -50%) ${isDragging ? `translate(${-pull!.x}px, ${-pull!.y}px)` : ''}`
+          }}
+        >
+          <div className="relative group">
+            <div className="absolute inset-0 bg-primary/20 blur-3xl animate-pulse rounded-full" />
+            <div className="relative w-24 h-24 md:w-32 md:h-32 border-2 border-white/10 rounded-2xl overflow-hidden bg-black shadow-2xl">
+              <Image 
+                src="https://picsum.photos/seed/beathero-mpc/400/400" 
+                alt="MPC" 
+                fill 
+                className="object-cover opacity-60"
+                data-ai-hint="drum machine"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent" />
+            </div>
+            {/* Target Reticle */}
+            <div className="absolute -inset-4 border-2 border-primary/20 rounded-3xl border-dashed animate-spin-slow" />
+          </div>
+        </div>
+
         {isPlaying && activeNote && (
           <div
             className={cn(
-              "absolute z-30 flex items-center justify-center transition-all duration-300",
-              activeNote.status === 'hit' && "scale-150 opacity-0 blur-xl",
+              "absolute z-30 flex items-center justify-center transition-all duration-500 ease-in-out",
+              activeNote.status === 'sucking' && "scale-0 blur-md opacity-0",
               activeNote.status === 'missed' && "scale-90 opacity-0 bg-[#FF3D00]/20 rounded-full"
             )}
             style={{ 
-              left: `${activeNote.pos.x}%`, 
-              top: `${activeNote.pos.y}%`,
+              left: activeNote.status === 'sucking' ? `${MPC_POS.x}%` : `${activeNote.pos.x}%`, 
+              top: activeNote.status === 'sucking' ? `${MPC_POS.y}%` : `${activeNote.pos.y}%`,
               transform: 'translate(-50%, -50%)',
               width: '120px',
               height: '120px'
@@ -330,7 +357,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               <div 
                 className={cn(
                   "absolute inset-0 rounded-full blur-[40px] opacity-20 transition-all duration-500 animate-pulse",
-                  activeNote.status === 'hit' ? "bg-[#00FF66] opacity-100" : 
+                  activeNote.status === 'sucking' ? "bg-[#00FF66] opacity-100 scale-150" : 
                   activeNote.status === 'missed' ? "bg-[#FF3D00] opacity-100" : ""
                 )} 
                 style={{ backgroundColor: activeNote.status === 'active' ? OBJECT_COLORS[activeNote.sound.type] : undefined }} 
@@ -340,11 +367,11 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                 className: "w-16 h-16 md:w-20 md:h-20 transition-all duration-200 drop-shadow-[0_0_20px_rgba(0,0,0,0.8)]",
                 strokeWidth: 1.0,
                 style: { 
-                  color: activeNote.status === 'hit' ? '#00FF66' : 
+                  color: activeNote.status === 'sucking' ? '#00FF66' : 
                          activeNote.status === 'missed' ? '#FF3D00' : 
                          OBJECT_COLORS[activeNote.sound.type],
                   filter: `drop-shadow(0 0 25px ${
-                    activeNote.status === 'hit' ? '#00FF66' : 
+                    activeNote.status === 'sucking' ? '#00FF66' : 
                     activeNote.status === 'missed' ? '#FF3D00' : 
                     OBJECT_COLORS[activeNote.sound.type]
                   }88)`

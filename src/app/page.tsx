@@ -176,12 +176,21 @@ export default function HomePage() {
 
       // 1. Patterns
       const patterns = [
+        // KICK
         { id: 'kick-intro-1', data: { id: 'kick-intro-1', name: 'Intro 8-Bar Kick', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
         { id: 'kick-verse-2', data: { id: 'kick-verse-2', name: 'Verse 2-Shot', steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) } }, 
         { id: 'kick-refrain-4', data: { id: 'kick-refrain-4', name: 'Refrain 4-Shot', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) } }, 
         { id: 'kick-hiphop-sync', data: { id: 'kick-hiphop-sync', name: 'HipHop Sync', steps: Array.from({length: 8}, (_, bar) => [0, 6, 10, 14].map(s => s + bar * 16)).flat() } },
         { id: 'kick-buildup-fast', data: { id: 'kick-buildup-fast', name: 'Buildup Fast', steps: [0, 4, 8, 12, 16, 18, 20, 22, 24, 26, 28, 30, ...Array.from({length: 32}, (_, i) => i + 32)] } },
         { id: 'kick-techno-4-4', data: { id: 'kick-techno-4-4', name: 'Techno 4-on-Floor', steps: Array.from({length: 8}, (_, bar) => [0, 4, 8, 12].map(s => s + bar * 16)).flat() } },
+        // CLAP
+        { id: 'clap-basic', data: { id: 'clap-basic', name: 'Clap 2-4', steps: Array.from({length: 8}, (_, bar) => [4, 12].map(s => s + bar * 16)).flat() } },
+        { id: 'clap-sync', data: { id: 'clap-sync', name: 'Clap Sync', steps: Array.from({length: 8}, (_, bar) => [4, 11, 14].map(s => s + bar * 16)).flat() } },
+        // HATS
+        { id: 'hats-basic', data: { id: 'hats-basic', name: 'Hats 8th', steps: Array.from({length: 128}, (_, i) => i % 2 === 0 ? i : -1).filter(v => v !== -1) } },
+        { id: 'hats-fast', data: { id: 'hats-fast', name: 'Hats 16th', steps: Array.from({length: 128}, (_, i) => i) } },
+        // MISC
+        { id: 'misc-accent', data: { id: 'misc-accent', name: 'Misc Accent', steps: [15, 31, 47, 63, 79, 95, 111, 127] } }
       ];
       for (const p of patterns) {
         setDoc(doc(db, 'patterns', p.id), p.data, { merge: true });
@@ -293,29 +302,32 @@ export default function HomePage() {
 
             if (isBeatHero) {
               const isDave = s.id === 'std-dave';
-              const pSet = isDave ? ['kick-hiphop-sync', 'kick-buildup-fast', 'kick-techno-4-4'] : ['kick-intro-1', 'kick-verse-2', 'kick-refrain-4'];
+              const kickPatterns = isDave ? ['kick-hiphop-sync', 'kick-buildup-fast', 'kick-techno-4-4'] : ['kick-intro-1', 'kick-verse-2', 'kick-refrain-4'];
+              const clapPatterns = ['clap-basic', 'clap-sync'];
+              const hatsPatterns = ['hats-basic', 'hats-fast'];
+              const miscPatterns = ['misc-accent'];
               
               // Lv 1: KICK
               setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), {
-                id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: S_KICK, patternIds: pSet
+                id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: S_KICK, patternIds: kickPatterns
               }, { merge: true });
 
               // Lv 2: + CLAP
               if (i >= 2) {
                 setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`), {
-                  id: `${levelId}-clap`, levelId, type: 'clap', sampleUrl: S_CLAP, patternIds: pSet
+                  id: `${levelId}-clap`, levelId, type: 'clap', sampleUrl: S_CLAP, patternIds: clapPatterns
                 }, { merge: true });
               }
               // Lv 3: + HATS
               if (i >= 3) {
                 setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`), {
-                  id: `${levelId}-hats`, levelId, type: 'percs', sampleUrl: S_HATS, patternIds: pSet
+                  id: `${levelId}-hats`, levelId, type: 'percs', sampleUrl: S_HATS, patternIds: hatsPatterns
                 }, { merge: true });
               }
               // Lv 4: + MISC (DubStep OneShot)
               if (i === 4) {
                 setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`), {
-                  id: `${levelId}-misc`, levelId, type: 'misc', sampleUrl: S_DUBSTEP, patternIds: pSet
+                  id: `${levelId}-misc`, levelId, type: 'misc', sampleUrl: S_DUBSTEP, patternIds: miscPatterns
                 }, { merge: true });
               }
             }
