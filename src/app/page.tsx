@@ -262,8 +262,8 @@ export default function HomePage() {
               gameBpm = 148;
               gameBackingUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%202_148bpm.mp3?alt=media&token=1f877a36-c331-4286-97ce-aad7f1edf807';
             } else if (isVinylHunter) {
-              gameBpm = 150;
-              gameBackingUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%204%20150bpm%20scratch.mp3?alt=media&token=d4a447a1-5c31-4aeb-acab-146fccc039b8';
+              gameBpm = 140;
+              gameBackingUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%201_140bpm.mp3?alt=media&token=0d094a95-7a8c-40a4-8e17-c1eebf721540';
             }
           }
 
