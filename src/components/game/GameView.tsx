@@ -14,7 +14,6 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// Feingetuntes Timing: 0.08 (80ms) korrigiert das "zu früh" Gefühl
 export const SYNC_OFFSET = 0.08;
 export const HIT_POSITION = 550; 
 
@@ -86,12 +85,14 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   const soundsWithPatterns = filteredSounds.map(sound => {
     const uniqueSteps = new Set<number>();
-    const patternOffsets = [0, 64, 192]; 
+    // NEW STRUCTURE: 8 bars Intro, 4 bars Verse, 8 bars Refrain
+    const patternOffsets = [0, 128, 192]; 
     sound.patternIds?.forEach((pId, index) => {
       const pattern = patterns.find(p => p.id === pId);
       if (pattern && index < patternOffsets.length) {
         const offset = patternOffsets[index];
-        const maxStepsInSection = index === 0 ? 64 : 128;
+        // Dynamic max steps based on the slot size
+        const maxStepsInSection = index === 0 ? 128 : index === 1 ? 64 : 128;
         pattern.steps.forEach(s => {
           if (s < maxStepsInSection) {
             const actualStep = s + offset;
@@ -105,7 +106,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     return { ...sound, triggerSteps: Array.from(uniqueSteps).sort((a, b) => a - b) };
   });
 
-  // Hintergrund-Preloading
   useEffect(() => {
     const preload = async () => {
       if (!audioEngine) return;
