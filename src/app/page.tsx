@@ -165,8 +165,6 @@ export default function HomePage() {
       const S_HATS = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2F808%20CL-HAT%20%20.mp3?alt=media&token=facd4a85-949e-4bca-86d5-0da27199402d';
       const S_PERCS = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_Percussion_33.mp3?alt=media&token=ca7af384-e47c-43af-8a69-7533c512d489';
       const S_MISC = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.mp3?alt=media&token=82c3e18f-c7e0-458b-93d3-09c00a9fe6a1';
-      const S_CLAVES = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClaves.mp3?alt=media&token=1162b3f6-19d7-4a41-a3b6-9c243cd5d36a';
-      const S_SHAKER = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FTR-808Shaker01.mp3?alt=media&token=01784737-dec8-4872-a825-7fe4a88499b1';
       const S_DUBSTEP = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FDubstep%20One%20Shot%2014%20-%20E.mp3?alt=media&token=6862850e-7434-451b-80d7-8b6f063295eb';
 
       const LAZER1 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%20001.mp3?alt=media&token=b73ec61d-740b-42f3-b5a3-41a44e2f4fee';
@@ -202,7 +200,15 @@ export default function HomePage() {
       }
 
       // 3. Tracks
-      const freestyleUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20ist%20Schlau%20aber%20Merlin%20ist%20Ganz%20Ganz%20Ganz%20Dummmmmmm%20120%20bpm.mp3?alt=media&token=fd38176e-faaf-4465-872a-1847f5b37960';
+      const daveFreestyleUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20ist%20Schlau%20aber%20Merlin%20ist%20Ganz%20Ganz%20Ganz%20Dummmmmmm%20120%20bpm.mp3?alt=media&token=fd38176e-faaf-4465-872a-1847f5b37960';
+      const daveAnthemUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20Komposition.mp3?alt=media&token=4f6a397f-10d4-4fbd-8f13-47cfc9d89d86';
+      const daveDjangoUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20Below%20-%20Hallo%20Django.mp3?alt=media&token=df9d3356-f1f5-4f55-83b1-5d1ec6ac1fbc';
+
+      const yoanSamplingUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2Fsampling%20125bpm%20260303.mp3?alt=media&token=66d7c77c-088e-4cfe-9bdc-85476bd749ad';
+      const yoanErstesUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2FErstes%20Yoan%2094bpm%20Amajor%20250425.mp3?alt=media&token=0af91c3b-ae8c-4816-88ed-8bf0814d20a2';
+      const yoanZweitesUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2Fzweites%20yoan.mp3?alt=media&token=7f93d419-707f-421a-8443-b442203be6ec';
+      const yoanPowerUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2FYOAN%20Power%20260312.mp3?alt=media&token=8bb23617-b47d-4584-a658-13b53210b566';
+
       const gTr1 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%201_140bpm.mp3?alt=media&token=0d094a95-7a8c-40a4-8e17-c1eebf721540';
       const gTr2 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%202_148bpm.mp3?alt=media&token=1f877a36-c331-4286-97ce-aad7f1edf807';
       const gTr3 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%204%20150bpm%20scratch.mp3?alt=media&token=d4a447a1-5c31-4aeb-acab-146fccc039b8';
@@ -210,7 +216,13 @@ export default function HomePage() {
       const gTr5 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%208%20160bpm.mp3?alt=media&token=385d3a0c-c51c-4801-8ec4-18b0f9eedf2f';
 
       const tracks: Track[] = [
-        { id: 'tr-d1', studioId: 'std-dave', name: 'Freestyle', author: 'Dave', url: freestyleUrl },
+        { id: 'tr-d1', studioId: 'std-dave', name: 'Freestyle', author: 'Dave', url: daveFreestyleUrl },
+        { id: 'tr-d2', studioId: 'std-dave', name: 'Anthem', author: 'Dave', url: daveAnthemUrl },
+        { id: 'tr-d3', studioId: 'std-dave', name: 'Hallo Django', author: 'Dave', url: daveDjangoUrl },
+        { id: 'tr-y1', studioId: 'std-yoan', name: 'Sampling', author: 'Yoan', url: yoanSamplingUrl },
+        { id: 'tr-y2', studioId: 'std-yoan', name: 'Erstes', author: 'Yoan', url: yoanErstesUrl },
+        { id: 'tr-y3', studioId: 'std-yoan', name: 'Zweites', author: 'Yoan', url: yoanZweitesUrl },
+        { id: 'tr-y4', studioId: 'std-yoan', name: 'Yoan Power', author: 'Yoan', url: yoanPowerUrl },
         { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel', url: gTr1 },
         { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel', url: gTr2 },
         { id: 'tr-g3', studioId: 'std-gabriel', name: 'Track 3', author: 'Gabriel', url: gTr3 },
@@ -233,13 +245,27 @@ export default function HomePage() {
           const gameId = `${s.id}-${config.type}`;
           const isBeatHero = config.type === 'rhythm-producer';
           const isVinylHunter = config.type === 'sample-hunter';
+          const isSampleCatcher = config.type === 'sample-catcher';
           
           let gameBpm = 128;
           let gameBackingUrl = '';
           
           if (s.id === 'std-dave') {
             gameBpm = 120;
-            gameBackingUrl = freestyleUrl;
+            if (isBeatHero) gameBackingUrl = daveFreestyleUrl;
+            else if (isVinylHunter) gameBackingUrl = daveAnthemUrl;
+            else if (isSampleCatcher) gameBackingUrl = daveDjangoUrl;
+          } else if (s.id === 'std-yoan') {
+            if (isBeatHero) {
+              gameBpm = 125;
+              gameBackingUrl = yoanSamplingUrl;
+            } else if (isVinylHunter) {
+              gameBpm = 94;
+              gameBackingUrl = yoanErstesUrl;
+            } else {
+              gameBpm = 120;
+              gameBackingUrl = yoanZweitesUrl;
+            }
           } else if (s.id === 'std-gabriel') {
             if (isBeatHero) {
               gameBpm = 148;
