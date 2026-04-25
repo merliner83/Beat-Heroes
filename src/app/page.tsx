@@ -225,6 +225,9 @@ export default function HomePage() {
       const gTr4 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%205%20162bpm.mp3?alt=media&token=deefca2b-1ace-4e53-948f-8ce581aca7f6';
       const gTr5 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%208%20160bpm.mp3?alt=media&token=385d3a0c-c51c-4801-8ec4-18b0f9eedf2f';
 
+      const nOneUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20One%20Master.mp3?alt=media&token=9ecc6a73-e45d-4f55-8e4b-cbc873474002';
+      const nAppleUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20-%20Apple.mp3?alt=media&token=41918308-37c8-4a5d-acb1-d99a1e87b55b';
+
       const tracks: Track[] = [
         { id: 'tr-d1', studioId: 'std-dave', name: 'Freestyle', author: 'Dave', url: daveFreestyleUrl },
         { id: 'tr-d2', studioId: 'std-dave', name: 'Anthem', author: 'Dave', url: daveAnthemUrl },
@@ -237,7 +240,9 @@ export default function HomePage() {
         { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel', url: gTr2 },
         { id: 'tr-g3', studioId: 'std-gabriel', name: 'Track 3', author: 'Gabriel', url: gTr3 },
         { id: 'tr-g4', studioId: 'std-gabriel', name: 'Track 4', author: 'Gabriel', url: gTr4 },
-        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel', url: gTr5 }
+        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel', url: gTr5 },
+        { id: 'tr-n1', studioId: 'std-noxxos', name: 'One', author: 'Noxxos', url: nOneUrl },
+        { id: 'tr-n2', studioId: 'std-noxxos', name: 'Apple', author: 'Noxxos', url: nAppleUrl }
       ];
       for (const t of tracks) {
         setDoc(doc(db, 'tracks', t.id), t, { merge: true });
@@ -286,6 +291,14 @@ export default function HomePage() {
             } else {
               gameBpm = 140;
               gameBackingUrl = gTr1;
+            }
+          } else if (s.id === 'std-noxxos') {
+            if (isBeatHero || isSampleCatcher) {
+              gameBpm = 156;
+              gameBackingUrl = nAppleUrl;
+            } else if (isVinylHunter) {
+              gameBpm = 128;
+              gameBackingUrl = nOneUrl;
             }
           }
 
