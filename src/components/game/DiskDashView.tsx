@@ -26,7 +26,6 @@ interface DashItem {
   id: string;
   iconIdx: number;
   targetId: string;
-  spawnTime: number;
   startTime: number;
   startX: number;
   startY: number;
@@ -50,7 +49,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
   const [activeItems, setActiveItems] = useState<DashItem[]>([]);
-  const [targetHits, setTargetHits] = useState<Record<string, number>>({});
+  const [targetFeedback, setTargetFeedback] = useState<Record<string, { time: number, type: 'hit' | 'miss' }>>({});
   const [hasStartedFade, setHasStartedFade] = useState(false);
 
   const frameRef = useRef<number>(null);
@@ -59,7 +58,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
   const bpm = game.bpm || 128;
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
-  const FLIGHT_TIME = 1500; 
+  const FLIGHT_TIME = 2000; // Etwas langsamer für besseres Tracking
 
   useEffect(() => {
     return () => {
@@ -69,8 +68,11 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
   }, []);
 
   const spawnItem = useCallback(() => {
-    const targetIdx = Math.floor(Math.random() * Math.min(level.difficulty, TARGETS.length));
+    // Level-basierte Ziel-Auswahl
+    const availableTargets = Math.min(level.difficulty, TARGETS.length);
+    const targetIdx = Math.floor(Math.random() * availableTargets);
     const target = TARGETS[targetIdx];
+    
     const side = Math.floor(Math.random() * 4);
     let startX = 0, startY = 0;
 
@@ -83,7 +85,6 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       id: `dash-${Date.now()}-${Math.random()}`,
       iconIdx: Math.floor(Math.random() * DASH_ICONS.length),
       targetId: target.id,
-      spawnTime: Date.now(),
       startTime: Date.now(),
       startX,
       startY,
@@ -110,16 +111,20 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       return;
     }
 
-    const spawnInterval = (60 / bpm) * 1000;
+    // Spawn-Rate basierend auf Level (Level 1 ist deutlich langsamer)
+    const spawnMultiplier = level.difficulty === 1 ? 4 : level.difficulty === 2 ? 2.5 : 1.5;
+    const spawnInterval = (60 / bpm) * 1000 * spawnMultiplier;
+    
     if (now - lastSpawnRef.current > spawnInterval && currentTime < SESSION_DURATION) {
       spawnItem();
       lastSpawnRef.current = now;
     }
 
+    // Miss-Erkennung (wenn Item das Ziel passiert hat)
     setActiveItems(prev => {
       const next = prev.map(item => {
-        if (item.status === 'active' && now - item.startTime > FLIGHT_TIME + 250) {
-          handleMiss(item.id);
+        if (item.status === 'active' && now - item.startTime > FLIGHT_TIME + 300) {
+          handleAutoMiss(item.id);
           return { ...item, status: 'missed' as const };
         }
         return item;
@@ -128,7 +133,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     });
 
     frameRef.current = requestAnimationFrame(updateGame);
-  }, [isPlaying, bpm, SESSION_DURATION, hasStartedFade, spawnItem]);
+  }, [isPlaying, bpm, SESSION_DURATION, hasStartedFade, spawnItem, level.difficulty]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -139,39 +144,45 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
   }, [isPlaying, updateGame]);
 
-  const handleHit = (itemId: string, targetId: string) => {
-    const now = Date.now();
-    setActiveItems(prev => {
-      const item = prev.find(i => i.id === itemId);
-      if (!item || item.status !== 'active') return prev;
-
-      const timeInFlight = now - item.startTime;
-      const precision = Math.abs(timeInFlight - FLIGHT_TIME);
-      
-      const tolerance = level.difficulty >= 3 ? 180 : 280;
-
-      if (precision <= tolerance) {
-        setScore(s => {
-          const nextHits = s.hits + 1;
-          const total = nextHits + s.misses;
-          return { ...s, hits: nextHits, accuracy: Math.round((nextHits / total) * 100) };
-        });
-        setTargetHits(p => ({ ...p, [targetId]: Date.now() }));
-        audioEngine?.playOneShot(sounds[0]?.sampleUrl || 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg');
-        return prev.filter(i => i.id !== itemId);
-      } else {
-        handleMiss(itemId);
-        return prev.filter(i => i.id !== itemId);
-      }
-    });
-  };
-
-  const handleMiss = (itemId: string) => {
+  const handleAutoMiss = (itemId: string) => {
     setScore(s => {
       const nextMisses = s.misses + 1;
       const total = s.hits + nextMisses;
       return { ...s, misses: nextMisses, accuracy: Math.round((s.hits / total) * 100) };
     });
+  };
+
+  const onTargetClick = (targetId: string) => {
+    if (!isPlaying) return;
+    
+    const now = Date.now();
+    // Finde das Item, das diesem Ziel am nächsten ist
+    const targetItem = activeItems
+      .filter(item => item.targetId === targetId && item.status === 'active')
+      .sort((a, b) => (a.startTime + FLIGHT_TIME) - (b.startTime + FLIGHT_TIME))[0];
+
+    const precision = targetItem ? Math.abs(now - (targetItem.startTime + FLIGHT_TIME)) : Infinity;
+    const tolerance = level.difficulty >= 3 ? 250 : 400;
+
+    if (targetItem && precision <= tolerance) {
+      // Treffer!
+      setScore(s => {
+        const nextHits = s.hits + 1;
+        const total = nextHits + s.misses;
+        return { ...s, hits: nextHits, accuracy: Math.round((nextHits / total) * 100) };
+      });
+      setTargetFeedback(p => ({ ...p, [targetId]: { time: Date.now(), type: 'hit' } }));
+      setActiveItems(prev => prev.filter(i => i.id !== targetItem.id));
+      audioEngine?.playOneShot(sounds[0]?.sampleUrl || 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg');
+    } else {
+      // Falscher Klick (zu früh, zu spät oder kein Item da)
+      setTargetFeedback(p => ({ ...p, [targetId]: { time: Date.now(), type: 'miss' } }));
+      setScore(s => {
+        const nextMisses = s.misses + 1;
+        const total = s.hits + nextMisses;
+        return { ...s, misses: nextMisses, accuracy: Math.round((s.hits / total) * 100) };
+      });
+    }
   };
 
   const startLevel = async () => {
@@ -236,26 +247,35 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, #FF3399 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
         
         {TARGETS.map(t => {
-          const isGlowing = targetHits[t.id] && Date.now() - targetHits[t.id] < 350;
+          const feedback = targetFeedback[t.id];
+          const isActive = feedback && Date.now() - feedback.time < 300;
+          const isHit = feedback?.type === 'hit';
+          const isMiss = feedback?.type === 'miss';
+
           return (
             <div
               key={t.id}
-              className="absolute w-32 h-32 md:w-40 md:h-40 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center transition-all duration-500"
+              onClick={() => onTargetClick(t.id)}
+              className="absolute w-32 h-32 md:w-40 md:h-40 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center transition-all duration-300 cursor-pointer group"
               style={{ left: `${t.x}%`, top: `${t.y}%` }}
             >
               <div 
                 className={cn(
-                  "absolute inset-0 rounded-full border-2 transition-all duration-300",
-                  isGlowing ? "scale-125 opacity-100 border-4" : "opacity-20 scale-100"
+                  "absolute inset-0 rounded-full border-2 transition-all duration-200",
+                  isActive ? "scale-125 border-4" : "opacity-20 scale-100",
+                  isHit && isActive ? "opacity-100 border-[#00E676]" : "",
+                  isMiss && isActive ? "opacity-100 border-[#FF3D00]" : ""
                 )}
                 style={{ 
-                  borderColor: t.color, 
-                  boxShadow: isGlowing ? `0 0 60px ${t.color}` : 'none' 
+                  borderColor: (!isHit && !isMiss) ? t.color : undefined,
+                  boxShadow: isActive ? `0 0 60px ${isHit ? '#00E676' : isMiss ? '#FF3D00' : t.color}` : 'none' 
                 }}
               />
               <div className="relative">
-                 <Circle className="w-10 h-10 opacity-10 animate-pulse" style={{ color: t.color }} />
-                 <div className="absolute inset-0 bg-white/5 rounded-full blur-xl" />
+                 <Circle className={cn(
+                   "w-10 h-10 transition-all",
+                   isActive ? "scale-150" : "opacity-10 animate-pulse"
+                 )} style={{ color: isActive ? (isHit ? '#00E676' : isMiss ? '#FF3D00' : t.color) : t.color }} />
               </div>
             </div>
           );
@@ -264,34 +284,29 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
         {activeItems.map(item => {
           const target = TARGETS.find(t => t.id === item.targetId)!;
           const elapsed = Date.now() - item.startTime;
-          const progress = Math.min(elapsed / FLIGHT_TIME, 1.3);
+          const progress = Math.min(elapsed / FLIGHT_TIME, 1.2);
           
           const curX = item.startX + (target.x - item.startX) * progress;
           const curY = item.startY + (target.y - item.startY) * progress;
           const Icon = DASH_ICONS[item.iconIdx];
 
-          const scale = progress < 0.1 ? progress * 10 : progress > 0.9 ? 1 + (progress - 0.9) * 2 : 1;
+          // Fade out wenn es das Ziel fast erreicht hat, um den Klick-Moment zu fokussieren
+          const opacity = progress > 1.0 ? 1 - (progress - 1.0) * 5 : 1;
 
           return (
             <div
               key={item.id}
-              onClick={() => handleHit(item.id, item.targetId)}
-              className="absolute z-40 cursor-pointer transition-transform group"
+              className="absolute z-40 pointer-events-none transition-transform"
               style={{ 
                 left: `${curX}%`, 
                 top: `${curY}%`, 
-                transform: `translate(-50%, -50%) scale(${scale})`,
+                transform: `translate(-50%, -50%) scale(${0.8 + progress * 0.4})`,
                 color: target.color,
+                opacity,
                 filter: `drop-shadow(0 0 20px ${target.color}cc)`
               }}
             >
-              <div className="relative">
-                <Icon className="w-14 h-14 md:w-20 md:h-20 animate-spin-slow" strokeWidth={1.5} />
-                <div 
-                  className="absolute inset-0 blur-lg opacity-40 animate-pulse rounded-full"
-                  style={{ backgroundColor: target.color }}
-                />
-              </div>
+              <Icon className="w-12 h-12 md:w-16 md:h-16 animate-spin-slow" strokeWidth={1.5} />
             </div>
           );
         })}
@@ -306,7 +321,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
               </div>
               <div>
                 <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-2">SAMPLE CATCHER</h2>
-                <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 leading-relaxed">Rhythm Pulse Activated<br/>Sync elements to zones</p>
+                <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 leading-relaxed">Catch incoming samples<br/>Tap the circles at the right time</p>
               </div>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-20 bg-white text-black font-black uppercase italic rounded-[2rem] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.1)]">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Catch"}
