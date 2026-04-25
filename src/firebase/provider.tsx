@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
@@ -86,38 +87,42 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
         }
 
         if (firebaseUser) {
+          // IMPORTANT: Update the user object immediately so hooks like useUser() 
+          // get the fresh UID. This prevents stale queries from being executed 
+          // with the wrong UID during transition.
+          setUserAuthState(prev => ({
+            ...prev,
+            user: firebaseUser,
+            profile: null, // Clear stale profile
+            isUserLoading: true, // Mark as loading while we fetch the new profile
+            userError: null,
+          }));
+
           // Listen to the user's profile document
           const profileRef = doc(firestore, 'users', firebaseUser.uid);
           
           unsubscribeProfile = onSnapshot(
             profileRef, 
             (snapshot) => {
-              if (snapshot.exists()) {
-                setUserAuthState({ 
-                  user: firebaseUser, 
-                  profile: snapshot.data() as UserProfile, 
-                  isUserLoading: false, 
-                  userError: null 
-                });
-              } else {
-                setUserAuthState({ 
-                  user: firebaseUser, 
-                  profile: null, 
-                  isUserLoading: false, 
-                  userError: null 
-                });
-              }
+              setUserAuthState({ 
+                user: firebaseUser, 
+                profile: snapshot.exists() ? (snapshot.data() as UserProfile) : null, 
+                isUserLoading: false, 
+                userError: null 
+              });
             },
             (error) => {
               const contextualError = new FirestorePermissionError({
                 path: profileRef.path,
                 operation: 'get',
               });
+              // Keep the user but mark loading as finished with error
               setUserAuthState(prev => ({ ...prev, isUserLoading: false, userError: contextualError }));
               errorEmitter.emit('permission-error', contextualError);
             }
           );
         } else {
+          // Explicitly clear everything when no user is authenticated
           setUserAuthState({ user: null, profile: null, isUserLoading: false, userError: null });
         }
       },
