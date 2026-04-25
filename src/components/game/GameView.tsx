@@ -57,7 +57,9 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
   const [hasStartedFade, setHasStartedFade] = useState(false);
-  const [hitPosition, setHitPosition] = useState(320);
+  
+  // Adjusted positions: Lowering the UI for both mobile and desktop
+  const [hitPosition, setHitPosition] = useState(480);
   
   const [globalFlash, setGlobalFlash] = useState<{ type: FlashType, key: number }>({ type: null, key: 0 });
   const [padFlashes, setPadFlashes] = useState<Record<SoundType, { type: FlashType, key: number }>>({
@@ -79,9 +81,9 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 768) {
-        setHitPosition(550);
+        setHitPosition(620); // Lowered Desktop
       } else {
-        setHitPosition(320);
+        setHitPosition(480); // Lowered Mobile
       }
     };
     handleResize();
@@ -330,7 +332,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           style={{ top: `${hitPosition}px` }}
         />
 
-        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${hitPosition + 80}px` }}>
+        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${hitPosition + 60}px` }}>
           <div className={cn(
             "grid gap-4 md:gap-8 mx-auto pointer-events-auto bg-black/20 backdrop-blur-sm p-4 rounded-3xl border border-white/5 shadow-2xl",
             activeSoundTypes.length === 1 ? "grid-cols-1 max-w-[140px]" :

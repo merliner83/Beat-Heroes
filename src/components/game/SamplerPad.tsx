@@ -53,7 +53,7 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
         onPointerDown={(e) => handlePress(e)}
         onContextMenu={(e) => e.preventDefault()}
         className={cn(
-          "relative z-10 flex flex-col items-center justify-center w-full h-full rounded-2xl border-2 transition-all duration-75 select-none touch-none outline-none",
+          "relative z-10 flex flex-col items-center justify-center w-full h-full rounded-2xl border-2 transition-all duration-75 select-none touch-none outline-none overflow-hidden",
           isPressed ? "scale-90 brightness-125" : "scale-100 hover:brightness-110 active:scale-90"
         )}
         style={{
@@ -63,10 +63,17 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
           WebkitTouchCallout: 'none',
           WebkitUserSelect: 'none',
           userSelect: 'none',
+          KhtmlUserSelect: 'none',
+          MozUserSelect: 'none',
+          msUserSelect: 'none'
         }}
       >
-        <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest opacity-40 mb-2 pointer-events-none">{shortcut}</span>
-        <span className="text-[11px] md:text-sm font-black uppercase italic tracking-tighter line-clamp-1 pointer-events-none">{label}</span>
+        <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest opacity-40 mb-2 pointer-events-none select-none">
+          {shortcut}
+        </span>
+        <span className="text-[11px] md:text-sm font-black uppercase italic tracking-tighter line-clamp-1 pointer-events-none select-none">
+          {label}
+        </span>
       </button>
     </div>
   );
