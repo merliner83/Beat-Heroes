@@ -6,7 +6,7 @@ import { Game, Level, Sound, GameScore, SoundType } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Trophy, Loader2, Sparkles, XCircle, Disc, Mic, Speaker, ArrowLeft, Percent, LayoutGrid, Zap } from 'lucide-react';
+import { Trophy, Loader2, Sparkles, XCircle, Zap, Target, Crosshair, Disc, ArrowLeft, Percent, LayoutGrid } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -16,10 +16,11 @@ import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 const PASS_THRESHOLD = 80;
 const DIFFICULTY_REWARDS: Record<number, number> = { 1: 50, 2: 100, 3: 200, 4: 1000 };
 
+// Optimized icons for Lazer Hunt
 const OBJECT_ICONS: Record<SoundType, any> = {
-  kick: Disc,
-  clap: Mic,
-  percs: Speaker,
+  kick: Target,
+  clap: Zap,
+  percs: Crosshair,
   misc: Sparkles,
 };
 
@@ -438,9 +439,9 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               </div>
 
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                <Disc className={cn(
+                <Zap className={cn(
                   "w-12 h-12 md:w-16 md:h-16 transition-all",
-                  isDragging ? "text-[#00FF66] opacity-100 scale-110 drop-shadow-[0_0_15px_#00FF66]" : "text-white/40 opacity-0"
+                  isDragging ? "text-[#00FF66] opacity-100 scale-110 drop-shadow(0 0 15px #00FF66)" : "text-white/40 opacity-0"
                 )} />
               </div>
             </div>

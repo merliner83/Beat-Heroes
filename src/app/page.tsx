@@ -165,24 +165,31 @@ export default function HomePage() {
       const percsUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_Percussion_33.mp3?alt=media&token=ca7af384-e47c-43af-8a69-7533c512d489';
       const miscUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.mp3?alt=media&token=82c3e18f-c7e0-458b-93d3-09c00a9fe6a1';
       
+      // Lazer Sounds for Vinyl Hunter
+      const lazer1 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%20001.mp3?alt=media&token=b73ec61d-740b-42f3-b5a3-41a44e2f4fee';
+      const lazer2 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%200010.mp3?alt=media&token=48271588-84b9-43be-acad-d9f6d8e38faf';
+      const lazer3 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%20006.mp3?alt=media&token=848197cf-a315-4aca-82ad-ec10828a1872';
+      const lazer4 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%20Digitalo.mp3?alt=media&token=60e9536d-00e4-4fdd-805b-9268d9a7b339';
+
       const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
       // Pattern Creation (based on 16 steps per bar, 128 steps total for 8 bars)
       const patterns = [
-        // KICK
-        { id: 'kick-intro', data: { id: 'kick-intro', name: 'Intro Kick', steps: [0, 16, 32, 48] } }, // 1 Schlag pro Takt (4 Takte)
-        { id: 'kick-verse', data: { id: 'kick-verse', name: 'Verse Kick', steps: Array.from({length: 16}, (_, i) => i * 8) } }, // 2 Schläge pro Takt (8 Takte = 16 Schläge)
-        { id: 'kick-refrain', data: { id: 'kick-refrain', name: 'Refrain Kick', steps: Array.from({length: 32}, (_, i) => i * 4) } }, // 4 Schläge pro Takt (8 Takte = 32 Schläge)
-        { id: 'kick-intro-long', data: { id: 'kick-intro-long', name: 'Intro 8 Bars', steps: Array.from({length: 8}, (_, i) => i * 16) } }, // 1 Schlag pro Takt über 8 Takte
+        // KICK / INTRO 1 SHOT
+        { id: 'kick-intro', data: { id: 'kick-intro', name: 'Intro 1-Shot', steps: [0, 16, 32, 48] } }, 
+        // VERSE 2 SHOTS
+        { id: 'kick-verse', data: { id: 'kick-verse', name: 'Verse 2-Shot', steps: Array.from({length: 16}, (_, i) => i * 8) } }, 
+        // REFRAIN 4 SHOTS
+        { id: 'kick-refrain', data: { id: 'kick-refrain', name: 'Refrain 4-Shot', steps: Array.from({length: 32}, (_, i) => i * 4) } }, 
         
         // CLAP
-        { id: 'clap-intro', data: { id: 'clap-intro', name: 'Intro Clap', steps: [48] } }, // Nur am Ende vom Intro
-        { id: 'clap-verse', data: { id: 'clap-verse', name: 'Verse Clap', steps: Array.from({length: 8}, (_, i) => i * 16 + 8) } }, // Nur auf die 2 und 4 (halbe Noten Offset)
-        { id: 'clap-refrain', data: { id: 'clap-refrain', name: 'Refrain Clap', steps: Array.from({length: 16}, (_, i) => i * 8 + 4) } }, // Backbeat
+        { id: 'clap-intro', data: { id: 'clap-intro', name: 'Intro Clap', steps: [48] } }, 
+        { id: 'clap-verse', data: { id: 'clap-verse', name: 'Verse Clap', steps: Array.from({length: 8}, (_, i) => i * 16 + 8) } }, 
+        { id: 'clap-refrain', data: { id: 'clap-refrain', name: 'Refrain Clap', steps: Array.from({length: 16}, (_, i) => i * 8 + 4) } }, 
         
         // HATS
         { id: 'hats-verse', data: { id: 'hats-verse', name: '8th Shaker', steps: Array.from({length: 64}, (_, i) => i * 2) } },
-        { id: 'hats-refrain', data: { id: 'hats-refrain', name: 'Trap Hi-Hats', steps: Array.from({length: 128}, (_, i) => i) } }, // 16tel
+        { id: 'hats-refrain', data: { id: 'hats-refrain', name: 'Trap Hi-Hats', steps: Array.from({length: 128}, (_, i) => i) } }, 
         
         // MISC
         { id: 'misc-fill', data: { id: 'misc-fill', name: 'DubStep Fill', steps: [60, 124] } },
@@ -286,38 +293,42 @@ export default function HomePage() {
             });
 
             if (isBeatHero || isSampleCatcher || isVinylHunter) {
-               // Level 1-4: Always KICK
+               // Level 1-4: Always KICK (or Lazer 1 for Vinyl Hunter)
                const kickData = {
-                 id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: kickUrl,
+                 id: `${levelId}-kick`, levelId, type: 'kick', 
+                 sampleUrl: isVinylHunter ? lazer1 : kickUrl,
                  patternIds: ['kick-intro', 'kick-verse', 'kick-refrain']
                };
                const sKickRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`);
                setDoc(sKickRef, kickData, { merge: true });
 
-               // Level 2-4: Add CLAP
+               // Level 2-4: Add CLAP (or Lazer 2 for Vinyl Hunter)
                if (i >= 2) {
                  const clapData = {
-                   id: `${levelId}-clap`, levelId, type: 'clap', sampleUrl: clapUrl,
+                   id: `${levelId}-clap`, levelId, type: 'clap', 
+                   sampleUrl: isVinylHunter ? lazer2 : clapUrl,
                    patternIds: ['clap-intro', 'clap-verse', 'clap-refrain']
                  };
                  const sClapRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`);
                  setDoc(sClapRef, clapData, { merge: true });
                }
 
-               // Level 3-4: Add HATS (mapped to 'percs' type)
+               // Level 3-4: Add HATS (or Lazer 3 for Vinyl Hunter)
                if (i >= 3) {
                  const hatsData = {
-                   id: `${levelId}-hats`, levelId, type: 'percs', sampleUrl: hatsUrl,
-                   patternIds: ['clap-intro', 'hats-verse', 'hats-refrain'] // Intro silent, then 8ths, then 16ths
+                   id: `${levelId}-hats`, levelId, type: 'percs', 
+                   sampleUrl: isVinylHunter ? lazer3 : hatsUrl,
+                   patternIds: ['clap-intro', 'hats-verse', 'hats-refrain'] 
                  };
                  const sHatsRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`);
                  setDoc(sHatsRef, hatsData, { merge: true });
                }
 
-               // Level 4: Add MISC (oooh.mp3)
+               // Level 4: Add MISC (or Lazer 4 for Vinyl Hunter)
                if (i >= 4) {
                  const miscData = {
-                   id: `${levelId}-misc`, levelId, type: 'misc', sampleUrl: miscUrl,
+                   id: `${levelId}-misc`, levelId, type: 'misc', 
+                   sampleUrl: isVinylHunter ? lazer4 : miscUrl,
                    patternIds: ['clap-intro', 'misc-fill', 'misc-fill']
                  };
                  const sMiscRef = doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`);
