@@ -176,7 +176,7 @@ export default function HomePage() {
       const VINYL_BG = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
       // 1. Patterns
-      const patterns = [
+      const patternsArr = [
         { id: 'kick-intro-1', data: { id: 'kick-intro-1', name: 'Intro 8-Bar Kick', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
         { id: 'kick-verse-2', data: { id: 'kick-verse-2', name: 'Verse 2-Shot', steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) } }, 
         { id: 'kick-refrain-4', data: { id: 'kick-refrain-4', name: 'Refrain 4-Shot', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) } }, 
@@ -189,7 +189,7 @@ export default function HomePage() {
         { id: 'hats-fast', data: { id: 'hats-fast', name: 'Hats 8th', steps: Array.from({length: 128}, (_, i) => i % 2 === 0 ? i : -1).filter(v => v !== -1) } },
         { id: 'misc-accent', data: { id: 'misc-accent', name: 'Misc Accent', steps: [15, 31, 47, 63, 79, 95, 111, 127] } }
       ];
-      for (const p of patterns) {
+      for (const p of patternsArr) {
         setDoc(doc(db, 'patterns', p.id), p.data, { merge: true });
       }
 
@@ -253,10 +253,8 @@ export default function HomePage() {
             if (isBeatHero || isSampleCatcher) gameBackingUrl = tracks.find(t => t.id === 'tr-n2')?.url || '';
             else if (isVinylHunter) gameBpm = 128, gameBackingUrl = tracks.find(t => t.id === 'tr-n1')?.url || '';
           } else if (s.id === 'std-gabriel') {
-            if (isSampleCatcher) {
-              gameBpm = 160;
-              gameBackingUrl = tracks.find(t => t.id === 'tr-g5')?.url || '';
-            }
+            gameBpm = 160;
+            gameBackingUrl = tracks.find(t => t.id === 'tr-g5')?.url || '';
           }
 
           setDoc(doc(db, 'games', gameId), {
