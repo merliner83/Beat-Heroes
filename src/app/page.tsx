@@ -8,14 +8,14 @@ import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebas
 import { collection, query, doc, setDoc } from 'firebase/firestore';
 import { Studio, Game, Article, Track, hasAccess, LearnApp } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn, initiateGoogleSignIn, initiateSignOut } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { cn } from '@/lib/utils';
-import { RefreshCw, Loader2, Zap, Search, LayoutGrid, GraduationCap, Lock, User as UserIcon, LogOut, LogIn } from 'lucide-react';
+import { RefreshCw, Loader2, Zap, LayoutGrid, GraduationCap, Lock, User as UserIcon, LogOut, LogIn, BarChart3 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LearnView } from '@/components/learn/LearnView';
+import { ProfileView } from '@/components/profile/ProfileView';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,7 +81,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const savedTab = localStorage.getItem('beathero_active_tab');
-    if (savedTab === 'studios' || savedTab === 'learn') {
+    if (savedTab === 'studios' || savedTab === 'learn' || savedTab === 'progress') {
       setActiveTab(savedTab);
     }
   }, []);
@@ -357,6 +357,7 @@ export default function HomePage() {
             <TabsList className="bg-white/5 border border-white/5 rounded-full p-1 h-12 md:h-14">
               <TabsTrigger value="studios" className="rounded-full px-6 md:px-12 data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase italic tracking-tighter transition-all"><LayoutGrid className="w-4 h-4 mr-2 hidden sm:inline" /> Studios</TabsTrigger>
               <TabsTrigger value="learn" className="rounded-full px-6 md:px-12 data-[state=active]:bg-[#00E676] data-[state=active]:text-black font-black uppercase italic tracking-tighter transition-all"><GraduationCap className="w-4 h-4 mr-2 hidden sm:inline" /> Learn</TabsTrigger>
+              <TabsTrigger value="progress" className="rounded-full px-6 md:px-12 data-[state=active]:bg-[#FFEA00] data-[state=active]:text-black font-black uppercase italic tracking-tighter transition-all"><BarChart3 className="w-4 h-4 mr-2 hidden sm:inline" /> Progress</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -378,6 +379,7 @@ export default function HomePage() {
             )}
           </TabsContent>
           <TabsContent value="learn" className="m-0 focus-visible:ring-0 outline-none"><LearnView /></TabsContent>
+          <TabsContent value="progress" className="m-0 focus-visible:ring-0 outline-none"><ProfileView /></TabsContent>
         </Tabs>
       </main>
       <footer className="sticky bottom-0 p-3 md:p-4 border-t border-white/5 bg-black/95 backdrop-blur-2xl flex justify-between items-center z-50 shrink-0">
