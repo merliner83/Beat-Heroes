@@ -58,7 +58,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
   const bpm = game.bpm || 128;
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
-  const FLIGHT_TIME = 2000; // Etwas langsamer für besseres Tracking
+  const FLIGHT_TIME = 1800; // Etwas schneller für mehr Dynamik
 
   useEffect(() => {
     return () => {
@@ -68,7 +68,6 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
   }, []);
 
   const spawnItem = useCallback(() => {
-    // Level-basierte Ziel-Auswahl
     const availableTargets = Math.min(level.difficulty, TARGETS.length);
     const targetIdx = Math.floor(Math.random() * availableTargets);
     const target = TARGETS[targetIdx];
@@ -111,8 +110,8 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       return;
     }
 
-    // Spawn-Rate basierend auf Level (Level 1 ist deutlich langsamer)
-    const spawnMultiplier = level.difficulty === 1 ? 4 : level.difficulty === 2 ? 2.5 : 1.5;
+    // Erhöhte Schwierigkeit: Multiplikator für Level 1 von 4 auf 2.5 gesenkt
+    const spawnMultiplier = level.difficulty === 1 ? 2.5 : level.difficulty === 2 ? 2.0 : 1.5;
     const spawnInterval = (60 / bpm) * 1000 * spawnMultiplier;
     
     if (now - lastSpawnRef.current > spawnInterval && currentTime < SESSION_DURATION) {
@@ -120,10 +119,9 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       lastSpawnRef.current = now;
     }
 
-    // Miss-Erkennung (wenn Item das Ziel passiert hat)
     setActiveItems(prev => {
       const next = prev.map(item => {
-        if (item.status === 'active' && now - item.startTime > FLIGHT_TIME + 300) {
+        if (item.status === 'active' && now - item.startTime > FLIGHT_TIME + 250) {
           handleAutoMiss(item.id);
           return { ...item, status: 'missed' as const };
         }
@@ -156,16 +154,14 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     if (!isPlaying) return;
     
     const now = Date.now();
-    // Finde das Item, das diesem Ziel am nächsten ist
     const targetItem = activeItems
       .filter(item => item.targetId === targetId && item.status === 'active')
       .sort((a, b) => (a.startTime + FLIGHT_TIME) - (b.startTime + FLIGHT_TIME))[0];
 
     const precision = targetItem ? Math.abs(now - (targetItem.startTime + FLIGHT_TIME)) : Infinity;
-    const tolerance = level.difficulty >= 3 ? 250 : 400;
+    const tolerance = level.difficulty >= 3 ? 200 : 350;
 
     if (targetItem && precision <= tolerance) {
-      // Treffer!
       setScore(s => {
         const nextHits = s.hits + 1;
         const total = nextHits + s.misses;
@@ -173,9 +169,11 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       });
       setTargetFeedback(p => ({ ...p, [targetId]: { time: Date.now(), type: 'hit' } }));
       setActiveItems(prev => prev.filter(i => i.id !== targetItem.id));
-      audioEngine?.playOneShot(sounds[0]?.sampleUrl || 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg');
+      
+      // Nutze den ersten verfügbaren Sound des Levels für Audio-Feedback
+      const catchSound = sounds[0]?.sampleUrl || 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg';
+      audioEngine?.playOneShot(catchSound);
     } else {
-      // Falscher Klick (zu früh, zu spät oder kein Item da)
       setTargetFeedback(p => ({ ...p, [targetId]: { time: Date.now(), type: 'miss' } }));
       setScore(s => {
         const nextMisses = s.misses + 1;
@@ -221,7 +219,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
         accuracy: score.accuracy, 
         completedAt: serverTimestamp() 
       }, { merge: true });
-      setDoc(doc(db, 'users', user.uid), { streetCred: increment(350) }, { merge: true });
+      setDoc(doc(db, 'users', user.uid), { streetCred: increment(400) }, { merge: true });
     }
   }, [isFinished, score.accuracy, user, db, level]);
 
@@ -289,8 +287,6 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
           const curX = item.startX + (target.x - item.startX) * progress;
           const curY = item.startY + (target.y - item.startY) * progress;
           const Icon = DASH_ICONS[item.iconIdx];
-
-          // Fade out wenn es das Ziel fast erreicht hat, um den Klick-Moment zu fokussieren
           const opacity = progress > 1.0 ? 1 - (progress - 1.0) * 5 : 1;
 
           return (
