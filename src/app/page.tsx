@@ -215,7 +215,8 @@ export default function HomePage() {
         { id: 'tr-y3', studioId: 'std-yoan', name: 'Zweites', author: 'Yoan', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2Fzweites%20yoan.mp3?alt=media&token=7f93d419-707f-421a-8443-b442203be6ec' },
         { id: 'tr-y4', studioId: 'std-yoan', name: 'Yoan Power', author: 'Yoan', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2FYOAN%20Power%20260312.mp3?alt=media&token=8bb23617-b47d-4584-a658-13b53210b566' },
         { id: 'tr-n1', studioId: 'std-noxxos', name: 'One', author: 'Noxxos', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20One%20Master.mp3?alt=media&token=9ecc6a73-e45d-4f55-8e4b-cbc873474002' },
-        { id: 'tr-n2', studioId: 'std-noxxos', name: 'Apple', author: 'Noxxos', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20-%20Apple.mp3?alt=media&token=3ecfffc6-b32d-44c4-97a0-80d15c7f1d49' }
+        { id: 'tr-n2', studioId: 'std-noxxos', name: 'Apple', author: 'Noxxos', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20-%20Apple.mp3?alt=media&token=3ecfffc6-b32d-44c4-97a0-80d15c7f1d49' },
+        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Gabriel 5', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%205%20162bpm.mp3?alt=media&token=deefca2b-1ace-4e53-948f-8ce581aca7f6' }
       ];
       for (const t of tracks) {
         setDoc(doc(db, 'tracks', t.id), t, { merge: true });
@@ -250,7 +251,12 @@ export default function HomePage() {
           } else if (s.id === 'std-noxxos') {
             gameBpm = 156;
             if (isBeatHero || isSampleCatcher) gameBackingUrl = tracks.find(t => t.id === 'tr-n2')?.url || '';
-            else if (isVinylHunter) gameBackingUrl = tracks.find(t => t.id === 'tr-n1')?.url || '';
+            else if (isVinylHunter) gameBpm = 128, gameBackingUrl = tracks.find(t => t.id === 'tr-n1')?.url || '';
+          } else if (s.id === 'std-gabriel') {
+            if (isSampleCatcher) {
+              gameBpm = 162;
+              gameBackingUrl = tracks.find(t => t.id === 'tr-g5')?.url || '';
+            }
           }
 
           setDoc(doc(db, 'games', gameId), {
@@ -277,7 +283,6 @@ export default function HomePage() {
             }
 
             if (isSampleCatcher) {
-              // Sounds für den Catch-Effekt
               const catchSamples = [S_PERCS, S_CLAP, S_KICK, S_MISC];
               setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-catch`), { id: `${levelId}-catch`, levelId, type: 'percs', sampleUrl: catchSamples[i-1] || S_PERCS, patternIds: [] }, { merge: true });
             }
