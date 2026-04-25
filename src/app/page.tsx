@@ -303,9 +303,9 @@ export default function HomePage() {
             if (isBeatHero) {
               const isDave = s.id === 'std-dave';
               const kickPatterns = isDave ? ['kick-hiphop-sync', 'kick-buildup-fast', 'kick-techno-4-4'] : ['kick-intro-1', 'kick-verse-2', 'kick-refrain-4'];
-              const clapPatterns = ['clap-basic', 'clap-sync'];
-              const hatsPatterns = ['hats-basic', 'hats-fast'];
-              const miscPatterns = ['misc-accent'];
+              const clapPatterns = ['clap-basic', 'clap-sync', 'clap-basic'];
+              const hatsPatterns = ['hats-basic', 'hats-fast', 'hats-fast'];
+              const miscPatterns = ['misc-accent', 'misc-accent', 'misc-accent'];
               
               // Lv 1: KICK
               setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), {
