@@ -187,7 +187,7 @@ export default function HomePage() {
         // CLAP
         { id: 'clap-basic', data: { id: 'clap-basic', name: 'Clap 2-4', steps: Array.from({length: 8}, (_, bar) => [4, 12].map(s => s + bar * 16)).flat() } },
         { id: 'clap-sync', data: { id: 'clap-sync', name: 'Clap Sync', steps: Array.from({length: 8}, (_, bar) => [4, 11, 14].map(s => s + bar * 16)).flat() } },
-        // HATS (Half speed adjustment)
+        // HATS (Half speed adjustment as requested)
         { id: 'hats-basic', data: { id: 'hats-basic', name: 'Hats 4th', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) } },
         { id: 'hats-fast', data: { id: 'hats-fast', name: 'Hats 8th', steps: Array.from({length: 128}, (_, i) => i % 2 === 0 ? i : -1).filter(v => v !== -1) } },
         // MISC
@@ -226,7 +226,7 @@ export default function HomePage() {
       const gTr5 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%208%20160bpm.mp3?alt=media&token=385d3a0c-c51c-4801-8ec4-18b0f9eedf2f';
 
       const nOneUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20One%20Master.mp3?alt=media&token=9ecc6a73-e45d-4f55-8e4b-cbc873474002';
-      const nAppleUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20-%20Apple.mp3?alt=media&token=41918308-37c8-4a5d-acb1-d99a1e87b55b';
+      const nAppleUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20-%20Apple.mp3?alt=media&token=3ecfffc6-b32d-44c4-97a0-80d15c7f1d49';
 
       const tracks: Track[] = [
         { id: 'tr-d1', studioId: 'std-dave', name: 'Freestyle', author: 'Dave', url: daveFreestyleUrl },
