@@ -12,6 +12,7 @@ import { ArrowLeft, ChevronRight, Trophy, Loader2, Play, Pause, Music, Zap, Exte
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { audioEngine } from '@/lib/game/audio-engine';
 
 const DIFFICULTY_MAP: Record<number, { label: string, color: string }> = {
   1: { label: 'BEGINNER', color: '#00E676' },
@@ -40,12 +41,6 @@ export default function StudioPage() {
   }, [db, studioId]);
   const { data: studioTracks } = useCollection<Track>(tracksQuery);
 
-  const allTracksQuery = useMemoFirebase(() => {
-    if (!db) return null;
-    return query(collection(db, 'tracks'));
-  }, [db]);
-  const { data: allTracks } = useCollection<Track>(allTracksQuery);
-
   const allLevelsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'levels'));
@@ -61,10 +56,19 @@ export default function StudioPage() {
   const [playingTrack, setPlayingTrack] = useState<string | null>(null);
   const [audio] = useState(() => typeof Audio !== 'undefined' ? new Audio() : null);
 
+  // Preloading all studio tracks for instant playback
+  useEffect(() => {
+    if (studioTracks && studioTracks.length > 0 && audioEngine) {
+      const trackUrls = studioTracks.map(t => t.url).filter(url => !!url);
+      audioEngine.preloadAudio(trackUrls);
+    }
+  }, [studioTracks]);
+
   const isStudioLocked = studio && !hasAccess(profile?.role, studio.minRole || 'free');
 
   const filteredGames = useMemo(() => {
     if (!allGames) return [];
+    // Fixed order: Beat Hero, Vinyl Hunter, Sonic Dash
     const order = ['rhythm-producer', 'sample-hunter', 'disk-dash'];
     return [...allGames]
       .filter(game => hasAccess(profile?.role, game.minRole || 'free'))
@@ -77,8 +81,9 @@ export default function StudioPage() {
       audio.pause();
       setPlayingTrack(null);
     } else {
+      // Browsers will use the cached version from audioEngine preloading
       audio.src = `/api/proxy-audio?url=${encodeURIComponent(url)}`;
-      audio.play();
+      audio.play().catch(e => console.warn("Studio audio play failed", e));
       setPlayingTrack(url);
     }
   };
