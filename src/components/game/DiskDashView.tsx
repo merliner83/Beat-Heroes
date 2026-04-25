@@ -58,7 +58,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
   const bpm = game.bpm || 128;
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
-  const FLIGHT_TIME = 1800; // Etwas schneller für mehr Dynamik
+  const FLIGHT_TIME = 1800; 
 
   useEffect(() => {
     return () => {
@@ -110,8 +110,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       return;
     }
 
-    // Erhöhte Schwierigkeit: Multiplikator für Level 1 von 4 auf 2.5 gesenkt
-    const spawnMultiplier = level.difficulty === 1 ? 2.5 : level.difficulty === 2 ? 2.0 : 1.5;
+    const spawnMultiplier = level.difficulty === 1 ? 1.5 : level.difficulty === 2 ? 1.2 : 0.8;
     const spawnInterval = (60 / bpm) * 1000 * spawnMultiplier;
     
     if (now - lastSpawnRef.current > spawnInterval && currentTime < SESSION_DURATION) {
@@ -120,14 +119,13 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     }
 
     setActiveItems(prev => {
-      const next = prev.map(item => {
+      return prev.map(item => {
         if (item.status === 'active' && now - item.startTime > FLIGHT_TIME + 250) {
           handleAutoMiss(item.id);
           return { ...item, status: 'missed' as const };
         }
         return item;
       }).filter(item => item.status === 'active');
-      return next;
     });
 
     frameRef.current = requestAnimationFrame(updateGame);
@@ -170,8 +168,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       setTargetFeedback(p => ({ ...p, [targetId]: { time: Date.now(), type: 'hit' } }));
       setActiveItems(prev => prev.filter(i => i.id !== targetItem.id));
       
-      // Nutze den ersten verfügbaren Sound des Levels für Audio-Feedback
-      const catchSound = sounds[0]?.sampleUrl || 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg';
+      const catchSound = sounds.find(s => s.id.includes('catch'))?.sampleUrl || 'https://actions.google.com/sounds/v1/impacts/wood_block_impact.ogg';
       audioEngine?.playOneShot(catchSound);
     } else {
       setTargetFeedback(p => ({ ...p, [targetId]: { time: Date.now(), type: 'miss' } }));

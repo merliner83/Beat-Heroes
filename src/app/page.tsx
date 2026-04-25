@@ -177,20 +177,16 @@ export default function HomePage() {
 
       // 1. Patterns
       const patterns = [
-        // KICK
         { id: 'kick-intro-1', data: { id: 'kick-intro-1', name: 'Intro 8-Bar Kick', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
         { id: 'kick-verse-2', data: { id: 'kick-verse-2', name: 'Verse 2-Shot', steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) } }, 
         { id: 'kick-refrain-4', data: { id: 'kick-refrain-4', name: 'Refrain 4-Shot', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) } }, 
         { id: 'kick-hiphop-sync', data: { id: 'kick-hiphop-sync', name: 'HipHop Sync', steps: Array.from({length: 8}, (_, bar) => [0, 6, 10, 14].map(s => s + bar * 16)).flat() } },
         { id: 'kick-buildup-fast', data: { id: 'kick-buildup-fast', name: 'Buildup Fast', steps: [0, 4, 8, 12, 16, 18, 20, 22, 24, 26, 28, 30, ...Array.from({length: 32}, (_, i) => i + 32)] } },
         { id: 'kick-techno-4-4', data: { id: 'kick-techno-4-4', name: 'Techno 4-on-Floor', steps: Array.from({length: 8}, (_, bar) => [0, 4, 8, 12].map(s => s + bar * 16)).flat() } },
-        // CLAP
         { id: 'clap-basic', data: { id: 'clap-basic', name: 'Clap 2-4', steps: Array.from({length: 8}, (_, bar) => [4, 12].map(s => s + bar * 16)).flat() } },
         { id: 'clap-sync', data: { id: 'clap-sync', name: 'Clap Sync', steps: Array.from({length: 8}, (_, bar) => [4, 11, 14].map(s => s + bar * 16)).flat() } },
-        // HATS (Half speed adjustment as requested)
         { id: 'hats-basic', data: { id: 'hats-basic', name: 'Hats 4th', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) } },
         { id: 'hats-fast', data: { id: 'hats-fast', name: 'Hats 8th', steps: Array.from({length: 128}, (_, i) => i % 2 === 0 ? i : -1).filter(v => v !== -1) } },
-        // MISC
         { id: 'misc-accent', data: { id: 'misc-accent', name: 'Misc Accent', steps: [15, 31, 47, 63, 79, 95, 111, 127] } }
       ];
       for (const p of patterns) {
@@ -210,45 +206,22 @@ export default function HomePage() {
       }
 
       // 3. Tracks
-      const daveFreestyleUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20ist%20Schlau%20aber%20Merlin%20ist%20Ganz%20Ganz%20Ganz%20Dummmmmmm%20120%20bpm.mp3?alt=media&token=fd38176e-faaf-4465-872a-1847f5b37960';
-      const daveAnthemUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20Komposition.mp3?alt=media&token=4f6a397f-10d4-4fbd-8f13-47cfc9d89d86';
-      const daveDjangoUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20Below%20-%20Hallo%20Django.mp3?alt=media&token=df9d3356-f1f5-4f55-83b1-5d1ec6ac1fbc';
-
-      const yoanSamplingUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2Fsampling%20125bpm%20260303.mp3?alt=media&token=66d7c77c-088e-4cfe-9bdc-85476bd749ad';
-      const yoanErstesUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2FErstes%20Yoan%2094bpm%20Amajor%20250425.mp3?alt=media&token=0af91c3b-ae8c-4816-88ed-8bf0814d20a2';
-      const yoanZweitesUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2Fzweites%20yoan.mp3?alt=media&token=7f93d419-707f-421a-8443-b442203be6ec';
-      const yoanPowerUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2FYOAN%20Power%20260312.mp3?alt=media&token=8bb23617-b47d-4584-a658-13b53210b566';
-
-      const gTr1 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%201_140bpm.mp3?alt=media&token=0d094a95-7a8c-40a4-8e17-c1eebf721540';
-      const gTr2 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%202_148bpm.mp3?alt=media&token=1f877a36-c331-4286-97ce-aad7f1edf807';
-      const gTr3 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%204%20150bpm%20scratch.mp3?alt=media&token=d4a447a1-5c31-4aeb-acab-146fccc039b8';
-      const gTr4 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%205%20162bpm.mp3?alt=media&token=deefca2b-1ace-4e53-948f-8ce581aca7f6';
-      const gTr5 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%208%20160bpm.mp3?alt=media&token=385d3a0c-c51c-4801-8ec4-18b0f9eedf2f';
-
-      const nOneUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20One%20Master.mp3?alt=media&token=9ecc6a73-e45d-4f55-8e4b-cbc873474002';
-      const nAppleUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20-%20Apple.mp3?alt=media&token=3ecfffc6-b32d-44c4-97a0-80d15c7f1d49';
-
       const tracks: Track[] = [
-        { id: 'tr-d1', studioId: 'std-dave', name: 'Freestyle', author: 'Dave', url: daveFreestyleUrl },
-        { id: 'tr-d2', studioId: 'std-dave', name: 'Anthem', author: 'Dave', url: daveAnthemUrl },
-        { id: 'tr-d3', studioId: 'std-dave', name: 'Hallo Django', author: 'Dave', url: daveDjangoUrl },
-        { id: 'tr-y1', studioId: 'std-yoan', name: 'Sampling', author: 'Yoan', url: yoanSamplingUrl },
-        { id: 'tr-y2', studioId: 'std-yoan', name: 'Erstes', author: 'Yoan', url: yoanErstesUrl },
-        { id: 'tr-y3', studioId: 'std-yoan', name: 'Zweites', author: 'Yoan', url: yoanZweitesUrl },
-        { id: 'tr-y4', studioId: 'std-yoan', name: 'Yoan Power', author: 'Yoan', url: yoanPowerUrl },
-        { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel', url: gTr1 },
-        { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel', url: gTr2 },
-        { id: 'tr-g3', studioId: 'std-gabriel', name: 'Track 3', author: 'Gabriel', url: gTr3 },
-        { id: 'tr-g4', studioId: 'std-gabriel', name: 'Track 4', author: 'Gabriel', url: gTr4 },
-        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel', url: gTr5 },
-        { id: 'tr-n1', studioId: 'std-noxxos', name: 'One', author: 'Noxxos', url: nOneUrl },
-        { id: 'tr-n2', studioId: 'std-noxxos', name: 'Apple', author: 'Noxxos', url: nAppleUrl }
+        { id: 'tr-d1', studioId: 'std-dave', name: 'Freestyle', author: 'Dave', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20ist%20Schlau%20aber%20Merlin%20ist%20Ganz%20Ganz%20Ganz%20Dummmmmmm%20120%20bpm.mp3?alt=media&token=fd38176e-faaf-4465-872a-1847f5b37960' },
+        { id: 'tr-d2', studioId: 'std-dave', name: 'Anthem', author: 'Dave', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20Komposition.mp3?alt=media&token=4f6a397f-10d4-4fbd-8f13-47cfc9d89d86' },
+        { id: 'tr-d3', studioId: 'std-dave', name: 'Hallo Django', author: 'Dave', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20Below%20-%20Hallo%20Django.mp3?alt=media&token=df9d3356-f1f5-4f55-83b1-5d1ec6ac1fbc' },
+        { id: 'tr-y1', studioId: 'std-yoan', name: 'Sampling', author: 'Yoan', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2Fsampling%20125bpm%20260303.mp3?alt=media&token=66d7c77c-088e-4cfe-9bdc-85476bd749ad' },
+        { id: 'tr-y2', studioId: 'std-yoan', name: 'Erstes', author: 'Yoan', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2FErstes%20Yoan%2094bpm%20Amajor%20250425.mp3?alt=media&token=0af91c3b-ae8c-4816-88ed-8bf0814d20a2' },
+        { id: 'tr-y3', studioId: 'std-yoan', name: 'Zweites', author: 'Yoan', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2Fzweites%20yoan.mp3?alt=media&token=7f93d419-707f-421a-8443-b442203be6ec' },
+        { id: 'tr-y4', studioId: 'std-yoan', name: 'Yoan Power', author: 'Yoan', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2FYOAN%20Power%20260312.mp3?alt=media&token=8bb23617-b47d-4584-a658-13b53210b566' },
+        { id: 'tr-n1', studioId: 'std-noxxos', name: 'One', author: 'Noxxos', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20One%20Master.mp3?alt=media&token=9ecc6a73-e45d-4f55-8e4b-cbc873474002' },
+        { id: 'tr-n2', studioId: 'std-noxxos', name: 'Apple', author: 'Noxxos', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20-%20Apple.mp3?alt=media&token=3ecfffc6-b32d-44c4-97a0-80d15c7f1d49' }
       ];
       for (const t of tracks) {
         setDoc(doc(db, 'tracks', t.id), t, { merge: true });
       }
 
-      // 4. Games (BEAT HERO, VINYL HUNTER, SAMPLE CATCHER)
+      // 4. Games
       const gameConfigs = [
         { type: 'rhythm-producer' as const, name: 'BEAT HERO' },
         { type: 'sample-hunter' as const, name: 'VINYL HUNTER' },
@@ -267,91 +240,46 @@ export default function HomePage() {
           
           if (s.id === 'std-dave') {
             gameBpm = 120;
-            if (isBeatHero) gameBackingUrl = daveFreestyleUrl;
-            else if (isVinylHunter) gameBackingUrl = daveAnthemUrl;
-            else if (isSampleCatcher) gameBackingUrl = daveDjangoUrl;
+            if (isBeatHero) gameBackingUrl = tracks.find(t => t.id === 'tr-d1')?.url || '';
+            else if (isVinylHunter) gameBackingUrl = tracks.find(t => t.id === 'tr-d2')?.url || '';
+            else if (isSampleCatcher) gameBackingUrl = tracks.find(t => t.id === 'tr-d3')?.url || '';
           } else if (s.id === 'std-yoan') {
-            if (isBeatHero) {
-              gameBpm = 125;
-              gameBackingUrl = yoanSamplingUrl;
-            } else if (isVinylHunter) {
-              gameBpm = 94;
-              gameBackingUrl = yoanErstesUrl;
-            } else {
-              gameBpm = 120;
-              gameBackingUrl = yoanZweitesUrl;
-            }
-          } else if (s.id === 'std-gabriel') {
-            if (isBeatHero) {
-              gameBpm = 148;
-              gameBackingUrl = gTr2;
-            } else if (isVinylHunter) {
-              gameBpm = 150;
-              gameBackingUrl = gTr3;
-            } else {
-              gameBpm = 140;
-              gameBackingUrl = gTr1;
-            }
+            if (isBeatHero) { gameBpm = 125; gameBackingUrl = tracks.find(t => t.id === 'tr-y1')?.url || ''; }
+            else if (isVinylHunter) { gameBpm = 94; gameBackingUrl = tracks.find(t => t.id === 'tr-y2')?.url || ''; }
+            else { gameBpm = 120; gameBackingUrl = tracks.find(t => t.id === 'tr-y3')?.url || ''; }
           } else if (s.id === 'std-noxxos') {
-            if (isBeatHero || isSampleCatcher) {
-              gameBpm = 156;
-              gameBackingUrl = nAppleUrl;
-            } else if (isVinylHunter) {
-              gameBpm = 128;
-              gameBackingUrl = nOneUrl;
-            }
+            gameBpm = 156;
+            if (isBeatHero || isSampleCatcher) gameBackingUrl = tracks.find(t => t.id === 'tr-n2')?.url || '';
+            else if (isVinylHunter) gameBackingUrl = tracks.find(t => t.id === 'tr-n1')?.url || '';
           }
 
-          const gData = {
+          setDoc(doc(db, 'games', gameId), {
             id: gameId, studioId: s.id, name: config.name, type: config.type,
             difficulty: 1, minRole: 'free', bpm: gameBpm,
             backingTrackUrl: gameBackingUrl, backgroundImageUrl: isVinylHunter ? VINYL_BG : ''
-          };
-          setDoc(doc(db, 'games', gameId), gData, { merge: true });
+          }, { merge: true });
 
-          // Level & Sound Sync
           for (let i = 1; i <= 4; i++) {
             const levelId = `${gameId}-lvl${i}`;
             setDoc(doc(db, 'levels', levelId), { id: levelId, gameId, difficulty: i, name: `Level ${i}` }, { merge: true });
 
             if (isBeatHero) {
-              const isDave = s.id === 'std-dave';
-              const kickPatterns = isDave ? ['kick-hiphop-sync', 'kick-buildup-fast', 'kick-techno-4-4'] : ['kick-intro-1', 'kick-verse-2', 'kick-refrain-4'];
-              const clapPatterns = ['clap-basic', 'clap-sync', 'clap-basic'];
-              const hatsPatterns = ['hats-basic', 'hats-fast', 'hats-fast'];
-              const miscPatterns = ['misc-accent', 'misc-accent', 'misc-accent'];
-              
-              // Lv 1: KICK
-              setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), {
-                id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: S_KICK, patternIds: kickPatterns
-              }, { merge: true });
-
-              // Lv 2: + CLAP
-              if (i >= 2) {
-                setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`), {
-                  id: `${levelId}-clap`, levelId, type: 'clap', sampleUrl: S_CLAP, patternIds: clapPatterns
-                }, { merge: true });
-              }
-              // Lv 3: + HATS
-              if (i >= 3) {
-                setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`), {
-                  id: `${levelId}-hats`, levelId, type: 'percs', sampleUrl: S_HATS, patternIds: hatsPatterns
-                }, { merge: true });
-              }
-              // Lv 4: + MISC (DubStep OneShot)
-              if (i === 4) {
-                setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`), {
-                  id: `${levelId}-misc`, levelId, type: 'misc', sampleUrl: S_DUBSTEP, patternIds: miscPatterns
-                }, { merge: true });
-              }
+              const kickPatterns = s.id === 'std-dave' ? ['kick-hiphop-sync', 'kick-buildup-fast', 'kick-techno-4-4'] : ['kick-intro-1', 'kick-verse-2', 'kick-refrain-4'];
+              setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), { id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: S_KICK, patternIds: kickPatterns }, { merge: true });
+              if (i >= 2) setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-clap`), { id: `${levelId}-clap`, levelId, type: 'clap', sampleUrl: S_CLAP, patternIds: ['clap-basic', 'clap-sync', 'clap-basic'] }, { merge: true });
+              if (i >= 3) setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-hats`), { id: `${levelId}-hats`, levelId, type: 'percs', sampleUrl: S_HATS, patternIds: ['hats-basic', 'hats-fast', 'hats-fast'] }, { merge: true });
+              if (i === 4) setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-misc`), { id: `${levelId}-misc`, levelId, type: 'misc', sampleUrl: S_DUBSTEP, patternIds: ['misc-accent', 'misc-accent', 'misc-accent'] }, { merge: true });
             }
 
             if (isVinylHunter) {
               const lzs = [LAZER1, LAZER2, LAZER3, LAZER4];
-              setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), {
-                id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: lzs[Math.min(i-1, 3)],
-                patternIds: ['kick-intro-1', 'kick-verse-2', 'kick-refrain-4']
-              }, { merge: true });
+              setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), { id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: lzs[Math.min(i-1, 3)], patternIds: [] }, { merge: true });
+            }
+
+            if (isSampleCatcher) {
+              // Sounds für den Catch-Effekt
+              const catchSamples = [S_PERCS, S_CLAP, S_KICK, S_MISC];
+              setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-catch`), { id: `${levelId}-catch`, levelId, type: 'percs', sampleUrl: catchSamples[i-1] || S_PERCS, patternIds: [] }, { merge: true });
             }
           }
         }
@@ -362,14 +290,12 @@ export default function HomePage() {
         { id: 'learn-ear-training', name: 'EAR TRAINING', type: 'ear-training' as const, minRole: 'free' },
         { id: 'learn-rhythm-trainer', name: 'RHYTHM MASTER', type: 'rhythm-trainer' as const, minRole: 'free' }
       ];
-
       for (const app of learnApps) {
         setDoc(doc(db, 'learnApps', app.id), app, { merge: true });
       }
 
-      toast({ title: "Master Rack Synced!", description: "All modules, sounds, and educational apps are online." });
+      toast({ title: "Master Rack Synced!", description: "All modules and sounds are online." });
     } catch (e) {
-      console.error("Master Sync Error:", e);
       toast({ variant: "destructive", title: "Master Sync Failed" });
     }
   };
@@ -377,12 +303,10 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#050505] text-white font-body font-normal flex flex-col relative select-none">
       <div className="fixed inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '60px 60px' }} />
-      
       <header className="sticky top-0 p-4 md:p-8 flex flex-col items-center z-50 shrink-0 bg-black/80 backdrop-blur-xl border-b border-white/5">
         <div className="flex flex-col items-center gap-6 w-full max-w-7xl relative">
           <div className="flex items-center justify-between w-full">
             <h1 className="text-4xl md:text-7xl font-black tracking-[-0.05em] uppercase italic leading-none text-gradient pr-4">BeatHero</h1>
-            
             <div className="flex items-center gap-4">
               <div className="hidden md:flex gemini-border gemini-glow-accent p-1.5 px-6 bg-black/80 backdrop-blur-3xl border border-white/5 shrink-0">
                 <div className="text-white font-black text-xl md:text-3xl leading-none tracking-tighter flex items-center gap-2">
@@ -390,7 +314,6 @@ export default function HomePage() {
                   {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
                 </div>
               </div>
-
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-12 w-12 rounded-full p-0 border border-white/10 hover:bg-white/5">
@@ -405,142 +328,47 @@ export default function HomePage() {
                 <DropdownMenuContent className="w-56 bg-black/90 border-white/10 text-white backdrop-blur-xl rounded-xl" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-black uppercase italic tracking-tighter leading-none">
-                        {user?.displayName || (user?.isAnonymous ? "Guest Mode" : "Music Producer")}
-                      </p>
-                      <p className="text-[10px] leading-none opacity-40 font-bold uppercase tracking-widest">
-                        {user?.email || `ID: ${user?.uid.substring(0, 8)}...`}
-                      </p>
+                      <p className="text-sm font-black uppercase italic tracking-tighter leading-none">{user?.displayName || (user?.isAnonymous ? "Guest Mode" : "Music Producer")}</p>
+                      <p className="text-[10px] leading-none opacity-40 font-bold uppercase tracking-widest">{user?.email || `ID: ${user?.uid.substring(0, 8)}...`}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem className="focus:bg-primary/20 focus:text-white cursor-pointer py-3">
-                    <Zap className="mr-2 h-4 w-4 text-[#FFEA00]" />
-                    <span className="font-black uppercase italic tracking-tighter text-xs">{streetCred} Street Cred</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="focus:bg-primary/20 focus:text-white cursor-pointer py-3">
-                    <GraduationCap className="mr-2 h-4 w-4" />
-                    <span className="font-black uppercase italic tracking-tighter text-xs">Role: {profile?.role?.toUpperCase() || "FREE"}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-white/10" />
-                  {user?.isAnonymous ? (
-                    <DropdownMenuItem 
-                      className="focus:bg-[#00E676]/20 focus:text-[#00E676] cursor-pointer py-3"
-                      onClick={() => auth && initiateGoogleSignIn(auth)}
-                    >
-                      <LogIn className="mr-2 h-4 w-4" />
-                      <span className="font-black uppercase italic tracking-tighter text-xs">Login with Google</span>
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem 
-                      className="focus:bg-destructive/20 focus:text-destructive cursor-pointer py-3"
-                      onClick={() => auth && initiateSignOut(auth)}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span className="font-black uppercase italic tracking-tighter text-xs">Sign Out</span>
-                    </DropdownMenuItem>
-                  )}
+                  <DropdownMenuItem className="focus:bg-primary/20 focus:text-white cursor-pointer py-3" onClick={() => auth && initiateGoogleSignIn(auth)}><LogIn className="mr-2 h-4 w-4" /><span className="font-black uppercase italic tracking-tighter text-xs">Login with Google</span></DropdownMenuItem>
+                  <DropdownMenuItem className="focus:bg-destructive/20 focus:text-destructive cursor-pointer py-3" onClick={() => auth && initiateSignOut(auth)}><LogOut className="mr-2 h-4 w-4" /><span className="font-black uppercase italic tracking-tighter text-xs">Sign Out</span></DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
-
-          <div className="flex items-center justify-center w-full relative">
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-auto">
-              <TabsList className="bg-white/5 border border-white/5 rounded-full p-1 h-12 md:h-14">
-                <TabsTrigger value="studios" className="rounded-full px-6 md:px-12 data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase italic tracking-tighter transition-all">
-                  <LayoutGrid className="w-4 h-4 mr-2 hidden sm:inline" /> Studios
-                </TabsTrigger>
-                <TabsTrigger value="learn" className="rounded-full px-6 md:px-12 data-[state=active]:bg-[#00E676] data-[state=active]:text-black font-black uppercase italic tracking-tighter transition-all">
-                  <GraduationCap className="w-4 h-4 mr-2 hidden sm:inline" /> Learn
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-auto">
+            <TabsList className="bg-white/5 border border-white/5 rounded-full p-1 h-12 md:h-14">
+              <TabsTrigger value="studios" className="rounded-full px-6 md:px-12 data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase italic tracking-tighter transition-all"><LayoutGrid className="w-4 h-4 mr-2 hidden sm:inline" /> Studios</TabsTrigger>
+              <TabsTrigger value="learn" className="rounded-full px-6 md:px-12 data-[state=active]:bg-[#00E676] data-[state=active]:text-black font-black uppercase italic tracking-tighter transition-all"><GraduationCap className="w-4 h-4 mr-2 hidden sm:inline" /> Learn</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
-
-        {activeTab === 'studios' && (
-          <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-7xl mt-8">
-            <div className="relative w-full md:w-80 group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors" />
-              <Input 
-                placeholder="Search Studios..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-10 md:h-12 bg-white/5 border-white/10 rounded-full focus:ring-primary focus:border-primary placeholder:text-white/10 text-xs md:text-sm font-bold uppercase tracking-widest"
-              />
-            </div>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 w-full overflow-hidden">
-              {dynamicTags.map(tag => (
-                <Button
-                  key={tag}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedTag(tag)}
-                  className={cn(
-                    "rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.15em] px-5 h-9 md:h-10 border transition-all shrink-0",
-                    selectedTag === tag ? "bg-primary border-primary text-white" : "bg-white/5 border-white/5 text-white/40 hover:bg-white/10"
-                  )}
-                >
-                  {tag}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
       </header>
-
       <main className="relative flex-1 w-full max-w-7xl mx-auto py-6 md:py-10 px-4 md:px-6">
         <Tabs value={activeTab} className="w-full">
           <TabsContent value="studios" className="m-0 focus-visible:ring-0 outline-none">
             {isLoadingStudios ? (
-              <div className="h-64 flex flex-col items-center justify-center gap-4">
-                <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                <p className="text-xs md:text-sm font-black uppercase tracking-[0.4em] opacity-30">Connecting to Rack...</p>
-              </div>
+              <div className="h-64 flex flex-col items-center justify-center gap-4"><Loader2 className="w-10 h-10 animate-spin text-primary" /><p className="text-xs md:text-sm font-black uppercase tracking-[0.4em] opacity-30">Connecting to Rack...</p></div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                 {filteredStudios.map((studio) => {
                   const isLocked = !hasAccess(profile?.role, studio.minRole || 'free');
                   return (
-                    <Link 
-                      key={studio.id} 
-                      href={isLocked ? '#' : `/studio/${studio.id}`} 
-                      className={cn(
-                        "block transform transition-transform hover:scale-[1.03] active:scale-95",
-                        isLocked && "cursor-not-allowed"
-                      )}
-                    >
-                      <StudioCard studio={studio} isLocked={isLocked} />
-                    </Link>
+                    <Link key={studio.id} href={isLocked ? '#' : `/studio/${studio.id}`} className={cn("block transform transition-transform hover:scale-[1.03] active:scale-95", isLocked && "cursor-not-allowed")}><StudioCard studio={studio} isLocked={isLocked} /></Link>
                   );
                 })}
               </div>
             )}
           </TabsContent>
-          <TabsContent value="learn" className="m-0 focus-visible:ring-0 outline-none">
-            <LearnView />
-          </TabsContent>
+          <TabsContent value="learn" className="m-0 focus-visible:ring-0 outline-none"><LearnView /></TabsContent>
         </Tabs>
       </main>
-
       <footer className="sticky bottom-0 p-3 md:p-4 border-t border-white/5 bg-black/95 backdrop-blur-2xl flex justify-between items-center z-50 shrink-0">
-        <div className="flex items-center gap-3 opacity-30">
-          <Zap className="w-4 h-4 text-primary" />
-          <span className="text-[10px] md:text-xs uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack System Online</span>
-        </div>
-        <div className="flex items-center gap-4">
-          {isAdmin && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={setupStudios} 
-              className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_15px_rgba(255,234,0,0.2)] h-10 md:h-12 px-8 md:px-12 text-sm md:text-base transition-transform active:scale-95"
-            >
-              <RefreshCw className="w-4 h-4 md:w-5 md:h-5 mr-3" /> Rack Sync
-            </Button>
-          )}
-        </div>
+        <div className="flex items-center gap-3 opacity-30"><Zap className="w-4 h-4 text-primary" /><span className="text-[10px] md:text-xs uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack System Online</span></div>
+        <div className="flex items-center gap-4">{isAdmin && (<Button variant="outline" size="sm" onClick={setupStudios} className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_15px_rgba(255,234,0,0.2)] h-10 md:h-12 px-8 md:px-12 text-sm md:text-base transition-transform active:scale-95"><RefreshCw className="w-4 h-4 md:w-5 md:h-5 mr-3" /> Rack Sync</Button>)}</div>
       </footer>
     </div>
   );
