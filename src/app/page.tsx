@@ -175,7 +175,7 @@ export default function HomePage() {
 
       // Patterns
       const patterns = [
-        { id: 'kick-intro-1', data: { id: 'kick-intro-1', name: 'Intro 1-Shot', steps: [0, 16, 32, 48] } },
+        { id: 'kick-intro-1', data: { id: 'kick-intro-1', name: 'Intro 1-Shot', steps: [0, 16, 32, 48, 64, 80, 96, 112] } }, // Extended to 8 bars
         { id: 'kick-verse-2', data: { id: 'kick-verse-2', name: 'Verse 2-Shot', steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) } }, 
         { id: 'kick-refrain-4', data: { id: 'kick-refrain-4', name: 'Refrain 4-Shot', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) } }, 
         { id: 'kick-hiphop-sync', data: { id: 'kick-hiphop-sync', name: 'HipHop Sync', steps: Array.from({length: 8}, (_, bar) => [0, 6, 10, 14].map(s => s + bar * 16)).flat() } },
