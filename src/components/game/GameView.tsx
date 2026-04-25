@@ -14,9 +14,7 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// Constant for sync offset - fine-tuned to fix the "slightly too late" feel
 export const SYNC_OFFSET = 0.03;
-// Shared hit position for the timing bar and note lanes
 export const HIT_POSITION = 550; 
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -53,6 +51,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const db = useFirestore();
   const { user } = useUser();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isAudioReady, setIsAudioReady] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [countIn, setCountIn] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -73,8 +72,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const { toast } = useToast();
 
   const bpm = game.bpm || 128;
-  const TOTAL_STEPS = 320; // 20 Bars * 16 steps
-  const SESSION_DURATION = (20 * 4 * 60) / bpm; // 20 Bars
+  const TOTAL_STEPS = 320; 
+  const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
 
   const activeSoundTypes: SoundType[] = ['kick'];
@@ -86,16 +85,12 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   const soundsWithPatterns = filteredSounds.map(sound => {
     const uniqueSteps = new Set<number>();
-    
-    // Pattern Sequence: Intro (4 bars), Verse (8 bars), Refrain (8 bars)
     const patternOffsets = [0, 64, 192]; 
-
     sound.patternIds?.forEach((pId, index) => {
       const pattern = patterns.find(p => p.id === pId);
       if (pattern && index < patternOffsets.length) {
         const offset = patternOffsets[index];
         const maxStepsInSection = index === 0 ? 64 : 128;
-
         pattern.steps.forEach(s => {
           if (s < maxStepsInSection) {
             const actualStep = s + offset;
@@ -109,6 +104,20 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     return { ...sound, triggerSteps: Array.from(uniqueSteps).sort((a, b) => a - b) };
   });
 
+  // Background Preloading on Mount
+  useEffect(() => {
+    const preload = async () => {
+      if (!audioEngine) return;
+      const urls = [
+        game.backingTrackUrl || '',
+        ...filteredSounds.map(s => s.sampleUrl)
+      ];
+      await audioEngine.preloadAudio(urls);
+      setIsAudioReady(true);
+    };
+    preload();
+  }, [filteredSounds, game.backingTrackUrl]);
+
   useEffect(() => {
     return () => {
       audioEngine?.stop();
@@ -116,24 +125,9 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     };
   }, []);
 
-  useEffect(() => {
-    const preload = async () => {
-      if (!audioEngine) return;
-      const urls = [
-        ...filteredSounds.map(s => s.sampleUrl),
-        game.backingTrackUrl || ''
-      ];
-      await audioEngine.preloadAudio(urls);
-    };
-    preload();
-  }, [filteredSounds, game.backingTrackUrl]);
-
   const triggerPadFlash = (type: SoundType, flashType: FlashType) => {
     const key = Date.now();
-    setPadFlashes(prev => ({
-      ...prev,
-      [type]: { type: flashType, key }
-    }));
+    setPadFlashes(prev => ({ ...prev, [type]: { type: flashType, key } }));
     setGlobalFlash({ type: flashType, key });
   };
 
@@ -190,6 +184,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
       await audioEngine.resume();
       
       const urlsToLoad = [game.backingTrackUrl || '', ...filteredSounds.map(s => s.sampleUrl)];
+      // This will return immediately if background preloading is already done
       await audioEngine.preloadAudio(urlsToLoad);
 
       clearedNotesRef.current = new Set();
@@ -242,11 +237,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
             setScore(prev => {
               const nextMisses = prev.misses + passiveMissesCount;
               const total = prev.hits + nextMisses;
-              return { 
-                hits: prev.hits, 
-                misses: nextMisses, 
-                accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) 
-              };
+              return { hits: prev.hits, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((prev.hits / total) * 100) };
             });
           }
           
@@ -309,7 +300,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           </div>
         </div>
 
-        {/* Global Timing Bar Overlay - Dual Feedback (Flash) */}
         <div 
           key={globalFlash.key}
           className={cn(
@@ -321,7 +311,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           style={{ top: `${HIT_POSITION}px` }}
         />
 
-        {/* Sampler Pads - Positioned BELOW the hit line with more distance for clarity and mobile safety */}
         <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${HIT_POSITION + 140}px` }}>
           <div className={cn(
             "grid gap-4 md:gap-8 mx-auto pointer-events-auto bg-black/20 backdrop-blur-sm p-4 rounded-3xl border border-white/5 shadow-2xl",
@@ -348,9 +337,20 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
             <div className="text-center mx-6">
               <Sparkles className="w-16 h-16 text-[#993DEB] mx-auto mb-6 animate-pulse-neon" />
               <h2 className="text-2xl md:text-5xl font-black mb-10 uppercase italic tracking-tighter text-gradient">Sync Interface</h2>
-              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-56 md:w-80 h-16 md:h-24 text-base md:text-3xl font-black uppercase italic bg-white text-black rounded-3xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)]">
-                {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Pulse"}
+              <Button 
+                onClick={startLevel} 
+                disabled={isLoadingAudio || !isAudioReady} 
+                className="w-56 md:w-80 h-16 md:h-24 text-base md:text-3xl font-black uppercase italic bg-white text-black rounded-3xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)]"
+              >
+                {!isAudioReady ? (
+                  <><Loader2 className="animate-spin mr-3" /> Loading Modules...</>
+                ) : isLoadingAudio ? (
+                  <Loader2 className="animate-spin" />
+                ) : "Initiate Pulse"}
               </Button>
+              {!isAudioReady && (
+                <p className="text-[10px] uppercase font-black tracking-widest opacity-30 mt-6">Decoding Rack Signals...</p>
+              )}
             </div>
           </div>
         )}

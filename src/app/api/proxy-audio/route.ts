@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 /**
  * Ein verbesserter Proxy, um CORS-Sperren bei Audio-Dateien zu umgehen.
  * Er lädt die Datei serverseitig mit neutralen Headern und gibt sie an den Client weiter.
+ * Optimiert für schnelleres Caching und direktere Übertragung.
  */
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get('url');
@@ -28,11 +29,13 @@ export async function GET(request: NextRequest) {
     const contentType = response.headers.get('Content-Type') || 'audio/mpeg';
     const arrayBuffer = await response.arrayBuffer();
 
+    // Browser Caching optimieren: 1 Stunde lang cachen
     return new NextResponse(arrayBuffer, {
       headers: {
         'Content-Type': contentType,
         'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'public, max-age=3600',
+        'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+        'Vary': 'Origin',
       },
     });
   } catch (error: any) {

@@ -13,7 +13,7 @@ export class AudioEngine {
   private masterGain: GainNode | null = null;
   private backingGain: GainNode | null = null;
   private startTime: number = 0;
-  private loadingStatus: Map<string, 'loading' | 'ready' | 'failed'> = new Map();
+  private loadingPromises: Map<string, Promise<void>> = new Map();
   
   // Ear Training specific nodes
   private noiseSource: AudioBufferSourceNode | null = null;
@@ -58,44 +58,62 @@ export class AudioEngine {
     this.startTime = t;
   }
 
+  /**
+   * Preloads a list of URLs into the buffer map.
+   * Uses promises to avoid redundant fetches.
+   */
   async preloadAudio(urls: string[]): Promise<void> {
+    if (typeof window === "undefined") return;
     if (!this.context) await this.resume();
     if (!this.context) return;
 
     const allUrls = [...urls, AudioEngine.METRONOME_URL];
     const uniqueUrls = Array.from(new Set(allUrls.filter(u => !!u)));
     
-    await Promise.all(uniqueUrls.map(async (url) => {
+    const promises = uniqueUrls.map(async (url) => {
       if (this.buffers.has(url)) return;
-      if (this.loadingStatus.get(url) === 'loading') {
-        while (this.loadingStatus.get(url) === 'loading') {
-          await new Promise(r => setTimeout(r, 100));
-        }
-        return;
-      }
       
-      this.loadingStatus.set(url, 'loading');
-      try {
-        const proxyUrl = `/api/proxy-audio?url=${encodeURIComponent(url)}`;
-        const response = await fetch(proxyUrl);
-        
-        if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-        
-        const arrayBuffer = await response.arrayBuffer();
-        const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
-        
-        this.buffers.set(url, audioBuffer);
-        this.loadingStatus.set(url, 'ready');
-      } catch (e) {
-        console.warn(`AudioEngine: Non-critical load failure for ${url}`, e);
-        this.loadingStatus.set(url, 'failed');
+      // If already loading, wait for that promise
+      if (this.loadingPromises.has(url)) {
+        return this.loadingPromises.get(url);
       }
-    }));
+
+      const loadPromise = (async () => {
+        try {
+          const proxyUrl = `/api/proxy-audio?url=${encodeURIComponent(url)}`;
+          const response = await fetch(proxyUrl);
+          
+          if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+          
+          const arrayBuffer = await response.arrayBuffer();
+          // decodeAudioData is faster when called on already fetched data
+          const audioBuffer = await this.context!.decodeAudioData(arrayBuffer);
+          
+          this.buffers.set(url, audioBuffer);
+        } catch (e) {
+          console.warn(`AudioEngine: Non-critical load failure for ${url}`, e);
+        } finally {
+          this.loadingPromises.delete(url);
+        }
+      })();
+
+      this.loadingPromises.set(url, loadPromise);
+      return loadPromise;
+    });
+
+    await Promise.all(promises);
+  }
+
+  /**
+   * Checks if all requested URLs are ready.
+   */
+  isReady(urls: string[]): boolean {
+    const allUrls = [...urls, AudioEngine.METRONOME_URL];
+    return allUrls.every(url => !url || this.buffers.has(url));
   }
 
   /**
    * Generates a 2-second Pink Noise buffer.
-   * Pink noise has equal energy per octave, making it ideal for ear training.
    */
   private createPinkNoiseBuffer(): AudioBuffer {
     const bufferSize = 2 * this.context!.sampleRate;
@@ -113,7 +131,7 @@ export class AudioEngine {
       b4 = 0.55000 * b4 + white * 0.5329522;
       b5 = -0.7616 * b5 - white * 0.0168980;
       output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-      output[i] *= 0.11; // scaling to prevent clipping
+      output[i] *= 0.11;
       b6 = white * 0.115926;
     }
     return buffer;
@@ -133,7 +151,7 @@ export class AudioEngine {
     this.noiseFilter.type = type;
     this.noiseFilter.frequency.setValueAtTime(frequency, this.context.currentTime);
     this.noiseFilter.Q.setValueAtTime(q, this.context.currentTime);
-    this.noiseFilter.gain.setValueAtTime(15, this.context.currentTime); // High gain for peaking visibility
+    this.noiseFilter.gain.setValueAtTime(15, this.context.currentTime);
 
     this.noiseSource = this.context.createBufferSource();
     this.noiseSource.buffer = this.createPinkNoiseBuffer();
