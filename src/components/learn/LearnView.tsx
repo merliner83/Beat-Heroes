@@ -92,7 +92,7 @@ export const LearnView = () => {
               return (
                 <Link 
                   key={game.id} 
-                  href={isLocked ? '#' : `/session/${game.id}`}
+                  href={isLocked ? '#' : `/session/${game.id}-lvl1`}
                   className={cn(isLocked && "cursor-not-allowed")}
                 >
                   <div className="gemini-border group transition-transform hover:scale-[1.02] active:scale-95">
