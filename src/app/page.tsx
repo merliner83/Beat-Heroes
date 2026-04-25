@@ -166,6 +166,7 @@ export default function HomePage() {
       const S_PERCS = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_Percussion_33.mp3?alt=media&token=ca7af384-e47c-43af-8a69-7533c512d489';
       const S_MISC = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.mp3?alt=media&token=82c3e18f-c7e0-458b-93d3-09c00a9fe6a1';
       const S_DUBSTEP = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FDubstep%20One%20Shot%2014%20-%20E.mp3?alt=media&token=6862850e-7434-451b-80d7-8b6f063295eb';
+      const S_CLAVES = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClaves.mp3?alt=media&token=1162b3f6-19d7-4a41-a3b6-9c243cd5d36a';
 
       const LAZER1 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%20001.mp3?alt=media&token=b73ec61d-740b-42f3-b5a3-41a44e2f4fee';
       const LAZER2 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%200010.mp3?alt=media&token=48271588-84b9-43be-acad-d9f6d8e38faf';
@@ -186,9 +187,9 @@ export default function HomePage() {
         // CLAP
         { id: 'clap-basic', data: { id: 'clap-basic', name: 'Clap 2-4', steps: Array.from({length: 8}, (_, bar) => [4, 12].map(s => s + bar * 16)).flat() } },
         { id: 'clap-sync', data: { id: 'clap-sync', name: 'Clap Sync', steps: Array.from({length: 8}, (_, bar) => [4, 11, 14].map(s => s + bar * 16)).flat() } },
-        // HATS
-        { id: 'hats-basic', data: { id: 'hats-basic', name: 'Hats 8th', steps: Array.from({length: 128}, (_, i) => i % 2 === 0 ? i : -1).filter(v => v !== -1) } },
-        { id: 'hats-fast', data: { id: 'hats-fast', name: 'Hats 16th', steps: Array.from({length: 128}, (_, i) => i) } },
+        // HATS (Half speed adjustment)
+        { id: 'hats-basic', data: { id: 'hats-basic', name: 'Hats 4th', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) } },
+        { id: 'hats-fast', data: { id: 'hats-fast', name: 'Hats 8th', steps: Array.from({length: 128}, (_, i) => i % 2 === 0 ? i : -1).filter(v => v !== -1) } },
         // MISC
         { id: 'misc-accent', data: { id: 'misc-accent', name: 'Misc Accent', steps: [15, 31, 47, 63, 79, 95, 111, 127] } }
       ];

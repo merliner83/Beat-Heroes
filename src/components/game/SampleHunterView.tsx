@@ -271,17 +271,22 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     }
   }, [isFinished, score.accuracy, user, db, level]);
 
-  const getPullVisuals = () => {
+  const getAimingLine = () => {
     if (!isDragging) return null;
-    const dx = (dragStart.x - dragCurrent.x) / 5;
-    const dy = (dragStart.y - dragCurrent.y) / 5;
-    const limit = 25;
+    const dx = dragStart.x - dragCurrent.x;
+    const dy = dragStart.y - dragCurrent.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    const scale = dist > limit ? limit / dist : 1;
-    return { x: dx * scale, y: dy * scale };
+    if (dist < 20) return null;
+
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    return { angle, length: Math.min(dist, 300) };
   };
 
-  const pull = getPullVisuals();
+  const aiming = getAimingLine();
+  const pull = isDragging ? { 
+    x: (dragStart.x - dragCurrent.x) / 5, 
+    y: (dragStart.y - dragCurrent.y) / 5 
+  } : null;
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
@@ -312,13 +317,33 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         onPointerUp={handlePointerUp}
         className="flex-1 relative overflow-hidden rounded-b-[2.5rem] border-x border-b border-white/5 z-20 pointer-events-auto touch-none bg-gradient-to-b from-transparent to-black/40"
       >
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+
+        {/* Laser Aiming Line */}
+        {aiming && (
+          <div 
+            className="absolute z-10 origin-left pointer-events-none"
+            style={{ 
+              left: `${MPC_POS.x}%`, 
+              top: `${MPC_POS.y}%`, 
+              width: `${aiming.length}px`,
+              transform: `rotate(${aiming.angle}deg)`,
+              height: '4px',
+              background: 'linear-gradient(90deg, #FF3399, #00FFFF, transparent)',
+              boxShadow: '0 0 15px #FF3399, 0 0 5px #00FFFF',
+              borderRadius: '2px',
+              opacity: 0.8
+            }}
+          />
+        )}
+
         {/* MPC Visual at Launcher Position */}
         <div 
           className="absolute z-50 pointer-events-none transition-all duration-300"
           style={{ 
             left: `${MPC_POS.x}%`, 
             top: `${MPC_POS.y}%`, 
-            transform: `translate(-50%, -50%) ${isDragging ? `translate(${-pull!.x}px, ${-pull!.y}px)` : ''}`
+            transform: `translate(-50%, -50%) ${pull ? `translate(${-pull.x}px, ${-pull.y}px)` : ''}`
           }}
         >
           <div className="relative group">
@@ -333,7 +358,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent" />
             </div>
-            {/* Target Reticle */}
             <div className="absolute -inset-4 border-2 border-primary/20 rounded-3xl border-dashed animate-spin-slow" />
           </div>
         </div>
