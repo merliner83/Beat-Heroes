@@ -58,8 +58,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const [isFinished, setIsFinished] = useState(false);
   const [hasStartedFade, setHasStartedFade] = useState(false);
   
-  // Adjusted positions: Lowering the UI for both mobile and desktop
-  const [hitPosition, setHitPosition] = useState(480);
+  // Lowered positions for better ergonomics
+  const [hitPosition, setHitPosition] = useState(580);
   
   const [globalFlash, setGlobalFlash] = useState<{ type: FlashType, key: number }>({ type: null, key: 0 });
   const [padFlashes, setPadFlashes] = useState<Record<SoundType, { type: FlashType, key: number }>>({
@@ -81,9 +81,9 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 768) {
-        setHitPosition(620); // Lowered Desktop
+        setHitPosition(720); // Deep Desktop
       } else {
-        setHitPosition(480); // Lowered Mobile
+        setHitPosition(580); // Deep Mobile/Narrow
       }
     };
     handleResize();
