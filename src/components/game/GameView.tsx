@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -13,10 +14,9 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// Constant for sync offset
-export const SYNC_OFFSET = 0.0;
+// Constant for sync offset - adjusted to fix "too early" feel
+export const SYNC_OFFSET = 0.05;
 // Shared hit position for the timing bar and note lanes
-// Increased from 450 to 550 to move it further down
 export const HIT_POSITION = 550; 
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -88,8 +88,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     const uniqueSteps = new Set<number>();
     
     // Pattern Sequence: Intro (4 bars), Verse (8 bars), Refrain (8 bars)
-    // 4 bars = 64 steps
-    // 8 bars = 128 steps
     const patternOffsets = [0, 64, 192]; 
 
     sound.patternIds?.forEach((pId, index) => {
@@ -310,7 +308,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           </div>
         </div>
 
-        {/* Global Timing Bar Overlay - Vertically Centered */}
+        {/* Global Timing Bar Overlay - Dual Feedback (Flash) */}
         <div 
           key={globalFlash.key}
           className={cn(
@@ -322,8 +320,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           style={{ top: `${HIT_POSITION}px` }}
         />
 
-        {/* Sampler Pads - Positioned BELOW the hit line with more distance */}
-        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${HIT_POSITION + 80}px` }}>
+        {/* Sampler Pads - Positioned BELOW the hit line with more distance for clarity and mobile safety */}
+        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${HIT_POSITION + 120}px` }}>
           <div className={cn(
             "grid gap-4 md:gap-8 mx-auto pointer-events-auto bg-black/20 backdrop-blur-sm p-4 rounded-3xl border border-white/5 shadow-2xl",
             activeSoundTypes.length === 1 ? "grid-cols-1 max-w-[140px]" :
