@@ -15,8 +15,6 @@ import { useUser, useFirestore } from '@/firebase';
 import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
 export const SYNC_OFFSET = 0.08;
-// Optimized for mobile (higher value means further up in the screen)
-export const HIT_POSITION = 320; 
 
 const PAD_COLORS: Record<SoundType, string> = {
   kick: '#993DEB',
@@ -59,6 +57,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const [score, setScore] = useState<GameScore>({ hits: 0, misses: 0, accuracy: 100 });
   const [isFinished, setIsFinished] = useState(false);
   const [hasStartedFade, setHasStartedFade] = useState(false);
+  const [hitPosition, setHitPosition] = useState(320);
   
   const [globalFlash, setGlobalFlash] = useState<{ type: FlashType, key: number }>({ type: null, key: 0 });
   const [padFlashes, setPadFlashes] = useState<Record<SoundType, { type: FlashType, key: number }>>({
@@ -76,6 +75,19 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const TOTAL_STEPS = 320; 
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setHitPosition(550);
+      } else {
+        setHitPosition(320);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const activeSoundTypes: SoundType[] = ['kick'];
   if (level.difficulty >= 2) activeSoundTypes.push('clap');
@@ -265,7 +277,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   }, [isFinished, score.accuracy, user, db, level]);
 
   return (
-    <div className="flex flex-col h-screen bg-[#050505] text-white p-3 md:p-6 max-w-6xl mx-auto overflow-hidden">
+    <div className="flex flex-col h-screen bg-[#050505] text-white p-3 md:p-6 max-w-6xl mx-auto overflow-hidden select-none">
       <header className="flex justify-between items-center mb-2 px-4 h-12 md:h-16 shrink-0 relative z-[60]">
         <div className="flex items-center gap-4">
           <Link href={`/studio/${game.studioId}`}>
@@ -293,7 +305,15 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
             {activeSoundTypes.map((type) => {
               const sound = soundsWithPatterns.find(s => s.type === type);
               return (
-                <NoteLane key={type} notes={sound?.triggerSteps || []} currentTime={currentTime} bpm={bpm} isActive={isPlaying} color={PAD_COLORS[type]} />
+                <NoteLane 
+                  key={type} 
+                  notes={sound?.triggerSteps || []} 
+                  currentTime={currentTime} 
+                  bpm={bpm} 
+                  isActive={isPlaying} 
+                  color={PAD_COLORS[type]} 
+                  hitPosition={hitPosition}
+                />
               );
             })}
           </div>
@@ -307,10 +327,10 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
             globalFlash.type === 'miss' && "bg-[#FF3D00] shadow-[0_0_40px_#FF3D00] opacity-100",
             !globalFlash.type && "bg-white/20 opacity-30"
           )}
-          style={{ top: `${HIT_POSITION}px` }}
+          style={{ top: `${hitPosition}px` }}
         />
 
-        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${HIT_POSITION + 80}px` }}>
+        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${hitPosition + 80}px` }}>
           <div className={cn(
             "grid gap-4 md:gap-8 mx-auto pointer-events-auto bg-black/20 backdrop-blur-sm p-4 rounded-3xl border border-white/5 shadow-2xl",
             activeSoundTypes.length === 1 ? "grid-cols-1 max-w-[140px]" :

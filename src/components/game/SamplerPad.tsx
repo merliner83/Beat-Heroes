@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -35,7 +36,7 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
   }, [shortcut, handlePress]);
 
   return (
-    <div className="relative w-full max-w-[120px] aspect-square">
+    <div className="relative w-full max-w-[120px] aspect-square select-none touch-none">
       {/* Wave Flash Overlay */}
       {flash && (
         <div 
@@ -50,18 +51,22 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
       
       <button
         onPointerDown={(e) => handlePress(e)}
+        onContextMenu={(e) => e.preventDefault()}
         className={cn(
-          "relative z-10 flex flex-col items-center justify-center w-full h-full rounded-2xl border-2 transition-all duration-75 select-none touch-none",
+          "relative z-10 flex flex-col items-center justify-center w-full h-full rounded-2xl border-2 transition-all duration-75 select-none touch-none outline-none",
           isPressed ? "scale-90 brightness-125" : "scale-100 hover:brightness-110 active:scale-90"
         )}
         style={{
           borderColor: color,
           backgroundColor: isPressed ? color : 'rgba(0,0,0,0.6)',
           boxShadow: isPressed ? `0 0 20px ${color}` : `0 0 10px ${color}33`,
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'none',
+          userSelect: 'none',
         }}
       >
-        <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest opacity-40 mb-2">{shortcut}</span>
-        <span className="text-[11px] md:text-sm font-black uppercase italic tracking-tighter line-clamp-1">{label}</span>
+        <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest opacity-40 mb-2 pointer-events-none">{shortcut}</span>
+        <span className="text-[11px] md:text-sm font-black uppercase italic tracking-tighter line-clamp-1 pointer-events-none">{label}</span>
       </button>
     </div>
   );

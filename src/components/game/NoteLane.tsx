@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { SYNC_OFFSET, HIT_POSITION } from './GameView';
+import { SYNC_OFFSET } from './GameView';
 
 interface NoteLaneProps {
   notes: number[];
@@ -11,17 +11,17 @@ interface NoteLaneProps {
   bpm: number;
   isActive: boolean;
   color: string;
+  hitPosition: number;
 }
 
-export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isActive, color }) => {
+export const NoteLane: React.FC<NoteLaneProps> = ({ notes, currentTime, bpm, isActive, color, hitPosition }) => {
   const secondsPerBeat = 60 / bpm;
   const secondsPerStep = secondsPerBeat / 4; // 16th notes
   
   const speed = 400; // pixels per second
-  const hitPosition = HIT_POSITION; 
 
   return (
-    <div className="relative h-full w-full border-x border-white/5 overflow-hidden group">
+    <div className="relative h-full w-full border-x border-white/5 overflow-hidden group select-none">
       {/* Visual Marker on the lane itself */}
       <div 
         className="absolute left-1/2 -translate-x-1/2 w-full h-[2px] opacity-10"
