@@ -14,8 +14,8 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// Constant for sync offset - adjusted to fix "too early" feel
-export const SYNC_OFFSET = 0.05;
+// Constant for sync offset - fine-tuned to fix the "slightly too late" feel
+export const SYNC_OFFSET = 0.03;
 // Shared hit position for the timing bar and note lanes
 export const HIT_POSITION = 550; 
 
@@ -112,6 +112,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   useEffect(() => {
     return () => {
       audioEngine?.stop();
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
     };
   }, []);
 
@@ -321,7 +322,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         />
 
         {/* Sampler Pads - Positioned BELOW the hit line with more distance for clarity and mobile safety */}
-        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${HIT_POSITION + 120}px` }}>
+        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${HIT_POSITION + 140}px` }}>
           <div className={cn(
             "grid gap-4 md:gap-8 mx-auto pointer-events-auto bg-black/20 backdrop-blur-sm p-4 rounded-3xl border border-white/5 shadow-2xl",
             activeSoundTypes.length === 1 ? "grid-cols-1 max-w-[140px]" :
