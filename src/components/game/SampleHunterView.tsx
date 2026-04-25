@@ -79,7 +79,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const bpm = game.bpm || 128;
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
-  const MPC_POS = { x: 50, y: 70 }; // Moved up slightly from 75
+  const MPC_POS = { x: 50, y: 70 }; 
 
   const SAMPLE_LIFETIME = 
     level.difficulty === 1 ? 3000 : 
@@ -102,7 +102,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       sound: randomSound,
       pos: {
         x: Math.random() * 80 + 10,
-        y: Math.random() * 45 + 5 // Adjusted spawn area
+        y: Math.random() * 45 + 5 
       },
       status: 'active',
       spawnTime: Date.now()
@@ -161,7 +161,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           const dx = p.x - activeNote.pos.x;
           const dy = p.y - activeNote.pos.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          return distance < 12;
+          // Increased collision radius for easier hits
+          return distance < 16;
         });
 
         if (hitProjectile) {
@@ -279,7 +280,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     if (dist < 20) return null;
 
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    return { angle, length: Math.min(dist * 1.5, 400) };
+    // Increased length and width for better aiming
+    return { angle, length: Math.min(dist * 2.0, 500) };
   };
 
   const aiming = getAimingLine();
@@ -319,7 +321,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       >
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
-        {/* Improved Conic Aiming Line */}
+        {/* Improved Conic Aiming Line - Wider and more visible */}
         {aiming && (
           <div 
             className="absolute z-10 origin-left pointer-events-none"
@@ -328,18 +330,18 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               top: `${MPC_POS.y}%`, 
               width: `${aiming.length}px`,
               transform: `rotate(${aiming.angle}deg)`,
-              height: '30px', // Total height for the cone
-              marginTop: '-15px', // Center vertically
-              background: 'linear-gradient(90deg, #FF3399 0%, #00FFFF 50%, transparent 100%)',
-              clipPath: 'polygon(0 45%, 100% 0, 100% 100%, 0 55%)',
-              boxShadow: '0 0 30px #FF339988',
-              opacity: 0.6,
-              filter: 'blur(2px)'
+              height: '80px', 
+              marginTop: '-40px', 
+              background: 'linear-gradient(90deg, rgba(255, 51, 153, 0.8) 0%, rgba(0, 255, 255, 0.4) 50%, transparent 100%)',
+              clipPath: 'polygon(0 48%, 100% 0, 100% 100%, 0 52%)',
+              boxShadow: '0 0 40px rgba(255, 51, 153, 0.6)',
+              opacity: 0.7,
+              filter: 'blur(3px)'
             }}
           />
         )}
 
-        {/* High-Fidelity MPC Sampler Visual */}
+        {/* High-Fidelity Drummachine Visual */}
         <div 
           className="absolute z-50 pointer-events-none transition-all duration-300"
           style={{ 
@@ -348,38 +350,21 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             transform: `translate(-50%, -50%) ${pull ? `translate(${-pull.x}px, ${-pull.y}px)` : ''}`
           }}
         >
-          <div className="relative group">
-            <div className="absolute inset-0 bg-primary/20 blur-[80px] animate-pulse rounded-full" />
+          <div className="relative group w-48 h-32 md:w-64 md:h-44">
+            <div className="absolute inset-0 bg-primary/20 blur-[60px] animate-pulse rounded-full" />
             
-            {/* MPC Case */}
-            <div className="relative w-32 h-40 md:w-40 md:h-48 bg-[#1a1a1a] rounded-[1.5rem] border-[3px] border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.8)] p-3 flex flex-col gap-3">
-              {/* MPC Display */}
-              <div className="w-full h-12 bg-black border border-white/10 rounded-md overflow-hidden flex items-center justify-center">
-                 <div className="w-full h-full opacity-40 bg-[radial-gradient(#00E676_1px,transparent_1px)] bg-[size:4px_4px]" />
-                 <span className="absolute text-[8px] font-black text-[#00E676] uppercase tracking-[0.2em] animate-pulse">Sync Active</span>
-              </div>
-              
-              {/* Pad Grid Visual */}
-              <div className="grid grid-cols-4 grid-rows-4 gap-1.5 flex-1">
-                {Array.from({length: 16}).map((_, i) => (
-                  <div key={i} className={cn(
-                    "rounded-sm border border-white/5",
-                    i === 0 || i === 5 || i === 10 || i === 15 ? "bg-primary/20" : "bg-white/5"
-                  )} />
-                ))}
-              </div>
-
-              {/* MPC Bottom Section */}
-              <div className="h-4 flex justify-between items-center px-1">
-                 <div className="w-8 h-1 bg-white/10 rounded-full" />
-                 <div className="flex gap-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#00E676]" />
-                 </div>
-              </div>
+            <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden border-[3px] border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.8)]">
+               <Image 
+                  src="https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010"
+                  alt="Drummachine"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 192px, 256px"
+               />
+               <div className="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors" />
             </div>
             
-            <div className="absolute -inset-6 border-2 border-primary/10 rounded-[2.5rem] border-dashed animate-spin-slow opacity-30" />
+            <div className="absolute -inset-4 border-2 border-primary/10 rounded-[2rem] border-dashed animate-spin-slow opacity-20" />
           </div>
         </div>
 
