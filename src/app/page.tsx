@@ -161,9 +161,6 @@ export default function HomePage() {
       // Instrument Sample URLs
       const kickUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57';
       const clapUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClap%201.mp3?alt=media&token=59073468-4861-40f3-9df2-f8c5f59d79df';
-      const hatsUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2F808%20CL-HAT%20%20.mp3?alt=media&token=facd4a85-949e-4bca-86d5-0da27199402d';
-      const percsUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_Percussion_33.mp3?alt=media&token=ca7af384-e47c-43af-8a69-7533c512d489';
-      const miscUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.mp3?alt=media&token=82c3e18f-c7e0-458b-93d3-09c00a9fe6a1';
       
       // Lazer Sounds for Vinyl Hunter
       const lazer1 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%20001.mp3?alt=media&token=b73ec61d-740b-42f3-b5a3-41a44e2f4fee';
@@ -173,9 +170,9 @@ export default function HomePage() {
 
       const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
-      // Patterns
+      // Patterns (8 bars / 128 steps)
       const patterns = [
-        { id: 'kick-intro-1', data: { id: 'kick-intro-1', name: 'Intro 1-Shot', steps: [0, 16, 32, 48, 64, 80, 96, 112] } }, // Extended to 8 bars
+        { id: 'kick-intro-1', data: { id: 'kick-intro-1', name: 'Intro 1-Shot', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
         { id: 'kick-verse-2', data: { id: 'kick-verse-2', name: 'Verse 2-Shot', steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) } }, 
         { id: 'kick-refrain-4', data: { id: 'kick-refrain-4', name: 'Refrain 4-Shot', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) } }, 
         { id: 'kick-hiphop-sync', data: { id: 'kick-hiphop-sync', name: 'HipHop Sync', steps: Array.from({length: 8}, (_, bar) => [0, 6, 10, 14].map(s => s + bar * 16)).flat() } },
@@ -203,17 +200,17 @@ export default function HomePage() {
         setDoc(sRef, s, { merge: true });
       }
 
-      // Gabriel Beats Specific URLs
+      // Track URLs
       const gTr1 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%201_140bpm.mp3?alt=media&token=0d094a95-7a8c-40a4-8e17-c1eebf721540';
       const gTr2 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%202_148bpm.mp3?alt=media&token=1f877a36-c331-4286-97ce-aad7f1edf807';
       const gTr3 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%204%20150bpm%20scratch.mp3?alt=media&token=d4a447a1-5c31-4aeb-acab-146fccc039b8';
       const gTr4 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%205%20162bpm.mp3?alt=media&token=deefca2b-1ace-4e53-948f-8ce581aca7f6';
       const gTr5 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%208%20160bpm.mp3?alt=media&token=385d3a0c-c51c-4801-8ec4-18b0f9eedf2f';
 
-      const daveLink = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20ist%20Schlau%20aber%20Merlin%20ist%20Ganz%20Ganz%20Ganz%20Dummmmmmm%20120%20bpm.mp3?alt=media&token=fd38176e-faaf-4465-872a-1847f5b37960';
+      const freestyleUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20ist%20Schlau%20aber%20Merlin%20ist%20Ganz%20Ganz%20Ganz%20Dummmmmmm%20120%20bpm.mp3?alt=media&token=fd38176e-faaf-4465-872a-1847f5b37960';
 
       const tracks: Track[] = [
-        { id: 'tr-d1', studioId: 'std-dave', name: 'Freestyle', author: 'Dave', url: daveLink },
+        { id: 'tr-d1', studioId: 'std-dave', name: 'Freestyle', author: 'Dave', url: freestyleUrl },
         { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel', url: gTr1 },
         { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel', url: gTr2 },
         { id: 'tr-g3', studioId: 'std-gabriel', name: 'Track 3', author: 'Gabriel', url: gTr3 },
@@ -246,7 +243,7 @@ export default function HomePage() {
           
           if (s.id === 'std-dave') {
             gameBpm = 120;
-            gameBackingUrl = daveLink;
+            gameBackingUrl = freestyleUrl;
           } else if (s.id === 'std-gabriel') {
             if (isBeatHero) {
               gameBpm = 148;
@@ -292,7 +289,32 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Rack Fully Synced!", description: "Gabriel Beats & Freestyle Sync Complete." });
+      // Sync Learn In-Apps
+      const learnInApps = [
+        { id: 'learn-ear-training', name: 'Ear Training', type: 'ear-training' as const },
+        { id: 'learn-rhythm-trainer', name: 'Rhythm Trainer', type: 'rhythm-trainer' as const }
+      ];
+
+      for (const app of learnInApps) {
+        const appRef = doc(db, 'games', app.id);
+        setDoc(appRef, {
+          id: app.id,
+          studioId: 'learn-center',
+          name: app.name,
+          type: app.type,
+          difficulty: 1,
+          minRole: 'free',
+          bpm: 128
+        }, { merge: true });
+
+        // Add levels for learn apps
+        for (let i = 1; i <= 1; i++) {
+          const levelId = `${app.id}-lvl${i}`;
+          setDoc(doc(db, 'levels', levelId), { id: levelId, gameId: app.id, difficulty: i, name: 'Basic' }, { merge: true });
+        }
+      }
+
+      toast({ title: "Rack Fully Synced!", description: "All modules including Learn-InApps online." });
     } catch (e) {
       toast({ variant: "destructive", title: "Sync Failed" });
     }
