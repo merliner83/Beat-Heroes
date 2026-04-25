@@ -57,6 +57,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
   const bpm = 120; 
   const stepTime = (60 / bpm) / 4 * 1000;
+  const QUIZ_STEPS = 64; // 4 Bars (4 * 16 steps)
 
   const patternsQuery = useMemoFirebase(() => db ? query(collection(db, 'patterns')) : null, [db]);
   const { data: patterns } = useCollection<TriggerPattern>(patternsQuery);
@@ -160,8 +161,8 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       if (step % 4 === 0) audioEngine.playOneShot((audioEngine as any).constructor.METRONOME_URL);
       setPlayhead(step);
       step++;
-      if (step < 16) {
-        setTimeout(tick, stepTime);
+      if (step < QUIZ_STEPS) {
+        timerRef.current = setTimeout(tick, stepTime);
       } else {
         finishPerformanceQuiz();
       }
@@ -173,11 +174,18 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     if (!selectedPattern) return;
     setStatus('RESULTS');
     
-    const targetSteps = selectedPattern.steps.filter(s => s < 16);
+    // We loop the base 16-step pattern over 4 bars (QUIZ_STEPS)
+    const basePattern = selectedPattern.steps.filter(s => s < 16);
+    const targetSteps: number[] = [];
+    for (let bar = 0; bar < 4; bar++) {
+      basePattern.forEach(s => targetSteps.push(s + bar * 16));
+    }
+
     let hits = 0;
     const matchedUserTaps = new Set();
 
     targetSteps.forEach(target => {
+      // Find a tap within +/- 1 step of the target
       const match = userTaps.find((tap, idx) => !matchedUserTaps.has(idx) && Math.abs(tap.step - target) <= 1);
       if (match) {
         hits++;
@@ -185,7 +193,8 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       }
     });
 
-    const accuracy = Math.round((hits / Math.max(targetSteps.length, userTaps.length)) * 100) || 0;
+    const maxPoints = Math.max(targetSteps.length, userTaps.length, 1);
+    const accuracy = Math.round((hits / maxPoints) * 100);
     setFinalScore(accuracy);
 
     if (user && db) {
@@ -288,7 +297,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               {Array.from({ length: 16 }).map((_, i) => (
                 <div key={i} className={cn(
                   "h-1.5 rounded-full transition-all flex-1",
-                  playhead === i ? "bg-primary scale-y-150" : "bg-white/10"
+                  (playhead % 16) === i ? "bg-primary scale-y-150" : "bg-white/10"
                 )} />
               ))}
             </div>
@@ -306,6 +315,12 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                 <span className="text-xs font-black uppercase italic tracking-widest opacity-40">Tap Rhythm</span>
               </Button>
             </div>
+
+            {status === 'QUIZ_PLAYING' && (
+              <div className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">
+                Bar {Math.floor(playhead / 16) + 1} / 4
+              </div>
+            )}
 
             {status === 'RESULTS' && (
               <div className="space-y-10 animate-in zoom-in-95">
