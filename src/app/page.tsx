@@ -41,6 +41,7 @@ const StudioCard = ({ studio, isLocked }: { studio: Studio; isLocked: boolean })
           fill
           className="object-cover opacity-100 group-hover:scale-110 transition-all duration-1000"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          data-ai-hint="studio image"
         />
       ) : (
         <div className="absolute inset-0 opacity-100" style={{ backgroundColor: studio.coverColor }} />
@@ -168,6 +169,7 @@ export default function HomePage() {
 
       const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
+      // 1. Synchronize Patterns (Required for Rhythm Master and Beat Hero)
       const patterns = [
         { id: 'kick-intro-1', data: { id: 'kick-intro-1', name: 'Intro 8-Bar Kick', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
         { id: 'kick-verse-2', data: { id: 'kick-verse-2', name: 'Verse 2-Shot', steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) } }, 
@@ -176,11 +178,11 @@ export default function HomePage() {
         { id: 'kick-buildup-fast', data: { id: 'kick-buildup-fast', name: 'Buildup Fast', steps: [0, 4, 8, 12, 16, 18, 20, 22, 24, 26, 28, 30, ...Array.from({length: 32}, (_, i) => i + 32)] } },
         { id: 'kick-techno-4-4', data: { id: 'kick-techno-4-4', name: 'Techno 4-on-Floor', steps: Array.from({length: 8}, (_, bar) => [0, 4, 8, 12].map(s => s + bar * 16)).flat() } },
       ];
-
       for (const p of patterns) {
         setDoc(doc(db, 'patterns', p.id), p.data, { merge: true });
       }
 
+      // 2. Synchronize Studios
       const studios: Studio[] = [
         { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: ['Hip-Hop', 'Electro'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f' },
         { id: 'std-nintu', name: 'Nintu Music', description: 'Deep melodic explorations.', coverColor: '#993DEB', district: 'Melody District', tags: ['Hip-Hop', 'Electro'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudioo.png?alt=media&token=9a547bdf-a3bf-4a9a-a132-222383e88b1f' },
@@ -192,6 +194,7 @@ export default function HomePage() {
         setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
+      // 3. Synchronize Tracks
       const freestyleUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20ist%20Schlau%20aber%20Merlin%20ist%20Ganz%20Ganz%20Ganz%20Dummmmmmm%20120%20bpm.mp3?alt=media&token=fd38176e-faaf-4465-872a-1847f5b37960';
       const gTr2 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%202_148bpm.mp3?alt=media&token=1f877a36-c331-4286-97ce-aad7f1edf807';
       const gTr3 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%204%20150bpm%20scratch.mp3?alt=media&token=d4a447a1-5c31-4aeb-acab-146fccc039b8';
@@ -208,6 +211,7 @@ export default function HomePage() {
         setDoc(doc(db, 'tracks', t.id), t, { merge: true });
       }
 
+      // 4. Synchronize Games (BEAT HERO, VINYL HUNTER, SAMPLE CATCHER)
       const gameConfigs = [
         { type: 'rhythm-producer' as const, name: 'BEAT HERO' },
         { type: 'sample-hunter' as const, name: 'VINYL HUNTER' },
@@ -246,6 +250,7 @@ export default function HomePage() {
           };
           setDoc(doc(db, 'games', gameId), gData, { merge: true });
 
+          // Synchronize Levels & Sounds
           for (let i = 1; i <= 4; i++) {
             const levelId = `${gameId}-lvl${i}`;
             setDoc(doc(db, 'levels', levelId), { id: levelId, gameId, difficulty: i, name: `Level ${i}` }, { merge: true });
@@ -270,6 +275,7 @@ export default function HomePage() {
         }
       }
 
+      // 5. Synchronize Learn-Apps (EAR TRAINING, RHYTHM MASTER)
       const learnApps: LearnApp[] = [
         { id: 'learn-ear-training', name: 'EAR TRAINING', type: 'ear-training' as const, minRole: 'free' },
         { id: 'learn-rhythm-trainer', name: 'RHYTHM MASTER', type: 'rhythm-trainer' as const, minRole: 'free' }
@@ -281,6 +287,7 @@ export default function HomePage() {
 
       toast({ title: "Rack Fully Synced!", description: "All modules including dedicated LearnApps online." });
     } catch (e) {
+      console.error("Rack Sync Error:", e);
       toast({ variant: "destructive", title: "Sync Failed" });
     }
   };
