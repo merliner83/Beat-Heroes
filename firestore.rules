@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -20,6 +21,9 @@ service cloud.firestore {
       match /progress/{levelId} {
         allow read, write: if isOwner(userId);
       }
+      match /patternProgress/{patternId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     // Studios
@@ -36,6 +40,12 @@ service cloud.firestore {
 
     // Games
     match /games/{gameId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Learn Apps
+    match /learnApps/{appId} {
       allow read: if true;
       allow write: if isSignedIn();
     }

@@ -5,7 +5,7 @@ import React from 'react';
 import { useParams } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useDoc, useCollection, useUser } from '@/firebase';
 import { doc, collection, query } from 'firebase/firestore';
-import { Game, Level, Sound, TriggerPattern, hasAccess } from '@/lib/game/types';
+import { Game, Level, Sound, TriggerPattern, hasAccess, LearnApp } from '@/lib/game/types';
 import { GameView } from '@/components/game/GameView';
 import { SampleHunterView } from '@/components/game/SampleHunterView';
 import { DiskDashView } from '@/components/game/DiskDashView';
@@ -20,29 +20,34 @@ export default function GameSessionPage() {
   const db = useFirestore();
   const { profile, isUserLoading } = useUser();
 
-  const levelRef = useMemoFirebase(() => levelId ? doc(db, 'levels', levelId as string) : null, [db, levelId]);
-  const { data: level, isLoading: isLoadingLevel } = useDoc<Level>(levelRef);
+  // Handle both game levels and learn apps
+  const isLearnApp = (levelId as string)?.startsWith('learn-');
 
-  const gameRef = useMemoFirebase(() => level?.gameId ? doc(db, 'games', level.gameId) : null, [db, level?.gameId]);
-  const { data: game, isLoading: isLoadingGame } = useDoc<Game>(gameRef);
+  const levelRef = useMemoFirebase(() => !isLearnApp && levelId ? doc(db, 'levels', levelId as string) : null, [db, levelId, isLearnApp]);
+  const { data: level } = useDoc<Level>(levelRef);
+
+  const gameRef = useMemoFirebase(() => !isLearnApp && level?.gameId ? doc(db, 'games', level.gameId) : null, [db, level?.gameId, isLearnApp]);
+  const { data: game } = useDoc<Game>(gameRef);
+
+  const learnAppRef = useMemoFirebase(() => isLearnApp ? doc(db, 'learnApps', levelId as string) : null, [db, levelId, isLearnApp]);
+  const { data: learnApp, isLoading: isLoadingLearnApp } = useDoc<LearnApp>(learnAppRef);
 
   const soundsQuery = useMemoFirebase(() => {
-    if (!db || !levelId) return null;
+    if (!db || !levelId || isLearnApp) return null;
     return query(collection(db, 'levels', levelId as string, 'sounds'));
-  }, [db, levelId]);
-  const { data: sounds, isLoading: isLoadingSounds } = useCollection<Sound>(soundsQuery);
+  }, [db, levelId, isLearnApp]);
+  const { data: sounds } = useCollection<Sound>(soundsQuery);
 
   const patternsQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'patterns'));
   }, [db]);
-  const { data: patterns, isLoading: isLoadingPatterns } = useCollection<TriggerPattern>(patternsQuery);
+  const { data: patterns } = useCollection<TriggerPattern>(patternsQuery);
 
-  const isLocked = game && !hasAccess(profile?.role, game.minRole || 'free');
+  const activeModule = isLearnApp ? learnApp : game;
+  const isLocked = activeModule && !hasAccess(profile?.role, activeModule.minRole || 'free');
 
-  const isLoading = isUserLoading || isLoadingLevel || isLoadingGame || (game?.type !== 'ear-training' && game?.type !== 'rhythm-trainer' && (isLoadingSounds || isLoadingPatterns));
-
-  if (isLoading) {
+  if (isUserLoading || (isLearnApp && isLoadingLearnApp)) {
     return (
       <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-[#FFEA00]" />
@@ -57,11 +62,25 @@ export default function GameSessionPage() {
         <Lock className="w-16 h-16 text-primary mb-6" />
         <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2 text-gradient">Access Denied</h2>
         <p className="text-sm opacity-50 mb-8 max-w-xs font-medium uppercase tracking-widest">
-          {game?.minRole?.toUpperCase()} Authorization Required
+          {activeModule?.minRole?.toUpperCase()} Authorization Required
         </p>
         <Link href="/">
           <Button className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Back to Hub</Button>
         </Link>
+      </div>
+    );
+  }
+
+  if (isLearnApp && learnApp) {
+    const dummyLevel = { id: learnApp.id, gameId: learnApp.id, difficulty: 1, name: learnApp.name };
+    const dummyGame = { id: learnApp.id, studioId: 'learn', name: learnApp.name, type: learnApp.type };
+    return (
+      <div className="h-screen bg-[#050505] overflow-hidden">
+        {learnApp.type === 'ear-training' ? (
+          <EarTrainingView game={dummyGame as any} level={dummyLevel} />
+        ) : (
+          <RhythmTrainerView game={dummyGame as any} level={dummyLevel} />
+        )}
       </div>
     );
   }
@@ -81,19 +100,13 @@ export default function GameSessionPage() {
 
   return (
     <div className="h-screen bg-[#050505] overflow-hidden">
-      {game.type === 'ear-training' ? (
-        <EarTrainingView game={game} level={level} />
-      ) : game.type === 'rhythm-trainer' ? (
-        <RhythmTrainerView game={game} level={level} />
-      ) : sounds ? (
-        game.type === 'sample-hunter' ? (
-          <SampleHunterView game={game} level={level} sounds={sounds} />
-        ) : game.type === 'disk-dash' ? (
-          <DiskDashView game={game} level={level} sounds={sounds} />
-        ) : (
-          <GameView game={game} level={level} sounds={sounds} patterns={patterns || []} />
-        )
-      ) : null}
+      {game.type === 'sample-hunter' ? (
+        <SampleHunterView game={game} level={level} sounds={sounds || []} />
+      ) : game.type === 'disk-dash' ? (
+        <DiskDashView game={game} level={level} sounds={sounds || []} />
+      ) : (
+        <GameView game={game} level={level} sounds={sounds || []} patterns={patterns || []} />
+      )}
     </div>
   );
 }

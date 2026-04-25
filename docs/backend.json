@@ -55,6 +55,18 @@
       },
       "required": ["id", "studioId", "name", "type"]
     },
+    "LearnApp": {
+      "title": "LearnApp",
+      "type": "object",
+      "description": "Ein pädagogisches Modul im Learn Center.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["ear-training", "rhythm-trainer"] },
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" }
+      },
+      "required": ["id", "name", "type"]
+    },
     "Level": {
       "title": "Level",
       "type": "object",
@@ -122,6 +134,17 @@
       },
       "required": ["levelId", "accuracy"]
     },
+    "PatternProgress": {
+      "title": "PatternProgress",
+      "type": "object",
+      "description": "Trackt den Fortschritt eines Nutzers für ein spezifisches Rhythm Pattern.",
+      "properties": {
+        "patternId": { "type": "string" },
+        "accuracy": { "type": "number" },
+        "completedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["patternId", "accuracy"]
+    },
     "Article": {
       "title": "Article",
       "type": "object",
@@ -158,6 +181,10 @@
       "schema": "#/backend/entities/Game",
       "description": "Alle Minigames."
     },
+    "/learnApps/{appId}": {
+      "schema": "#/backend/entities/LearnApp",
+      "description": "Spezielle Lern-Apps."
+    },
     "/levels/{levelId}": {
       "schema": "#/backend/entities/Level",
       "description": "Levels der Spiele."
@@ -176,7 +203,11 @@
     },
     "/users/{userId}/progress/{levelId}": {
       "schema": "#/backend/entities/LevelProgress",
-      "description": "Fortschritt des Nutzers."
+      "description": "Fortschritt des Nutzers in Levels."
+    },
+    "/users/{userId}/patternProgress/{patternId}": {
+      "schema": "#/backend/entities/PatternProgress",
+      "description": "Fortschritt des Nutzers bei Patterns."
     },
     "/articles/{articleId}": {
       "schema": "#/backend/entities/Article",

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, doc, setDoc } from 'firebase/firestore';
-import { Studio, Game, Article, Track, hasAccess } from '@/lib/game/types';
+import { Studio, Game, Article, Track, hasAccess, LearnApp } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -158,11 +158,9 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db) return;
     try {
-      // Instrument Sample URLs
       const kickUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57';
       const clapUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClap%201.mp3?alt=media&token=59073468-4861-40f3-9df2-f8c5f59d79df';
       
-      // Lazer Sounds for Vinyl Hunter
       const lazer1 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%20001.mp3?alt=media&token=b73ec61d-740b-42f3-b5a3-41a44e2f4fee';
       const lazer2 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%200010.mp3?alt=media&token=48271588-84b9-43be-acad-d9f6d8e38faf';
       const lazer3 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%20006.mp3?alt=media&token=848197cf-a315-4aca-82ad-ec10828a1872';
@@ -170,7 +168,6 @@ export default function HomePage() {
 
       const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
-      // Patterns (8 bars / 128 steps)
       const patterns = [
         { id: 'kick-intro-1', data: { id: 'kick-intro-1', name: 'Intro 1-Shot', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
         { id: 'kick-verse-2', data: { id: 'kick-verse-2', name: 'Verse 2-Shot', steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) } }, 
@@ -181,51 +178,36 @@ export default function HomePage() {
       ];
 
       for (const p of patterns) {
-        const pRef = doc(db, 'patterns', p.id);
-        setDoc(pRef, p.data, { merge: true });
+        setDoc(doc(db, 'patterns', p.id), p.data, { merge: true });
       }
 
-      const commonTags = ['Hip-Hop', 'Electro'];
-
-      // Studios
       const studios: Studio[] = [
-        { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: commonTags, minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f' },
-        { id: 'std-nintu', name: 'Nintu Music', description: 'Deep melodic explorations.', coverColor: '#993DEB', district: 'Melody District', tags: commonTags, minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudioo.png?alt=media&token=9a547bdf-a3bf-4a9a-a132-222383e88b1f' },
-        { id: 'std-yoan', name: 'Yoan Beats', description: 'Raw urban textures.', coverColor: '#3838FA', district: 'Underground', tags: commonTags, minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FYoan%20Beats.png?alt=media&token=984099f0-f45b-4836-81d0-35241d774d83' },
-        { id: 'std-dave', name: 'Dave Beats', description: 'Dave Beats is smarter than you think.', coverColor: '#EB3D99', district: 'The Lab', tags: commonTags, minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudio%202.png?alt=media&token=96cb0afc-36e3-4c58-8e5d-45a68cd4673a' },
-        { id: 'std-noxxos', name: 'Noxxos', description: 'Futuristic club anthems.', coverColor: '#FF3D00', district: 'Skyline', tags: commonTags, minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FNoxxos%20Studio.png?alt=media&token=fa9f78bc-965b-4af2-bfde-4f0383a87d98' }
+        { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: ['Hip-Hop', 'Electro'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f' },
+        { id: 'std-nintu', name: 'Nintu Music', description: 'Deep melodic explorations.', coverColor: '#993DEB', district: 'Melody District', tags: ['Hip-Hop', 'Electro'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudioo.png?alt=media&token=9a547bdf-a3bf-4a9a-a132-222383e88b1f' },
+        { id: 'std-yoan', name: 'Yoan Beats', description: 'Raw urban textures.', coverColor: '#3838FA', district: 'Underground', tags: ['Hip-Hop', 'Electro'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FYoan%20Beats.png?alt=media&token=984099f0-f45b-4836-81d0-35241d774d83' },
+        { id: 'std-dave', name: 'Dave Beats', description: 'Dave Beats is smarter than you think.', coverColor: '#EB3D99', district: 'The Lab', tags: ['Hip-Hop', 'Electro'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudio%202.png?alt=media&token=96cb0afc-36e3-4c58-8e5d-45a68cd4673a' },
+        { id: 'std-noxxos', name: 'Noxxos', description: 'Futuristic club anthems.', coverColor: '#FF3D00', district: 'Skyline', tags: ['Hip-Hop', 'Electro'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FNoxxos%20Studio.png?alt=media&token=fa9f78bc-965b-4af2-bfde-4f0383a87d98' }
       ];
       for (const s of studios) {
-        const sRef = doc(db, 'studios', s.id);
-        setDoc(sRef, s, { merge: true });
+        setDoc(doc(db, 'studios', s.id), s, { merge: true });
       }
 
-      // Track URLs
-      const gTr1 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%201_140bpm.mp3?alt=media&token=0d094a95-7a8c-40a4-8e17-c1eebf721540';
+      const freestyleUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20ist%20Schlau%20aber%20Merlin%20ist%20Ganz%20Ganz%20Ganz%20Dummmmmmm%20120%20bpm.mp3?alt=media&token=fd38176e-faaf-4465-872a-1847f5b37960';
       const gTr2 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%202_148bpm.mp3?alt=media&token=1f877a36-c331-4286-97ce-aad7f1edf807';
       const gTr3 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%204%20150bpm%20scratch.mp3?alt=media&token=d4a447a1-5c31-4aeb-acab-146fccc039b8';
-      const gTr4 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%205%20162bpm.mp3?alt=media&token=deefca2b-1ace-4e53-948f-8ce581aca7f6';
-      const gTr5 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%208%20160bpm.mp3?alt=media&token=385d3a0c-c51c-4801-8ec4-18b0f9eedf2f';
-
-      const freestyleUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20ist%20Schlau%20aber%20Merlin%20ist%20Ganz%20Ganz%20Ganz%20Dummmmmmm%20120%20bpm.mp3?alt=media&token=fd38176e-faaf-4465-872a-1847f5b37960';
 
       const tracks: Track[] = [
         { id: 'tr-d1', studioId: 'std-dave', name: 'Freestyle', author: 'Dave', url: freestyleUrl },
-        { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel', url: gTr1 },
+        { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%201_140bpm.mp3?alt=media&token=0d094a95-7a8c-40a4-8e17-c1eebf721540' },
         { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel', url: gTr2 },
         { id: 'tr-g3', studioId: 'std-gabriel', name: 'Track 3', author: 'Gabriel', url: gTr3 },
-        { id: 'tr-g4', studioId: 'std-gabriel', name: 'Track 4', author: 'Gabriel', url: gTr4 },
-        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel', url: gTr5 },
-        { id: 'tr-n1', studioId: 'std-nintu', name: 'Deep Echoes', author: 'Nintu', url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' },
-        { id: 'tr-y1', studioId: 'std-yoan', name: 'Street Vibes', author: 'Yoan', url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' },
-        { id: 'tr-nx1', studioId: 'std-noxxos', name: 'Neon Night', author: 'Noxxos', url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' }
+        { id: 'tr-g4', studioId: 'std-gabriel', name: 'Track 4', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%205%20162bpm.mp3?alt=media&token=deefca2b-1ace-4e53-948f-8ce581aca7f6' },
+        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%208%20160bpm.mp3?alt=media&token=385d3a0c-c51c-4801-8ec4-18b0f9eedf2f' }
       ];
       for (const t of tracks) {
-        const tRef = doc(db, 'tracks', t.id);
-        setDoc(tRef, t, { merge: true });
+        setDoc(doc(db, 'tracks', t.id), t, { merge: true });
       }
 
-      // Games
       const gameConfigs = [
         { type: 'rhythm-producer' as const, name: 'Beat Hero' },
         { type: 'sample-hunter' as const, name: 'Vinyl Hunter' },
@@ -253,7 +235,7 @@ export default function HomePage() {
               gameBackingUrl = gTr3;
             } else {
               gameBpm = 140;
-              gameBackingUrl = gTr1;
+              gameBackingUrl = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%201_140bpm.mp3?alt=media&token=0d094a95-7a8c-40a4-8e17-c1eebf721540';
             }
           }
 
@@ -262,13 +244,11 @@ export default function HomePage() {
             difficulty: 1, minRole: 'free', bpm: gameBpm,
             backingTrackUrl: gameBackingUrl, backgroundImageUrl: isVinylHunter ? vinylHunterBg : ''
           };
-          const gRef = doc(db, 'games', gameId);
-          setDoc(gRef, gData, { merge: true });
+          setDoc(doc(db, 'games', gameId), gData, { merge: true });
 
           for (let i = 1; i <= 4; i++) {
             const levelId = `${gameId}-lvl${i}`;
-            const lRef = doc(db, 'levels', levelId);
-            setDoc(lRef, { id: levelId, gameId, difficulty: i, name: `Level ${i}` }, { merge: true });
+            setDoc(doc(db, 'levels', levelId), { id: levelId, gameId, difficulty: i, name: `Level ${i}` }, { merge: true });
 
             if (isBeatHero) {
               const isDave = s.id === 'std-dave';
@@ -279,8 +259,9 @@ export default function HomePage() {
               setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), kickData, { merge: true });
             }
             if (isVinylHunter) {
+              const lzs = [lazer1, lazer2, lazer3, lazer4];
               const kickData = {
-                id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: lazer1,
+                id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: lzs[Math.min(i-1, 3)],
                 patternIds: ['kick-intro-1', 'kick-verse-2', 'kick-refrain-4']
               };
               setDoc(doc(db, 'levels', levelId, 'sounds', `${levelId}-kick`), kickData, { merge: true });
@@ -289,38 +270,20 @@ export default function HomePage() {
         }
       }
 
-      // Sync Learn In-Apps
-      const learnInApps = [
-        { id: 'learn-ear-training', name: 'Ear Training', type: 'ear-training' as const },
-        { id: 'learn-rhythm-trainer', name: 'Rhythm Trainer', type: 'rhythm-trainer' as const }
+      const learnApps: LearnApp[] = [
+        { id: 'learn-ear-training', name: 'Ear Training', type: 'ear-training' as const, minRole: 'free' },
+        { id: 'learn-rhythm-trainer', name: 'Rhythm Master', type: 'rhythm-trainer' as const, minRole: 'free' }
       ];
 
-      for (const app of learnInApps) {
-        const appRef = doc(db, 'games', app.id);
-        setDoc(appRef, {
-          id: app.id,
-          studioId: 'learn-center',
-          name: app.name,
-          type: app.type,
-          difficulty: 1,
-          minRole: 'free',
-          bpm: 128
-        }, { merge: true });
-
-        // Add levels for learn apps
-        for (let i = 1; i <= 1; i++) {
-          const levelId = `${app.id}-lvl${i}`;
-          setDoc(doc(db, 'levels', levelId), { id: levelId, gameId: app.id, difficulty: i, name: 'Basic' }, { merge: true });
-        }
+      for (const app of learnApps) {
+        setDoc(doc(db, 'learnApps', app.id), app, { merge: true });
       }
 
-      toast({ title: "Rack Fully Synced!", description: "All modules including Learn-InApps online." });
+      toast({ title: "Rack Fully Synced!", description: "All modules including dedicated LearnApps online." });
     } catch (e) {
       toast({ variant: "destructive", title: "Sync Failed" });
     }
   };
-
-  const isAnonymous = user?.isAnonymous;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-body font-normal flex flex-col relative select-none">
@@ -354,7 +317,7 @@ export default function HomePage() {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-black uppercase italic tracking-tighter leading-none">
-                        {user?.displayName || (isAnonymous ? "Guest Mode" : "Music Producer")}
+                        {user?.displayName || (user?.isAnonymous ? "Guest Mode" : "Music Producer")}
                       </p>
                       <p className="text-[10px] leading-none opacity-40 font-bold uppercase tracking-widest">
                         {user?.email || `ID: ${user?.uid.substring(0, 8)}...`}
@@ -371,7 +334,7 @@ export default function HomePage() {
                     <span className="font-black uppercase italic tracking-tighter text-xs">Role: {profile?.role?.toUpperCase() || "FREE"}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-white/10" />
-                  {isAnonymous ? (
+                  {user?.isAnonymous ? (
                     <DropdownMenuItem 
                       className="focus:bg-[#00E676]/20 focus:text-[#00E676] cursor-pointer py-3"
                       onClick={() => auth && initiateGoogleSignIn(auth)}

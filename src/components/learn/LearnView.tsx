@@ -19,12 +19,11 @@ import {
   Play, 
   Gamepad2,
   Headphones,
-  Keyboard,
   ChevronRight,
   Target
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Game, Article, hasAccess } from '@/lib/game/types';
+import { LearnApp, Article, hasAccess } from '@/lib/game/types';
 
 const CATEGORY_MAP = [
   { id: 'intro', title: 'Introduction', icon: BookOpen, color: 'text-primary' },
@@ -39,12 +38,12 @@ const CATEGORY_MAP = [
   { id: 'others', title: 'Weitere Themen', icon: Sparkles, color: 'text-white' }
 ];
 
-const GAME_ICON_MAP: Record<string, any> = {
+const APP_ICON_MAP: Record<string, any> = {
   'ear-training': Headphones,
   'rhythm-trainer': Target
 };
 
-const GAME_COLOR_MAP: Record<string, string> = {
+const APP_COLOR_MAP: Record<string, string> = {
   'ear-training': '#00E676',
   'rhythm-trainer': '#FFEA00'
 };
@@ -53,18 +52,16 @@ export const LearnView = () => {
   const { profile } = useUser();
   const db = useFirestore();
 
-  const gamesQuery = useMemoFirebase(() => db ? query(collection(db, 'games')) : null, [db]);
+  const learnAppsQuery = useMemoFirebase(() => db ? query(collection(db, 'learnApps')) : null, [db]);
   const articlesQuery = useMemoFirebase(() => db ? query(collection(db, 'articles')) : null, [db]);
 
-  const { data: allGames } = useCollection<Game>(gamesQuery);
+  const { data: allLearnApps } = useCollection<LearnApp>(learnAppsQuery);
   const { data: allArticles } = useCollection<Article>(articlesQuery);
 
-  const filteredLearnGames = useMemo(() => {
-    if (!allGames) return [];
-    return allGames
-      .filter(g => g.studioId === 'learn-center')
-      .filter(g => hasAccess(profile?.role, g.minRole || 'free'));
-  }, [allGames, profile?.role]);
+  const filteredLearnApps = useMemo(() => {
+    if (!allLearnApps) return [];
+    return allLearnApps.filter(a => hasAccess(profile?.role, a.minRole || 'free'));
+  }, [allLearnApps, profile?.role]);
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-20">
@@ -76,40 +73,33 @@ export const LearnView = () => {
         </p>
       </section>
 
-      {/* Learn Games Section */}
-      {filteredLearnGames.length > 0 && (
+      {/* Learn Apps Section */}
+      {filteredLearnApps.length > 0 && (
         <section>
           <div className="flex items-center gap-3 mb-6">
             <Gamepad2 className="w-5 h-5 text-primary" />
             <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white/50">Learn-InApps</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {filteredLearnGames.map((game) => {
-              const isLocked = !hasAccess(profile?.role, game.minRole || 'free');
-              const Icon = GAME_ICON_MAP[game.type] || Gamepad2;
-              const color = GAME_COLOR_MAP[game.type] || '#fff';
+            {filteredLearnApps.map((app) => {
+              const Icon = APP_ICON_MAP[app.type] || Gamepad2;
+              const color = APP_COLOR_MAP[app.type] || '#fff';
               
               return (
                 <Link 
-                  key={game.id} 
-                  href={isLocked ? '#' : `/session/${game.id}-lvl1`}
-                  className={cn(isLocked && "cursor-not-allowed")}
+                  key={app.id} 
+                  href={`/session/${app.id}`}
                 >
                   <div className="gemini-border group transition-transform hover:scale-[1.02] active:scale-95">
                     <div className="p-6 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4 relative min-h-[160px] justify-center">
-                      {isLocked && (
-                        <div className="absolute top-4 right-4 text-white/20">
-                          <Lock className="w-5 h-5" />
-                        </div>
-                      )}
                       <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                        <Icon className={cn("w-8 h-8", isLocked && "opacity-20")} style={{ color: isLocked ? undefined : color }} />
+                        <Icon className="w-8 h-8" style={{ color }} />
                       </div>
                       <div>
-                        <h4 className={cn("text-lg font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors", isLocked && "opacity-20")}>
-                          {game.name}
+                        <h4 className="text-lg font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">
+                          {app.name}
                         </h4>
-                        <p className="text-[10px] uppercase font-bold tracking-widest opacity-30 mt-1">Learn-Game</p>
+                        <p className="text-[10px] uppercase font-bold tracking-widest opacity-30 mt-1">Special Module</p>
                       </div>
                     </div>
                   </div>

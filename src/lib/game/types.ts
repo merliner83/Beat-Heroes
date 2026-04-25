@@ -38,6 +38,13 @@ export interface Game {
   minRole?: UserRole;
 }
 
+export interface LearnApp {
+  id: string;
+  name: string;
+  type: 'ear-training' | 'rhythm-trainer';
+  minRole?: UserRole;
+}
+
 export interface Level {
   id: string;
   gameId: string;
@@ -69,6 +76,13 @@ export interface GameScore {
 export interface LevelProgress {
   id: string;
   levelId: string;
+  accuracy: number;
+  completedAt?: any;
+}
+
+export interface PatternProgress {
+  id: string;
+  patternId: string;
   accuracy: number;
   completedAt?: any;
 }
