@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo } from 'react';
@@ -67,6 +66,12 @@ export const ProfileView = () => {
     return Math.round(totalAccuracy / gameLevels.length);
   };
 
+  const getAccuracyColor = (accuracy: number) => {
+    if (accuracy >= 80) return "text-[#00E676]";
+    if (accuracy >= 50) return "text-[#FFEA00]";
+    return "text-[#FF3D00]";
+  };
+
   if (isUserLoading || isLoadingStudios) {
     return (
       <div className="h-64 flex flex-col items-center justify-center gap-4">
@@ -97,7 +102,7 @@ export const ProfileView = () => {
             <TrendingUp className="w-10 h-10 text-primary" />
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Sync Performance</p>
-              <h3 className="text-4xl font-black italic tracking-tighter text-white">
+              <h3 className={cn("text-4xl font-black italic tracking-tighter", getAccuracyColor(stats.avgAccuracy))}>
                 {stats.avgAccuracy}%
               </h3>
             </div>
@@ -136,9 +141,9 @@ export const ProfileView = () => {
                   <div className="flex-1">
                     <div className="flex justify-between items-center mb-2">
                       <h4 className="text-sm font-black uppercase italic tracking-tight">{app.name}</h4>
-                      <span className="text-xs font-black italic text-primary">{mastery}%</span>
+                      <span className={cn("text-xs font-black italic", getAccuracyColor(mastery))}>{mastery}%</span>
                     </div>
-                    <Progress value={mastery} className="h-1.5 bg-white/5" />
+                    <Progress value={mastery} className="h-1.5" />
                   </div>
                 </div>
               </div>
@@ -174,9 +179,9 @@ export const ProfileView = () => {
                         <div className="flex-1">
                           <div className="flex justify-between items-center mb-1.5">
                             <span className="text-[10px] font-black uppercase italic tracking-tighter opacity-70">{game.name}</span>
-                            <span className="text-[10px] font-black italic text-primary">{mastery}%</span>
+                            <span className={cn("text-[10px] font-black italic", getAccuracyColor(mastery))}>{mastery}%</span>
                           </div>
-                          <Progress value={mastery} className="h-1 bg-white/5" />
+                          <Progress value={mastery} className="h-1" />
                         </div>
                       </div>
                     );
