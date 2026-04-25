@@ -14,7 +14,8 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 
-export const SYNC_OFFSET = 0.03;
+// Feingetuntes Timing: 0.08 (80ms) korrigiert das "zu früh" Gefühl
+export const SYNC_OFFSET = 0.08;
 export const HIT_POSITION = 550; 
 
 const PAD_COLORS: Record<SoundType, string> = {
@@ -104,7 +105,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     return { ...sound, triggerSteps: Array.from(uniqueSteps).sort((a, b) => a - b) };
   });
 
-  // Background Preloading on Mount
+  // Hintergrund-Preloading
   useEffect(() => {
     const preload = async () => {
       if (!audioEngine) return;
@@ -184,7 +185,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
       await audioEngine.resume();
       
       const urlsToLoad = [game.backingTrackUrl || '', ...filteredSounds.map(s => s.sampleUrl)];
-      // This will return immediately if background preloading is already done
       await audioEngine.preloadAudio(urlsToLoad);
 
       clearedNotesRef.current = new Set();
