@@ -38,7 +38,6 @@ const FREQUENCY_CONFIG = [
 ];
 
 const FREQUENCY_STEPS = FREQUENCY_CONFIG.map(c => c.freq);
-
 const TOTAL_ROUNDS = 6;
 
 interface EarTrainingViewProps {
@@ -56,14 +55,12 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentFreq, setCurrentFreq] = useState(1000);
   
-  // Quiz State
   const [quizStatus, setQuizStatus] = useState<QuizStatus>('IDLE');
   const [round, setRound] = useState(1);
   const [targetFreq, setTargetFreq] = useState(1000);
   const [lastGuess, setLastGuess] = useState<number | null>(null);
   const [sessionScores, setSessionScores] = useState<number[]>([]);
 
-  // Fetch previous progress
   const progressQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return query(
@@ -214,7 +211,6 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
       <main className="flex-1 flex flex-col items-center justify-start p-6 md:p-12 relative overflow-y-auto">
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
 
-        {/* Mode Toggle */}
         {(quizStatus === 'IDLE' || mode === 'explore') && (
           <div className="relative z-50 animate-in fade-in slide-in-from-top-4 duration-500 mb-10 md:mb-16">
             <div className="inline-flex p-1.5 bg-white/5 rounded-xl border border-white/5 backdrop-blur-xl shadow-2xl">
@@ -246,7 +242,6 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
           </div>
         )}
 
-        {/* Quiz Cancel Button */}
         {(quizStatus === 'PLAYING' || quizStatus === 'FEEDBACK') && (
           <div className="absolute top-4 right-4 md:right-10 z-[60]">
             <Button 
@@ -321,7 +316,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   <Headphones className="w-10 h-10 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter mb-3">Golden Ears</h2>
+                  <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter mb-3">EAR TRAINING</h2>
                   <p className="text-[11px] opacity-40 uppercase tracking-[0.3em]">6 Rounds frequency identification</p>
                 </div>
                 <Button 

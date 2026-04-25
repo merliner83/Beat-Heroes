@@ -16,7 +16,6 @@ import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
 const PASS_THRESHOLD = 80;
 const DIFFICULTY_REWARDS: Record<number, number> = { 1: 50, 2: 100, 3: 200, 4: 1000 };
 
-// Optimized icons for Lazer Hunt
 const OBJECT_ICONS: Record<SoundType, any> = {
   kick: Target,
   clap: Zap,
@@ -77,7 +76,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const requestRef = useRef<number>(null);
 
   const bpm = game.bpm || 128;
-  const SESSION_DURATION = (20 * 4 * 60) / bpm; // 20 Bars
+  const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
 
   const SAMPLE_LIFETIME = 
@@ -285,23 +284,13 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
-      <div 
-        className="absolute inset-0 opacity-15 pointer-events-none bg-center bg-no-repeat z-10"
-        style={{ 
-          backgroundImage: `url(${bgUrl})`,
-          backgroundSize: 'contain',
-          maskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)',
-          WebkitMaskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 90%)'
-        }}
-      />
-      
       <header className="flex justify-between items-center mb-1 px-6 h-14 shrink-0 z-50 bg-black/60 backdrop-blur-2xl border-b border-white/5 rounded-t-[2.5rem]">
         <div className="flex items-center gap-4">
           <Link href={`/studio/${game.studioId}`}>
             <ArrowLeft className="w-5 h-5 text-white/40 hover:text-white transition-all hover:scale-110" />
           </Link>
           <div>
-            <h1 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-primary leading-none">Vinyl Hunter</h1>
+            <h1 className="text-[10px] md:text-xs font-black uppercase italic tracking-tighter text-primary leading-none">VINYL HUNTER</h1>
             <p className="text-[7px] md:text-[8px] opacity-30 uppercase font-black tracking-widest">{game.name}</p>
           </div>
         </div>
@@ -382,82 +371,16 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           </div>
         ))}
 
-        <div className="absolute inset-0 pointer-events-none z-50">
-          <svg className="w-full h-full">
-            <circle cx="43%" cy="75%" r="3" fill="#333" />
-            <circle cx="57%" cy="75%" r="3" fill="#333" />
-            
-            {isDragging && pull && (
-              <>
-                <line 
-                  x1="43%" y1="75%" 
-                  x2={`${50 + pull.x}%`} y2={`${75 + pull.y}%`} 
-                  stroke="#00FF66" strokeWidth="2.5" opacity="0.6"
-                />
-                <line 
-                  x1="57%" y1="75%" 
-                  x2={`${50 + pull.x}%`} y2={`${75 + pull.y}%`} 
-                  stroke="#00FF66" strokeWidth="2.5" opacity="0.6"
-                />
-                <line 
-                  x1="50%" y1="75%" 
-                  x2={`${50 - pull.x * 3}%`} y2={`${75 - pull.y * 3}%`} 
-                  stroke="white" strokeWidth="1" strokeDasharray="4,8" opacity="0.15"
-                />
-              </>
-            )}
-          </svg>
-        </div>
-
-        {isPlaying && (
-          <div 
-            className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50"
-            style={{
-              transform: `translate(-50%, ${isDragging && pull ? pull.y * 1.5 : 0}px) translateX(${isDragging && pull ? pull.x * 1.5 : 0}px)`
-            }}
-          >
-            <div className="relative flex flex-col items-center">
-              <div className={cn(
-                "relative w-32 h-28 md:w-40 md:h-36 bg-neutral-900 border-2 rounded-xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-all duration-75",
-                isDragging ? "border-[#00FF66] bg-neutral-900/90 scale-95" : "border-white/10"
-              )}>
-                <div className="w-full h-1/4 bg-black/60 rounded border border-white/5 mb-3 flex items-center justify-center overflow-hidden">
-                   <div className="w-full h-[2px] bg-[#00FF66]/20 animate-pulse" />
-                </div>
-                
-                <div className="grid grid-cols-4 gap-1.5 h-3/5">
-                  {Array.from({ length: 16 }).map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={cn(
-                        "rounded-sm border border-white/5 transition-all duration-75",
-                        isDragging ? "bg-[#00FF66]/20 shadow-[0_0_5px_#00FF6622]" : "bg-neutral-800"
-                      )} 
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                <Zap className={cn(
-                  "w-12 h-12 md:w-16 md:h-16 transition-all",
-                  isDragging ? "text-[#00FF66] opacity-100 scale-110 drop-shadow(0 0 15px #00FF66)" : "text-white/40 opacity-0"
-                )} />
-              </div>
-            </div>
-          </div>
-        )}
-
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[100] backdrop-blur-3xl">
             <Card className="p-12 bg-black/50 border-none gemini-border text-center max-w-sm mx-4 shadow-[0_0_100px_rgba(255,51,153,0.1)]">
               <div className="bg-primary/20 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 border border-primary/30 shadow-[0_0_40px_rgba(255,51,153,0.2)]">
                 <LayoutGrid className="w-12 h-12 text-primary animate-pulse" />
               </div>
-              <h2 className="text-3xl md:text-4xl font-black mb-3 uppercase italic tracking-tighter">Vinyl Hunter</h2>
+              <h2 className="text-3xl md:text-4xl font-black mb-3 uppercase italic tracking-tighter">VINYL HUNTER</h2>
               <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 mb-6 leading-relaxed">20 Bars Session<br/>Capture as many as you can</p>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-18 bg-white text-black font-black uppercase italic rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.1)]">
-                {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate MPC"}
+                {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Catch"}
               </Button>
             </Card>
           </div>
@@ -500,14 +423,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           </div>
         )}
       </main>
-
-      <footer className="p-4 text-center shrink-0 z-50 bg-black/40 backdrop-blur-md border-t border-white/5 rounded-b-[2.5rem]">
-        <div className="flex items-center justify-center gap-4 opacity-20">
-          <Zap className="w-4 h-4 text-primary animate-pulse" />
-          <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.5em] italic">MPC Slingshot v4.0 • Release to Fire</p>
-          <Zap className="w-4 h-4 text-primary animate-pulse" />
-        </div>
-      </footer>
     </div>
   );
 };

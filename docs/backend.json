@@ -45,13 +45,13 @@
         "id": { "type": "string" },
         "studioId": { "type": "string" },
         "name": { "type": "string" },
-        "type": { "type": "string", "enum": ["rhythm-producer", "sample-hunter", "disk-dash", "ear-training", "notation-pro", "rhythm-trainer"], "description": "Der technische Typ des Spiels." },
-        "bpm": { "type": "number", "description": "Spezifisch für Rhythm Producer." },
+        "type": { "type": "string", "enum": ["rhythm-producer", "sample-hunter", "sample-catcher"], "description": "Der technische Typ des Spiels." },
+        "bpm": { "type": "number", "description": "Geschwindigkeit." },
         "difficulty": { "type": "number", "description": "Schwierigkeitsgrad (1-4)" },
-        "trackId": { "type": "string", "description": "ID des zugehörigen Tracks aus der tracks Collection." },
-        "backingTrackUrl": { "type": "string", "format": "uri", "description": "Fallback URL für den Backing Track." },
-        "backgroundImageUrl": { "type": "string", "format": "uri", "description": "Hintergrundbild für das Spiel-Interface." },
-        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free", "description": "Mindestens erforderliche Rolle für dieses Spiel." }
+        "trackId": { "type": "string", "description": "ID des zugehörigen Tracks." },
+        "backingTrackUrl": { "type": "string", "format": "uri", "description": "Backing Track URL." },
+        "backgroundImageUrl": { "type": "string", "format": "uri", "description": "Hintergrundbild." },
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free", "description": "Rollen-Hürde." }
       },
       "required": ["id", "studioId", "name", "type"]
     },
@@ -82,14 +82,14 @@
     "TriggerPattern": {
       "title": "TriggerPattern",
       "type": "object",
-      "description": "Ein rhythmisches Muster über 8 Takte (128 Steps).",
+      "description": "Ein rhythmisches Muster.",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
         "steps": { 
           "type": "array", 
           "items": { "type": "number" },
-          "description": "Schritte (0-127) for einen 8-Takt-Loop."
+          "description": "Schritte (0-127)."
         }
       },
       "required": ["id", "name", "steps"]
@@ -97,7 +97,7 @@
     "Sound": {
       "title": "Sound",
       "type": "object",
-      "description": "Ein Instrument-Trigger innerhalb eines Levels (Rhythm Producer).",
+      "description": "Ein Instrument-Trigger innerhalb eines Levels.",
       "properties": {
         "id": { "type": "string" },
         "levelId": { "type": "string" },
@@ -105,8 +105,7 @@
         "sampleUrl": { "type": "string", "format": "uri" },
         "patternIds": { 
           "type": "array", 
-          "items": { "type": "string" },
-          "description": "Abfolge von 8-Takt-Patterns." 
+          "items": { "type": "string" }
         }
       },
       "required": ["id", "levelId", "type", "sampleUrl", "patternIds"]
@@ -114,7 +113,7 @@
     "UserProfile": {
       "title": "UserProfile",
       "type": "object",
-      "description": "Nutzer-Statistiken, Rollen und Street Credibilities.",
+      "description": "Nutzer-Statistiken und Rollen.",
       "properties": {
         "uid": { "type": "string" },
         "email": { "type": "string", "format": "email" },
@@ -126,7 +125,7 @@
     "LevelProgress": {
       "title": "LevelProgress",
       "type": "object",
-      "description": "Trackt den Fortschritt eines Nutzers in einem Level.",
+      "description": "Fortschritt in einem Level.",
       "properties": {
         "levelId": { "type": "string" },
         "accuracy": { "type": "number" },
@@ -137,7 +136,7 @@
     "PatternProgress": {
       "title": "PatternProgress",
       "type": "object",
-      "description": "Trackt den Fortschritt eines Nutzers für ein spezifisches Rhythm Pattern.",
+      "description": "Fortschritt in einem Rhythmus-Pattern.",
       "properties": {
         "patternId": { "type": "string" },
         "accuracy": { "type": "number" },
@@ -148,19 +147,18 @@
     "Article": {
       "title": "Article",
       "type": "object",
-      "description": "Ein KnowHow-Artikel für die Knowledge Base.",
+      "description": "Ein KnowHow-Artikel.",
       "properties": {
         "id": { "type": "string" },
         "categoryId": { "type": "string" },
         "title": { "type": "string" },
-        "content": { "type": "string", "description": "Der Fließtext des Artikels." },
-        "videoUrl": { "type": "string", "format": "uri", "description": "Hochformat-Video URL." },
+        "content": { "type": "string" },
+        "videoUrl": { "type": "string", "format": "uri" },
         "imageUrls": { 
           "type": "array", 
-          "items": { "type": "string" },
-          "description": "Bis zu 3 Bilder für die Galerie."
+          "items": { "type": "string" }
         },
-        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free", "description": "Mindestens erforderliche Rolle für dieses Artikel." }
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" }
       },
       "required": ["id", "title"]
     }
@@ -171,47 +169,47 @@
   "firestore": {
     "/studios/{studioId}": {
       "schema": "#/backend/entities/Studio",
-      "description": "Öffentliche Studios."
+      "description": "Studios."
     },
     "/tracks/{trackId}": {
       "schema": "#/backend/entities/Track",
-      "description": "Globale Audio-Tracks."
+      "description": "Tracks."
     },
     "/games/{gameId}": {
       "schema": "#/backend/entities/Game",
-      "description": "Alle Minigames."
+      "description": "Minigames."
     },
     "/learnApps/{appId}": {
       "schema": "#/backend/entities/LearnApp",
-      "description": "Spezielle Lern-Apps."
+      "description": "Lern-Apps."
     },
     "/levels/{levelId}": {
       "schema": "#/backend/entities/Level",
-      "description": "Levels der Spiele."
+      "description": "Levels."
     },
     "/levels/{levelId}/sounds/{soundId}": {
       "schema": "#/backend/entities/Sound",
-      "description": "Sounds eines Levels."
+      "description": "Sounds."
     },
     "/patterns/{patternId}": {
       "schema": "#/backend/entities/TriggerPattern",
-      "description": "Globale Rhythmus-Vorlagen."
+      "description": "Patterns."
     },
     "/users/{userId}": {
       "schema": "#/backend/entities/UserProfile",
-      "description": "Nutzer-Profile."
+      "description": "Profile."
     },
     "/users/{userId}/progress/{levelId}": {
       "schema": "#/backend/entities/LevelProgress",
-      "description": "Fortschritt des Nutzers in Levels."
+      "description": "Level-Fortschritt."
     },
     "/users/{userId}/patternProgress/{patternId}": {
       "schema": "#/backend/entities/PatternProgress",
-      "description": "Fortschritt des Nutzers bei Patterns."
+      "description": "Pattern-Fortschritt."
     },
     "/articles/{articleId}": {
       "schema": "#/backend/entities/Article",
-      "description": "Wissensartikel."
+      "description": "Artikel."
     }
   }
 }

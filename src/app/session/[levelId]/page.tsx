@@ -102,7 +102,7 @@ export default function GameSessionPage() {
     <div className="h-screen bg-[#050505] overflow-hidden">
       {game.type === 'sample-hunter' ? (
         <SampleHunterView game={game} level={level} sounds={sounds || []} />
-      ) : game.type === 'disk-dash' ? (
+      ) : game.type === 'sample-catcher' ? (
         <DiskDashView game={game} level={level} sounds={sounds || []} />
       ) : (
         <GameView game={game} level={level} sounds={sounds || []} patterns={patterns || []} />

@@ -1,6 +1,6 @@
 
 export type SoundType = 'kick' | 'clap' | 'percs' | 'misc';
-export type GameType = 'rhythm-producer' | 'sample-hunter' | 'disk-dash' | 'ear-training' | 'notation-pro' | 'rhythm-trainer';
+export type GameType = 'rhythm-producer' | 'sample-hunter' | 'sample-catcher';
 export type UserRole = 'admin' | 'producer' | 'pro' | 'free';
 
 export interface Studio {

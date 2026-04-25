@@ -57,9 +57,9 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
   const lastSpawnRef = useRef<number>(0);
 
   const bpm = game.bpm || 128;
-  const SESSION_DURATION = (20 * 4 * 60) / bpm; // 20 Bars
+  const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
-  const FLIGHT_TIME = 1500; // ms to reach target
+  const FLIGHT_TIME = 1500; 
 
   useEffect(() => {
     return () => {
@@ -222,7 +222,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
             <ArrowLeft className="w-5 h-5 text-white/40 hover:text-white transition-all hover:scale-110" />
           </Link>
           <div>
-            <h1 className="text-xs font-black uppercase italic tracking-tighter text-primary">Sonic Dash</h1>
+            <h1 className="text-xs font-black uppercase italic tracking-tighter text-primary">SAMPLE CATCHER</h1>
             <p className="text-[8px] opacity-30 uppercase font-black tracking-widest">{game.name}</p>
           </div>
         </div>
@@ -305,11 +305,11 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
                 </div>
               </div>
               <div>
-                <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-2">Sonic Dash</h2>
+                <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-2">SAMPLE CATCHER</h2>
                 <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 leading-relaxed">Rhythm Pulse Activated<br/>Sync elements to zones</p>
               </div>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-20 bg-white text-black font-black uppercase italic rounded-[2rem] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.1)]">
-                {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Dash"}
+                {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Catch"}
               </Button>
             </div>
           </div>

@@ -68,8 +68,8 @@ export default function StudioPage() {
 
   const filteredGames = useMemo(() => {
     if (!allGames) return [];
-    // Fixed order: Beat Hero, Vinyl Hunter, Sonic Dash
-    const order = ['rhythm-producer', 'sample-hunter', 'disk-dash'];
+    // Fixed order: BEAT HERO, VINYL HUNTER, SAMPLE CATCHER
+    const order = ['rhythm-producer', 'sample-hunter', 'sample-catcher'];
     return [...allGames]
       .filter(game => hasAccess(profile?.role, game.minRole || 'free'))
       .sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type));
@@ -81,7 +81,6 @@ export default function StudioPage() {
       audio.pause();
       setPlayingTrack(null);
     } else {
-      // Browsers will use the cached version from audioEngine preloading
       audio.src = `/api/proxy-audio?url=${encodeURIComponent(url)}`;
       audio.play().catch(e => console.warn("Studio audio play failed", e));
       setPlayingTrack(url);
@@ -168,7 +167,6 @@ export default function StudioPage() {
           </div>
         )}
 
-        {/* Tracks Section */}
         <div className="mb-14 md:mb-20">
           <div className="flex items-center gap-3 mb-6">
             <Music className="w-6 h-6 text-primary" />
@@ -212,7 +210,6 @@ export default function StudioPage() {
           )}
         </div>
 
-        {/* Games Section */}
         <div className="space-y-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

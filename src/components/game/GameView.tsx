@@ -85,13 +85,11 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   const soundsWithPatterns = filteredSounds.map(sound => {
     const uniqueSteps = new Set<number>();
-    // NEW STRUCTURE: 8 bars Intro, 4 bars Verse, 8 bars Refrain
     const patternOffsets = [0, 128, 192]; 
     sound.patternIds?.forEach((pId, index) => {
       const pattern = patterns.find(p => p.id === pId);
       if (pattern && index < patternOffsets.length) {
         const offset = patternOffsets[index];
-        // Dynamic max steps based on the slot size
         const maxStepsInSection = index === 0 ? 128 : index === 1 ? 64 : 128;
         pattern.steps.forEach(s => {
           if (s < maxStepsInSection) {
@@ -273,7 +271,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
             <ArrowLeft className="w-6 h-6 text-white/50 hover:text-white" />
           </Link>
           <div className="flex flex-col">
-            <h1 className="text-xs md:text-sm font-black uppercase italic tracking-tighter text-white leading-none">Session</h1>
+            <h1 className="text-xs md:text-sm font-black uppercase italic tracking-tighter text-white leading-none">BEAT HERO</h1>
             <p className="text-[9px] md:text-[10px] uppercase font-black opacity-30 tracking-widest line-clamp-1">{game.name}</p>
           </div>
         </div>
@@ -336,7 +334,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-[70] backdrop-blur-sm">
             <div className="text-center mx-6">
               <Sparkles className="w-16 h-16 text-[#993DEB] mx-auto mb-6 animate-pulse-neon" />
-              <h2 className="text-2xl md:text-5xl font-black mb-10 uppercase italic tracking-tighter text-gradient">Sync Interface</h2>
+              <h2 className="text-2xl md:text-5xl font-black mb-10 uppercase italic tracking-tighter text-gradient">BEAT HERO</h2>
               <Button 
                 onClick={startLevel} 
                 disabled={isLoadingAudio || !isAudioReady} 
@@ -348,9 +346,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
                   <Loader2 className="animate-spin" />
                 ) : "Initiate Pulse"}
               </Button>
-              {!isAudioReady && (
-                <p className="text-[10px] uppercase font-black tracking-widest opacity-30 mt-6">Decoding Rack Signals...</p>
-              )}
             </div>
           </div>
         )}

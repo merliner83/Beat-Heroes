@@ -169,7 +169,7 @@ export default function HomePage() {
       const vinylHunterBg = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
       const patterns = [
-        { id: 'kick-intro-1', data: { id: 'kick-intro-1', name: 'Intro 1-Shot', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
+        { id: 'kick-intro-1', data: { id: 'kick-intro-1', name: 'Intro 8-Bar Kick', steps: [0, 16, 32, 48, 64, 80, 96, 112] } },
         { id: 'kick-verse-2', data: { id: 'kick-verse-2', name: 'Verse 2-Shot', steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) } }, 
         { id: 'kick-refrain-4', data: { id: 'kick-refrain-4', name: 'Refrain 4-Shot', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) } }, 
         { id: 'kick-hiphop-sync', data: { id: 'kick-hiphop-sync', name: 'HipHop Sync', steps: Array.from({length: 8}, (_, bar) => [0, 6, 10, 14].map(s => s + bar * 16)).flat() } },
@@ -209,9 +209,9 @@ export default function HomePage() {
       }
 
       const gameConfigs = [
-        { type: 'rhythm-producer' as const, name: 'Beat Hero' },
-        { type: 'sample-hunter' as const, name: 'Vinyl Hunter' },
-        { type: 'disk-dash' as const, name: 'Sonic Dash' }
+        { type: 'rhythm-producer' as const, name: 'BEAT HERO' },
+        { type: 'sample-hunter' as const, name: 'VINYL HUNTER' },
+        { type: 'sample-catcher' as const, name: 'SAMPLE CATCHER' }
       ];
 
       for (const s of studios) {
@@ -271,8 +271,8 @@ export default function HomePage() {
       }
 
       const learnApps: LearnApp[] = [
-        { id: 'learn-ear-training', name: 'Ear Training', type: 'ear-training' as const, minRole: 'free' },
-        { id: 'learn-rhythm-trainer', name: 'Rhythm Master', type: 'rhythm-trainer' as const, minRole: 'free' }
+        { id: 'learn-ear-training', name: 'EAR TRAINING', type: 'ear-training' as const, minRole: 'free' },
+        { id: 'learn-rhythm-trainer', name: 'RHYTHM MASTER', type: 'rhythm-trainer' as const, minRole: 'free' }
       ];
 
       for (const app of learnApps) {

@@ -49,14 +49,13 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const [countIn, setCountIn] = useState<number | null>(null);
   const [isPadPressed, setIsPadPressed] = useState(false);
   
-  // Performance Quiz Logic
   const [userTaps, setUserTaps] = useState<{ step: number, offset: number }[]>([]);
   const [finalScore, setFinalScore] = useState<number | null>(null);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const playheadRef = useRef(0);
 
-  const bpm = 120; // Standard for Learn
+  const bpm = 120; 
   const stepTime = (60 / bpm) / 4 * 1000;
 
   const patternsQuery = useMemoFirebase(() => db ? query(collection(db, 'patterns')) : null, [db]);
@@ -156,7 +155,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     setCountIn(null);
     setStatus('QUIZ_PLAYING');
 
-    // Run for 16 steps (one loop)
     let step = 0;
     const tick = () => {
       if (step % 4 === 0) audioEngine.playOneShot((audioEngine as any).constructor.METRONOME_URL);
@@ -175,7 +173,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     if (!selectedPattern) return;
     setStatus('RESULTS');
     
-    // Simple accuracy logic: compare user taps to pattern steps
     const targetSteps = selectedPattern.steps.filter(s => s < 16);
     let hits = 0;
     const matchedUserTaps = new Set();
@@ -192,7 +189,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     setFinalScore(accuracy);
 
     if (user && db) {
-      const progressId = `${user.uid}_${selectedPattern.id}`;
       setDoc(doc(db, 'users', user.uid, 'patternProgress', selectedPattern.id), { 
         patternId: selectedPattern.id, 
         accuracy, 
@@ -230,7 +226,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
           <div className="w-full max-w-4xl space-y-12 animate-in zoom-in-95 duration-500">
             <div className="text-center">
               <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter mb-6 text-gradient">
-                {isPlaying ? 'PLAYING...' : 'PREVIEW'}
+                RHYTHM MASTER
               </h2>
               <div className="flex gap-2 justify-center max-w-md mx-auto mb-12">
                 {Array.from({ length: 16 }).map((_, i) => (
