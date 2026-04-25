@@ -203,17 +203,22 @@ export default function HomePage() {
         setDoc(sRef, s, { merge: true });
       }
 
-      // Track URLs
-      const gabrielLink = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%201_140bpm.mp3?alt=media&token=0d094a95-7a8c-40a4-8e17-c1eebf721540';
+      // Gabriel Beats Specific URLs
+      const gTr1 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%201_140bpm.mp3?alt=media&token=0d094a95-7a8c-40a4-8e17-c1eebf721540';
+      const gTr2 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%202_148bpm.mp3?alt=media&token=1f877a36-c331-4286-97ce-aad7f1edf807';
+      const gTr3 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%204%20150bpm%20scratch.mp3?alt=media&token=d4a447a1-5c31-4aeb-acab-146fccc039b8';
+      const gTr4 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2Fgabriel%205%20162bpm.mp3?alt=media&token=deefca2b-1ace-4e53-948f-8ce581aca7f6';
+      const gTr5 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%208%20160bpm.mp3?alt=media&token=385d3a0c-c51c-4801-8ec4-18b0f9eedf2f';
+
       const daveLink = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20ist%20Schlau%20aber%20Merlin%20ist%20Ganz%20Ganz%20Ganz%20Dummmmmmm%20120%20bpm.mp3?alt=media&token=fd38176e-faaf-4465-872a-1847f5b37960';
 
       const tracks: Track[] = [
         { id: 'tr-d1', studioId: 'std-dave', name: 'Freestyle', author: 'Dave', url: daveLink },
-        { id: 'tr-g1', studioId: 'std-gabriel', name: 'Gabriel Track 1', author: 'Gabriel', url: gabrielLink },
-        { id: 'tr-g2', studioId: 'std-gabriel', name: 'Gabriel Track 2', author: 'Gabriel', url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' },
-        { id: 'tr-g3', studioId: 'std-gabriel', name: 'Gabriel Track 3', author: 'Gabriel', url: 'https://actions.google.com/sounds/v1/science_fiction/pulsating_hum.ogg' },
-        { id: 'tr-g4', studioId: 'std-gabriel', name: 'Gabriel Track 4', author: 'Gabriel', url: 'https://actions.google.com/sounds/v1/science_fiction/sci_fi_hum_01.ogg' },
-        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Gabriel Track 5', author: 'Gabriel', url: 'https://actions.google.com/sounds/v1/science_fiction/sci_fi_hum_02.ogg' },
+        { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel', url: gTr1 },
+        { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel', url: gTr2 },
+        { id: 'tr-g3', studioId: 'std-gabriel', name: 'Track 3', author: 'Gabriel', url: gTr3 },
+        { id: 'tr-g4', studioId: 'std-gabriel', name: 'Track 4', author: 'Gabriel', url: gTr4 },
+        { id: 'tr-g5', studioId: 'std-gabriel', name: 'Track 5', author: 'Gabriel', url: gTr5 },
         { id: 'tr-n1', studioId: 'std-nintu', name: 'Deep Echoes', author: 'Nintu', url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' },
         { id: 'tr-y1', studioId: 'std-yoan', name: 'Street Vibes', author: 'Yoan', url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' },
         { id: 'tr-nx1', studioId: 'std-noxxos', name: 'Neon Night', author: 'Noxxos', url: 'https://actions.google.com/sounds/v1/science_fiction/glitch_low_power.ogg' }
@@ -243,8 +248,16 @@ export default function HomePage() {
             gameBpm = 120;
             gameBackingUrl = daveLink;
           } else if (s.id === 'std-gabriel') {
-            gameBpm = 140;
-            gameBackingUrl = gabrielLink;
+            if (isBeatHero) {
+              gameBpm = 148;
+              gameBackingUrl = gTr2;
+            } else if (isVinylHunter) {
+              gameBpm = 150;
+              gameBackingUrl = gTr3;
+            } else {
+              gameBpm = 140;
+              gameBackingUrl = gTr1;
+            }
           }
 
           const gData = {
@@ -279,7 +292,7 @@ export default function HomePage() {
         }
       }
 
-      toast({ title: "Rack Fully Synced!", description: "Track Dave renamed to Freestyle and Gabriel list restored." });
+      toast({ title: "Rack Fully Synced!", description: "Gabriel Beats & Freestyle Sync Complete." });
     } catch (e) {
       toast({ variant: "destructive", title: "Sync Failed" });
     }
