@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -64,7 +65,10 @@ export default function StudioPage() {
 
   const filteredGames = useMemo(() => {
     if (!allGames) return [];
-    return allGames.filter(game => hasAccess(profile?.role, game.minRole || 'free'));
+    const order = ['rhythm-producer', 'sample-hunter', 'disk-dash'];
+    return [...allGames]
+      .filter(game => hasAccess(profile?.role, game.minRole || 'free'))
+      .sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type));
   }, [allGames, profile?.role]);
 
   const toggleTrack = (url: string) => {

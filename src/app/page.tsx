@@ -243,8 +243,8 @@ export default function HomePage() {
 
       const gameConfigs = [
         { type: 'rhythm-producer' as const, name: 'Beat Hero' },
-        { type: 'disk-dash' as const, name: 'Sonic Dash' },
-        { type: 'sample-hunter' as const, name: 'Vinyl Hunter' }
+        { type: 'sample-hunter' as const, name: 'Vinyl Hunter' },
+        { type: 'disk-dash' as const, name: 'Sonic Dash' }
       ];
 
       for (const s of studios) {
