@@ -79,7 +79,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const bpm = game.bpm || 128;
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
-  const MPC_POS = { x: 50, y: 70 }; 
+  const MPC_POS = { x: 50, y: 65 }; // Moved up for better mobile aiming
 
   const SAMPLE_LIFETIME = 
     level.difficulty === 1 ? 3000 : 
@@ -102,7 +102,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       sound: randomSound,
       pos: {
         x: Math.random() * 80 + 10,
-        y: Math.random() * 45 + 5 
+        y: Math.random() * 40 + 5 
       },
       status: 'active',
       spawnTime: Date.now()
@@ -279,7 +279,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     if (dist < 20) return null;
 
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    return { angle, length: Math.min(dist * 2.5, 600) };
+    return { angle, length: Math.min(dist * 2.8, 650) };
   };
 
   const aiming = getAimingLine();
@@ -327,13 +327,13 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               top: `${MPC_POS.y}%`, 
               width: `${aiming.length}px`,
               transform: `rotate(${aiming.angle}deg)`,
-              height: '140px', 
-              marginTop: '-70px', 
-              background: 'linear-gradient(90deg, rgba(255, 51, 153, 0.9) 0%, rgba(0, 255, 255, 0.5) 40%, transparent 100%)',
-              clipPath: 'polygon(0 45%, 100% 0, 100% 100%, 0 55%)',
-              boxShadow: '0 0 60px rgba(255, 51, 153, 0.6)',
-              opacity: 0.6,
-              filter: 'blur(4px)'
+              height: '180px', // Wider laser beam
+              marginTop: '-90px', 
+              background: 'linear-gradient(90deg, rgba(255, 51, 153, 0.95) 0%, rgba(0, 255, 255, 0.6) 50%, transparent 100%)',
+              clipPath: 'polygon(0 40%, 100% 0, 100% 100%, 0 60%)',
+              boxShadow: '0 0 80px rgba(255, 51, 153, 0.7)',
+              opacity: 0.7,
+              filter: 'blur(3px)'
             }}
           />
         )}
@@ -347,9 +347,9 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           }}
         >
           <div className="relative group w-48 h-32 md:w-64 md:h-44">
-            <div className="absolute inset-0 bg-primary/20 blur-[80px] animate-pulse rounded-full" />
+            <div className="absolute inset-0 bg-primary/30 blur-[60px] animate-pulse-neon rounded-none" />
             
-            <div className="relative w-full h-full rounded-none overflow-hidden border-[3px] border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.8)] bg-black">
+            <div className="relative w-full h-full rounded-none overflow-hidden border-[2px] border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.9)] bg-black">
                <Image 
                   src="https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010"
                   alt="Drummachine"
@@ -358,8 +358,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                   sizes="(max-width: 768px) 192px, 256px"
                />
             </div>
-            
-            <div className="absolute -inset-2 bg-primary/5 blur-xl -z-10 rounded-full" />
           </div>
         </div>
 
