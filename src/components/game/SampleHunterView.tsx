@@ -161,8 +161,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           const dx = p.x - activeNote.pos.x;
           const dy = p.y - activeNote.pos.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          // Increased collision radius for easier hits
-          return distance < 16;
+          return distance < 18;
         });
 
         if (hitProjectile) {
@@ -280,8 +279,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     if (dist < 20) return null;
 
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    // Increased length and width for better aiming
-    return { angle, length: Math.min(dist * 2.0, 500) };
+    return { angle, length: Math.min(dist * 2.5, 600) };
   };
 
   const aiming = getAimingLine();
@@ -321,7 +319,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       >
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
-        {/* Improved Conic Aiming Line - Wider and more visible */}
         {aiming && (
           <div 
             className="absolute z-10 origin-left pointer-events-none"
@@ -330,18 +327,17 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               top: `${MPC_POS.y}%`, 
               width: `${aiming.length}px`,
               transform: `rotate(${aiming.angle}deg)`,
-              height: '80px', 
-              marginTop: '-40px', 
-              background: 'linear-gradient(90deg, rgba(255, 51, 153, 0.8) 0%, rgba(0, 255, 255, 0.4) 50%, transparent 100%)',
-              clipPath: 'polygon(0 48%, 100% 0, 100% 100%, 0 52%)',
-              boxShadow: '0 0 40px rgba(255, 51, 153, 0.6)',
-              opacity: 0.7,
-              filter: 'blur(3px)'
+              height: '140px', 
+              marginTop: '-70px', 
+              background: 'linear-gradient(90deg, rgba(255, 51, 153, 0.9) 0%, rgba(0, 255, 255, 0.5) 40%, transparent 100%)',
+              clipPath: 'polygon(0 45%, 100% 0, 100% 100%, 0 55%)',
+              boxShadow: '0 0 60px rgba(255, 51, 153, 0.6)',
+              opacity: 0.6,
+              filter: 'blur(4px)'
             }}
           />
         )}
 
-        {/* High-Fidelity Drummachine Visual */}
         <div 
           className="absolute z-50 pointer-events-none transition-all duration-300"
           style={{ 
@@ -351,9 +347,9 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           }}
         >
           <div className="relative group w-48 h-32 md:w-64 md:h-44">
-            <div className="absolute inset-0 bg-primary/20 blur-[60px] animate-pulse rounded-full" />
+            <div className="absolute inset-0 bg-primary/20 blur-[80px] animate-pulse rounded-full" />
             
-            <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden border-[3px] border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.8)]">
+            <div className="relative w-full h-full rounded-none overflow-hidden border-[3px] border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.8)] bg-black">
                <Image 
                   src="https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010"
                   alt="Drummachine"
@@ -361,10 +357,9 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                   className="object-cover"
                   sizes="(max-width: 768px) 192px, 256px"
                />
-               <div className="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors" />
             </div>
             
-            <div className="absolute -inset-4 border-2 border-primary/10 rounded-[2rem] border-dashed animate-spin-slow opacity-20" />
+            <div className="absolute -inset-2 bg-primary/5 blur-xl -z-10 rounded-full" />
           </div>
         </div>
 
