@@ -105,13 +105,18 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     });
 
     if (isHit) {
-      // SUCCESS: High-intensity green flash, NO sound because it's already in the loop
       setTapFeedback('hit');
     } else {
-      // OUTSIDE TIMING: Play sound so user can hear their own rhythm, NO green color
+      setTapFeedback('active');
+    }
+
+    // Sound logic: 
+    // Always play sound in Quiz Mode (status === 'QUIZ_PLAYING').
+    // In Explore/Training Mode (isPlaying), only play if it's NOT a hit (to avoid double sounds).
+    const shouldPlaySound = (status === 'QUIZ_PLAYING') || !isHit;
+    if (shouldPlaySound) {
       const soundUrl = getSoundForPattern(selectedPattern);
       audioEngine.playOneShot(soundUrl);
-      setTapFeedback('active');
     }
     
     // Short reset for the flash effect
@@ -120,7 +125,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     if (status === 'QUIZ_PLAYING') {
       setUserTaps(prev => [...prev, { step: roundedStep, offset: currentStepRaw % 1 }]);
     }
-  }, [selectedPattern, status, stepTime, isPlaying]);
+  }, [selectedPattern, status, isPlaying, stepTime]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -310,7 +315,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                 onPointerDown={handleTap}
                 className={cn(
                   "w-44 h-44 md:w-52 md:h-52 rounded-none border-none flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40 hover:bg-black/40",
-                  tapFeedback === 'active' && "scale-95 brightness-125",
+                  tapFeedback === 'active' && "scale-95",
                   tapFeedback === 'hit' && "scale-105 bg-[#00E676] shadow-[0_0_120px_rgba(0,230,118,0.9)] border border-[#00E676]"
                 )}
               >
