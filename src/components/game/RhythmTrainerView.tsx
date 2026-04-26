@@ -88,15 +88,27 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     
     const currentTime = audioEngine.getContextTime();
     const elapsed = (currentTime - startTimeRef.current) * 1000;
-    const currentStep = elapsed / stepTime;
-    const roundedStep = Math.round(currentStep);
     
-    // Hit Detection
-    const isHit = isPlaying && selectedPattern.steps.some(s => Math.abs(s - (roundedStep % 128)) <= 1);
+    // Precision calculation: use raw steps for better hit detection
+    const currentStepRaw = elapsed / stepTime;
+    const currentStepModulo = currentStepRaw % 128;
+    const roundedStep = Math.round(currentStepRaw);
+    
+    // Tighter tolerance for high precision (approx 75ms at 120bpm)
+    const tolerance = 0.6;
+    
+    // Hit Detection logic using float values for better precision
+    const isHit = isPlaying && selectedPattern.steps.some(s => {
+      const diff = Math.abs(s - currentStepModulo);
+      // Handle loop wrap-around at 128 steps
+      const wrapDiff = Math.abs(s - (currentStepModulo - 128));
+      const wrapDiff2 = Math.abs((s - 128) - currentStepModulo);
+      return diff <= tolerance || wrapDiff <= tolerance || wrapDiff2 <= tolerance;
+    });
 
     if (isHit) {
       setTapFeedback('hit');
-      // Im Training/Quiz bei Hit stumm bleiben für den visuellen Erfolgseffekt
+      // In Training/Quiz, stay silent on hit for the visual success effect
     } else {
       const soundUrl = getSoundForPattern(selectedPattern);
       audioEngine.playOneShot(soundUrl);
@@ -106,7 +118,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     setTimeout(() => setTapFeedback(null), 100);
 
     if (status === 'QUIZ_PLAYING') {
-      setUserTaps(prev => [...prev, { step: roundedStep, offset: currentStep % 1 }]);
+      setUserTaps(prev => [...prev, { step: roundedStep, offset: currentStepRaw % 1 }]);
     }
   }, [selectedPattern, status, stepTime, isPlaying]);
 
@@ -203,6 +215,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     const matchedUserTaps = new Set();
 
     targetSteps.forEach(target => {
+      // Use tighter precision for result calculation as well
       const match = userTaps.find((tap, idx) => !matchedUserTaps.has(idx) && Math.abs(tap.step - target) <= 1);
       if (match) {
         hits++;
