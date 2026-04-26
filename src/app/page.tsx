@@ -153,29 +153,20 @@ export default function HomePage() {
         await setDoc(ref, data);
         createdCount++;
       } else {
-        // Update only missing fields - Firestore is the source of truth
         await setDoc(ref, data, { merge: true });
         updatedCount++;
       }
     };
 
     try {
-      // DEFINITIVE SOUND URLS
       const S_KICK = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57';
       const S_CLAP = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClap%201.mp3?alt=media&token=59073468-4861-40f3-9df2-f8c5f59d79df';
       const S_HATS = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2F808%20CL-HAT%20%20.mp3?alt=media&token=facd4a85-949e-4bca-86d5-0da27199402d';
       const S_PERCS = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FSHE_Percussion_33.mp3?alt=media&token=ca7af384-e47c-43af-8a69-7533c512d489';
       const S_MISC = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.mp3?alt=media&token=82c3e18f-c7e0-458b-93d3-09c00a9fe6a1';
       const S_DUBSTEP = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FDubstep%20One%20Shot%2014%20-%20E.mp3?alt=media&token=6862850e-7434-451b-80d7-8b6f063295eb';
-
-      const LAZER1 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%20001.mp3?alt=media&token=b73ec61d-740b-42f3-b5a3-41a44e2f4fee';
-      const LAZER2 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%200010.mp3?alt=media&token=48271588-84b9-43be-acad-d9f6d8e38faf';
-      const LAZER3 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%20006.mp3?alt=media&token=848197cf-a315-4aca-82ad-ec10828a1872';
-      const LAZER4 = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FLazer%2FLazer%20Digitalo.mp3?alt=media&token=60e9536d-00e4-4fdd-805b-9268d9a7b339';
-
       const VINYL_BG = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
-      // 1. Patterns
       const patternsArr = [
         { id: 'kick-intro-1', name: 'Intro 8-Bar Kick', steps: [0, 16, 32, 48, 64, 80, 96, 112] },
         { id: 'kick-verse-2', name: 'Verse 2-Shot', steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) }, 
@@ -193,7 +184,6 @@ export default function HomePage() {
         await syncItem('patterns', p.id, p);
       }
 
-      // 2. Studios
       const studios: Studio[] = [
         { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: ['Hip-Hop', 'Electro'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f' },
         { id: 'std-nintu', name: 'Nintu Music', description: 'Deep melodic explorations.', coverColor: '#993DEB', district: 'Melody District', tags: ['Hip-Hop', 'Electro'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudioo.png?alt=media&token=9a547bdf-a3bf-4a9a-a132-222383e88b1f' },
@@ -205,7 +195,6 @@ export default function HomePage() {
         await syncItem('studios', s.id, s);
       }
 
-      // 3. Tracks
       const tracks: Track[] = [
         { id: 'tr-d1', studioId: 'std-dave', name: 'Freestyle', author: 'Dave', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20ist%20Schlau%20aber%20Merlin%20ist%20Ganz%20Ganz%20Ganz%20Dummmmmmm%20120%20bpm.mp3?alt=media&token=fd38176e-faaf-4465-872a-1847f5b37960' },
         { id: 'tr-d2', studioId: 'std-dave', name: 'Anthem', author: 'Dave', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FDave%20Beats%2FDavid%20Komposition.mp3?alt=media&token=4f6a397f-10d4-4fbd-8f13-47cfc9d89d86' },
@@ -213,7 +202,6 @@ export default function HomePage() {
         { id: 'tr-y1', studioId: 'std-yoan', name: 'Sampling', author: 'Yoan', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2Fsampling%20125bpm%20260303.mp3?alt=media&token=66d7c77c-088e-4cfe-9bdc-85476bd749ad' },
         { id: 'tr-y2', studioId: 'std-yoan', name: 'Erstes', author: 'Yoan', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2FErstes%20Yoan%2094bpm%20Amajor%20250425.mp3?alt=media&token=0af91c3b-ae8c-4816-88ed-8bf0814d20a2' },
         { id: 'tr-y3', studioId: 'std-yoan', name: 'Zweites', author: 'Yoan', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2Fzweites%20yoan.mp3?alt=media&token=7f93d419-707f-421a-8443-b442203be6ec' },
-        { id: 'tr-y4', studioId: 'std-yoan', name: 'Yoan Power', author: 'Yoan', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FYoan%20Beats%2FYOAN%20Power%20260312.mp3?alt=media&token=8bb23617-b47d-4584-a658-13b53210b566' },
         { id: 'tr-n1', studioId: 'std-noxxos', name: 'One', author: 'Noxxos', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20One%20Master.mp3?alt=media&token=9ecc6a73-e45d-4f55-8e4b-cbc873474002' },
         { id: 'tr-n2', studioId: 'std-noxxos', name: 'Apple', author: 'Noxxos', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FNoxxos%2FNoxxos%20-%20Apple.mp3?alt=media&token=3ecfffc6-b32d-44c4-97a0-80d15c7f1d49' },
         { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%201_140bpm.mp3?alt=media&token=0d094a95-7a8c-40a4-8e17-c1eebf721540' },
@@ -226,7 +214,6 @@ export default function HomePage() {
         await syncItem('tracks', t.id, t);
       }
 
-      // 4. Games
       const gameConfigs = [
         { type: 'rhythm-producer' as const, name: 'BEAT HERO' },
         { type: 'sample-hunter' as const, name: 'VINYL HUNTER' },
@@ -238,7 +225,6 @@ export default function HomePage() {
           const gameId = `${s.id}-${config.type}`;
           const isBeatHero = config.type === 'rhythm-producer';
           const isVinylHunter = config.type === 'sample-hunter';
-          const isSampleCatcher = config.type === 'sample-catcher';
           
           let gameBpm = 128;
           let gameBackingUrl = '';
@@ -247,14 +233,11 @@ export default function HomePage() {
             gameBpm = 120;
             if (isBeatHero) gameBackingUrl = tracks.find(t => t.id === 'tr-d1')?.url || '';
             else if (isVinylHunter) gameBackingUrl = tracks.find(t => t.id === 'tr-d2')?.url || '';
-            else if (isSampleCatcher) gameBackingUrl = tracks.find(t => t.id === 'tr-d3')?.url || '';
+            else gameBackingUrl = tracks.find(t => t.id === 'tr-d3')?.url || '';
           } else if (s.id === 'std-yoan') {
             if (isBeatHero) { gameBpm = 125; gameBackingUrl = tracks.find(t => t.id === 'tr-y1')?.url || ''; }
             else if (isVinylHunter) { gameBpm = 94; gameBackingUrl = tracks.find(t => t.id === 'tr-y2')?.url || ''; }
             else { gameBpm = 120; gameBackingUrl = tracks.find(t => t.id === 'tr-y3')?.url || ''; }
-          } else if (s.id === 'std-noxxos') {
-            if (isVinylHunter) { gameBpm = 128; gameBackingUrl = tracks.find(t => t.id === 'tr-n1')?.url || ''; }
-            else { gameBpm = 156; gameBackingUrl = tracks.find(t => t.id === 'tr-n2')?.url || ''; }
           } else if (s.id === 'std-gabriel') {
             if (isBeatHero) { gameBpm = 148; gameBackingUrl = tracks.find(t => t.id === 'tr-g2')?.url || ''; }
             else if (isVinylHunter) { gameBpm = 150; gameBackingUrl = tracks.find(t => t.id === 'tr-g3')?.url || ''; }
@@ -278,21 +261,10 @@ export default function HomePage() {
               if (i >= 3) await syncItem('levels/' + levelId + '/sounds', `${levelId}-hats`, { id: `${levelId}-hats`, levelId, type: 'percs', sampleUrl: S_HATS, patternIds: ['hats-basic', 'hats-fast', 'hats-fast'] });
               if (i === 4) await syncItem('levels/' + levelId + '/sounds', `${levelId}-misc`, { id: `${levelId}-misc`, levelId, type: 'misc', sampleUrl: S_DUBSTEP, patternIds: ['misc-accent', 'misc-accent', 'misc-accent'] });
             }
-
-            if (isVinylHunter) {
-              const lzs = [LAZER1, LAZER2, LAZER3, LAZER4];
-              await syncItem('levels/' + levelId + '/sounds', `${levelId}-kick`, { id: `${levelId}-kick`, levelId, type: 'kick', sampleUrl: lzs[Math.min(i-1, 3)], patternIds: [] });
-            }
-
-            if (isSampleCatcher) {
-              const catchSamples = [S_PERCS, S_CLAP, S_KICK, S_MISC];
-              await syncItem('levels/' + levelId + '/sounds', `${levelId}-catch`, { id: `${levelId}-catch`, levelId, type: 'percs', sampleUrl: catchSamples[i-1] || S_PERCS, patternIds: [] });
-            }
           }
         }
       }
 
-      // 5. InApps
       const learnApps: LearnApp[] = [
         { id: 'learn-ear-training', name: 'EAR TRAINING', type: 'ear-training' as const, minRole: 'free' },
         { id: 'learn-rhythm-trainer', name: 'RHYTHM MASTER', type: 'rhythm-trainer' as const, minRole: 'free' }
@@ -301,10 +273,7 @@ export default function HomePage() {
         await syncItem('learnApps', app.id, app);
       }
 
-      toast({ 
-        title: "Master Rack Synced!", 
-        description: `Firestore reconciled: ${createdCount} new, ${updatedCount} verified.` 
-      });
+      toast({ title: "Master Rack Synced!", description: `Firestore reconciled: ${createdCount} new, ${updatedCount} verified.` });
     } catch (e) {
       toast({ variant: "destructive", title: "Master Sync Failed" });
     } finally {
@@ -320,7 +289,10 @@ export default function HomePage() {
           <div className="flex items-center justify-between w-full">
             <h1 className="text-4xl md:text-7xl font-black tracking-[-0.05em] uppercase italic leading-none text-gradient pr-4">BeatHero</h1>
             <div className="flex items-center gap-4">
-              <div className="flex gemini-border gemini-glow-accent p-1 px-3 md:p-1.5 md:px-6 bg-black/80 backdrop-blur-3xl border border-white/5 shrink-0">
+              <div 
+                onClick={() => handleTabChange('progress')}
+                className="flex gemini-border gemini-glow-accent p-1 px-3 md:p-1.5 md:px-6 bg-black/80 backdrop-blur-3xl border border-white/5 shrink-0 cursor-pointer hover:scale-105 transition-transform active:scale-95"
+              >
                 <div className="text-white font-black text-sm md:text-3xl leading-none tracking-tighter flex items-center gap-1.5 md:gap-2">
                   <Zap className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#FFEA00]" fill="currentColor" />
                   {streetCred.toLocaleString()} <span className="text-primary italic font-black text-[10px] md:text-base">SC</span>
@@ -355,7 +327,6 @@ export default function HomePage() {
             <TabsList className="bg-white/5 border border-white/5 rounded-full p-1 h-12 md:h-14">
               <TabsTrigger value="studios" className="rounded-full px-6 md:px-12 data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase italic tracking-tighter transition-all"><LayoutGrid className="w-4 h-4 mr-2 hidden sm:inline" /> Studios</TabsTrigger>
               <TabsTrigger value="learn" className="rounded-full px-6 md:px-12 data-[state=active]:bg-[#00E676] data-[state=active]:text-black font-black uppercase italic tracking-tighter transition-all"><GraduationCap className="w-4 h-4 mr-2 hidden sm:inline" /> Learn</TabsTrigger>
-              <TabsTrigger value="progress" className="rounded-full px-6 md:px-12 data-[state=active]:bg-[#FFEA00] data-[state=active]:text-black font-black uppercase italic tracking-tighter transition-all"><BarChart3 className="w-4 h-4 mr-2 hidden sm:inline" /> Progress</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
