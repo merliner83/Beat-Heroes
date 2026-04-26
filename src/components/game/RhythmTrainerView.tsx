@@ -14,8 +14,7 @@ import {
   Zap, 
   Target, 
   Brain,
-  Volume2,
-  Music
+  Volume2
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -46,12 +45,11 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const [playhead, setPlayhead] = useState(0); 
   const [countIn, setCountIn] = useState<number | null>(null);
   const [lastHitTime, setLastHitTime] = useState(0);
-  const [userTaps, setUserTaps] = useState<{ step: number }[]>([]);
   const [finalScore, setFinalScore] = useState<number | null>(null);
 
   const startTimeRef = useRef<number>(0);
   const lastScheduledStepRef = useRef<number>(-1);
-  const frameRef = useRef<number>(null);
+  const frameRef = useRef<number | null>(null);
   const userTapsRef = useRef<{ step: number }[]>([]);
 
   const bpm = 120; 
@@ -85,6 +83,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const finishQuiz = useCallback((taps: { step: number }[]) => {
     if (!selectedPattern) return;
     
+    // Pattern might be 8 bars, quiz is only 4
     const targetSteps = selectedPattern.steps.filter(s => s < QUIZ_STEPS);
     let hits = 0;
     const matchedTaps = new Set<number>();
@@ -110,10 +109,14 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     });
 
     const totalNotes = targetSteps.length;
-    const accuracy = totalNotes > 0 ? Math.round((hits / totalNotes) * 100) : 0;
+    // Calculate accuracy: hits vs required notes, penalty for extra taps
+    const rawAccuracy = totalNotes > 0 ? (hits / totalNotes) : 0;
+    const extraTapsPenalty = taps.length > hits ? (taps.length - hits) * 0.05 : 0;
+    const accuracy = Math.max(0, Math.min(100, Math.round((rawAccuracy - extraTapsPenalty) * 100)));
     
     setFinalScore(accuracy);
     setStatus('RESULTS');
+    if (frameRef.current) cancelAnimationFrame(frameRef.current);
 
     if (user && db) {
       setDoc(doc(db, 'users', user.uid, 'patternProgress', selectedPattern.id), { 
@@ -130,7 +133,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     
     audioEngine.playOneShot(selectedPattern.sampleUrl || SOUND_MAPPING['clave']);
 
-    if (startTimeRef.current === 0) return;
+    if (startTimeRef.current === 0 || status !== 'PLAYING') return;
 
     const contextTime = audioEngine.getContextTime();
     const elapsed = contextTime - startTimeRef.current;
@@ -140,7 +143,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     const currentStepRaw = elapsed / stepTime;
     const tolerance = 0.5;
     
-    // Check if hit against pattern
+    // Check if hit against pattern (using modulo 128 as patterns are often 8 bars)
     const normalizedPos = currentStepRaw % 128;
     const isHit = selectedPattern.steps.some(s => {
       const diff = Math.min(
@@ -153,10 +156,10 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
     if (isHit) {
       setLastHitTime(Date.now());
-      if (status === 'PLAYING' && mode === 'quiz') {
-        userTapsRef.current.push({ step: currentStepRaw });
-        setUserTaps([...userTapsRef.current]);
-      }
+    }
+
+    if (mode === 'quiz') {
+      userTapsRef.current.push({ step: currentStepRaw });
     }
   }, [selectedPattern, status, mode, stepTime]);
 
@@ -174,19 +177,17 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     const currentStepRaw = elapsed / stepTime;
     const currentStepInt = Math.floor(currentStepRaw);
 
-    // STOP LOGIC: Quiz ends after 4 bars
+    // Hard stop for quiz at exactly 4 bars
     if (mode === 'quiz' && currentStepInt >= QUIZ_STEPS) {
-      const finalTaps = [...userTapsRef.current];
-      stopPlayback();
-      finishQuiz(finalTaps);
-      return;
+      finishQuiz(userTapsRef.current);
+      return; // Stop animation loop
     }
 
     if (currentStepInt > lastScheduledStepRef.current) {
       const metronomeUrl = (audioEngine as any).constructor.METRONOME_URL;
       const sampleUrl = selectedPattern?.sampleUrl || SOUND_MAPPING['clave'];
 
-      // Metronome every beat (4 steps)
+      // Metronome every beat
       if (currentStepInt % 4 === 0) {
         audioEngine.playOneShot(metronomeUrl);
       }
@@ -201,7 +202,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     }
 
     frameRef.current = requestAnimationFrame(loop);
-  }, [selectedPattern, mode, stepTime, stopPlayback, finishQuiz]);
+  }, [selectedPattern, mode, stepTime, finishQuiz]);
 
   const startSession = async (newMode: 'explore' | 'quiz') => {
     if (!audioEngine || !selectedPattern) return;
@@ -209,7 +210,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     setMode(newMode);
     stopPlayback();
     userTapsRef.current = [];
-    setUserTaps([]);
     setFinalScore(null);
 
     await audioEngine.resume();
@@ -228,8 +228,10 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   };
 
   useEffect(() => {
-    return () => stopPlayback();
-  }, [stopPlayback]);
+    return () => {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    };
+  }, []);
 
   const isHitActive = Date.now() - lastHitTime < 150;
 
@@ -270,25 +272,25 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
           <div className="flex items-center justify-center gap-12 md:gap-24">
              <Button
-                onClick={() => status === 'PLAYING' ? stopPlayback() : startSession('explore')}
+                onClick={() => (status === 'PLAYING' || status === 'COUNT_IN') ? stopPlayback() : startSession('explore')}
                 className={cn(
                   "w-20 h-20 md:w-24 md:h-24 rounded-2xl border border-white/10 bg-black/40 hover:bg-black/60",
-                  status === 'PLAYING' && mode === 'explore' ? "text-primary border-primary" : "text-white/40"
+                  (status === 'PLAYING' || status === 'COUNT_IN') && mode === 'explore' ? "text-primary border-primary" : "text-white/40"
                 )}
               >
-                {status === 'PLAYING' && mode === 'explore' ? <Square className="w-6 h-6 fill-primary" /> : <Play className="w-6 h-6 fill-white" />}
+                {(status === 'PLAYING' || status === 'COUNT_IN') && mode === 'explore' ? <Square className="w-6 h-6 fill-primary" /> : <Play className="w-6 h-6 fill-white" />}
              </Button>
 
              <Button
                 onPointerDown={(e) => { e.preventDefault(); handleTap(); }}
                 className={cn(
-                  "w-44 h-44 md:w-52 md:h-52 rounded-[3rem] border border-white/5 transition-all duration-150 bg-black/40 hover:bg-black/40 shadow-2xl overflow-hidden",
-                  isHitActive && "bg-[#00E676] scale-105 shadow-[0_0_120px_rgba(0,230,118,0.6)] border-[#00E676]"
+                  "w-44 h-44 md:w-52 md:h-52 rounded-[3rem] border-4 transition-all duration-75 bg-black/40 hover:bg-black/40 shadow-2xl relative overflow-hidden",
+                  isHitActive ? "border-[#00E676] bg-[#00E676] scale-105 shadow-[0_0_120px_rgba(0,230,118,0.7)]" : "border-white/10"
                 )}
               >
-                <div className="relative flex flex-col items-center justify-center">
+                <div className="relative flex flex-col items-center justify-center z-10">
                   <Target className={cn("w-12 h-12 mb-2", isHitActive ? "text-black" : "text-white/20")} />
-                  <span className={cn("text-[11px] font-black uppercase tracking-widest", isHitActive ? "text-black" : "opacity-40")}>
+                  <span className={cn("text-xs font-black uppercase tracking-widest", isHitActive ? "text-black" : "opacity-40")}>
                     {isHitActive ? 'HIT' : 'TAP'}
                   </span>
                 </div>
@@ -299,7 +301,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                 disabled={status === 'COUNT_IN' || (status === 'PLAYING' && mode === 'quiz')}
                 className={cn(
                   "w-20 h-20 md:w-24 md:h-24 rounded-2xl border border-white/10 bg-black/40 hover:bg-black/60",
-                  status === 'PLAYING' && mode === 'quiz' ? "text-primary border-primary" : "text-white/40"
+                  (status === 'PLAYING' || status === 'COUNT_IN') && mode === 'quiz' ? "text-primary border-primary" : "text-white/40"
                 )}
               >
                 <Brain className="w-6 h-6" />
@@ -307,15 +309,17 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
           </div>
 
           {status === 'RESULTS' && (
-            <div className="text-center space-y-12 animate-in zoom-in-95 bg-black/80 backdrop-blur-3xl p-10 rounded-[3rem] border border-white/10 shadow-2xl max-w-lg mx-auto">
+            <div className="text-center space-y-12 animate-in zoom-in-95 bg-black/90 backdrop-blur-3xl p-10 rounded-[3rem] border border-white/10 shadow-2xl max-w-lg mx-auto z-[100] relative">
               <div className="flex flex-col items-center">
-                <Trophy className="w-16 h-16 text-[#FFEA00] mb-4 drop-shadow-[0_0_30px_rgba(255,234,0,0.5)]" />
-                <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter text-gradient leading-tight">SCORE: {finalScore}%</h2>
-                <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-40 mt-2">Sync Completed</p>
+                <Trophy className="w-20 h-20 text-[#FFEA00] mb-6 drop-shadow-[0_0_30px_rgba(255,234,0,0.5)]" />
+                <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter text-gradient leading-tight">
+                  {finalScore}%
+                </h2>
+                <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-40 mt-2">Accuracy achieved</p>
               </div>
               <div className="flex gap-4 w-full">
-                <Button onClick={() => startSession('quiz')} variant="outline" className="flex-1 h-16 rounded-xl font-black italic border-white/10 uppercase tracking-widest">Retry</Button>
-                <Button onClick={() => setStatus('IDLE')} className="flex-1 h-16 bg-white text-black rounded-xl font-black italic uppercase tracking-widest">Finish</Button>
+                <Button onClick={() => startSession('quiz')} variant="outline" className="flex-1 h-16 rounded-xl font-black italic border-white/10 uppercase tracking-widest hover:bg-white/5">Retry Quiz</Button>
+                <Button onClick={() => setStatus('IDLE')} className="flex-1 h-16 bg-white text-black rounded-xl font-black italic uppercase tracking-widest hover:scale-105 transition-transform">Done</Button>
               </div>
             </div>
           )}
