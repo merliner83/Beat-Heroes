@@ -58,8 +58,8 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const startTimeRef = useRef<number>(0);
 
   const bpm = 120; 
-  const stepTime = (60 / bpm) / 4 * 1000;
-  const QUIZ_STEPS = 64; // 4 Bars (4 * 16 steps)
+  const stepTime = (60 / bpm) / 4 * 1000; // 125ms for 16th note at 120bpm
+  const QUIZ_STEPS = 64; // 4 Bars
 
   const patternsQuery = useMemoFirebase(() => db ? query(collection(db, 'patterns')) : null, [db]);
   const { data: patterns } = useCollection<TriggerPattern>(patternsQuery);
@@ -89,27 +89,25 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     const currentTime = audioEngine.getContextTime();
     const elapsed = (currentTime - startTimeRef.current) * 1000;
     
-    // Precision calculation: use raw steps for better hit detection
     const currentStepRaw = elapsed / stepTime;
     const currentStepModulo = currentStepRaw % 128;
     const roundedStep = Math.round(currentStepRaw);
     
-    // Tighter tolerance for high precision (approx 75ms at 120bpm)
-    const tolerance = 0.6;
+    // Tight 16th note tolerance (±0.5 step means exactly one 16th note window)
+    const tolerance = 0.5;
     
-    // Hit Detection logic using float values for better precision
     const isHit = isPlaying && selectedPattern.steps.some(s => {
       const diff = Math.abs(s - currentStepModulo);
-      // Handle loop wrap-around at 128 steps
       const wrapDiff = Math.abs(s - (currentStepModulo - 128));
       const wrapDiff2 = Math.abs((s - 128) - currentStepModulo);
       return diff <= tolerance || wrapDiff <= tolerance || wrapDiff2 <= tolerance;
     });
 
     if (isHit) {
+      // Correct 16th note timing: green flash, no sound
       setTapFeedback('hit');
-      // In Training/Quiz, stay silent on hit for the visual success effect
     } else {
+      // Outside 16th note timing: play sound freely, no color
       const soundUrl = getSoundForPattern(selectedPattern);
       audioEngine.playOneShot(soundUrl);
       setTapFeedback('active');
@@ -215,8 +213,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     const matchedUserTaps = new Set();
 
     targetSteps.forEach(target => {
-      // Use tighter precision for result calculation as well
-      const match = userTaps.find((tap, idx) => !matchedUserTaps.has(idx) && Math.abs(tap.step - target) <= 1);
+      const match = userTaps.find((tap, idx) => !matchedUserTaps.has(idx) && Math.abs(tap.step - target) <= 0.5);
       if (match) {
         hits++;
         matchedUserTaps.add(userTaps.indexOf(match));
