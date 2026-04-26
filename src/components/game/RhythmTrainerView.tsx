@@ -58,8 +58,8 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const startTimeRef = useRef<number>(0);
 
   const bpm = 120; 
-  const stepTime = (60 / bpm) / 4 * 1000; // 125ms for 16th note at 120bpm
-  const QUIZ_STEPS = 64; // 4 Bars
+  const stepTime = (60 / bpm) / 4 * 1000; 
+  const QUIZ_STEPS = 64; 
 
   const patternsQuery = useMemoFirebase(() => db ? query(collection(db, 'patterns')) : null, [db]);
   const { data: patterns } = useCollection<TriggerPattern>(patternsQuery);
@@ -96,7 +96,8 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     // Tight 16th note tolerance
     const tolerance = 0.5;
     
-    const isHit = isPlaying && selectedPattern.steps.some(s => {
+    // A hit is only valid if we are actually playing a pattern or in quiz mode
+    const isHit = (isPlaying || status === 'QUIZ_PLAYING') && selectedPattern.steps.some(s => {
       const diff = Math.abs(s - currentStepModulo);
       const wrapDiff = Math.abs(s - (currentStepModulo - 128));
       const wrapDiff2 = Math.abs((s - 128) - currentStepModulo);
@@ -104,16 +105,17 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     });
 
     if (isHit) {
-      // Correct 16th note timing: strong green flash, NO sound
+      // SUCCESS: High-intensity green flash, NO sound because it's already in the loop
       setTapFeedback('hit');
     } else {
-      // Outside 16th note timing: play sound freely, NO color
+      // OUTSIDE TIMING: Play sound so user can hear their own rhythm, NO green color
       const soundUrl = getSoundForPattern(selectedPattern);
       audioEngine.playOneShot(soundUrl);
       setTapFeedback('active');
     }
     
-    setTimeout(() => setTapFeedback(null), 150);
+    // Short reset for the flash effect
+    setTimeout(() => setTapFeedback(null), 120);
 
     if (status === 'QUIZ_PLAYING') {
       setUserTaps(prev => [...prev, { step: roundedStep, offset: currentStepRaw % 1 }]);
@@ -122,7 +124,9 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === 'a') handleTap();
+      if (e.key.toLowerCase() === 'a') {
+        handleTap();
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -306,8 +310,8 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                 onPointerDown={handleTap}
                 className={cn(
                   "w-44 h-44 md:w-52 md:h-52 rounded-none border-none flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40 hover:bg-black/40",
-                  tapFeedback === 'active' && "scale-90",
-                  tapFeedback === 'hit' && "scale-105 bg-[#00E676]/40 shadow-[0_0_80px_rgba(0,230,118,0.7)] border border-[#00E676]/50"
+                  tapFeedback === 'active' && "scale-95 brightness-125",
+                  tapFeedback === 'hit' && "scale-105 bg-[#00E676] shadow-[0_0_120px_rgba(0,230,118,0.9)] border border-[#00E676]"
                 )}
               >
                 <Target className={cn(
