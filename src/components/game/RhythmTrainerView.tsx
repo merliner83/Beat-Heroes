@@ -83,34 +83,45 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const handleTap = useCallback(() => {
     if (!audioEngine || !selectedPattern) return;
     
-    // Always play sound as requested
+    // Always play sound on tap
     const soundUrl = getSoundForPattern(selectedPattern);
     audioEngine.playOneShot(soundUrl);
 
     const currentTime = audioEngine.getContextTime();
-    // Calculate precise step based on audio clock
+    // Calculate precise step based on audio clock relative to start
     const elapsedMs = (currentTime - startTimeRef.current) * 1000;
     const currentStepRaw = elapsedMs / stepTime;
     
-    // Hit detection for visual feedback
-    const tolerance = 0.5; // +/- half a 16th note
-    const activeMode = (isPlaying || status === 'QUIZ_PLAYING');
+    // Hit detection for visual feedback (16th note tolerance)
+    const tolerance = 0.5; 
+    const isActuallyPlaying = (isPlaying || status === 'QUIZ_PLAYING');
     
     let isHit = false;
-    if (activeMode) {
-      const stepModulo = currentStepRaw % 128;
+    if (isActuallyPlaying) {
+      // In training it loops (128 steps), in quiz it is linear
+      const currentPos = status === 'QUIZ_PLAYING' ? currentStepRaw : (currentStepRaw % 128);
+      
       isHit = selectedPattern.steps.some(s => {
-        const diff = Math.abs(s - stepModulo);
-        const wrapDiff = Math.abs(s - (stepModulo - 128));
-        const wrapDiff2 = Math.abs((s - 128) - stepModulo);
-        return diff <= tolerance || wrapDiff <= tolerance || wrapDiff2 <= tolerance;
+        const diff = Math.abs(s - currentPos);
+        // Handle loop wrap around for training mode
+        if (status !== 'QUIZ_PLAYING') {
+          const wrapDiff = Math.abs(s - (currentPos - 128));
+          const wrapDiff2 = Math.abs((s - 128) - currentPos);
+          return diff <= tolerance || wrapDiff <= tolerance || wrapDiff2 <= tolerance;
+        }
+        return diff <= tolerance;
       });
     }
 
-    setTapFeedback(isHit ? 'hit' : 'active');
+    if (isHit) {
+      setTapFeedback('hit');
+    } else {
+      setTapFeedback('active');
+    }
+    
     setTimeout(() => setTapFeedback(null), 120);
 
-    // Record tap for quiz
+    // Record tap for quiz evaluation
     if (status === 'QUIZ_PLAYING') {
       setUserTaps(prev => [...prev, { step: currentStepRaw }]);
     }
@@ -118,7 +129,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === 'a') {
+      if (e.key.toLowerCase() === 'a' && !e.repeat) {
         handleTap();
       }
     };
@@ -182,20 +193,19 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
     await audioEngine.resume();
     
-    // Schedule exact start time after count-in
-    const secondsPerBeat = 60 / bpm;
-    const countInDuration = 4 * secondsPerBeat;
-    const startAudioTime = audioEngine.getContextTime() + countInDuration;
-    
+    // Play count-in and then start quiz
     await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
     
     setCountIn(null);
     setStatus('QUIZ_PLAYING');
-    startTimeRef.current = startAudioTime;
+    // Set start time to exactly now for real-time tap reference
+    startTimeRef.current = audioEngine.getContextTime();
 
     let step = 0;
     const tick = () => {
+      // Quiz metronome only
       if (step % 4 === 0) audioEngine.playOneShot((audioEngine as any).constructor.METRONOME_URL);
+      
       setPlayhead(step);
       step++;
       if (step < QUIZ_STEPS) {
@@ -211,15 +221,14 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     if (!selectedPattern) return;
     setStatus('RESULTS');
     
-    // The target steps for the quiz (4 bars = 64 steps)
+    // Filter pattern steps for the 4-bar quiz window
     const targetSteps = selectedPattern.steps.filter(s => s < QUIZ_STEPS);
     
     let hits = 0;
     const matchedTaps = new Set<number>();
-    const tolerance = 0.5;
+    const tolerance = 0.5; // 1/16th note tolerance
 
     targetSteps.forEach(target => {
-      // Find the closest user tap that hasn't been matched yet
       let bestMatchIdx = -1;
       let minDiff = Infinity;
 
@@ -238,7 +247,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       }
     });
 
-    // Penalize extra taps: max possible points is either targets or total taps
     const maxPoints = Math.max(targetSteps.length, userTaps.length, 1);
     const accuracy = Math.round((hits / maxPoints) * 100);
     
@@ -326,8 +334,8 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                 onPointerDown={handleTap}
                 className={cn(
                   "w-44 h-44 md:w-52 md:h-52 rounded-none border-none flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40 hover:bg-black/40",
-                  tapFeedback === 'active' && "scale-95 brightness-125",
-                  tapFeedback === 'hit' && "scale-105 bg-[#00E676] shadow-[0_0_120px_rgba(0,230,118,0.9)] border border-[#00E676]"
+                  tapFeedback === 'active' && "scale-95 brightness-110",
+                  tapFeedback === 'hit' && "scale-105 bg-[#00E676] shadow-[0_0_120px_#00E676] border border-[#00E676]"
                 )}
               >
                 <Target className={cn(
