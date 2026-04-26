@@ -136,16 +136,12 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     playheadRef.current = 0;
   };
 
-  const toggleExplore = (patternToToggle?: TriggerPattern) => {
-    const pattern = patternToToggle || selectedPattern;
-    if (!pattern) return;
-
-    if (isPlaying && selectedPatternId === pattern.id) {
+  const toggleExplore = () => {
+    if (!selectedPattern) return;
+    if (isPlaying) {
       stopPlayback();
     } else {
-      stopPlayback();
-      setSelectedPatternId(pattern.id);
-      startPlayback(pattern);
+      startPlayback(selectedPattern);
     }
   };
 
@@ -249,7 +245,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                 {Array.from({ length: 16 }).map((_, i) => (
                   <div key={i} className={cn(
                     "h-10 md:h-14 flex-1 rounded-md border transition-all duration-75 flex items-center justify-center",
-                    (playhead % 16 === i && isPlaying) ? "border-primary bg-primary shadow-[0_0_15px_rgba(255,51,153,0.5)] scale-y-110" : 
+                    (playhead % 16 === i && isPlaying) ? "border-primary bg-primary shadow-[0_0:15px_rgba(255,51,153,0.5)] scale-y-110" : 
                     (selectedPattern?.steps.some(s => s % 16 === i)) ? "border-primary/40 bg-primary/20" : 
                     "border-white/5 bg-white/5"
                   )}>
@@ -265,7 +261,22 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               </div>
             </div>
 
-            <div className="flex flex-col items-center gap-6 mb-12">
+            <div className="flex items-center justify-center gap-6 md:gap-12 mb-12">
+               {/* Training Button Left */}
+               <div className="flex flex-col items-center gap-3">
+                 <Button
+                  onClick={toggleExplore}
+                  className={cn(
+                    "w-20 h-20 md:w-24 md:h-24 rounded-2xl border flex flex-col items-center justify-center transition-all bg-black/40",
+                    isPlaying ? "border-primary shadow-[0_0_20px_rgba(255,51,153,0.3)]" : "border-white/10 hover:border-white/20"
+                  )}
+                >
+                  {isPlaying ? <Square className="w-6 h-6 fill-primary text-primary" /> : <Play className="w-6 h-6 fill-white text-white" />}
+                </Button>
+                <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Training</span>
+               </div>
+
+               {/* Tap Pad Center */}
                <Button
                 onPointerDown={handleTap}
                 className={cn(
@@ -273,43 +284,52 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                   isPadPressed ? "scale-90 border-primary shadow-[0_0_50px_rgba(255,51,153,0.5)]" : "border-white/10 hover:border-white/20"
                 )}
               >
-                <Target className={cn("w-10 h-10 mb-4", isPadPressed ? "text-primary" : "text-white/20")} />
+                <Target className={cn("w-10 h-10 mb-2", isPadPressed ? "text-primary" : "text-white/20")} />
                 <span className="text-[10px] font-black uppercase italic tracking-widest opacity-40">Tap Rhythm</span>
               </Button>
+
+              {/* Start Quiz Button Right */}
+              <div className="flex flex-col items-center gap-3">
+                <Button
+                  onClick={startPerformanceQuiz}
+                  className="w-20 h-20 md:w-24 md:h-24 rounded-2xl border border-white/10 hover:border-primary hover:bg-primary/5 transition-all bg-black/40 group"
+                >
+                  <Brain className="w-6 h-6 text-white group-hover:text-primary transition-colors" />
+                </Button>
+                <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Quiz</span>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {patterns?.map(p => {
                 const mastery = getMastery(p.id);
-                const isThisPlaying = isPlaying && selectedPatternId === p.id;
+                const isSelected = selectedPatternId === p.id;
                 
                 return (
-                  <div key={p.id} className="gemini-border group">
-                    <div className="p-4 bg-black/60 rounded-xl flex flex-col gap-3">
+                  <div 
+                    key={p.id} 
+                    onClick={() => {
+                      stopPlayback();
+                      setSelectedPatternId(p.id);
+                    }}
+                    className={cn(
+                      "cursor-pointer transition-all rounded-xl border p-4",
+                      isSelected ? "gemini-border-primary bg-black/80" : "bg-black/40 border-white/5 hover:border-white/10"
+                    )}
+                  >
+                    <div className="flex flex-col gap-3">
                       <div className="flex justify-between items-start gap-2">
-                        <h4 className="text-sm font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors line-clamp-1">{p.name}</h4>
-                        <div className="text-[10px] font-black italic whitespace-nowrap" style={{ color: getAccuracyColor(mastery) }}>{mastery}%</div>
+                        <h4 className={cn(
+                          "text-sm font-black uppercase italic tracking-tighter line-clamp-1",
+                          isSelected ? "text-primary" : "text-white/80"
+                        )}>
+                          {p.name}
+                        </h4>
+                        <div className="text-[10px] font-black italic whitespace-nowrap" style={{ color: getAccuracyColor(mastery) }}>
+                          {mastery}%
+                        </div>
                       </div>
                       <Progress value={mastery} className="h-1" />
-                      <div className="flex gap-2">
-                        <Button 
-                          size="icon"
-                          variant="ghost" 
-                          onClick={() => toggleExplore(p)}
-                          className={cn(
-                            "w-10 h-10 transition-all rounded-lg shrink-0",
-                            isThisPlaying ? "bg-primary text-white" : "bg-white/5 hover:bg-white/10"
-                          )}
-                        >
-                          {isThisPlaying ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-                        </Button>
-                        <Button 
-                          onClick={() => { setSelectedPatternId(p.id); startPerformanceQuiz(); }}
-                          className="flex-1 bg-primary text-white h-10 text-[10px] font-black uppercase tracking-widest rounded-lg"
-                        >
-                          Quiz
-                        </Button>
-                      </div>
                     </div>
                   </div>
                 );
@@ -331,77 +351,57 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               </Button>
             </div>
 
-            {status === 'IDLE' ? (
-              <div className="text-center space-y-10 mt-6">
-                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto border border-primary/20">
-                  <Brain className="w-10 h-10 text-primary" />
+            <h2 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter text-gradient">
+              {status === 'COUNT_IN' ? countIn : status === 'QUIZ_PLAYING' ? 'RECORDING...' : 'FINISHED'}
+            </h2>
+
+            <div className="flex gap-1 md:gap-2 justify-center w-full max-w-2xl mx-auto mb-12">
+              {Array.from({ length: 16 }).map((_, i) => (
+                <div key={i} className={cn(
+                  "h-10 md:h-14 flex-1 rounded-md border transition-all duration-75 flex items-center justify-center",
+                  (playhead % 16 === i && status === 'QUIZ_PLAYING') ? "border-primary bg-primary shadow-[0_0_15px_rgba(255,51,153,0.5)] scale-y-110" : 
+                  (selectedPattern?.steps.some(s => s % 16 === i)) ? "border-primary/40 bg-primary/20" : 
+                  "border-white/5 bg-white/5"
+                )}>
+                  <div className={cn(
+                    "text-[8px] font-black opacity-20",
+                    (i % 4 === 0) && "opacity-40",
+                    (playhead % 16 === i && status === 'QUIZ_PLAYING') && "opacity-100 text-black"
+                  )}>
+                    {i + 1}
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter mb-3">QUIZ SESSION</h2>
-                  <p className="text-[11px] opacity-40 uppercase tracking-[0.3em]">Recording 4 Bars of {selectedPattern?.name}</p>
-                </div>
-                <Button 
-                  onClick={startPerformanceQuiz}
-                  className="w-full h-20 md:h-32 bg-primary text-white text-xl md:text-3xl font-black uppercase italic rounded-2xl hover:scale-105 transition-all shadow-2xl shadow-primary/30"
-                >
-                  Confirm & Start
-                </Button>
+              ))}
+            </div>
+
+            <div className="flex justify-center">
+              <Button
+                onPointerDown={handleTap}
+                disabled={status !== 'QUIZ_PLAYING' && status !== 'COUNT_IN'}
+                className={cn(
+                  "w-56 h-56 md:w-64 md:h-64 rounded-[2.5rem] border-4 flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40",
+                  isPadPressed ? "scale-90 border-primary shadow-[0_0_50px_rgba(255,51,153,0.5)]" : "border-white/10 hover:border-white/20"
+                )}
+              >
+                <Target className={cn("w-12 h-12 mb-4", isPadPressed ? "text-primary" : "text-white/20")} />
+                <span className="text-xs font-black uppercase italic tracking-widest opacity-40">Tap Rhythm</span>
+              </Button>
+            </div>
+
+            {status === 'QUIZ_PLAYING' && (
+              <div className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">
+                Bar {Math.floor(playhead / 16) + 1} / 4
               </div>
-            ) : (
-              <>
-                <h2 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter text-gradient">
-                  {status === 'COUNT_IN' ? countIn : status === 'QUIZ_PLAYING' ? 'RECORDING...' : 'FINISHED'}
-                </h2>
+            )}
 
-                <div className="flex gap-1 md:gap-2 justify-center w-full max-w-2xl mx-auto mb-12">
-                  {Array.from({ length: 16 }).map((_, i) => (
-                    <div key={i} className={cn(
-                      "h-10 md:h-14 flex-1 rounded-md border transition-all duration-75 flex items-center justify-center",
-                      (playhead % 16 === i && status === 'QUIZ_PLAYING') ? "border-primary bg-primary shadow-[0_0_15px_rgba(255,51,153,0.5)] scale-y-110" : 
-                      (selectedPattern?.steps.some(s => s % 16 === i)) ? "border-primary/40 bg-primary/20" : 
-                      "border-white/5 bg-white/5"
-                    )}>
-                      <div className={cn(
-                        "text-[8px] font-black opacity-20",
-                        (i % 4 === 0) && "opacity-40",
-                        (playhead % 16 === i && status === 'QUIZ_PLAYING') && "opacity-100 text-black"
-                      )}>
-                        {i + 1}
-                      </div>
-                    </div>
-                  ))}
+            {status === 'RESULTS' && (
+              <div className="space-y-10 animate-in zoom-in-95">
+                <div className="text-7xl font-black italic transition-colors duration-500" style={{ color: getAccuracyColor(finalScore || 0) }}>{finalScore}%</div>
+                <div className="flex gap-4">
+                  <Button onClick={startPerformanceQuiz} variant="outline" className="flex-1 h-20 rounded-2xl font-black uppercase italic border-white/10">Retry</Button>
+                  <Button onClick={() => { setMode('explore'); setStatus('IDLE'); }} className="flex-1 h-20 bg-white text-black rounded-2xl font-black uppercase italic">Dashboard</Button>
                 </div>
-
-                <div className="flex justify-center">
-                  <Button
-                    onPointerDown={handleTap}
-                    disabled={status !== 'QUIZ_PLAYING' && status !== 'COUNT_IN'}
-                    className={cn(
-                      "w-56 h-56 md:w-64 md:h-64 rounded-[2.5rem] border-4 flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40",
-                      isPadPressed ? "scale-90 border-primary shadow-[0_0_50px_rgba(255,51,153,0.5)]" : "border-white/10 hover:border-white/20"
-                    )}
-                  >
-                    <Target className={cn("w-12 h-12 mb-4", isPadPressed ? "text-primary" : "text-white/20")} />
-                    <span className="text-xs font-black uppercase italic tracking-widest opacity-40">Tap Rhythm</span>
-                  </Button>
-                </div>
-
-                {status === 'QUIZ_PLAYING' && (
-                  <div className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">
-                    Bar {Math.floor(playhead / 16) + 1} / 4
-                  </div>
-                )}
-
-                {status === 'RESULTS' && (
-                  <div className="space-y-10 animate-in zoom-in-95">
-                    <div className="text-7xl font-black italic transition-colors duration-500" style={{ color: getAccuracyColor(finalScore || 0) }}>{finalScore}%</div>
-                    <div className="flex gap-4">
-                      <Button onClick={startPerformanceQuiz} variant="outline" className="flex-1 h-20 rounded-2xl font-black uppercase italic border-white/10">Retry</Button>
-                      <Button onClick={() => { setMode('explore'); setStatus('IDLE'); }} className="flex-1 h-20 bg-white text-black rounded-2xl font-black uppercase italic">Dashboard</Button>
-                    </div>
-                  </div>
-                )}
-              </>
+              </div>
             )}
           </div>
         )}
