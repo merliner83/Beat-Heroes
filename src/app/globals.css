@@ -72,7 +72,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  padding: 2px;
+  padding: 1px; /* Verfeinert von 2px */
   border-radius: inherit;
   background-size: 200% 100%;
   animation: border-rotate 4s linear infinite;
@@ -90,7 +90,7 @@
 }
 .gemini-border::before {
   background-image: linear-gradient(90deg, #FF3399, #FF3D00, #FF9100, #FFEA00, #FF3399);
-  padding: 3px;
+  padding: 1.5px; /* Verfeinert von 3px */
 }
 
 /* Primary Variant (Tracks/Districts) - Calmer and slower */
@@ -100,7 +100,7 @@
 .gemini-border-primary::before {
   background-image: linear-gradient(90deg, #FF3399, #8822AA, #FF3399);
   animation: border-rotate 8s linear infinite;
-  padding: 2px;
+  padding: 1px; /* Verfeinert von 2px */
   opacity: 0.8;
 }
 
