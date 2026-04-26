@@ -245,7 +245,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                 RHYTHM MASTER
               </h2>
               
-              {/* Prominent Sequencer Block */}
               <div className="flex gap-1 md:gap-2 justify-center w-full max-w-2xl mx-auto mb-12">
                 {Array.from({ length: 16 }).map((_, i) => (
                   <div key={i} className={cn(
@@ -327,19 +326,18 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               {status === 'COUNT_IN' ? countIn : status === 'QUIZ_PLAYING' ? 'RECORDING...' : 'FINISHED'}
             </h2>
 
-            {/* Prominent Sequencer Block in Quiz Mode */}
             <div className="flex gap-1 md:gap-2 justify-center w-full max-w-2xl mx-auto mb-12">
               {Array.from({ length: 16 }).map((_, i) => (
                 <div key={i} className={cn(
                   "h-10 md:h-14 flex-1 rounded-md border transition-all duration-75 flex items-center justify-center",
-                  (playhead % 16 === i && (status === 'QUIZ_PLAYING' || status === 'COUNT_IN')) ? "border-primary bg-primary shadow-[0_0_15px_rgba(255,51,153,0.5)] scale-y-110" : 
+                  (playhead % 16 === i && status === 'QUIZ_PLAYING') ? "border-primary bg-primary shadow-[0_0_15px_rgba(255,51,153,0.5)] scale-y-110" : 
                   (selectedPattern?.steps.some(s => s % 16 === i)) ? "border-primary/40 bg-primary/20" : 
                   "border-white/5 bg-white/5"
                 )}>
                   <div className={cn(
                     "text-[8px] font-black opacity-20",
                     (i % 4 === 0) && "opacity-40",
-                    (playhead % 16 === i && (status === 'QUIZ_PLAYING' || status === 'COUNT_IN')) && "opacity-100 text-black"
+                    (playhead % 16 === i && status === 'QUIZ_PLAYING') && "opacity-100 text-black"
                   )}>
                     {i + 1}
                   </div>
