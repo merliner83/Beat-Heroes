@@ -96,7 +96,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     // Tight 16th note tolerance
     const tolerance = 0.5;
     
-    // A hit is only valid if we are actually playing a pattern or in quiz mode
+    // Check if it's a hit (only if playing or in quiz)
     const isHit = (isPlaying || status === 'QUIZ_PLAYING') && selectedPattern.steps.some(s => {
       const diff = Math.abs(s - currentStepModulo);
       const wrapDiff = Math.abs(s - (currentStepModulo - 128));
@@ -110,16 +110,11 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       setTapFeedback('active');
     }
 
-    // Sound logic: 
-    // Always play sound in Quiz Mode (status === 'QUIZ_PLAYING').
-    // In Explore/Training Mode (isPlaying), only play if it's NOT a hit (to avoid double sounds).
-    const shouldPlaySound = (status === 'QUIZ_PLAYING') || !isHit;
-    if (shouldPlaySound) {
-      const soundUrl = getSoundForPattern(selectedPattern);
-      audioEngine.playOneShot(soundUrl);
-    }
+    // ALWAYS play sound when user taps
+    const soundUrl = getSoundForPattern(selectedPattern);
+    audioEngine.playOneShot(soundUrl);
     
-    // Short reset for the flash effect
+    // Reset flash effect
     setTimeout(() => setTapFeedback(null), 120);
 
     if (status === 'QUIZ_PLAYING') {
@@ -150,8 +145,11 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     const tick = () => {
       const currentStep = playheadRef.current;
       setPlayhead(currentStep);
+      // Play Metronome
       if (currentStep % 4 === 0) audioEngine.playOneShot((audioEngine as any).constructor.METRONOME_URL);
+      // Play Pattern Sound (Training mode only)
       if (pattern.steps.includes(currentStep % 128)) audioEngine.playOneShot(soundUrl);
+      
       playheadRef.current = (currentStep + 1);
       timerRef.current = setTimeout(tick, stepTime);
     };
@@ -196,6 +194,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
     let step = 0;
     const tick = () => {
+      // Play Metronome only
       if (step % 4 === 0) audioEngine.playOneShot((audioEngine as any).constructor.METRONOME_URL);
       setPlayhead(step);
       step++;
