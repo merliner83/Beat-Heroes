@@ -48,13 +48,14 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const [isPlaying, setIsPlaying] = useState(false);
   const [playhead, setPlayhead] = useState(0); 
   const [countIn, setCountIn] = useState<number | null>(null);
-  const [isPadPressed, setIsPadPressed] = useState(false);
+  const [tapFeedback, setTapFeedback] = useState<'hit' | 'active' | null>(null);
   
   const [userTaps, setUserTaps] = useState<{ step: number, offset: number }[]>([]);
   const [finalScore, setFinalScore] = useState<number | null>(null);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const playheadRef = useRef(0);
+  const startTimeRef = useRef<number>(0);
 
   const bpm = 120; 
   const stepTime = (60 / bpm) / 4 * 1000;
@@ -84,20 +85,29 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
   const handleTap = useCallback(() => {
     if (!audioEngine || !selectedPattern) return;
-    const soundUrl = getSoundForPattern(selectedPattern);
-    audioEngine.playOneShot(soundUrl);
     
-    setIsPadPressed(true);
-    setTimeout(() => setIsPadPressed(false), 80);
+    const currentTime = audioEngine.getContextTime();
+    const elapsed = (currentTime - startTimeRef.current) * 1000;
+    const currentStep = elapsed / stepTime;
+    const roundedStep = Math.round(currentStep);
+    
+    // Check if it's a "hit" in Training/Explore mode
+    const isHit = isPlaying && selectedPattern.steps.some(s => Math.abs(s - (roundedStep % 128)) <= 1);
+
+    if (isHit) {
+      setTapFeedback('hit');
+    } else {
+      const soundUrl = getSoundForPattern(selectedPattern);
+      audioEngine.playOneShot(soundUrl);
+      setTapFeedback('active');
+    }
+    
+    setTimeout(() => setTapFeedback(null), 100);
 
     if (status === 'QUIZ_PLAYING') {
-      const currentTime = audioEngine.getContextTime();
-      const startTime = (audioEngine as any).startTime || 0;
-      const elapsed = (currentTime - startTime) * 1000;
-      const currentStep = elapsed / stepTime;
-      setUserTaps(prev => [...prev, { step: Math.round(currentStep), offset: currentStep % 1 }]);
+      setUserTaps(prev => [...prev, { step: roundedStep, offset: currentStep % 1 }]);
     }
-  }, [selectedPattern, status, stepTime]);
+  }, [selectedPattern, status, stepTime, isPlaying]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -115,6 +125,8 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     
     setIsPlaying(true);
     playheadRef.current = 0;
+    startTimeRef.current = audioEngine.getContextTime();
+
     const tick = () => {
       const currentStep = playheadRef.current;
       setPlayhead(currentStep);
@@ -134,6 +146,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     }
     setPlayhead(0);
     playheadRef.current = 0;
+    startTimeRef.current = 0;
   };
 
   const toggleExplore = () => {
@@ -155,7 +168,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
     await audioEngine.resume();
     const startTime = audioEngine.getContextTime() + (4 * (60/bpm));
-    (audioEngine as any).startTime = startTime;
+    startTimeRef.current = startTime;
 
     await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
     setCountIn(null);
@@ -261,42 +274,55 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
           </div>
 
           <div className="flex items-center justify-center gap-12 md:gap-24 mb-12">
-             {/* Training Button Left */}
              <div className="flex flex-col items-center gap-3">
-               <Button
-                onClick={toggleExplore}
-                disabled={status !== 'IDLE' && status !== 'RESULTS'}
-                className={cn(
-                  "w-20 h-20 md:w-24 md:h-24 rounded-2xl border flex flex-col items-center justify-center transition-all bg-black/40",
-                  isPlaying ? "border-primary shadow-[0_0_20px_rgba(255,51,153,0.3)]" : "border-white/10 hover:border-white/20"
-                )}
-              >
-                {isPlaying ? <Square className="w-6 h-6 fill-primary text-primary" /> : <Play className="w-6 h-6 fill-white text-white" />}
-              </Button>
+               <div className="rounded-2xl gemini-border-primary overflow-hidden">
+                 <Button
+                  onClick={toggleExplore}
+                  disabled={status !== 'IDLE' && status !== 'RESULTS'}
+                  className={cn(
+                    "w-20 h-20 md:w-24 md:h-24 rounded-none border-none flex flex-col items-center justify-center transition-all bg-black/40",
+                    isPlaying ? "bg-primary/20 text-primary" : "text-white/40"
+                  )}
+                >
+                  {isPlaying ? <Square className="w-6 h-6 fill-primary text-primary" /> : <Play className="w-6 h-6 fill-white text-white" />}
+                </Button>
+               </div>
               <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Training</span>
              </div>
 
-             {/* Tap Pad Center */}
-             <Button
-              onPointerDown={handleTap}
-              className={cn(
-                "w-44 h-44 md:w-52 md:h-52 rounded-[2.5rem] border-4 flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40",
-                isPadPressed ? "scale-90 border-primary shadow-[0_0_50px_rgba(255,51,153,0.5)]" : "border-white/10 hover:border-white/20"
-              )}
-            >
-              <Target className={cn("w-10 h-10 mb-2", isPadPressed ? "text-primary" : "text-white/20")} />
-              <span className="text-[10px] font-black uppercase italic tracking-widest opacity-40">Tap Rhythm</span>
-            </Button>
-
-            {/* Start Quiz Button Right */}
-            <div className="flex flex-col items-center gap-3">
-              <Button
-                onClick={startPerformanceQuiz}
-                disabled={status === 'COUNT_IN' || status === 'QUIZ_PLAYING'}
-                className="w-20 h-20 md:w-24 md:h-24 rounded-2xl border border-white/10 hover:border-primary hover:bg-primary/5 transition-all bg-black/40 group"
+             <div className="rounded-[3rem] gemini-border overflow-hidden">
+               <Button
+                onPointerDown={handleTap}
+                className={cn(
+                  "w-44 h-44 md:w-52 md:h-52 rounded-none border-none flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40",
+                  tapFeedback === 'active' && "scale-90 bg-primary/20",
+                  tapFeedback === 'hit' && "scale-95 bg-[#00E676]/30 shadow-[0_0_50px_rgba(0,230,118,0.5)]"
+                )}
               >
-                <Brain className="w-6 h-6 text-white group-hover:text-primary transition-colors" />
+                <Target className={cn(
+                  "w-10 h-10 mb-2 transition-colors", 
+                  tapFeedback === 'active' ? "text-primary" : 
+                  tapFeedback === 'hit' ? "text-[#00E676]" : "text-white/20"
+                )} />
+                <span className={cn(
+                  "text-[10px] font-black uppercase italic tracking-widest transition-opacity",
+                  tapFeedback ? "opacity-100" : "opacity-40"
+                )}>
+                  {tapFeedback === 'hit' ? 'BOOM!' : 'Tap Rhythm'}
+                </span>
               </Button>
+            </div>
+
+            <div className="flex flex-col items-center gap-3">
+              <div className="rounded-2xl gemini-border-primary overflow-hidden">
+                <Button
+                  onClick={startPerformanceQuiz}
+                  disabled={status === 'COUNT_IN' || status === 'QUIZ_PLAYING'}
+                  className="w-20 h-20 md:w-24 md:h-24 rounded-none border-none bg-black/40 group"
+                >
+                  <Brain className="w-6 h-6 text-white group-hover:text-primary transition-colors" />
+                </Button>
+              </div>
               <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Start Quiz</span>
             </div>
           </div>
