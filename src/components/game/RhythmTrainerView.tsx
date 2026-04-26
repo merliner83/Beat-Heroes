@@ -18,7 +18,8 @@ import {
   Music,
   Target,
   Brain,
-  Volume2
+  Volume2,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -174,7 +175,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     if (!selectedPattern) return;
     setStatus('RESULTS');
     
-    // We loop the base 16-step pattern over 4 bars (QUIZ_STEPS)
     const basePattern = selectedPattern.steps.filter(s => s < 16);
     const targetSteps: number[] = [];
     for (let bar = 0; bar < 4; bar++) {
@@ -185,7 +185,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     const matchedUserTaps = new Set();
 
     targetSteps.forEach(target => {
-      // Find a tap within +/- 1 step of the target
       const match = userTaps.find((tap, idx) => !matchedUserTaps.has(idx) && Math.abs(tap.step - target) <= 1);
       if (match) {
         hits++;
@@ -251,6 +250,8 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {patterns?.map(p => {
                 const mastery = getMastery(p.id);
+                const isThisPlaying = isPlaying && selectedPatternId === p.id;
+                
                 return (
                   <div key={p.id} className="gemini-border group">
                     <div className="p-6 bg-black/60 rounded-xl flex flex-col gap-4">
@@ -258,14 +259,25 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                         <h4 className="text-xl font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">{p.name}</h4>
                         <div className="text-[10px] font-black uppercase tracking-widest" style={{ color: getAccuracyColor(mastery) }}>{mastery}% Mastery</div>
                       </div>
-                      <Progress value={mastery} className="h-1.5 bg-white/5" />
+                      <Progress value={mastery} className="h-1.5" />
                       <div className="flex gap-3">
                         <Button 
                           variant="ghost" 
-                          onClick={() => { setSelectedPatternId(p.id); if(isPlaying) stopPlayback(); startPlayback(p); }}
-                          className="flex-1 bg-white/5 h-12 text-[10px] font-black uppercase tracking-widest"
+                          onClick={() => { 
+                            if (isThisPlaying) {
+                              stopPlayback();
+                            } else {
+                              setSelectedPatternId(p.id); 
+                              stopPlayback(); 
+                              startPlayback(p); 
+                            }
+                          }}
+                          className={cn(
+                            "flex-1 h-12 text-[10px] font-black uppercase tracking-widest transition-all",
+                            isThisPlaying ? "bg-primary/20 text-primary border border-primary/20" : "bg-white/5"
+                          )}
                         >
-                          Listen
+                          {isThisPlaying ? "Stop" : "Listen"}
                         </Button>
                         <Button 
                           onClick={() => { setSelectedPatternId(p.id); startPerformanceQuiz(); }}
@@ -289,6 +301,17 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
         {mode === 'quiz' && (
           <div className="w-full max-w-2xl text-center space-y-12 pt-10 animate-in slide-in-from-bottom-8">
+            <div className="absolute top-4 right-4 md:right-10 z-[60]">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => { stopPlayback(); setMode('explore'); setStatus('IDLE'); }}
+                className="w-12 h-12 rounded-full text-white/20 hover:text-white hover:bg-white/10 transition-all border border-white/5 bg-black/40 backdrop-blur-xl"
+              >
+                <X className="w-6 h-6" />
+              </Button>
+            </div>
+
             <h2 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter text-gradient">
               {status === 'COUNT_IN' ? countIn : status === 'QUIZ_PLAYING' ? 'RECORDING...' : 'FINISHED'}
             </h2>
@@ -327,7 +350,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                 <div className="text-7xl font-black italic transition-colors duration-500" style={{ color: getAccuracyColor(finalScore || 0) }}>{finalScore}% Sync</div>
                 <div className="flex gap-4">
                   <Button onClick={startPerformanceQuiz} variant="outline" className="flex-1 h-20 rounded-2xl font-black uppercase italic border-white/10">Retry</Button>
-                  <Button onClick={() => setMode('explore')} className="flex-1 h-20 bg-white text-black rounded-2xl font-black uppercase italic">Dashboard</Button>
+                  <Button onClick={() => { setMode('explore'); setStatus('IDLE'); }} className="flex-1 h-20 bg-white text-black rounded-2xl font-black uppercase italic">Dashboard</Button>
                 </div>
               </div>
             )}
