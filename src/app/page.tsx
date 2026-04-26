@@ -320,19 +320,19 @@ export default function HomePage() {
           <div className="flex items-center justify-between w-full">
             <h1 className="text-4xl md:text-7xl font-black tracking-[-0.05em] uppercase italic leading-none text-gradient pr-4">BeatHero</h1>
             <div className="flex items-center gap-4">
-              <div className="hidden md:flex gemini-border gemini-glow-accent p-1.5 px-6 bg-black/80 backdrop-blur-3xl border border-white/5 shrink-0">
-                <div className="text-white font-black text-xl md:text-3xl leading-none tracking-tighter flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
-                  {streetCred.toLocaleString()} <span className="text-primary italic font-black">SC</span>
+              <div className="flex gemini-border gemini-glow-accent p-1 px-3 md:p-1.5 md:px-6 bg-black/80 backdrop-blur-3xl border border-white/5 shrink-0">
+                <div className="text-white font-black text-sm md:text-3xl leading-none tracking-tighter flex items-center gap-1.5 md:gap-2">
+                  <Zap className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#FFEA00]" fill="currentColor" />
+                  {streetCred.toLocaleString()} <span className="text-primary italic font-black text-[10px] md:text-base">SC</span>
                 </div>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-12 w-12 rounded-full p-0 border border-white/10 hover:bg-white/5">
-                    <Avatar className="h-12 w-12">
+                  <Button variant="ghost" className="relative h-10 w-10 md:h-12 md:w-12 rounded-full p-0 border border-white/10 hover:bg-white/5">
+                    <Avatar className="h-10 w-10 md:h-12 md:w-12">
                       <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "User"} />
                       <AvatarFallback className="bg-primary/20 text-primary font-black">
-                        {user?.displayName ? user.displayName.charAt(0).toUpperCase() : <UserIcon className="w-6 h-6" />}
+                        {user?.displayName ? user.displayName.charAt(0).toUpperCase() : <UserIcon className="w-5 h-5 md:w-6 md:h-6" />}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
