@@ -244,16 +244,24 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter mb-6 text-gradient">
                 RHYTHM MASTER
               </h2>
-              <div className="flex gap-2 justify-center max-w-md mx-auto mb-12">
+              
+              {/* Prominent Sequencer Block */}
+              <div className="flex gap-1 md:gap-2 justify-center w-full max-w-2xl mx-auto mb-12">
                 {Array.from({ length: 16 }).map((_, i) => (
                   <div key={i} className={cn(
-                    "h-1.5 rounded-full transition-all flex-1",
-                    // Playhead highlight: Shows current beat while playing
-                    (playhead % 16 === i && isPlaying) ? "bg-primary scale-y-[3] shadow-[0_0_20px_#FF3399]" : 
-                    // Persistent Target Note: Shows the programmed steps of the first bar
-                    (selectedPattern?.steps.some(s => s % 16 === i)) ? "bg-primary/40" : 
-                    "bg-white/10"
-                  )} />
+                    "h-10 md:h-14 flex-1 rounded-md border transition-all duration-75 flex items-center justify-center",
+                    (playhead % 16 === i && isPlaying) ? "border-primary bg-primary shadow-[0_0_15px_rgba(255,51,153,0.5)] scale-y-110" : 
+                    (selectedPattern?.steps.some(s => s % 16 === i)) ? "border-primary/40 bg-primary/20" : 
+                    "border-white/5 bg-white/5"
+                  )}>
+                    <div className={cn(
+                      "text-[8px] font-black opacity-20",
+                      (i % 4 === 0) && "opacity-40",
+                      (playhead % 16 === i && isPlaying) && "opacity-100 text-black"
+                    )}>
+                      {i + 1}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -295,7 +303,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               })}
             </div>
 
-            <Button onClick={() => toggleExplore()} className="w-full h-24 rounded-3xl text-2xl font-black uppercase italic transition-all active:scale-95 bg-white text-black">
+            <Button onClick={() => toggleExplore()} className="w-full h-24 rounded-3xl text-2xl font-black uppercase italic transition-all active:scale-95 bg-white text-black shadow-2xl">
               {isPlaying ? <Pause className="mr-4 w-10 h-10" /> : <Play className="mr-4 w-10 h-10" />}
               {isPlaying ? "Deactivate Pulse" : "Preview Selected"}
             </Button>
@@ -319,14 +327,23 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               {status === 'COUNT_IN' ? countIn : status === 'QUIZ_PLAYING' ? 'RECORDING...' : 'FINISHED'}
             </h2>
 
-            <div className="flex gap-2 justify-center max-w-md mx-auto">
+            {/* Prominent Sequencer Block in Quiz Mode */}
+            <div className="flex gap-1 md:gap-2 justify-center w-full max-w-2xl mx-auto mb-12">
               {Array.from({ length: 16 }).map((_, i) => (
                 <div key={i} className={cn(
-                  "h-1.5 rounded-full transition-all flex-1",
-                  (playhead % 16) === i ? "bg-primary scale-y-150" : 
-                  (selectedPattern?.steps.some(s => s % 16 === i)) ? "bg-primary/40" : 
-                  "bg-white/10"
-                )} />
+                  "h-10 md:h-14 flex-1 rounded-md border transition-all duration-75 flex items-center justify-center",
+                  (playhead % 16 === i && (status === 'QUIZ_PLAYING' || status === 'COUNT_IN')) ? "border-primary bg-primary shadow-[0_0_15px_rgba(255,51,153,0.5)] scale-y-110" : 
+                  (selectedPattern?.steps.some(s => s % 16 === i)) ? "border-primary/40 bg-primary/20" : 
+                  "border-white/5 bg-white/5"
+                )}>
+                  <div className={cn(
+                    "text-[8px] font-black opacity-20",
+                    (i % 4 === 0) && "opacity-40",
+                    (playhead % 16 === i && (status === 'QUIZ_PLAYING' || status === 'COUNT_IN')) && "opacity-100 text-black"
+                  )}>
+                    {i + 1}
+                  </div>
+                </div>
               ))}
             </div>
 
