@@ -93,7 +93,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     const currentStepModulo = currentStepRaw % 128;
     const roundedStep = Math.round(currentStepRaw);
     
-    // Tight 16th note tolerance (±0.5 step means exactly one 16th note window)
+    // Tight 16th note tolerance
     const tolerance = 0.5;
     
     const isHit = isPlaying && selectedPattern.steps.some(s => {
@@ -104,16 +104,16 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     });
 
     if (isHit) {
-      // Correct 16th note timing: green flash, no sound
+      // Correct 16th note timing: strong green flash, NO sound
       setTapFeedback('hit');
     } else {
-      // Outside 16th note timing: play sound freely, no color
+      // Outside 16th note timing: play sound freely, NO color
       const soundUrl = getSoundForPattern(selectedPattern);
       audioEngine.playOneShot(soundUrl);
       setTapFeedback('active');
     }
     
-    setTimeout(() => setTapFeedback(null), 100);
+    setTimeout(() => setTapFeedback(null), 150);
 
     if (status === 'QUIZ_PLAYING') {
       setUserTaps(prev => [...prev, { step: roundedStep, offset: currentStepRaw % 1 }]);
@@ -307,12 +307,12 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                 className={cn(
                   "w-44 h-44 md:w-52 md:h-52 rounded-none border-none flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40 hover:bg-black/40",
                   tapFeedback === 'active' && "scale-90",
-                  tapFeedback === 'hit' && "scale-95 bg-[#00E676]/30 shadow-[0_0_50px_rgba(0,230,118,0.5)]"
+                  tapFeedback === 'hit' && "scale-105 bg-[#00E676]/40 shadow-[0_0_80px_rgba(0,230,118,0.7)] border border-[#00E676]/50"
                 )}
               >
                 <Target className={cn(
                   "w-10 h-10 mb-2 transition-colors", 
-                  tapFeedback === 'hit' ? "text-[#00E676]" : "text-white/20"
+                  tapFeedback === 'hit' ? "text-white" : "text-white/20"
                 )} />
                 <span className={cn(
                   "text-[10px] font-black uppercase italic tracking-widest transition-opacity",
