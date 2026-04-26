@@ -50,13 +50,16 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const [userTaps, setUserTaps] = useState<{ step: number }[]>([]);
   const [finalScore, setFinalScore] = useState<number | null>(null);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const schedulerRef = useRef<number | null>(null);
   const playheadRef = useRef(0);
   const startTimeRef = useRef<number>(0);
+  const nextNoteTimeRef = useRef<number>(0);
+  const frameRef = useRef<number>(null);
 
   const bpm = 120; 
-  const stepTime = (60 / bpm) / 4 * 1000; // Time for one 16th note in ms
-  const QUIZ_STEPS = 64; // Quiz is 4 bars (64 steps)
+  const beatTime = 60 / bpm;
+  const stepTime = beatTime / 4; // 16th note in seconds
+  const QUIZ_STEPS = 64; 
 
   const patternsQuery = useMemoFirebase(() => db ? query(collection(db, 'patterns')) : null, [db]);
   const { data: patterns } = useCollection<TriggerPattern>(patternsQuery);
@@ -83,31 +86,30 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const handleTap = useCallback(() => {
     if (!audioEngine || !selectedPattern) return;
     
-    // Always play sound on tap
     const soundUrl = getSoundForPattern(selectedPattern);
     audioEngine.playOneShot(soundUrl);
 
     const currentTime = audioEngine.getContextTime();
-    // Calculate precise step based on audio clock relative to start
-    const elapsedMs = (currentTime - startTimeRef.current) * 1000;
-    const currentStepRaw = elapsedMs / stepTime;
+    if (startTimeRef.current === 0) return;
+
+    const elapsed = currentTime - startTimeRef.current;
+    const currentStepRaw = elapsed / stepTime;
     
-    // Hit detection for visual feedback (16th note tolerance)
+    // Tight 16th note tolerance (±0.4 steps = approx 50ms at 120bpm)
     const tolerance = 0.5; 
     const isActuallyPlaying = (isPlaying || status === 'QUIZ_PLAYING');
     
     let isHit = false;
     if (isActuallyPlaying) {
-      // In training it loops (128 steps), in quiz it is linear
+      const targetSteps = selectedPattern.steps;
       const currentPos = status === 'QUIZ_PLAYING' ? currentStepRaw : (currentStepRaw % 128);
       
-      isHit = selectedPattern.steps.some(s => {
+      isHit = targetSteps.some(s => {
         const diff = Math.abs(s - currentPos);
-        // Handle loop wrap around for training mode
         if (status !== 'QUIZ_PLAYING') {
-          const wrapDiff = Math.abs(s - (currentPos - 128));
-          const wrapDiff2 = Math.abs((s - 128) - currentPos);
-          return diff <= tolerance || wrapDiff <= tolerance || wrapDiff2 <= tolerance;
+          const wrap1 = Math.abs(s - (currentPos - 128));
+          const wrap2 = Math.abs((s - 128) - currentPos);
+          return diff <= tolerance || wrap1 <= tolerance || wrap2 <= tolerance;
         }
         return diff <= tolerance;
       });
@@ -115,16 +117,14 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
     if (isHit) {
       setTapFeedback('hit');
+      if (status === 'QUIZ_PLAYING') {
+        setUserTaps(prev => [...prev, { step: currentStepRaw }]);
+      }
     } else {
       setTapFeedback('active');
     }
     
-    setTimeout(() => setTapFeedback(null), 120);
-
-    // Record tap for quiz evaluation
-    if (status === 'QUIZ_PLAYING') {
-      setUserTaps(prev => [...prev, { step: currentStepRaw }]);
-    }
+    setTimeout(() => setTapFeedback(null), 150);
   }, [selectedPattern, status, isPlaying, stepTime]);
 
   useEffect(() => {
@@ -137,6 +137,60 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleTap]);
 
+  const scheduleNextNotes = () => {
+    if (!audioEngine || !selectedPattern) return;
+    
+    const context = (audioEngine as any).context;
+    const lookahead = 0.1; // 100ms lookahead
+    const scheduleInterval = 0.025; // Check every 25ms
+
+    while (nextNoteTimeRef.current < context.currentTime + lookahead) {
+      const step = playheadRef.current;
+      const soundUrl = getSoundForPattern(selectedPattern);
+      const metronomeUrl = (audioEngine as any).constructor.METRONOME_URL;
+
+      // Metronome on beats
+      if (step % 4 === 0) {
+        const metronomeSource = context.createBufferSource();
+        metronomeSource.buffer = (audioEngine as any).buffers.get(metronomeUrl);
+        if (metronomeSource.buffer) {
+          metronomeSource.connect((audioEngine as any).masterGain);
+          metronomeSource.start(nextNoteTimeRef.current);
+        }
+      }
+
+      // Pattern sound only in explore mode
+      if (mode === 'explore' && selectedPattern.steps.includes(step % 128)) {
+        const patternSource = context.createBufferSource();
+        patternSource.buffer = (audioEngine as any).buffers.get(soundUrl);
+        if (patternSource.buffer) {
+          patternSource.connect((audioEngine as any).masterGain);
+          patternSource.start(nextNoteTimeRef.current);
+        }
+      }
+
+      nextNoteTimeRef.current += stepTime;
+      playheadRef.current++;
+
+      if (status === 'QUIZ_PLAYING' && playheadRef.current >= QUIZ_STEPS) {
+        // Schedule finish
+        const wait = (nextNoteTimeRef.current - context.currentTime) * 1000;
+        setTimeout(finishPerformanceQuiz, wait);
+        return;
+      }
+    }
+
+    schedulerRef.current = window.setTimeout(scheduleNextNotes, scheduleInterval * 1000);
+  };
+
+  const updatePlayheadUI = () => {
+    if (!audioEngine || startTimeRef.current === 0) return;
+    const elapsed = audioEngine.getContextTime() - startTimeRef.current;
+    const currentStep = Math.floor(elapsed / stepTime);
+    setPlayhead(currentStep);
+    frameRef.current = requestAnimationFrame(updatePlayheadUI);
+  };
+
   const startPlayback = async (pattern: TriggerPattern) => {
     if (!audioEngine) return;
     await audioEngine.resume();
@@ -145,29 +199,23 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     
     setIsPlaying(true);
     playheadRef.current = 0;
-    startTimeRef.current = audioEngine.getContextTime();
+    const now = audioEngine.getContextTime();
+    startTimeRef.current = now + 0.05;
+    nextNoteTimeRef.current = startTimeRef.current;
 
-    const tick = () => {
-      const currentStep = playheadRef.current;
-      setPlayhead(currentStep);
-      
-      // Metronome on every beat (4 steps)
-      if (currentStep % 4 === 0) audioEngine.playOneShot((audioEngine as any).constructor.METRONOME_URL);
-      
-      // Pattern playback
-      if (pattern.steps.includes(currentStep % 128)) audioEngine.playOneShot(soundUrl);
-      
-      playheadRef.current = (currentStep + 1);
-      timerRef.current = setTimeout(tick, stepTime);
-    };
-    tick();
+    scheduleNextNotes();
+    updatePlayheadUI();
   };
 
   const stopPlayback = () => {
     setIsPlaying(false);
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
+    if (schedulerRef.current) {
+      clearTimeout(schedulerRef.current);
+      schedulerRef.current = null;
+    }
+    if (frameRef.current) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
     }
     setPlayhead(0);
     playheadRef.current = 0;
@@ -192,41 +240,34 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     stopPlayback();
 
     await audioEngine.resume();
-    
-    // Play count-in and then start quiz
     await audioEngine.playCountIn(bpm, (beat) => setCountIn(5 - beat));
     
     setCountIn(null);
     setStatus('QUIZ_PLAYING');
-    // Set start time to exactly now for real-time tap reference
-    startTimeRef.current = audioEngine.getContextTime();
+    
+    const now = audioEngine.getContextTime();
+    startTimeRef.current = now;
+    nextNoteTimeRef.current = now;
+    playheadRef.current = 0;
 
-    let step = 0;
-    const tick = () => {
-      // Quiz metronome only
-      if (step % 4 === 0) audioEngine.playOneShot((audioEngine as any).constructor.METRONOME_URL);
-      
-      setPlayhead(step);
-      step++;
-      if (step < QUIZ_STEPS) {
-        timerRef.current = setTimeout(tick, stepTime);
-      } else {
-        finishPerformanceQuiz();
-      }
-    };
-    tick();
+    scheduleNextNotes();
+    updatePlayheadUI();
   };
 
   const finishPerformanceQuiz = () => {
     if (!selectedPattern) return;
-    setStatus('RESULTS');
     
-    // Filter pattern steps for the 4-bar quiz window
+    // Cleanup first
+    if (schedulerRef.current) clearTimeout(schedulerRef.current);
+    if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    setIsPlaying(false);
+
+    setStatus('RESULTS');
     const targetSteps = selectedPattern.steps.filter(s => s < QUIZ_STEPS);
     
     let hits = 0;
     const matchedTaps = new Set<number>();
-    const tolerance = 0.5; // 1/16th note tolerance
+    const tolerance = 0.5;
 
     targetSteps.forEach(target => {
       let bestMatchIdx = -1;
@@ -296,14 +337,14 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               {Array.from({ length: 16 }).map((_, i) => (
                 <div key={i} className={cn(
                   "h-10 md:h-14 flex-1 rounded-md border transition-all duration-75 flex items-center justify-center",
-                  (playhead % 16 === i && status === 'QUIZ_PLAYING') || (playhead % 16 === i && isPlaying) ? "border-primary bg-primary shadow-[0_0_15px_rgba(255,51,153,0.5)] scale-y-110" : 
+                  (playhead % 16 === i && (status === 'QUIZ_PLAYING' || isPlaying)) ? "border-primary bg-primary shadow-[0_0_15px_rgba(255,51,153,0.5)] scale-y-110" : 
                   (selectedPattern?.steps.some(s => s % 16 === i)) ? "border-primary/40 bg-primary/20" : 
                   "border-white/5 bg-white/5"
                 )}>
                   <div className={cn(
                     "text-[8px] font-black opacity-20",
                     (i % 4 === 0) && "opacity-40",
-                    ((playhead % 16 === i && status === 'QUIZ_PLAYING') || (playhead % 16 === i && isPlaying)) && "opacity-100 text-black"
+                    ((playhead % 16 === i && (status === 'QUIZ_PLAYING' || isPlaying))) && "opacity-100 text-black"
                   )}>
                     {i + 1}
                   </div>
@@ -333,18 +374,18 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                <Button
                 onPointerDown={handleTap}
                 className={cn(
-                  "w-44 h-44 md:w-52 md:h-52 rounded-none border-none flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40 hover:bg-black/40",
+                  "w-44 h-44 md:w-52 md:h-52 rounded-none border-none flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40 hover:bg-black/40 duration-100",
                   tapFeedback === 'active' && "scale-95 brightness-110",
-                  tapFeedback === 'hit' && "scale-105 bg-[#00E676] shadow-[0_0_120px_#00E676] border border-[#00E676]"
+                  tapFeedback === 'hit' && "scale-105 bg-[#00E676] shadow-[0_0_120px_#00E676] border border-[#00E676] ring-8 ring-[#00E676]/20"
                 )}
               >
                 <Target className={cn(
-                  "w-10 h-10 mb-2 transition-colors", 
+                  "w-12 h-12 mb-3 transition-colors", 
                   tapFeedback === 'hit' ? "text-white" : "text-white/20"
                 )} />
                 <span className={cn(
-                  "text-[10px] font-black uppercase italic tracking-widest transition-opacity",
-                  tapFeedback === 'hit' ? "opacity-100" : "opacity-40"
+                  "text-[11px] font-black uppercase italic tracking-widest transition-opacity",
+                  tapFeedback === 'hit' ? "opacity-100 text-black" : "opacity-40"
                 )}>
                   {tapFeedback === 'hit' ? 'BOOM!' : 'Tap Rhythm'}
                 </span>
@@ -435,7 +476,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       <footer className="p-8 shrink-0 flex justify-center opacity-20">
         <div className="flex items-center gap-4">
           <Volume2 className="w-5 h-5" />
-          <span className="text-[10px] font-black uppercase tracking-[0.5em]">Sample-Accurate MIDI Engine • v4.0</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.5em]">Sample-Accurate MIDI Engine • v5.0</span>
         </div>
       </footer>
     </div>
