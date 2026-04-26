@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
-import { Studio, Game, Article, Track, hasAccess, LearnApp } from '@/lib/game/types';
+import { Studio, Game, Article, Track, hasAccess, LearnApp, TriggerPattern } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn, initiateGoogleSignIn, initiateSignOut } from '@/firebase/non-blocking-login';
@@ -170,19 +170,22 @@ export default function HomePage() {
       const S_MISC = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2Foooh.mp3?alt=media&token=82c3e18f-c7e0-458b-93d3-09c00a9fe6a1';
       const S_DUBSTEP = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FDubstep%20One%20Shot%2014%20-%20E.mp3?alt=media&token=6862850e-7434-451b-80d7-8b6f063295eb';
       const VINYL_BG = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
+      const S_CLAVES = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClaves.mp3?alt=media&token=1162b3f6-19d7-4a41-a3b6-9c243cd5d36a';
 
+      // Define patterns with custom sounds for Rhythm Master here
       const patternsArr = [
-        { id: 'kick-intro-1', name: 'Intro 8-Bar Kick', steps: [0, 16, 32, 48, 64, 80, 96, 112] },
-        { id: 'kick-verse-2', name: 'Verse 2-Shot', steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) }, 
-        { id: 'kick-refrain-4', name: 'Refrain 4-Shot', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) }, 
-        { id: 'kick-hiphop-sync', name: 'HipHop Sync', steps: Array.from({length: 8}, (_, bar) => [0, 6, 10, 14].map(s => s + bar * 16)).flat() },
-        { id: 'kick-buildup-fast', name: 'Buildup Fast', steps: [0, 2, 4, 6, 8, 10, 12, 14, ...Array.from({length: 112}, (_, i) => i + 16)] },
-        { id: 'kick-techno-4-4', name: 'Techno 4-on-Floor', steps: Array.from({length: 8}, (_, bar) => [0, 4, 8, 12].map(s => s + bar * 16)).flat() },
-        { id: 'clap-basic', name: 'Clap 2-4', steps: Array.from({length: 8}, (_, bar) => [4, 12].map(s => s + bar * 16)).flat() },
-        { id: 'clap-sync', name: 'Clap Sync', steps: Array.from({length: 8}, (_, bar) => [4, 11, 14].map(s => s + bar * 16)).flat() },
-        { id: 'hats-basic', name: 'Hats 4th', steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) },
-        { id: 'hats-fast', name: 'Hats 8th', steps: Array.from({length: 128}, (_, i) => i % 2 === 0 ? i : -1).filter(v => v !== -1) },
-        { id: 'misc-accent', name: 'Misc Accent', steps: [15, 31, 47, 63, 79, 95, 111, 127] }
+        { id: 'kick-intro-1', name: 'Intro 8-Bar Kick', sampleUrl: S_KICK, steps: [0, 16, 32, 48, 64, 80, 96, 112] },
+        { id: 'kick-verse-2', name: 'Verse 2-Shot', sampleUrl: S_KICK, steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) }, 
+        { id: 'kick-refrain-4', name: 'Refrain 4-Shot', sampleUrl: S_KICK, steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) }, 
+        { id: 'kick-hiphop-sync', name: 'HipHop Sync', sampleUrl: S_KICK, steps: Array.from({length: 8}, (_, bar) => [0, 6, 10, 14].map(s => s + bar * 16)).flat() },
+        { id: 'kick-buildup-fast', name: 'Buildup Fast', sampleUrl: S_KICK, steps: Array.from({length: 4}, (_, bar) => [0, 2, 4, 6, 8, 10, 12, 14].map(s => s + bar * 16)).flat().concat(Array.from({length: 64}, (_, i) => i + 64)) },
+        { id: 'kick-techno-4-4', name: 'Techno 4-on-Floor', sampleUrl: S_KICK, steps: Array.from({length: 8}, (_, bar) => [0, 4, 8, 12].map(s => s + bar * 16)).flat() },
+        { id: 'clap-basic', name: 'Clap 2-4', sampleUrl: S_CLAP, steps: Array.from({length: 8}, (_, bar) => [4, 12].map(s => s + bar * 16)).flat() },
+        { id: 'clap-sync', name: 'Clap Sync', sampleUrl: S_CLAP, steps: Array.from({length: 8}, (_, bar) => [4, 11, 14].map(s => s + bar * 16)).flat() },
+        { id: 'hats-basic', name: 'Hats 4th', sampleUrl: S_HATS, steps: Array.from({length: 128}, (_, i) => i % 4 === 0 ? i : -1).filter(v => v !== -1) },
+        { id: 'hats-fast', name: 'Hats 8th', sampleUrl: S_HATS, steps: Array.from({length: 128}, (_, i) => i % 2 === 0 ? i : -1).filter(v => v !== -1) },
+        { id: 'misc-accent', name: 'Misc Accent', sampleUrl: S_MISC, steps: [15, 31, 47, 63, 79, 95, 111, 127] },
+        { id: 'clave-latin', name: 'Clave Latin', sampleUrl: S_CLAVES, steps: [0, 3, 6, 10, 12] }
       ];
       for (const p of patternsArr) {
         await syncItem('patterns', p.id, p);

@@ -78,13 +78,13 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     return () => stopPlayback();
   }, []);
 
-  const getSoundForPattern = (patternId: string) => {
-    return patternId.toLowerCase().includes('kick') ? SOUND_MAPPING['kick'] : SOUND_MAPPING['clave'];
+  const getSoundForPattern = (pattern: TriggerPattern) => {
+    return pattern.sampleUrl || SOUND_MAPPING['clave'];
   };
 
   const handleTap = useCallback(() => {
-    if (!audioEngine) return;
-    const soundUrl = selectedPattern ? getSoundForPattern(selectedPattern.id) : SOUND_MAPPING['clave'];
+    if (!audioEngine || !selectedPattern) return;
+    const soundUrl = getSoundForPattern(selectedPattern);
     audioEngine.playOneShot(soundUrl);
     
     setIsPadPressed(true);
@@ -110,7 +110,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const startPlayback = async (pattern: TriggerPattern) => {
     if (!audioEngine) return;
     await audioEngine.resume();
-    const soundUrl = getSoundForPattern(pattern.id);
+    const soundUrl = getSoundForPattern(pattern);
     await audioEngine.preloadAudio([soundUrl, (audioEngine as any).constructor.METRONOME_URL]);
     
     setIsPlaying(true);
@@ -136,9 +136,17 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     playheadRef.current = 0;
   };
 
-  const toggleExplore = () => {
-    if (isPlaying) stopPlayback();
-    else if (selectedPattern) startPlayback(selectedPattern);
+  const toggleExplore = (patternToToggle?: TriggerPattern) => {
+    const pattern = patternToToggle || selectedPattern;
+    if (!pattern) return;
+
+    if (isPlaying && selectedPatternId === pattern.id) {
+      stopPlayback();
+    } else {
+      stopPlayback();
+      setSelectedPatternId(pattern.id);
+      startPlayback(pattern);
+    }
   };
 
   const startPerformanceQuiz = async () => {
@@ -263,15 +271,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                       <div className="flex gap-3">
                         <Button 
                           variant="ghost" 
-                          onClick={() => { 
-                            if (isThisPlaying) {
-                              stopPlayback();
-                            } else {
-                              setSelectedPatternId(p.id); 
-                              stopPlayback(); 
-                              startPlayback(p); 
-                            }
-                          }}
+                          onClick={() => toggleExplore(p)}
                           className={cn(
                             "flex-1 h-12 text-[10px] font-black uppercase tracking-widest transition-all",
                             isThisPlaying ? "bg-primary/20 text-primary border border-primary/20" : "bg-white/5"
@@ -292,7 +292,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               })}
             </div>
 
-            <Button onClick={toggleExplore} className="w-full h-24 rounded-3xl text-2xl font-black uppercase italic transition-all active:scale-95 bg-white text-black">
+            <Button onClick={() => toggleExplore()} className="w-full h-24 rounded-3xl text-2xl font-black uppercase italic transition-all active:scale-95 bg-white text-black">
               {isPlaying ? <Pause className="mr-4 w-10 h-10" /> : <Play className="mr-4 w-10 h-10" />}
               {isPlaying ? "Deactivate Pulse" : "Preview Selected"}
             </Button>

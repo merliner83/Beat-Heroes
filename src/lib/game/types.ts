@@ -55,6 +55,7 @@ export interface Level {
 export interface TriggerPattern {
   id: string;
   name: string;
+  sampleUrl?: string;
   steps: number[]; // 0-127 for 8 bars
 }
 
