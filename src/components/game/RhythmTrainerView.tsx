@@ -265,6 +265,21 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               </div>
             </div>
 
+            {/* Tap Pad in Explore Mode - Moved here */}
+            <div className="flex flex-col items-center gap-6">
+               <Button
+                onPointerDown={handleTap}
+                className={cn(
+                  "w-48 h-48 md:w-56 md:h-56 rounded-[2.5rem] border-4 flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40",
+                  isPadPressed ? "scale-90 border-primary shadow-[0_0_50px_rgba(255,51,153,0.5)]" : "border-white/10 hover:border-white/20"
+                )}
+              >
+                <Target className={cn("w-10 h-10 mb-4", isPadPressed ? "text-primary" : "text-white/20")} />
+                <span className="text-[10px] font-black uppercase italic tracking-widest opacity-40">Tap Rhythm</span>
+              </Button>
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-20">Practice Pad</p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {patterns?.map(p => {
                 const mastery = getMastery(p.id);
@@ -300,21 +315,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                   </div>
                 );
               })}
-            </div>
-
-            {/* Tap Pad in Explore Mode */}
-            <div className="flex flex-col items-center gap-6 pt-10">
-               <Button
-                onPointerDown={handleTap}
-                className={cn(
-                  "w-48 h-48 md:w-56 md:h-56 rounded-[2.5rem] border-4 flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40",
-                  isPadPressed ? "scale-90 border-primary shadow-[0_0_50px_rgba(255,51,153,0.5)]" : "border-white/10 hover:border-white/20"
-                )}
-              >
-                <Target className={cn("w-10 h-10 mb-4", isPadPressed ? "text-primary" : "text-white/20")} />
-                <span className="text-[10px] font-black uppercase italic tracking-widest opacity-40">Tap Rhythm</span>
-              </Button>
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-20">Practice Pad</p>
             </div>
           </div>
         )}
