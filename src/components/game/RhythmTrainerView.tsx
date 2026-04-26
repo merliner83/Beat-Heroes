@@ -119,7 +119,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       const currentStep = playheadRef.current;
       setPlayhead(currentStep);
       if (currentStep % 4 === 0) audioEngine.playOneShot((audioEngine as any).constructor.METRONOME_URL);
-      if (pattern.steps.includes(currentStep % 16)) audioEngine.playOneShot(soundUrl);
+      if (pattern.steps.includes(currentStep % 128)) audioEngine.playOneShot(soundUrl);
       playheadRef.current = (currentStep + 1);
       timerRef.current = setTimeout(tick, stepTime);
     };
@@ -248,8 +248,11 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                 {Array.from({ length: 16 }).map((_, i) => (
                   <div key={i} className={cn(
                     "h-1.5 rounded-full transition-all flex-1",
-                    playhead % 16 === i && isPlaying ? "bg-primary scale-y-[3] shadow-[0_0_20px_#FF3399]" : "bg-white/10",
-                    !isPlaying && selectedPattern?.steps.includes(i) && "bg-primary/40"
+                    // Playhead highlight: Shows current beat while playing
+                    (playhead % 16 === i && isPlaying) ? "bg-primary scale-y-[3] shadow-[0_0_20px_#FF3399]" : 
+                    // Persistent Target Note: Shows the programmed steps of the first bar
+                    (selectedPattern?.steps.some(s => s % 16 === i)) ? "bg-primary/40" : 
+                    "bg-white/10"
                   )} />
                 ))}
               </div>
@@ -320,7 +323,9 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               {Array.from({ length: 16 }).map((_, i) => (
                 <div key={i} className={cn(
                   "h-1.5 rounded-full transition-all flex-1",
-                  (playhead % 16) === i ? "bg-primary scale-y-150" : "bg-white/10"
+                  (playhead % 16) === i ? "bg-primary scale-y-150" : 
+                  (selectedPattern?.steps.some(s => s % 16 === i)) ? "bg-primary/40" : 
+                  "bg-white/10"
                 )} />
               ))}
             </div>
