@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Game, Level, Sound, GameScore } from '@/lib/game/types';
+import { Game, Level, Sound, GameScore, getAccuracyColor } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Trophy, Loader2, Sparkles, XCircle, Disc, Headphones, Mic, Speaker, ArrowLeft, Percent, Circle } from 'lucide-react';
@@ -220,6 +220,8 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     }
   }, [isFinished, score.accuracy, user, db, level]);
 
+  const accColor = getAccuracyColor(score.accuracy);
+
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-4 overflow-hidden select-none font-body relative">
       <header className="flex justify-between items-center mb-1 px-6 h-14 shrink-0 z-50 bg-black/60 backdrop-blur-2xl border-b border-white/5 rounded-t-[2.5rem]">
@@ -233,8 +235,8 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
           </div>
         </div>
         <div className="bg-black/80 px-5 py-2 rounded-full border border-white/10 flex items-center gap-2 h-10 shadow-2xl">
-          <Percent className="w-4 h-4 text-[#FFEA00]" />
-          <p className={cn("text-xl font-black italic tracking-tighter", score.accuracy >= PASS_THRESHOLD ? "text-[#00FF66]" : "text-[#FF3D00]")}>{score.accuracy}</p>
+          <Percent className="w-4 h-4" style={{ color: accColor }} />
+          <p className="text-xl font-black italic tracking-tighter transition-colors duration-500" style={{ color: accColor }}>{score.accuracy}</p>
         </div>
       </header>
 
@@ -342,7 +344,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
                 <h2 className="text-5xl font-black uppercase italic tracking-tighter mb-2">
                   {score.accuracy >= PASS_THRESHOLD ? "Gold Mastered" : "Desynced"}
                 </h2>
-                <p className={cn("text-4xl font-black italic", score.accuracy >= PASS_THRESHOLD ? "text-[#00FF66]" : "text-[#FF3D00]")}>
+                <p className="text-4xl font-black italic transition-colors duration-500" style={{ color: getAccuracyColor(score.accuracy) }}>
                   {score.accuracy}% Sync
                 </p>
               </div>

@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Game, Level, Sound, GameScore, SoundType } from '@/lib/game/types';
+import { Game, Level, Sound, GameScore, SoundType, getAccuracyColor } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -288,6 +288,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     y: (dragStart.y - dragCurrent.y) / 6 
   } : null;
 
+  const accColor = getAccuracyColor(score.accuracy);
+
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
       <header className="flex justify-between items-center mb-1 px-6 h-14 shrink-0 z-50 bg-black/60 backdrop-blur-2xl border-b border-white/5 rounded-t-[2.5rem]">
@@ -302,8 +304,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 bg-black/80 px-5 py-2 rounded-full border border-white/10 h-10 backdrop-blur-md shadow-2xl">
-            <Percent className="w-4 h-4 text-[#FFEA00]" />
-            <p className={cn("text-xl md:text-2xl font-black italic tracking-tighter", score.accuracy >= PASS_THRESHOLD ? "text-[#00FF66]" : "text-[#FF3D00]")}>
+            <Percent className="w-4 h-4" style={{ color: accColor }} />
+            <p className="text-xl md:text-2xl font-black italic tracking-tighter transition-colors duration-500" style={{ color: accColor }}>
               {score.accuracy}
             </p>
           </div>
@@ -453,7 +455,9 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                     <Sparkles className="absolute -top-4 -right-4 w-8 h-8 text-[#FFEA00] animate-pulse" />
                   </div>
                   <h2 className="text-5xl md:text-6xl font-black uppercase italic tracking-tighter">Gold Mastered</h2>
-                  <p className="text-4xl text-[#00FF66] font-black italic">{score.accuracy}% Sync</p>
+                  <p className="text-4xl font-black italic transition-colors duration-500" style={{ color: getAccuracyColor(score.accuracy) }}>
+                    {score.accuracy}% Sync
+                  </p>
                 </>
               ) : (
                 <>

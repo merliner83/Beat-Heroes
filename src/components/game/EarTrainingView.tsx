@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Game, Level, LevelProgress } from '@/lib/game/types';
+import { Game, Level, LevelProgress, getAccuracyColor } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -328,7 +328,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                 {weeklyAverage > 0 && (
                    <div className="flex items-center justify-center gap-3 text-sm opacity-30 font-black uppercase tracking-widest pt-4">
                      <BarChart3 className="w-5 h-5" />
-                     Weekly Average: {weeklyAverage}%
+                     Weekly Average: <span style={{ color: getAccuracyColor(weeklyAverage) }}>{weeklyAverage}%</span>
                    </div>
                 )}
               </div>
@@ -437,7 +437,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                 </div>
 
                 <div>
-                  <h3 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter mb-3 text-gradient leading-tight pr-10">
+                  <h3 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter mb-3 text-gradient transition-colors duration-500 leading-tight pr-10" style={{ WebkitTextFillColor: getAccuracyColor(Math.round(sessionScores.reduce((a,b) => a+b, 0) / TOTAL_ROUNDS)) }}>
                     {Math.round(sessionScores.reduce((a,b) => a+b, 0) / TOTAL_ROUNDS)}%
                   </h3>
                   <p className="text-[10px] uppercase font-black tracking-[0.5em] opacity-30">Session Accuracy</p>
@@ -447,7 +447,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
                   <div className="gemini-border-primary">
                     <div className="p-6 md:p-8 bg-black/60 rounded-xl border border-white/5">
                       <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest opacity-30 mb-2 md:mb-3">Weekly Average</p>
-                      <p className="text-2xl md:text-3xl font-black italic text-[#00E676]">{weeklyAverage}%</p>
+                      <p className="text-2xl md:text-3xl font-black italic" style={{ color: getAccuracyColor(weeklyAverage) }}>{weeklyAverage}%</p>
                     </div>
                   </div>
                   <div className="gemini-border-primary">

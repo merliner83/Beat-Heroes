@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useCollection, useDoc, useUser } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
-import { Studio, Game, Level, LevelProgress, Track, hasAccess } from '@/lib/game/types';
+import { Studio, Game, Level, LevelProgress, Track, hasAccess, getAccuracyColor } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ChevronRight, Trophy, Loader2, Play, Pause, Music, Zap, ExternalLink, Lock } from 'lucide-react';
@@ -259,10 +259,7 @@ export default function StudioPage() {
                         <div className="mb-4">
                           <div className="flex justify-between items-center mb-2">
                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Mastery</span>
-                            <span className={cn(
-                              "text-[10px] font-black italic",
-                              overallProgress >= 80 ? "text-[#00E676]" : "text-primary"
-                            )}>
+                            <span className="text-[10px] font-black italic transition-colors duration-500" style={{ color: getAccuracyColor(overallProgress) }}>
                               {overallProgress}%
                             </span>
                           </div>
@@ -289,9 +286,9 @@ export default function StudioPage() {
                                 <ChevronRight className="w-3 h-3" />
                               </div>
                               {progress && (
-                                <div className="mt-1 flex items-center gap-1 bg-[#00E676]/20 px-2 py-0.5 rounded-full border border-[#00E676]/30">
-                                  <Trophy className="w-2.5 h-2.5 text-[#00E676]" />
-                                  <span className="text-[9px] font-black text-[#00E676]">{progress.accuracy}%</span>
+                                <div className="mt-1 flex items-center gap-1 bg-black/20 px-2 py-0.5 rounded-full border border-white/5">
+                                  <Trophy className="w-2.5 h-2.5" style={{ color: getAccuracyColor(progress.accuracy) }} />
+                                  <span className="text-[9px] font-black" style={{ color: getAccuracyColor(progress.accuracy) }}>{progress.accuracy}%</span>
                                 </div>
                               )}
                             </div>

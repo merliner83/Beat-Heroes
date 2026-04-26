@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Game, Level, TriggerPattern, PatternProgress } from '@/lib/game/types';
+import { Game, Level, TriggerPattern, PatternProgress, getAccuracyColor } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -256,7 +256,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                     <div className="p-6 bg-black/60 rounded-xl flex flex-col gap-4">
                       <div className="flex justify-between items-center">
                         <h4 className="text-xl font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">{p.name}</h4>
-                        <div className="text-[10px] font-black uppercase tracking-widest text-[#00E676]">{mastery}% Mastery</div>
+                        <div className="text-[10px] font-black uppercase tracking-widest" style={{ color: getAccuracyColor(mastery) }}>{mastery}% Mastery</div>
                       </div>
                       <Progress value={mastery} className="h-1.5 bg-white/5" />
                       <div className="flex gap-3">
@@ -324,7 +324,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
             {status === 'RESULTS' && (
               <div className="space-y-10 animate-in zoom-in-95">
-                <div className="text-7xl font-black italic text-gradient">{finalScore}% Sync</div>
+                <div className="text-7xl font-black italic transition-colors duration-500" style={{ color: getAccuracyColor(finalScore || 0) }}>{finalScore}% Sync</div>
                 <div className="flex gap-4">
                   <Button onClick={startPerformanceQuiz} variant="outline" className="flex-1 h-20 rounded-2xl font-black uppercase italic border-white/10">Retry</Button>
                   <Button onClick={() => setMode('explore')} className="flex-1 h-20 bg-white text-black rounded-2xl font-black uppercase italic">Dashboard</Button>

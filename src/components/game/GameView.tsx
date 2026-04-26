@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Game, Level, Sound, GameScore, SoundType, TriggerPattern } from '@/lib/game/types';
+import { Game, Level, Sound, GameScore, SoundType, TriggerPattern, getAccuracyColor } from '@/lib/game/types';
 import { audioEngine } from '@/lib/game/audio-engine';
 import { SamplerPad, FlashType } from './SamplerPad';
 import { NoteLane } from './NoteLane';
@@ -278,6 +278,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     }
   }, [isFinished, score.accuracy, user, db, level]);
 
+  const accColor = getAccuracyColor(score.accuracy);
+
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-3 md:p-6 max-w-6xl mx-auto overflow-hidden select-none">
       <header className="flex justify-between items-center mb-2 px-4 h-12 md:h-16 shrink-0 relative z-[60]">
@@ -293,8 +295,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2.5 bg-black/60 backdrop-blur-xl px-5 py-2 rounded-full border border-white/10 h-10 md:h-14">
-            <Percent className="w-4 h-4 text-[#FFEA00]" />
-            <p className={cn("text-lg md:text-3xl font-black italic leading-none", score.accuracy >= PASS_THRESHOLD ? "text-[#00E676]" : "text-[#FF3D00]")}>
+            <Percent className="w-4 h-4" style={{ color: accColor }} />
+            <p className="text-lg md:text-3xl font-black italic leading-none transition-colors duration-500" style={{ color: accColor }}>
               {score.accuracy}
             </p>
           </div>
@@ -386,13 +388,17 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
                 <>
                   <Trophy className="w-20 h-20 text-[#FFEA00] mx-auto drop-shadow-[0_0_30px_#FFEA00]" />
                   <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">Gold Mastered</h2>
-                  <p className="text-[#00E676] font-black text-3xl md:text-5xl italic">{score.accuracy}% Sync</p>
+                  <p className="font-black text-3xl md:text-5xl italic transition-colors duration-500" style={{ color: getAccuracyColor(score.accuracy) }}>
+                    {score.accuracy}% Sync
+                  </p>
                 </>
               ) : (
                 <>
                   <XCircle className="w-20 h-20 text-[#FF3D00] mx-auto drop-shadow-[0_0_30px_#FF3D00]" />
                   <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">Desynced</h2>
-                  <p className="text-[#FF3D00] font-black text-3xl md:text-5xl italic">{score.accuracy}% Sync</p>
+                  <p className="font-black text-3xl md:text-5xl italic transition-colors duration-500" style={{ color: getAccuracyColor(score.accuracy) }}>
+                    {score.accuracy}% Sync
+                  </p>
                 </>
               )}
               <div className="flex gap-6 pt-12">

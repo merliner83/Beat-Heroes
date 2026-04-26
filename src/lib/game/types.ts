@@ -111,3 +111,11 @@ export function hasAccess(userRole: UserRole = 'free', requiredRole: UserRole = 
   const reqIdx = roles.indexOf(requiredRole);
   return userIdx >= reqIdx;
 }
+
+/** Helper to get accuracy color based on percentage (Red -> Orange -> Yellow -> Green) */
+export function getAccuracyColor(accuracy: number): string {
+  if (accuracy >= 85) return '#00E676'; // Green
+  if (accuracy >= 65) return '#FFEA00'; // Yellow
+  if (accuracy >= 35) return '#FF9100'; // Orange
+  return '#FF3D00'; // Red
+}
