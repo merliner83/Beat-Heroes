@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { 
   ArrowLeft, 
   Play, 
-  Pause, 
+  Square,
   Trophy, 
   Zap, 
   Activity, 
@@ -239,13 +239,13 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
 
         {mode === 'explore' && (
-          <div className="w-full max-w-4xl space-y-12 animate-in zoom-in-95 duration-500 pb-20">
+          <div className="w-full max-w-5xl space-y-12 animate-in zoom-in-95 duration-500 pb-20">
             <div className="text-center">
               <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter mb-6 text-gradient">
                 RHYTHM MASTER
               </h2>
               
-              <div className="flex gap-1 md:gap-2 justify-center w-full max-w-2xl mx-auto mb-12">
+              <div className="flex gap-1 md:gap-2 justify-center w-full max-w-2xl mx-auto mb-10">
                 {Array.from({ length: 16 }).map((_, i) => (
                   <div key={i} className={cn(
                     "h-10 md:h-14 flex-1 rounded-md border transition-all duration-75 flex items-center justify-center",
@@ -265,50 +265,49 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               </div>
             </div>
 
-            {/* Tap Pad in Explore Mode - Moved here */}
-            <div className="flex flex-col items-center gap-6">
+            <div className="flex flex-col items-center gap-6 mb-12">
                <Button
                 onPointerDown={handleTap}
                 className={cn(
-                  "w-48 h-48 md:w-56 md:h-56 rounded-[2.5rem] border-4 flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40",
+                  "w-44 h-44 md:w-52 md:h-52 rounded-[2.5rem] border-4 flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40",
                   isPadPressed ? "scale-90 border-primary shadow-[0_0_50px_rgba(255,51,153,0.5)]" : "border-white/10 hover:border-white/20"
                 )}
               >
                 <Target className={cn("w-10 h-10 mb-4", isPadPressed ? "text-primary" : "text-white/20")} />
                 <span className="text-[10px] font-black uppercase italic tracking-widest opacity-40">Tap Rhythm</span>
               </Button>
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-20">Practice Pad</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {patterns?.map(p => {
                 const mastery = getMastery(p.id);
                 const isThisPlaying = isPlaying && selectedPatternId === p.id;
                 
                 return (
                   <div key={p.id} className="gemini-border group">
-                    <div className="p-6 bg-black/60 rounded-xl flex flex-col gap-4">
-                      <div className="flex justify-between items-center">
-                        <h4 className="text-xl font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">{p.name}</h4>
-                        <div className="text-[10px] font-black uppercase tracking-widest" style={{ color: getAccuracyColor(mastery) }}>{mastery}% Mastery</div>
+                    <div className="p-4 bg-black/60 rounded-xl flex flex-col gap-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <h4 className="text-sm font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors line-clamp-1">{p.name}</h4>
+                        <div className="text-[10px] font-black italic whitespace-nowrap" style={{ color: getAccuracyColor(mastery) }}>{mastery}%</div>
                       </div>
-                      <Progress value={mastery} className="h-1.5" />
-                      <div className="flex gap-3">
+                      <Progress value={mastery} className="h-1" />
+                      <div className="flex gap-2">
                         <Button 
+                          size="icon"
                           variant="ghost" 
                           onClick={() => toggleExplore(p)}
                           className={cn(
-                            "flex-1 h-12 text-[10px] font-black uppercase tracking-widest transition-all",
-                            isThisPlaying ? "bg-primary/20 text-primary border border-primary/20" : "bg-white/5"
+                            "w-10 h-10 transition-all rounded-lg shrink-0",
+                            isThisPlaying ? "bg-primary text-white" : "bg-white/5 hover:bg-white/10"
                           )}
                         >
-                          {isThisPlaying ? "Stop" : "Listen"}
+                          {isThisPlaying ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
                         </Button>
                         <Button 
                           onClick={() => { setSelectedPatternId(p.id); startPerformanceQuiz(); }}
-                          className="flex-1 bg-primary text-white h-12 text-[10px] font-black uppercase tracking-widest shadow-[0_0_20px_rgba(255,51,153,0.2)]"
+                          className="flex-1 bg-primary text-white h-10 text-[10px] font-black uppercase tracking-widest rounded-lg"
                         >
-                          Start Quiz
+                          Quiz
                         </Button>
                       </div>
                     </div>
@@ -395,7 +394,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
                 {status === 'RESULTS' && (
                   <div className="space-y-10 animate-in zoom-in-95">
-                    <div className="text-7xl font-black italic transition-colors duration-500" style={{ color: getAccuracyColor(finalScore || 0) }}>{finalScore}% Sync</div>
+                    <div className="text-7xl font-black italic transition-colors duration-500" style={{ color: getAccuracyColor(finalScore || 0) }}>{finalScore}%</div>
                     <div className="flex gap-4">
                       <Button onClick={startPerformanceQuiz} variant="outline" className="flex-1 h-20 rounded-2xl font-black uppercase italic border-white/10">Retry</Button>
                       <Button onClick={() => { setMode('explore'); setStatus('IDLE'); }} className="flex-1 h-20 bg-white text-black rounded-2xl font-black uppercase italic">Dashboard</Button>
