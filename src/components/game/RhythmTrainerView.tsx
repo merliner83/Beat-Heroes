@@ -89,6 +89,8 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     audioEngine.playOneShot(soundUrl);
 
     const currentTime = audioEngine.getContextTime();
+    
+    // If not started yet, just show active feedback
     if (startTimeRef.current === 0) {
       setTapFeedback('active');
       setTimeout(() => setTapFeedback(null), 100);
@@ -97,22 +99,20 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
     const elapsed = currentTime - startTimeRef.current;
     const currentStepRaw = elapsed / stepTime;
-    const tolerance = 0.5; 
+    const tolerance = 0.5; // 16th note window
     
     let isHit = false;
     const targetSteps = selectedPattern.steps;
-    const currentPos = (status === 'QUIZ_PLAYING' || isPlaying) ? currentStepRaw : 0;
     
-    // Check hit against pattern steps
+    // Logic for hitting notes based on the current step position
+    // We check against the pattern steps (looping 128 steps)
+    const normalizedPos = currentStepRaw % 128;
+    
     isHit = targetSteps.some(s => {
-      const diff = Math.abs(s - (isPlaying ? (currentPos % 128) : currentPos));
-      if (isPlaying) {
-        // Handle wrap-around for loop
-        const wrap1 = Math.abs(s - ((currentPos % 128) - 128));
-        const wrap2 = Math.abs((s - 128) - (currentPos % 128));
-        return diff <= tolerance || wrap1 <= tolerance || wrap2 <= tolerance;
-      }
-      return diff <= tolerance;
+      const diff = Math.abs(s - normalizedPos);
+      const wrap1 = Math.abs(s - (normalizedPos - 128));
+      const wrap2 = Math.abs((s - 128) - normalizedPos);
+      return diff <= tolerance || wrap1 <= tolerance || wrap2 <= tolerance;
     });
 
     if (isHit) {
@@ -144,8 +144,9 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     const lookahead = 0.1; 
     const scheduleInterval = 0.025; 
 
-    // Static helper to avoid 'this' issues in the closure
+    // Internal function to play sounds with precise timing
     const playNote = (time: number, url: string) => {
+      if (!audioEngine) return;
       const source = (audioEngine as any).context.createBufferSource();
       source.buffer = (audioEngine as any).buffers.get(url);
       if (source.buffer) {
@@ -156,12 +157,12 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
     const nextNoteTime = startTimeRef.current + (playheadRef.current * stepTime);
 
-    if (nextNoteTime < contextTime + lookahead) {
+    while (nextNoteTime < contextTime + lookahead) {
       const step = playheadRef.current;
       const soundUrl = getSoundForPattern(selectedPattern);
       const metronomeUrl = (audioEngine as any).constructor.METRONOME_URL;
 
-      // Always play metronome on beats
+      // Always play metronome on full beats
       if (step % 4 === 0) {
         playNote(nextNoteTime, metronomeUrl);
       }
@@ -173,12 +174,15 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
       playheadRef.current++;
 
-      // Stop Quiz automatically
+      // Stop Quiz automatically after required steps
       if (status === 'QUIZ_PLAYING' && playheadRef.current >= QUIZ_STEPS) {
         const delay = (nextNoteTime - contextTime) * 1000;
-        schedulerRef.current = window.setTimeout(finishPerformanceQuiz, delay + 100);
+        schedulerRef.current = window.setTimeout(finishPerformanceQuiz, delay + 200);
         return;
       }
+      
+      // Safety break to prevent infinite loops if something goes wrong with timing
+      if (playheadRef.current > 1000 && mode !== 'explore') break;
     }
 
     schedulerRef.current = window.setTimeout(scheduleNextNotes, scheduleInterval * 1000);
@@ -287,8 +291,12 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       }
     });
 
-    const maxPoints = Math.max(targetSteps.length, userTaps.length, 1);
-    const accuracy = Math.round((hits / maxPoints) * 100);
+    const totalNotes = targetSteps.length;
+    // We penalize extra taps that don't match notes
+    const extraTaps = Math.max(0, userTaps.length - hits);
+    const accuracy = totalNotes > 0 
+      ? Math.max(0, Math.round(((hits - (extraTaps * 0.5)) / totalNotes) * 100))
+      : 0;
     
     setFinalScore(accuracy);
 
@@ -373,9 +381,9 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
                <Button
                 onPointerDown={handleTap}
                 className={cn(
-                  "w-44 h-44 md:w-52 md:h-52 rounded-none border-none flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40 hover:bg-black/40 duration-75",
+                  "w-44 h-44 md:w-52 md:h-52 rounded-none border-none flex flex-col items-center justify-center transition-all select-none touch-none duration-75 bg-black/40 hover:bg-black/40",
                   tapFeedback === 'active' && "scale-95 brightness-110",
-                  tapFeedback === 'hit' && "scale-105 bg-[#00E676] shadow-[0_0_120px_#00E676] border border-[#00E676] ring-8 ring-[#00E676]/20"
+                  tapFeedback === 'hit' && "bg-[#00E676] scale-105 shadow-[0_0_120px_#00E676] border-none"
                 )}
               >
                 <Target className={cn(
@@ -479,7 +487,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       <footer className="p-8 shrink-0 flex justify-center opacity-20">
         <div className="flex items-center gap-4">
           <Volume2 className="w-5 h-5" />
-          <span className="text-[10px] font-black uppercase tracking-[0.5em]">Sample-Accurate Audio Engine • v6.0</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.5em]">Sample-Accurate Audio Engine • v7.0</span>
         </div>
       </footer>
     </div>
