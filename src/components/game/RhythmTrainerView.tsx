@@ -91,11 +91,12 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     const currentStep = elapsed / stepTime;
     const roundedStep = Math.round(currentStep);
     
-    // Check if it's a "hit" in Training/Explore mode
+    // Hit Detection
     const isHit = isPlaying && selectedPattern.steps.some(s => Math.abs(s - (roundedStep % 128)) <= 1);
 
     if (isHit) {
       setTapFeedback('hit');
+      // Im Training/Quiz bei Hit stumm bleiben für den visuellen Erfolgseffekt
     } else {
       const soundUrl = getSoundForPattern(selectedPattern);
       audioEngine.playOneShot(soundUrl);
@@ -275,13 +276,13 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
           <div className="flex items-center justify-center gap-12 md:gap-24 mb-12">
              <div className="flex flex-col items-center gap-3">
-               <div className="rounded-2xl gemini-border-primary overflow-hidden">
+               <div className="rounded-2xl border border-white/10 overflow-hidden">
                  <Button
                   onClick={toggleExplore}
                   disabled={status !== 'IDLE' && status !== 'RESULTS'}
                   className={cn(
-                    "w-20 h-20 md:w-24 md:h-24 rounded-none border-none flex flex-col items-center justify-center transition-all bg-black/40",
-                    isPlaying ? "bg-primary/20 text-primary" : "text-white/40"
+                    "w-20 h-20 md:w-24 md:h-24 rounded-none border-none flex flex-col items-center justify-center transition-all bg-black/40 hover:bg-black/60",
+                    isPlaying ? "text-primary" : "text-white/40"
                   )}
                 >
                   {isPlaying ? <Square className="w-6 h-6 fill-primary text-primary" /> : <Play className="w-6 h-6 fill-white text-white" />}
@@ -290,23 +291,22 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
               <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Training</span>
              </div>
 
-             <div className="rounded-[3rem] gemini-border overflow-hidden">
+             <div className="rounded-[3rem] border border-white/5 overflow-hidden">
                <Button
                 onPointerDown={handleTap}
                 className={cn(
-                  "w-44 h-44 md:w-52 md:h-52 rounded-none border-none flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40",
-                  tapFeedback === 'active' && "scale-90 bg-primary/20",
+                  "w-44 h-44 md:w-52 md:h-52 rounded-none border-none flex flex-col items-center justify-center transition-all select-none touch-none bg-black/40 hover:bg-black/40",
+                  tapFeedback === 'active' && "scale-90",
                   tapFeedback === 'hit' && "scale-95 bg-[#00E676]/30 shadow-[0_0_50px_rgba(0,230,118,0.5)]"
                 )}
               >
                 <Target className={cn(
                   "w-10 h-10 mb-2 transition-colors", 
-                  tapFeedback === 'active' ? "text-primary" : 
                   tapFeedback === 'hit' ? "text-[#00E676]" : "text-white/20"
                 )} />
                 <span className={cn(
                   "text-[10px] font-black uppercase italic tracking-widest transition-opacity",
-                  tapFeedback ? "opacity-100" : "opacity-40"
+                  tapFeedback === 'hit' ? "opacity-100" : "opacity-40"
                 )}>
                   {tapFeedback === 'hit' ? 'BOOM!' : 'Tap Rhythm'}
                 </span>
@@ -314,11 +314,11 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
             </div>
 
             <div className="flex flex-col items-center gap-3">
-              <div className="rounded-2xl gemini-border-primary overflow-hidden">
+              <div className="rounded-2xl border border-white/10 overflow-hidden">
                 <Button
                   onClick={startPerformanceQuiz}
                   disabled={status === 'COUNT_IN' || status === 'QUIZ_PLAYING'}
-                  className="w-20 h-20 md:w-24 md:h-24 rounded-none border-none bg-black/40 group"
+                  className="w-20 h-20 md:w-24 md:h-24 rounded-none border-none bg-black/40 hover:bg-black/60 group"
                 >
                   <Brain className="w-6 h-6 text-white group-hover:text-primary transition-colors" />
                 </Button>
