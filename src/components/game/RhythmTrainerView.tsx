@@ -27,7 +27,7 @@ const SOUND_MAPPING: Record<string, string> = {
   'clave': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClaves.mp3?alt=media&token=1162b3f6-19d7-4a41-a3b6-9c243cd5d36a'
 };
 
-const QUIZ_STEPS = 64; // 4 Takte (4 * 16 Steps)
+const QUIZ_STEPS = 64; // 4 Bars (4 * 16 Steps)
 
 interface RhythmTrainerViewProps {
   game: Game;
@@ -52,9 +52,10 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const startTimeRef = useRef<number>(0);
   const lastScheduledStepRef = useRef<number>(-1);
   const frameRef = useRef<number>(null);
+  const userTapsRef = useRef<{ step: number }[]>([]);
 
   const bpm = 120; 
-  const stepTime = (60 / bpm) / 4; // 16tel Note
+  const stepTime = (60 / bpm) / 4; // 16th note duration
 
   const patternsQuery = useMemoFirebase(() => db ? query(collection(db, 'patterns')) : null, [db]);
   const { data: patterns } = useCollection<TriggerPattern>(patternsQuery);
@@ -71,18 +72,17 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   }, [patterns, selectedPatternId]);
 
   const stopPlayback = useCallback(() => {
-    if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    if (frameRef.current) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
     setStatus('IDLE');
     setPlayhead(0);
     startTimeRef.current = 0;
     lastScheduledStepRef.current = -1;
   }, []);
 
-  useEffect(() => {
-    return () => stopPlayback();
-  }, [stopPlayback]);
-
-  const finishQuiz = useCallback(() => {
+  const finishQuiz = useCallback((taps: { step: number }[]) => {
     if (!selectedPattern) return;
     
     const targetSteps = selectedPattern.steps.filter(s => s < QUIZ_STEPS);
@@ -94,7 +94,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       let bestMatchIdx = -1;
       let minDiff = Infinity;
 
-      userTaps.forEach((tap, idx) => {
+      taps.forEach((tap, idx) => {
         if (matchedTaps.has(idx)) return;
         const diff = Math.abs(tap.step - target);
         if (diff <= tolerance && diff < minDiff) {
@@ -123,22 +123,24 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       }, { merge: true });
       setDoc(doc(db, 'users', user.uid), { streetCred: increment(accuracy * 2) }, { merge: true });
     }
-  }, [selectedPattern, userTaps, user, db]);
+  }, [selectedPattern, user, db]);
 
   const handleTap = useCallback(() => {
     if (!audioEngine || !selectedPattern) return;
     
-    // Immer Sound abspielen
     audioEngine.playOneShot(selectedPattern.sampleUrl || SOUND_MAPPING['clave']);
 
     if (startTimeRef.current === 0) return;
 
     const contextTime = audioEngine.getContextTime();
     const elapsed = contextTime - startTimeRef.current;
+    
+    if (elapsed < 0) return;
+
     const currentStepRaw = elapsed / stepTime;
     const tolerance = 0.5;
     
-    // Check if hit
+    // Check if hit against pattern
     const normalizedPos = currentStepRaw % 128;
     const isHit = selectedPattern.steps.some(s => {
       const diff = Math.min(
@@ -152,7 +154,8 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     if (isHit) {
       setLastHitTime(Date.now());
       if (status === 'PLAYING' && mode === 'quiz') {
-        setUserTaps(prev => [...prev, { step: currentStepRaw }]);
+        userTapsRef.current.push({ step: currentStepRaw });
+        setUserTaps([...userTapsRef.current]);
       }
     }
   }, [selectedPattern, status, mode, stepTime]);
@@ -162,31 +165,39 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
     const now = audioEngine.getContextTime();
     const elapsed = now - startTimeRef.current;
-    const currentStep = Math.floor(elapsed / stepTime);
+    
+    if (elapsed < 0) {
+      frameRef.current = requestAnimationFrame(loop);
+      return;
+    }
 
-    if (currentStep > lastScheduledStepRef.current) {
-      // QUIZ STOP LOGIK
-      if (mode === 'quiz' && currentStep >= QUIZ_STEPS) {
-        stopPlayback();
-        finishQuiz();
-        return;
-      }
+    const currentStepRaw = elapsed / stepTime;
+    const currentStepInt = Math.floor(currentStepRaw);
 
+    // STOP LOGIC: Quiz ends after 4 bars
+    if (mode === 'quiz' && currentStepInt >= QUIZ_STEPS) {
+      const finalTaps = [...userTapsRef.current];
+      stopPlayback();
+      finishQuiz(finalTaps);
+      return;
+    }
+
+    if (currentStepInt > lastScheduledStepRef.current) {
       const metronomeUrl = (audioEngine as any).constructor.METRONOME_URL;
       const sampleUrl = selectedPattern?.sampleUrl || SOUND_MAPPING['clave'];
 
-      // Metronom auf Schlägen
-      if (currentStep % 4 === 0) {
+      // Metronome every beat (4 steps)
+      if (currentStepInt % 4 === 0) {
         audioEngine.playOneShot(metronomeUrl);
       }
 
-      // Pattern-Wiedergabe nur im Training
-      if (mode === 'explore' && selectedPattern?.steps.includes(currentStep % 128)) {
+      // Pattern playback only in explore mode
+      if (mode === 'explore' && selectedPattern?.steps.includes(currentStepInt % 128)) {
         audioEngine.playOneShot(sampleUrl);
       }
 
-      lastScheduledStepRef.current = currentStep;
-      setPlayhead(currentStep % 16);
+      lastScheduledStepRef.current = currentStepInt;
+      setPlayhead(currentStepInt % 16);
     }
 
     frameRef.current = requestAnimationFrame(loop);
@@ -197,6 +208,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     
     setMode(newMode);
     stopPlayback();
+    userTapsRef.current = [];
     setUserTaps([]);
     setFinalScore(null);
 
@@ -210,10 +222,14 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     }
 
     setStatus('PLAYING');
-    startTimeRef.current = audioEngine.getContextTime() + 0.05;
+    startTimeRef.current = audioEngine.getContextTime() + 0.1; 
     lastScheduledStepRef.current = -1;
     loop();
   };
+
+  useEffect(() => {
+    return () => stopPlayback();
+  }, [stopPlayback]);
 
   const isHitActive = Date.now() - lastHitTime < 150;
 
@@ -236,8 +252,8 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
         <div className="w-full max-w-5xl space-y-12 animate-in zoom-in-95 duration-500 pb-20">
           <div className="text-center">
-            <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter mb-6 text-gradient">
-              {status === 'COUNT_IN' ? countIn : 'RHYTHM MASTER'}
+            <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter mb-6 text-gradient h-20 flex items-center justify-center">
+              {status === 'COUNT_IN' ? countIn : status === 'RESULTS' ? 'FINISHED' : 'RHYTHM MASTER'}
             </h2>
             
             <div className="flex gap-1 md:gap-2 justify-center w-full max-w-2xl mx-auto mb-10">
