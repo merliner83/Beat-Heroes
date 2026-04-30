@@ -355,7 +355,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                   src="https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010"
                   alt="808 Drummachine"
                   fill
-                  className="object-cover"
+                  className="object-contain"
                   sizes="(max-width: 768px) 192px, 256px"
                />
             </div>
