@@ -6,7 +6,7 @@ import { Game, Level, Sound, GameScore, SoundType, getAccuracyColor } from '@/li
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Trophy, Loader2, Sparkles, XCircle, Zap, Target, Crosshair, Disc, ArrowLeft, Percent, LayoutGrid, Music, Radio, Mic } from 'lucide-react';
+import { Trophy, Loader2, Sparkles, XCircle, LayoutGrid, ArrowLeft, Percent, Disc, Music, Radio, Mic } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -79,7 +79,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const bpm = game.bpm || 128;
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
-  const MPC_POS = { x: 50, y: 70 }; // Adjusted position for a more balanced view
+  const MPC_POS = { x: 50, y: 72 }; 
 
   const SAMPLE_LIFETIME = 
     level.difficulty === 1 ? 3000 : 
@@ -346,15 +346,15 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             transform: `translate(-50%, -50%) ${pull ? `translate(${-pull.x}px, ${-pull.y}px)` : ''}`
           }}
         >
-          <div className="relative w-48 h-[27.5vw] md:w-80 md:h-[45vw] max-h-[300px]">
+          <div className="relative w-64 md:w-[500px] aspect-video">
             <div className="absolute -inset-10 bg-primary/20 blur-[80px] pointer-events-none" />
-            <div className="relative w-full h-full rounded-none overflow-hidden border-2 border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] bg-black">
+            <div className="relative w-full h-full rounded-2xl overflow-hidden border-2 border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] bg-black">
                <Image 
                   src="https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010"
                   alt="808 Drummachine"
                   fill
                   className="object-cover"
-                  sizes="(max-width: 768px) 192px, 320px"
+                  sizes="(max-width: 768px) 256px, 500px"
                   priority
                />
             </div>
