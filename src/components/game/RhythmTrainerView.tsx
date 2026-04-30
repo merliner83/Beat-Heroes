@@ -83,7 +83,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   const finishQuiz = useCallback((taps: { step: number }[]) => {
     if (!selectedPattern) return;
     
-    // Pattern might be 8 bars, quiz is only 4
     const targetSteps = selectedPattern.steps.filter(s => s < QUIZ_STEPS);
     let hits = 0;
     const matchedTaps = new Set<number>();
@@ -109,14 +108,16 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     });
 
     const totalNotes = targetSteps.length;
-    // Calculate accuracy: hits vs required notes, penalty for extra taps
     const rawAccuracy = totalNotes > 0 ? (hits / totalNotes) : 0;
     const extraTapsPenalty = taps.length > hits ? (taps.length - hits) * 0.05 : 0;
     const accuracy = Math.max(0, Math.min(100, Math.round((rawAccuracy - extraTapsPenalty) * 100)));
     
     setFinalScore(accuracy);
     setStatus('RESULTS');
+    
+    // Safety: Stop any running loops
     if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    frameRef.current = null;
 
     if (user && db) {
       setDoc(doc(db, 'users', user.uid, 'patternProgress', selectedPattern.id), { 
@@ -127,41 +128,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
       setDoc(doc(db, 'users', user.uid), { streetCred: increment(accuracy * 2) }, { merge: true });
     }
   }, [selectedPattern, user, db]);
-
-  const handleTap = useCallback(() => {
-    if (!audioEngine || !selectedPattern) return;
-    
-    audioEngine.playOneShot(selectedPattern.sampleUrl || SOUND_MAPPING['clave']);
-
-    if (startTimeRef.current === 0 || status !== 'PLAYING') return;
-
-    const contextTime = audioEngine.getContextTime();
-    const elapsed = contextTime - startTimeRef.current;
-    
-    if (elapsed < 0) return;
-
-    const currentStepRaw = elapsed / stepTime;
-    const tolerance = 0.5;
-    
-    // Check if hit against pattern (using modulo 128 as patterns are often 8 bars)
-    const normalizedPos = currentStepRaw % 128;
-    const isHit = selectedPattern.steps.some(s => {
-      const diff = Math.min(
-        Math.abs(s - normalizedPos),
-        Math.abs(s - (normalizedPos - 128)),
-        Math.abs(s - (normalizedPos + 128))
-      );
-      return diff <= tolerance;
-    });
-
-    if (isHit) {
-      setLastHitTime(Date.now());
-    }
-
-    if (mode === 'quiz') {
-      userTapsRef.current.push({ step: currentStepRaw });
-    }
-  }, [selectedPattern, status, mode, stepTime]);
 
   const loop = useCallback(() => {
     if (!audioEngine || startTimeRef.current === 0) return;
@@ -177,10 +143,11 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     const currentStepRaw = elapsed / stepTime;
     const currentStepInt = Math.floor(currentStepRaw);
 
-    // Hard stop for quiz at exactly 4 bars
+    // CRITICAL: Stop for quiz at exactly 4 bars
     if (mode === 'quiz' && currentStepInt >= QUIZ_STEPS) {
+      stopPlayback();
       finishQuiz(userTapsRef.current);
-      return; // Stop animation loop
+      return; 
     }
 
     if (currentStepInt > lastScheduledStepRef.current) {
@@ -202,7 +169,41 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     }
 
     frameRef.current = requestAnimationFrame(loop);
-  }, [selectedPattern, mode, stepTime, finishQuiz]);
+  }, [selectedPattern, mode, stepTime, finishQuiz, stopPlayback]);
+
+  const handleTap = useCallback(() => {
+    if (!audioEngine || !selectedPattern) return;
+    
+    audioEngine.playOneShot(selectedPattern.sampleUrl || SOUND_MAPPING['clave']);
+
+    if (startTimeRef.current === 0 || status !== 'PLAYING') return;
+
+    const contextTime = audioEngine.getContextTime();
+    const elapsed = contextTime - startTimeRef.current;
+    
+    if (elapsed < 0) return;
+
+    const currentStepRaw = elapsed / stepTime;
+    const tolerance = 0.5;
+    
+    const normalizedPos = currentStepRaw % 128;
+    const isHit = selectedPattern.steps.some(s => {
+      const diff = Math.min(
+        Math.abs(s - normalizedPos),
+        Math.abs(s - (normalizedPos - 128)),
+        Math.abs(s - (normalizedPos + 128))
+      );
+      return diff <= tolerance;
+    });
+
+    if (isHit) {
+      setLastHitTime(Date.now());
+    }
+
+    if (mode === 'quiz') {
+      userTapsRef.current.push({ step: currentStepRaw });
+    }
+  }, [selectedPattern, status, mode, stepTime]);
 
   const startSession = async (newMode: 'explore' | 'quiz') => {
     if (!audioEngine || !selectedPattern) return;
@@ -224,7 +225,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     setStatus('PLAYING');
     startTimeRef.current = audioEngine.getContextTime() + 0.1; 
     lastScheduledStepRef.current = -1;
-    loop();
+    frameRef.current = requestAnimationFrame(loop);
   };
 
   useEffect(() => {

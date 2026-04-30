@@ -79,7 +79,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const bpm = game.bpm || 128;
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
-  const MPC_POS = { x: 50, y: 65 }; // High position for mobile
+  const MPC_POS = { x: 50, y: 70 }; // Adjusted position for a more balanced view
 
   const SAMPLE_LIFETIME = 
     level.difficulty === 1 ? 3000 : 
@@ -187,7 +187,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   }, [isPlaying, updateGame]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (!isPlaying || currentTime >= SESSION_DURATION) return;
+    if (!isPlaying || (audioEngine?.getCurrentTime() || 0) >= SESSION_DURATION) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     setDragCurrent({ x: e.clientX, y: e.clientY });
@@ -256,8 +256,6 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       setIsLoadingAudio(false);
     }
   };
-
-  const currentTime = audioEngine?.getCurrentTime() || 0;
 
   useEffect(() => {
     if (isFinished && score.accuracy >= PASS_THRESHOLD && user && db) {
@@ -329,7 +327,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
               top: `${MPC_POS.y}%`, 
               width: `${aiming.length}px`,
               transform: `rotate(${aiming.angle}deg)`,
-              height: '180px', // Massive wide beam
+              height: '180px', 
               marginTop: '-90px', 
               background: 'linear-gradient(90deg, rgba(255, 51, 153, 0.9) 0%, rgba(0, 255, 255, 0.4) 50%, transparent 100%)',
               clipPath: 'polygon(0 40%, 100% 0, 100% 100%, 0 60%)',
@@ -348,15 +346,16 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             transform: `translate(-50%, -50%) ${pull ? `translate(${-pull.x}px, ${-pull.y}px)` : ''}`
           }}
         >
-          <div className="relative w-48 h-32 md:w-64 md:h-44">
+          <div className="relative w-48 h-[27.5vw] md:w-80 md:h-[45vw] max-h-[300px]">
             <div className="absolute -inset-10 bg-primary/20 blur-[80px] pointer-events-none" />
             <div className="relative w-full h-full rounded-none overflow-hidden border-2 border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] bg-black">
                <Image 
                   src="https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010"
                   alt="808 Drummachine"
                   fill
-                  className="object-contain"
-                  sizes="(max-width: 768px) 192px, 256px"
+                  className="object-cover"
+                  sizes="(max-width: 768px) 192px, 320px"
+                  priority
                />
             </div>
           </div>
