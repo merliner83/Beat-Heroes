@@ -58,7 +58,6 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const [isFinished, setIsFinished] = useState(false);
   const [hasStartedFade, setHasStartedFade] = useState(false);
   
-  // Lowered positions for better ergonomics
   const [hitPosition, setHitPosition] = useState(580);
   
   const [globalFlash, setGlobalFlash] = useState<{ type: FlashType, key: number }>({ type: null, key: 0 });
@@ -81,9 +80,9 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 768) {
-        setHitPosition(720); // Deep Desktop
+        setHitPosition(window.innerHeight * 0.75); 
       } else {
-        setHitPosition(580); // Deep Mobile/Narrow
+        setHitPosition(window.innerHeight * 0.65);
       }
     };
     handleResize();
@@ -323,16 +322,30 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           </div>
         </div>
 
+        {/* Improved Wide Hit Zone with Fading Edges */}
         <div 
           key={globalFlash.key}
-          className={cn(
-            "absolute left-0 right-0 h-2 z-20 pointer-events-none transition-all duration-300 rounded-full",
-            globalFlash.type === 'hit' && "bg-[#00E676] shadow-[0_0_40px_#00E676] opacity-100",
-            globalFlash.type === 'miss' && "bg-[#FF3D00] shadow-[0_0_40px_#FF3D00] opacity-100",
-            !globalFlash.type && "bg-white/20 opacity-30"
-          )}
-          style={{ top: `${hitPosition}px` }}
-        />
+          className="absolute left-0 right-0 z-20 pointer-events-none transition-all duration-300"
+          style={{ 
+            top: `${hitPosition - 40}px`,
+            height: '80px',
+            background: globalFlash.type === 'hit' 
+              ? 'linear-gradient(to bottom, transparent, rgba(0, 230, 118, 0.4) 50%, transparent)' 
+              : globalFlash.type === 'miss' 
+              ? 'linear-gradient(to bottom, transparent, rgba(255, 61, 0, 0.4) 50%, transparent)' 
+              : 'linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.05) 50%, transparent)'
+          }}
+        >
+          {/* Precise Central Hit Line */}
+          <div 
+            className={cn(
+              "absolute left-0 right-0 h-[2px] top-1/2 -translate-y-1/2 transition-all duration-300",
+              globalFlash.type === 'hit' && "bg-[#00E676] shadow-[0_0_20px_#00E676]",
+              globalFlash.type === 'miss' && "bg-[#FF3D00] shadow-[0_0_20px_#FF3D00]",
+              !globalFlash.type && "bg-white/20"
+            )}
+          />
+        </div>
 
         <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${hitPosition + 60}px` }}>
           <div className={cn(

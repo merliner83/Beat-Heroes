@@ -346,7 +346,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
             transform: `translate(-50%, -50%) ${pull ? `translate(${-pull.x}px, ${-pull.y}px)` : ''}`
           }}
         >
-          <div className="relative w-64 md:w-[500px] aspect-video">
+          <div className="relative w-full max-w-[500px] aspect-video">
             <div className="absolute -inset-10 bg-primary/20 blur-[80px] pointer-events-none" />
             <div className="relative w-full h-full rounded-2xl overflow-hidden border-2 border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] bg-black">
                <Image 
@@ -354,7 +354,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                   alt="808 Drummachine"
                   fill
                   className="object-cover"
-                  sizes="(max-width: 768px) 256px, 500px"
+                  sizes="(max-width: 768px) 100vw, 500px"
                   priority
                />
             </div>
