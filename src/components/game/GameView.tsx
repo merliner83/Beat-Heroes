@@ -58,7 +58,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const [isFinished, setIsFinished] = useState(false);
   const [hasStartedFade, setHasStartedFade] = useState(false);
   
-  const [hitPosition, setHitPosition] = useState(580);
+  // Adjusted hitPosition to be higher up
+  const [hitPosition, setHitPosition] = useState(400);
   
   const [globalFlash, setGlobalFlash] = useState<{ type: FlashType, key: number }>({ type: null, key: 0 });
   const [padFlashes, setPadFlashes] = useState<Record<SoundType, { type: FlashType, key: number }>>({
@@ -79,10 +80,11 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   useEffect(() => {
     const handleResize = () => {
+      // Set hit position relative to screen height (higher up)
       if (window.innerWidth > 768) {
-        setHitPosition(window.innerHeight * 0.75); 
+        setHitPosition(window.innerHeight * 0.5); 
       } else {
-        setHitPosition(window.innerHeight * 0.65);
+        setHitPosition(window.innerHeight * 0.45);
       }
     };
     handleResize();
@@ -322,13 +324,13 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           </div>
         </div>
 
-        {/* Improved Wide Hit Zone with Fading Edges */}
+        {/* Much wider hit zone with better gradients */}
         <div 
           key={globalFlash.key}
           className="absolute left-0 right-0 z-20 pointer-events-none transition-all duration-300"
           style={{ 
-            top: `${hitPosition - 40}px`,
-            height: '80px',
+            top: `${hitPosition - 80}px`,
+            height: '160px',
             background: globalFlash.type === 'hit' 
               ? 'linear-gradient(to bottom, transparent, rgba(0, 230, 118, 0.4) 50%, transparent)' 
               : globalFlash.type === 'miss' 
@@ -339,7 +341,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           {/* Precise Central Hit Line */}
           <div 
             className={cn(
-              "absolute left-0 right-0 h-[2px] top-1/2 -translate-y-1/2 transition-all duration-300",
+              "absolute left-0 right-0 h-[3px] top-1/2 -translate-y-1/2 transition-all duration-300",
               globalFlash.type === 'hit' && "bg-[#00E676] shadow-[0_0_20px_#00E676]",
               globalFlash.type === 'miss' && "bg-[#FF3D00] shadow-[0_0_20px_#FF3D00]",
               !globalFlash.type && "bg-white/20"
@@ -347,7 +349,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           />
         </div>
 
-        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${hitPosition + 60}px` }}>
+        {/* Pads are now further down relative to the hit zone to avoid overlap */}
+        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${hitPosition + 100}px` }}>
           <div className={cn(
             "grid gap-4 md:gap-8 mx-auto pointer-events-auto bg-black/20 backdrop-blur-sm p-4 rounded-3xl border border-white/5 shadow-2xl",
             activeSoundTypes.length === 1 ? "grid-cols-1 max-w-[140px]" :
