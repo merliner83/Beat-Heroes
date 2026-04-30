@@ -249,6 +249,15 @@ export default function HomePage() {
             if (isBeatHero) { gameBpm = 148; gameBackingUrl = tracks.find(t => t.id === 'tr-g2')?.url || ''; }
             else if (isVinylHunter) { gameBpm = 150; gameBackingUrl = tracks.find(t => t.id === 'tr-g3')?.url || ''; }
             else { gameBpm = 160; gameBackingUrl = tracks.find(t => t.id === 'tr-g5')?.url || ''; }
+          } else if (s.id === 'std-noxxos') {
+            gameBpm = 128;
+            if (isBeatHero) gameBackingUrl = tracks.find(t => t.id === 'tr-n1')?.url || '';
+            else if (isVinylHunter) gameBackingUrl = tracks.find(t => t.id === 'tr-n2')?.url || '';
+            else gameBackingUrl = tracks.find(t => t.id === 'tr-n1')?.url || '';
+          } else if (s.id === 'std-nintu') {
+            // Nintu has no explicit tracks, use Yoan or Dave as fallback for now
+            gameBpm = 120;
+            gameBackingUrl = tracks.find(t => t.id === 'tr-d3')?.url || '';
           }
 
           await syncItem('games', gameId, {
