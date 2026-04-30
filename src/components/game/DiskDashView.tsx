@@ -22,6 +22,14 @@ const TARGETS = [
   { id: 't4', x: 75, y: 70, color: '#3838FA' },
 ];
 
+// Definition rhythmischer Patterns (Steps in einem 16tel-Raster pro Takt)
+const PATTERNS = [
+  { name: 'Four on the Floor', steps: [0, 4, 8, 12] },
+  { name: 'Clave 3-2', steps: [0, 3, 6, 10, 12] },
+  { name: 'Off-Beats', steps: [2, 6, 10, 14] },
+  { name: 'House Groove', steps: [0, 4, 7, 12, 15] },
+];
+
 interface DashItem {
   id: string;
   iconIdx: number;
@@ -52,14 +60,15 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
   const [activeItems, setActiveItems] = useState<DashItem[]>([]);
   const [targetFeedback, setTargetFeedback] = useState<Record<string, { time: number, type: 'hit' | 'miss' }>>({});
   const [hasStartedFade, setHasStartedFade] = useState(false);
+  const [currentPatternName, setCurrentPatternName] = useState('');
 
   const frameRef = useRef<number>(null);
   const lastSpawnStepRef = useRef<number>(-1);
 
   const bpm = game.bpm || 128;
-  const SESSION_DURATION = (20 * 4 * 60) / bpm; 
+  const SESSION_DURATION = (16 * 4 * 60) / bpm; // 16 Bars
   const FADE_DURATION = 2;
-  const FLIGHT_TIME_MS = 1800; // Time from spawn to target hit
+  const FLIGHT_TIME_MS = 1800; // Zeit vom Spawn bis zum Treffpunkt
 
   useEffect(() => {
     return () => {
@@ -100,13 +109,13 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     const currentTime = audioEngine?.getCurrentTime() || 0;
     const now = Date.now();
 
-    // Check for fade out
+    // Fade-out Check
     if (currentTime >= SESSION_DURATION && !hasStartedFade) {
       setHasStartedFade(true);
       audioEngine?.fadeBackingTrack(FADE_DURATION);
     }
 
-    // Check for game end
+    // Spielende Check
     if (currentTime >= SESSION_DURATION + FADE_DURATION) {
       setIsPlaying(false);
       setIsFinished(true);
@@ -114,29 +123,41 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       return;
     }
 
-    // Quantized Spawning: Spawn every 4 steps (quarter notes) or 2 steps (eighth notes) based on difficulty
-    const stepInterval = level.difficulty >= 3 ? 2 : 4; 
-    const secondsPerStep = (60 / bpm) / 4; // 16th notes
+    // Präzises Spawning basierend auf Patterns
+    const secondsPerStep = (60 / bpm) / 4; // 16tel Noten
     const currentStep = Math.floor(currentTime / secondsPerStep);
 
-    if (currentStep % stepInterval === 0 && currentStep > lastSpawnStepRef.current && currentTime < SESSION_DURATION) {
-      spawnItem(currentStep);
+    // Welches Pattern spielen wir gerade? Wechsel alle 4 Takte (64 Steps)
+    const patternIdx = Math.floor(currentStep / 64) % PATTERNS.length;
+    const activePattern = PATTERNS[patternIdx];
+    
+    if (currentPatternName !== activePattern.name) {
+      setCurrentPatternName(activePattern.name);
+    }
+
+    // Wenn wir in einem neuen Step sind, prüfen ob das Pattern hier einen Hit vorsieht
+    if (currentStep > lastSpawnStepRef.current && currentTime < SESSION_DURATION) {
+      const stepInMeasure = currentStep % 16;
+      if (activePattern.steps.includes(stepInMeasure)) {
+        spawnItem(currentStep);
+      }
       lastSpawnStepRef.current = currentStep;
     }
 
-    // Cleanup missed items
+    // Verpasste Items aufräumen
     setActiveItems(prev => {
-      return prev.map(item => {
-        if (item.status === 'active' && now - item.startTime > FLIGHT_TIME_MS + 250) {
+      const next = prev.map(item => {
+        if (item.status === 'active' && now - item.startTime > FLIGHT_TIME_MS + 300) {
           handleAutoMiss();
           return { ...item, status: 'missed' as const };
         }
         return item;
       }).filter(item => item.status === 'active');
+      return next;
     });
 
     frameRef.current = requestAnimationFrame(updateGame);
-  }, [isPlaying, bpm, SESSION_DURATION, hasStartedFade, spawnItem, level.difficulty]);
+  }, [isPlaying, bpm, SESSION_DURATION, hasStartedFade, spawnItem, level.difficulty, currentPatternName]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -159,7 +180,6 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     if (!isPlaying) return;
     
     const now = Date.now();
-    // Find the item closest to its hit time (startTime + FLIGHT_TIME)
     const targetItem = activeItems
       .filter(item => item.targetId === targetId && item.status === 'active')
       .sort((a, b) => (a.startTime + FLIGHT_TIME_MS) - (b.startTime + FLIGHT_TIME_MS))[0];
@@ -251,6 +271,16 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       <main className="flex-1 relative overflow-hidden rounded-b-[2.5rem] bg-black/40 border-x border-b border-white/5 z-20 select-none">
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, #FF3399 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
         
+        {isPlaying && currentPatternName && (
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+            <div className="bg-primary/20 backdrop-blur-md border border-primary/30 px-4 py-1.5 rounded-full">
+              <span className="text-[10px] font-black uppercase italic tracking-widest text-primary animate-pulse">
+                GROOVE: {currentPatternName}
+              </span>
+            </div>
+          </div>
+        )}
+
         {TARGETS.map(t => {
           const feedback = targetFeedback[t.id];
           const isActive = feedback && Date.now() - feedback.time < 300;
@@ -324,7 +354,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
               </div>
               <div>
                 <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-2">SAMPLE CATCHER</h2>
-                <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 leading-relaxed">Catch incoming samples<br/>Tap the circles on the beat</p>
+                <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 leading-relaxed">Catch incoming samples<br/>Follow the rhythmic patterns</p>
               </div>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-20 bg-white text-black font-black uppercase italic rounded-[2rem] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.1)]">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Catch"}
