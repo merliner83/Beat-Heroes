@@ -151,19 +151,35 @@ export default function HomePage() {
     if (!db || !isAdmin) return;
     setIsBackingUp(true);
     const backupData: any = {};
-    const collectionsToBackup = ['studios', 'tracks', 'games', 'learnApps', 'levels', 'patterns', 'articles'];
+    const rootCollections = ['studios', 'tracks', 'games', 'learnApps', 'levels', 'patterns', 'articles', 'users'];
 
     try {
-      for (const colName of collectionsToBackup) {
+      for (const colName of rootCollections) {
         const snap = await getDocs(collection(db, colName));
         backupData[colName] = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
+        // Handle nested sub-collections
         if (colName === 'levels') {
-          backupData.sounds = {};
+          backupData.sounds = {}; // Map of levelId -> sounds[]
           for (const levelDoc of snap.docs) {
             const soundsSnap = await getDocs(collection(db, 'levels', levelDoc.id, 'sounds'));
             if (!soundsSnap.empty) {
               backupData.sounds[levelDoc.id] = soundsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            }
+          }
+        }
+        
+        if (colName === 'users') {
+          backupData.userProgressData = {}; // Map of userId -> { progress: [], patternProgress: [] }
+          for (const userDoc of snap.docs) {
+            const progressSnap = await getDocs(collection(db, 'users', userDoc.id, 'progress'));
+            const patternSnap = await getDocs(collection(db, 'users', userDoc.id, 'patternProgress'));
+            
+            if (!progressSnap.empty || !patternSnap.empty) {
+              backupData.userProgressData[userDoc.id] = {
+                progress: progressSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+                patternProgress: patternSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+              };
             }
           }
         }
@@ -173,16 +189,16 @@ export default function HomePage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `beathero_backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `beathero_full_backup_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
       a.click();
       URL.revokeObjectURL(url);
 
       toast({ 
-        title: "Backup Complete!", 
-        description: "Your studio configuration has been exported as JSON." 
+        title: "Database Backup Complete!", 
+        description: "Entire dataset has been exported. Choose your location in the browser dialog." 
       });
     } catch (e) {
-      toast({ variant: "destructive", title: "Backup Failed", description: "Check permissions or connection." });
+      toast({ variant: "destructive", title: "Backup Failed", description: "Could not fetch all collections." });
     } finally {
       setIsBackingUp(false);
     }
@@ -199,8 +215,8 @@ export default function HomePage() {
         const data = JSON.parse(e.target?.result as string);
         let restoreCount = 0;
 
-        const collections = ['studios', 'tracks', 'games', 'learnApps', 'levels', 'patterns', 'articles'];
-        for (const col of collections) {
+        const rootCollections = ['studios', 'tracks', 'games', 'learnApps', 'levels', 'patterns', 'articles', 'users'];
+        for (const col of rootCollections) {
           if (data[col] && Array.isArray(data[col])) {
             for (const item of data[col]) {
               const { id, ...docData } = item;
@@ -212,6 +228,7 @@ export default function HomePage() {
           }
         }
 
+        // Restore Sounds (Levels Sub-collection)
         if (data.sounds) {
           for (const [levelId, levelSounds] of Object.entries(data.sounds)) {
             if (Array.isArray(levelSounds)) {
@@ -226,9 +243,34 @@ export default function HomePage() {
           }
         }
 
-        toast({ title: "Restore Successful", description: `${restoreCount} items have been updated/created from backup.` });
+        // Restore User Progress (Users Sub-collections)
+        if (data.userProgressData) {
+          for (const [userId, userStore] of Object.entries(data.userProgressData)) {
+            const typedStore = userStore as any;
+            if (typedStore.progress && Array.isArray(typedStore.progress)) {
+              for (const p of typedStore.progress) {
+                const { id, ...pData } = p;
+                if (id) {
+                  await setDoc(doc(db, 'users', userId, 'progress', id), pData, { merge: true });
+                  restoreCount++;
+                }
+              }
+            }
+            if (typedStore.patternProgress && Array.isArray(typedStore.patternProgress)) {
+              for (const pp of typedStore.patternProgress) {
+                const { id, ...ppData } = pp;
+                if (id) {
+                  await setDoc(doc(db, 'users', userId, 'patternProgress', id), ppData, { merge: true });
+                  restoreCount++;
+                }
+              }
+            }
+          }
+        }
+
+        toast({ title: "Full Restore Successful", description: `${restoreCount} entries updated from backup.` });
       } catch (err) {
-        toast({ variant: "destructive", title: "Restore Failed", description: "The backup file is corrupted or in an invalid format." });
+        toast({ variant: "destructive", title: "Restore Failed", description: "Invalid backup format." });
       } finally {
         setIsRestoring(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
