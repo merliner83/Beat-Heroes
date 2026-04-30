@@ -58,7 +58,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
   const [isFinished, setIsFinished] = useState(false);
   const [hasStartedFade, setHasStartedFade] = useState(false);
   
-  // Adjusted hitPosition to be higher up
+  // Set hit position relative to screen height
   const [hitPosition, setHitPosition] = useState(400);
   
   const [globalFlash, setGlobalFlash] = useState<{ type: FlashType, key: number }>({ type: null, key: 0 });
@@ -80,11 +80,10 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
 
   useEffect(() => {
     const handleResize = () => {
-      // Set hit position relative to screen height (higher up)
       if (window.innerWidth > 768) {
-        setHitPosition(window.innerHeight * 0.5); 
+        setHitPosition(window.innerHeight * 0.45); 
       } else {
-        setHitPosition(window.innerHeight * 0.45);
+        setHitPosition(window.innerHeight * 0.4);
       }
     };
     handleResize();
@@ -158,7 +157,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     const secondsPerStep = (60 / bpm) / 4;
     
     const currentStep = (time - SYNC_OFFSET) / secondsPerStep;
-    const tolerance = level.difficulty <= 2 ? 1.8 : 1.4; 
+    const tolerance = level.difficulty <= 2 ? 1.6 : 1.2; 
     
     let hitNoteId: string | null = null;
     let minDiff = Infinity;
@@ -229,7 +228,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           setCurrentTime(t);
           const secondsPerStep = (60 / bpm) / 4;
           const currentStep = (t - SYNC_OFFSET) / secondsPerStep;
-          const tolerance = level.difficulty <= 2 ? 1.8 : 1.4;
+          const tolerance = level.difficulty <= 2 ? 1.6 : 1.2;
 
           if (t >= SESSION_DURATION && !hasStartedFade) {
             setHasStartedFade(true);
@@ -324,13 +323,13 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           </div>
         </div>
 
-        {/* Much wider hit zone with better gradients */}
+        {/* Improved vertical hit zone with gradients - slightly narrower for precision */}
         <div 
           key={globalFlash.key}
           className="absolute left-0 right-0 z-20 pointer-events-none transition-all duration-300"
           style={{ 
-            top: `${hitPosition - 80}px`,
-            height: '160px',
+            top: `${hitPosition - 60}px`,
+            height: '120px',
             background: globalFlash.type === 'hit' 
               ? 'linear-gradient(to bottom, transparent, rgba(0, 230, 118, 0.4) 50%, transparent)' 
               : globalFlash.type === 'miss' 
@@ -349,8 +348,8 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
           />
         </div>
 
-        {/* Pads are now further down relative to the hit zone to avoid overlap */}
-        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${hitPosition + 100}px` }}>
+        {/* Pads are positioned below the hit zone */}
+        <div className="absolute left-0 right-0 z-40 px-6 md:px-12 pointer-events-none" style={{ top: `${hitPosition + 120}px` }}>
           <div className={cn(
             "grid gap-4 md:gap-8 mx-auto pointer-events-auto bg-black/20 backdrop-blur-sm p-4 rounded-3xl border border-white/5 shadow-2xl",
             activeSoundTypes.length === 1 ? "grid-cols-1 max-w-[140px]" :
