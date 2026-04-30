@@ -5,14 +5,14 @@ import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, doc, setDoc, getDoc } from 'firebase/firestore';
+import { collection, query, doc, setDoc, getDoc, getDocs } from 'firebase/firestore';
 import { Studio, Game, Article, Track, hasAccess, LearnApp, TriggerPattern } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn, initiateGoogleSignIn, initiateSignOut } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { cn } from '@/lib/utils';
-import { RefreshCw, Loader2, Zap, LayoutGrid, GraduationCap, Lock, User as UserIcon, LogOut, LogIn } from 'lucide-react';
+import { RefreshCw, Loader2, Zap, LayoutGrid, GraduationCap, Lock, User as UserIcon, LogOut, LogIn, Download } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LearnView } from '@/components/learn/LearnView';
 import { ProfileView } from '@/components/profile/ProfileView';
@@ -77,6 +77,7 @@ export default function HomePage() {
   
   const [activeTab, setActiveTab] = useState('studios');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isBackingUp, setIsBackingUp] = useState(false);
 
   useEffect(() => {
     const savedTab = localStorage.getItem('beathero_active_tab');
@@ -144,6 +145,48 @@ export default function HomePage() {
     return allStudios.sort((a, b) => a.name.localeCompare(b.name));
   }, [allStudios]);
 
+  const handleBackup = async () => {
+    if (!db || !isAdmin) return;
+    setIsBackingUp(true);
+    const backupData: any = {};
+    const collectionsToBackup = ['studios', 'tracks', 'games', 'learnApps', 'levels', 'patterns', 'articles'];
+
+    try {
+      for (const colName of collectionsToBackup) {
+        const snap = await getDocs(collection(db, colName));
+        backupData[colName] = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Spezielles Handling für Sounds (Subcollection von Levels)
+        if (colName === 'levels') {
+          backupData.sounds = {};
+          for (const levelDoc of snap.docs) {
+            const soundsSnap = await getDocs(collection(db, 'levels', levelDoc.id, 'sounds'));
+            if (!soundsSnap.empty) {
+              backupData.sounds[levelDoc.id] = soundsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            }
+          }
+        }
+      }
+
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `beathero_backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toast({ 
+        title: "Backup Complete!", 
+        description: "Your studio configuration has been exported as JSON." 
+      });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Backup Failed", description: "Check permissions or connection." });
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
+
   const setupStudios = async () => {
     if (!db) return;
     setIsSyncing(true);
@@ -151,11 +194,6 @@ export default function HomePage() {
     let verifiedCount = 0;
     let fixedCount = 0;
 
-    /**
-     * Smart Sync Helper
-     * Grundsatz: Compare incoming dataset vs Firestore.
-     * Exists -> Update nur falls Felder fehlen oder kaputt sind (Wahrheit bei Firestore).
-     */
     const syncItem = async (col: string, id: string, localData: any) => {
       const ref = doc(db, col, id);
       const snap = await getDoc(ref);
@@ -168,7 +206,6 @@ export default function HomePage() {
         let needsUpdate = false;
         const updatePayload: any = {};
 
-        // Wir prüfen gezielt auf kritische Felder, die vorhanden sein müssen, damit die App läuft
         const criticalFields = ['backingTrackUrl', 'sampleUrl', 'url', 'bpm', 'type'];
         
         for (const field of criticalFields) {
@@ -371,10 +408,32 @@ export default function HomePage() {
       </main>
       <footer className="sticky bottom-0 p-3 md:p-4 border-t border-white/5 bg-black/95 backdrop-blur-2xl flex justify-between items-center z-50 shrink-0">
         <div className="flex items-center gap-3 opacity-30"><Zap className="w-4 h-4 text-primary" /><span className="text-[10px] md:text-xs uppercase font-black tracking-[0.2em] hidden sm:inline">Modular Rack System Online</span></div>
-        <div className="flex items-center gap-4">{isAdmin && (<Button variant="outline" size="sm" onClick={setupStudios} disabled={isSyncing} className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_15px_rgba(255,234,0,0.2)] h-10 md:h-12 px-8 md:px-12 text-sm md:text-base transition-transform active:scale-95">
-          {isSyncing ? <Loader2 className="w-4 h-4 md:w-5 md:h-5 mr-3 animate-spin" /> : <RefreshCw className="w-4 h-4 md:w-5 md:h-5 mr-3" />}
-          Rack Sync
-        </Button>)}</div>
+        <div className="flex items-center gap-4">
+          {isAdmin && (
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleBackup} 
+                disabled={isBackingUp || isSyncing} 
+                className="bg-white/5 text-white hover:bg-white/10 font-black uppercase italic tracking-tighter border-white/10 h-10 md:h-12 px-6 md:px-8 transition-transform active:scale-95"
+              >
+                {isBackingUp ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+                Backup
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={setupStudios} 
+                disabled={isSyncing || isBackingUp} 
+                className="bg-[#FFEA00] text-black hover:bg-[#FFEA00]/90 font-black uppercase italic tracking-tighter border-none shadow-[0_0_15px_rgba(255,234,0,0.2)] h-10 md:h-12 px-8 md:px-12 text-sm md:text-base transition-transform active:scale-95"
+              >
+                {isSyncing ? <Loader2 className="w-4 h-4 md:w-5 md:h-5 mr-3 animate-spin" /> : <RefreshCw className="w-4 h-4 md:w-5 md:h-5 mr-3" />}
+                Rack Sync
+              </Button>
+            </div>
+          )}
+        </div>
       </footer>
     </div>
   );
