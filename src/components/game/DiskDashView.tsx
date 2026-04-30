@@ -30,6 +30,7 @@ interface DashItem {
   startX: number;
   startY: number;
   status: 'active' | 'hit' | 'missed';
+  spawnStep: number;
 }
 
 interface DiskDashViewProps {
@@ -53,12 +54,12 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
   const [hasStartedFade, setHasStartedFade] = useState(false);
 
   const frameRef = useRef<number>(null);
-  const lastSpawnRef = useRef<number>(0);
+  const lastSpawnStepRef = useRef<number>(-1);
 
   const bpm = game.bpm || 128;
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
-  const FLIGHT_TIME = 1800; 
+  const FLIGHT_TIME_MS = 1800; // Time from spawn to target hit
 
   useEffect(() => {
     return () => {
@@ -67,7 +68,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     };
   }, []);
 
-  const spawnItem = useCallback(() => {
+  const spawnItem = useCallback((step: number) => {
     const availableTargets = Math.min(level.difficulty, TARGETS.length);
     const targetIdx = Math.floor(Math.random() * availableTargets);
     const target = TARGETS[targetIdx];
@@ -81,13 +82,14 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     else { startX = Math.random() * 100; startY = 115; }
 
     const newItem: DashItem = {
-      id: `dash-${Date.now()}-${Math.random()}`,
+      id: `dash-${step}-${Math.random()}`,
       iconIdx: Math.floor(Math.random() * DASH_ICONS.length),
       targetId: target.id,
       startTime: Date.now(),
       startX,
       startY,
-      status: 'active'
+      status: 'active',
+      spawnStep: step
     };
     setActiveItems(prev => [...prev, newItem]);
   }, [level.difficulty]);
@@ -98,11 +100,13 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     const currentTime = audioEngine?.getCurrentTime() || 0;
     const now = Date.now();
 
+    // Check for fade out
     if (currentTime >= SESSION_DURATION && !hasStartedFade) {
       setHasStartedFade(true);
       audioEngine?.fadeBackingTrack(FADE_DURATION);
     }
 
+    // Check for game end
     if (currentTime >= SESSION_DURATION + FADE_DURATION) {
       setIsPlaying(false);
       setIsFinished(true);
@@ -110,18 +114,21 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       return;
     }
 
-    const spawnMultiplier = level.difficulty === 1 ? 1.5 : level.difficulty === 2 ? 1.2 : 0.8;
-    const spawnInterval = (60 / bpm) * 1000 * spawnMultiplier;
-    
-    if (now - lastSpawnRef.current > spawnInterval && currentTime < SESSION_DURATION) {
-      spawnItem();
-      lastSpawnRef.current = now;
+    // Quantized Spawning: Spawn every 4 steps (quarter notes) or 2 steps (eighth notes) based on difficulty
+    const stepInterval = level.difficulty >= 3 ? 2 : 4; 
+    const secondsPerStep = (60 / bpm) / 4; // 16th notes
+    const currentStep = Math.floor(currentTime / secondsPerStep);
+
+    if (currentStep % stepInterval === 0 && currentStep > lastSpawnStepRef.current && currentTime < SESSION_DURATION) {
+      spawnItem(currentStep);
+      lastSpawnStepRef.current = currentStep;
     }
 
+    // Cleanup missed items
     setActiveItems(prev => {
       return prev.map(item => {
-        if (item.status === 'active' && now - item.startTime > FLIGHT_TIME + 250) {
-          handleAutoMiss(item.id);
+        if (item.status === 'active' && now - item.startTime > FLIGHT_TIME_MS + 250) {
+          handleAutoMiss();
           return { ...item, status: 'missed' as const };
         }
         return item;
@@ -140,7 +147,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
   }, [isPlaying, updateGame]);
 
-  const handleAutoMiss = (itemId: string) => {
+  const handleAutoMiss = () => {
     setScore(s => {
       const nextMisses = s.misses + 1;
       const total = s.hits + nextMisses;
@@ -152,12 +159,13 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     if (!isPlaying) return;
     
     const now = Date.now();
+    // Find the item closest to its hit time (startTime + FLIGHT_TIME)
     const targetItem = activeItems
       .filter(item => item.targetId === targetId && item.status === 'active')
-      .sort((a, b) => (a.startTime + FLIGHT_TIME) - (b.startTime + FLIGHT_TIME))[0];
+      .sort((a, b) => (a.startTime + FLIGHT_TIME_MS) - (b.startTime + FLIGHT_TIME_MS))[0];
 
-    const precision = targetItem ? Math.abs(now - (targetItem.startTime + FLIGHT_TIME)) : Infinity;
-    const tolerance = level.difficulty >= 3 ? 200 : 350;
+    const precision = targetItem ? Math.abs(now - (targetItem.startTime + FLIGHT_TIME_MS)) : Infinity;
+    const tolerance = level.difficulty >= 3 ? 250 : 400;
 
     if (targetItem && precision <= tolerance) {
       setScore(s => {
@@ -175,7 +183,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       setScore(s => {
         const nextMisses = s.misses + 1;
         const total = s.hits + nextMisses;
-        return { ...s, misses: nextMisses, accuracy: Math.round((s.hits / total) * 100) };
+        return { ...s, misses: nextMisses, accuracy: total === 0 ? 100 : Math.round((s.hits / total) * 100) };
       });
     }
   };
@@ -184,6 +192,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     if (!audioEngine) return;
     setIsLoadingAudio(true);
     setHasStartedFade(false);
+    lastSpawnStepRef.current = -1;
     try {
       await audioEngine.resume();
       await audioEngine.preloadAudio([game.backingTrackUrl || '', ...sounds.map(s => s.sampleUrl)]);
@@ -200,7 +209,6 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       setCountIn(null);
       
       setIsPlaying(true);
-      lastSpawnRef.current = Date.now();
       await audioEngine.startBackingTrack(game.backingTrackUrl || '', actualStartTime);
     } catch (e) {
       toast({ variant: "destructive", title: "Sync Failed" });
@@ -223,8 +231,8 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
   const accColor = getAccuracyColor(score.accuracy);
 
   return (
-    <div className="flex flex-col h-screen bg-[#050505] text-white p-4 overflow-hidden select-none font-body relative">
-      <header className="flex justify-between items-center mb-1 px-6 h-14 shrink-0 z-50 bg-black/60 backdrop-blur-2xl border-b border-white/5 rounded-t-[2.5rem]">
+    <div className="flex flex-col h-screen bg-[#050505] text-white p-4 overflow-hidden select-none font-body relative touch-none">
+      <header className="flex justify-between items-center mb-1 px-6 h-14 shrink-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/5 rounded-t-[2.5rem] select-none">
         <div className="flex items-center gap-4">
           <Link href={`/studio/${game.studioId}`}>
             <ArrowLeft className="w-5 h-5 text-white/40 hover:text-white transition-all hover:scale-110" />
@@ -240,7 +248,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
         </div>
       </header>
 
-      <main className="flex-1 relative overflow-hidden rounded-b-[2.5rem] bg-black/40 border-x border-b border-white/5 z-20">
+      <main className="flex-1 relative overflow-hidden rounded-b-[2.5rem] bg-black/40 border-x border-b border-white/5 z-20 select-none">
         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, #FF3399 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
         
         {TARGETS.map(t => {
@@ -252,8 +260,8 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
           return (
             <div
               key={t.id}
-              onClick={() => onTargetClick(t.id)}
-              className="absolute w-32 h-32 md:w-40 md:h-40 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center transition-all duration-300 cursor-pointer group"
+              onPointerDown={(e) => { e.preventDefault(); onTargetClick(t.id); }}
+              className="absolute w-32 h-32 md:w-40 md:h-40 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center transition-all duration-300 cursor-pointer group select-none touch-none"
               style={{ left: `${t.x}%`, top: `${t.y}%` }}
             >
               <div 
@@ -268,7 +276,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
                   boxShadow: isActive ? `0 0 60px ${isHit ? '#00E676' : isMiss ? '#FF3D00' : t.color}` : 'none' 
                 }}
               />
-              <div className="relative">
+              <div className="relative pointer-events-none">
                  <Circle className={cn(
                    "w-10 h-10 transition-all",
                    isActive ? "scale-150" : "opacity-10 animate-pulse"
@@ -281,7 +289,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
         {activeItems.map(item => {
           const target = TARGETS.find(t => t.id === item.targetId)!;
           const elapsed = Date.now() - item.startTime;
-          const progress = Math.min(elapsed / FLIGHT_TIME, 1.2);
+          const progress = Math.min(elapsed / FLIGHT_TIME_MS, 1.2);
           
           const curX = item.startX + (target.x - item.startX) * progress;
           const curY = item.startY + (target.y - item.startY) * progress;
@@ -291,7 +299,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
           return (
             <div
               key={item.id}
-              className="absolute z-40 pointer-events-none transition-transform"
+              className="absolute z-40 pointer-events-none transition-transform select-none"
               style={{ 
                 left: `${curX}%`, 
                 top: `${curY}%`, 
@@ -307,7 +315,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
         })}
 
         {!isPlaying && !isFinished && countIn === null && (
-          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[100] backdrop-blur-3xl">
+          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[100] backdrop-blur-3xl select-none">
             <div className="text-center space-y-10 max-w-sm px-6">
               <div className="relative">
                 <div className="w-28 h-28 bg-primary/20 rounded-full flex items-center justify-center mx-auto animate-pulse border border-primary/30 shadow-[0_0_50px_rgba(255,51,153,0.3)]">
@@ -316,7 +324,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
               </div>
               <div>
                 <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-2">SAMPLE CATCHER</h2>
-                <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 leading-relaxed">Catch incoming samples<br/>Tap the circles at the right time</p>
+                <p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 leading-relaxed">Catch incoming samples<br/>Tap the circles on the beat</p>
               </div>
               <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-20 bg-white text-black font-black uppercase italic rounded-[2rem] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.1)]">
                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Catch"}
@@ -326,7 +334,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
         )}
 
         {countIn !== null && (
-          <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
+          <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none select-none">
             <div className="text-[15rem] font-black italic text-[#FFEA00] drop-shadow-[0_0_80px_rgba(255,234,0,0.6)] animate-in zoom-in-50 duration-200">
               {countIn}
             </div>
@@ -334,7 +342,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
         )}
 
         {isFinished && (
-          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[110] p-6 backdrop-blur-3xl">
+          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[110] p-6 backdrop-blur-3xl select-none">
             <div className="text-center space-y-12 max-sm">
               <div className="relative inline-block">
                 <Trophy className={cn("w-28 h-28 mx-auto", score.accuracy >= PASS_THRESHOLD ? "text-[#FFEA00] drop-shadow-[0_0_50px_rgba(255,234,0,0.5)]" : "text-white/10")} />

@@ -289,8 +289,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const accColor = getAccuracyColor(score.accuracy);
 
   return (
-    <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative">
-      <header className="flex justify-between items-center mb-1 px-6 h-14 shrink-0 z-50 bg-black/60 backdrop-blur-2xl border-b border-white/5 rounded-t-[2.5rem]">
+    <div className="flex flex-col h-screen bg-[#050505] text-white p-2 md:p-4 overflow-hidden select-none font-body relative touch-none">
+      <header className="flex justify-between items-center mb-1 px-6 h-14 shrink-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/5 rounded-t-[2.5rem] select-none">
         <div className="flex items-center gap-4">
           <Link href={`/studio/${game.studioId}`}>
             <ArrowLeft className="w-5 h-5 text-white/40 hover:text-white transition-all hover:scale-110" />
@@ -315,13 +315,13 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        className="flex-1 relative overflow-hidden rounded-b-[2.5rem] border-x border-b border-white/5 z-20 pointer-events-auto touch-none bg-gradient-to-b from-transparent to-black/40"
+        className="flex-1 relative overflow-hidden rounded-b-[2.5rem] border-x border-b border-white/5 z-20 pointer-events-auto touch-none bg-gradient-to-b from-transparent to-black/40 select-none"
       >
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
         {aiming && (
           <div 
-            className="absolute z-10 origin-left pointer-events-none"
+            className="absolute z-10 origin-left pointer-events-none select-none"
             style={{ 
               left: `${MPC_POS.x}%`, 
               top: `${MPC_POS.y}%`, 
@@ -339,7 +339,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         )}
 
         <div 
-          className="absolute z-50 pointer-events-none transition-all duration-300"
+          className="absolute z-50 pointer-events-none transition-all duration-300 select-none"
           style={{ 
             left: `${MPC_POS.x}%`, 
             top: `${MPC_POS.y}%`, 
@@ -364,7 +364,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         {isPlaying && activeNote && (
           <div
             className={cn(
-              "absolute z-30 flex items-center justify-center transition-all duration-500 ease-in-out",
+              "absolute z-30 flex items-center justify-center transition-all duration-500 ease-in-out select-none",
               activeNote.status === 'sucking' && "scale-0 blur-md opacity-0",
               activeNote.status === 'missed' && "scale-90 opacity-0 bg-[#FF3D00]/20 rounded-full"
             )}
@@ -407,7 +407,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         {projectiles.map(p => (
           <div
             key={p.id}
-            className="absolute z-40 text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.6)]"
+            className="absolute z-40 text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.6)] select-none"
             style={{
               left: `${p.x}%`,
               top: `${p.y}%`,
@@ -422,7 +422,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         ))}
 
         {!isPlaying && !isFinished && countIn === null && (
-          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[100] backdrop-blur-3xl">
+          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[100] backdrop-blur-3xl select-none">
             <Card className="p-12 bg-black/50 border-none gemini-border text-center max-w-sm mx-4 shadow-[0_0_100px_rgba(255,51,153,0.1)]">
               <div className="bg-primary/20 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 border border-primary/30 shadow-[0_0_40px_rgba(255,51,153,0.2)]">
                 <LayoutGrid className="w-12 h-12 text-primary animate-pulse" />
@@ -437,7 +437,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         )}
 
         {countIn !== null && (
-          <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
+          <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none select-none">
             <div className="text-[12rem] md:text-[20rem] font-black italic text-[#FFEA00] drop-shadow-[0_0_80px_rgba(255,234,0,0.6)] animate-pulse">
               {countIn}
             </div>
@@ -445,7 +445,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         )}
 
         {isFinished && (
-          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[110] p-6 backdrop-blur-3xl">
+          <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[110] p-6 backdrop-blur-3xl select-none">
             <div className="text-center space-y-10 max-w-sm">
               {score.accuracy >= PASS_THRESHOLD ? (
                 <>
