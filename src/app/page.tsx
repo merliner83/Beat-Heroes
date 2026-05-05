@@ -283,6 +283,12 @@ export default function HomePage() {
     let verifiedCount = 0;
     let fixedCount = 0;
 
+    /**
+     * Intelligente Sync-Funktion:
+     * - Falls nicht existent: Neu anlegen.
+     * - Falls existent: Nur Felder reparieren/ergänzen, die in Firestore LEER sind.
+     * - Überschreibt niemals manuelle Änderungen des Nutzers (Wahrheit liegt in Firestore).
+     */
     const syncItem = async (col: string, id: string, localData: any) => {
       const ref = doc(db, col, id);
       const snap = await getDoc(ref);
@@ -295,9 +301,14 @@ export default function HomePage() {
         let needsUpdate = false;
         const updatePayload: any = {};
 
-        const criticalFields = ['backingTrackUrl', 'sampleUrl', 'url', 'bpm', 'type', 'subCategoryId', 'subCategoryTitle', 'subCategoryIconUrl'];
+        // Alle relevanten Felder prüfen - nur ergänzen, nicht überschreiben
+        const checkFields = [
+          'title', 'content', 'categoryId', 'subCategoryId', 'subCategoryTitle', 
+          'subCategoryIconUrl', 'backingTrackUrl', 'sampleUrl', 'url', 'bpm', 
+          'type', 'imageUrl', 'description', 'coverColor'
+        ];
         
-        for (const field of criticalFields) {
+        for (const field of checkFields) {
           if (localData[field] && !firestoreData[field]) {
             updatePayload[field] = localData[field];
             needsUpdate = true;
@@ -321,6 +332,7 @@ export default function HomePage() {
       const VINYL_BG = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
       const S_CLAVES = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClaves.mp3?alt=media&token=1162b3f6-19d7-4a41-a3b6-9c243cd5d36a';
 
+      // --- PATTERNS ---
       const patternsArr = [
         { id: 'kick-intro-1', name: 'Intro 8-Bar Kick', sampleUrl: S_KICK, steps: [0, 16, 32, 48, 64, 80, 96, 112] },
         { id: 'kick-verse-2', name: 'Verse 2-Shot', sampleUrl: S_KICK, steps: Array.from({length: 128}, (_, i) => i % 8 === 0 ? i : -1).filter(v => v !== -1) }, 
@@ -336,6 +348,7 @@ export default function HomePage() {
       ];
       for (const p of patternsArr) await syncItem('patterns', p.id, p);
 
+      // --- STUDIOS ---
       const studios: Studio[] = [
         { id: 'std-gabriel', name: 'Gabriel Beats', description: 'Handcrafted signature sounds.', coverColor: '#FF9100', district: 'Creative Hub', tags: ['Hip-Hop', 'Electro'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f' },
         { id: 'std-nintu', name: 'Nintu Music', description: 'Deep melodic explorations.', coverColor: '#993DEB', district: 'Melody District', tags: ['Hip-Hop', 'Electro'], minRole: 'free', imageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudioo.png?alt=media&token=9a547bdf-a3bf-4a9a-a132-222383e88b1f' },
@@ -345,6 +358,7 @@ export default function HomePage() {
       ];
       for (const s of studios) await syncItem('studios', s.id, s);
 
+      // --- TRACKS ---
       const tracks: Track[] = [
         { id: 'tr-g1', studioId: 'std-gabriel', name: 'Track 1', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%201_140bpm.mp3?alt=media&token=0d094a95-7a8c-40a4-8e17-c1eebf721540' },
         { id: 'tr-g2', studioId: 'std-gabriel', name: 'Track 2', author: 'Gabriel', url: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/tracks%2FGabriel%20Beats%2FGabriel%202_148bpm.mp3?alt=media&token=1f877a36-c331-4286-97ce-aad7f1edf807' },
@@ -357,6 +371,7 @@ export default function HomePage() {
       ];
       for (const t of tracks) await syncItem('tracks', t.id, t);
 
+      // --- GAMES ---
       const gameConfigs = [
         { type: 'rhythm-producer' as const, name: 'BEAT HERO' },
         { type: 'sample-hunter' as const, name: 'VINYL HUNTER' },
@@ -411,10 +426,11 @@ export default function HomePage() {
         }
       }
 
+      // --- LEARN APPS ---
       await syncItem('learnApps', 'learn-ear-training', { id: 'learn-ear-training', name: 'EAR TRAINING', type: 'ear-training', minRole: 'free' });
       await syncItem('learnApps', 'learn-rhythm-trainer', { id: 'learn-rhythm-trainer', name: 'RHYTHM MASTER', type: 'rhythm-trainer', minRole: 'free' });
 
-      // DAW Articles Sync (Stage 3 Hierachy)
+      // --- KNOWLEDGE BASE (Articles) ---
       const daws = [
         { id: 'gb', title: 'GarageBand', icon: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f' },
         { id: 'cb', title: 'Cubase', icon: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FNoxxos%20Studio.png?alt=media&token=fa9f78bc-965b-4af2-bfde-4f0383a87d98' },
@@ -445,12 +461,12 @@ export default function HomePage() {
         }
       }
 
-      // 2-Stage Article Example (Introduction)
+      // Welcome Article (Introduction)
       await syncItem('articles', 'art-welcome', {
         id: 'art-welcome',
         categoryId: 'intro',
         title: 'Willkommen im Hub',
-        content: 'Dies ist ein 2-stufiger Artikel direkt in der Kategorie Introduction.\n\nHier findest du alle Infos für den Start.',
+        content: 'Dies ist dein zentraler Knotenpunkt für Musikproduktion.\n\nHier findest du alles für den perfekten Start.',
         minRole: 'free'
       });
 
