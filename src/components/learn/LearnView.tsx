@@ -139,15 +139,20 @@ export const LearnView = () => {
             const catArticles = allArticles?.filter(a => a.categoryId === cat.id) || [];
             if (catArticles.length === 0) return null;
 
-            // Grouping logic for 2 or 3 stages
+            // Verbessertes Grouping: Wir extrahieren Titel und Icon aus dem ersten verfügbaren Artikel der Gruppe
             const subGroups = catArticles.reduce((acc, article) => {
               const subId = article.subCategoryId || 'direct';
               if (!acc[subId]) acc[subId] = { 
                 id: subId, 
-                title: article.subCategoryTitle || '', 
-                iconUrl: article.subCategoryIconUrl,
+                title: '', 
+                iconUrl: '',
                 articles: [] 
               };
+              
+              // Falls dieser Artikel Meta-Infos hat und die Gruppe noch keine, füllen wir sie auf
+              if (!acc[subId].title && article.subCategoryTitle) acc[subId].title = article.subCategoryTitle;
+              if (!acc[subId].iconUrl && article.subCategoryIconUrl) acc[subId].iconUrl = article.subCategoryIconUrl;
+              
               acc[subId].articles.push(article);
               return acc;
             }, {} as Record<string, { id: string, title: string, iconUrl?: string, articles: Article[] }>);
@@ -201,7 +206,7 @@ export const LearnView = () => {
                               <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center p-1.5 shrink-0 overflow-hidden relative">
                                 <Image 
                                   src={group.iconUrl} 
-                                  alt={group.title} 
+                                  alt={group.title || 'Sub-Category'} 
                                   fill 
                                   className="object-contain p-1"
                                   sizes="40px"
@@ -209,7 +214,7 @@ export const LearnView = () => {
                               </div>
                             )}
                             <span className="text-lg font-black uppercase italic tracking-tighter text-left group-hover:text-primary transition-colors">
-                              {group.title}
+                              {group.title || 'Other Modules'}
                             </span>
                           </div>
                         </AccordionTrigger>
