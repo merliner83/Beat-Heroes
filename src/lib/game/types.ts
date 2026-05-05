@@ -98,6 +98,9 @@ export interface UserProfile {
 export interface Article {
   id: string;
   categoryId: string;
+  subCategoryId?: string;
+  subCategoryTitle?: string;
+  subCategoryIconUrl?: string;
   title: string;
   content: string;
   videoUrl?: string;

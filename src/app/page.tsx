@@ -298,7 +298,7 @@ export default function HomePage() {
         let needsUpdate = false;
         const updatePayload: any = {};
 
-        const criticalFields = ['backingTrackUrl', 'sampleUrl', 'url', 'bpm', 'type'];
+        const criticalFields = ['backingTrackUrl', 'sampleUrl', 'url', 'bpm', 'type', 'subCategoryId', 'subCategoryTitle', 'subCategoryIconUrl'];
         
         for (const field of criticalFields) {
           if (localData[field] && !firestoreData[field]) {
@@ -416,6 +416,37 @@ export default function HomePage() {
 
       await syncItem('learnApps', 'learn-ear-training', { id: 'learn-ear-training', name: 'EAR TRAINING', type: 'ear-training', minRole: 'free' });
       await syncItem('learnApps', 'learn-rhythm-trainer', { id: 'learn-rhythm-trainer', name: 'RHYTHM MASTER', type: 'rhythm-trainer', minRole: 'free' });
+
+      // DAW Articles Sync
+      const daws = [
+        { id: 'gb', title: 'GarageBand', icon: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f' },
+        { id: 'cb', title: 'Cubase', icon: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FNoxxos%20Studio.png?alt=media&token=fa9f78bc-965b-4af2-bfde-4f0383a87d98' },
+        { id: 'lp', title: 'Logic Pro', icon: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FYoan%20Beats.png?alt=media&token=984099f0-f45b-4836-81d0-35241d774d83' },
+        { id: 'ab', title: 'Ableton Live', icon: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2Fstudioo.png?alt=media&token=9a547bdf-a3bf-4a9a-a132-222383e88b1f' }
+      ];
+
+      const topics = [
+        { id: 'basics', title: 'Basics' },
+        { id: 'shortcuts', title: 'Shortcuts' },
+        { id: 'vocal', title: 'Vocal Chain' },
+        { id: 'mastering', title: 'Mastering Chain' }
+      ];
+
+      for (const daw of daws) {
+        for (const topic of topics) {
+          const artId = `art-${daw.id}-${topic.id}`;
+          await syncItem('articles', artId, {
+            id: artId,
+            categoryId: 'daws',
+            subCategoryId: daw.id,
+            subCategoryTitle: daw.title,
+            subCategoryIconUrl: daw.icon,
+            title: `${daw.title}: ${topic.title}`,
+            content: `Hier erfährst du alles über ${topic.title} in ${daw.title}.\n\n# Die Grundlagen\nStarte jetzt dein Projekt und meistere den Workflow.`,
+            minRole: 'free'
+          });
+        }
+      }
 
       toast({ 
         title: "Master Rack Synced!", 

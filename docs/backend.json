@@ -152,6 +152,9 @@
       "properties": {
         "id": { "type": "string" },
         "categoryId": { "type": "string" },
+        "subCategoryId": { "type": "string" },
+        "subCategoryTitle": { "type": "string" },
+        "subCategoryIconUrl": { "type": "string" },
         "title": { "type": "string" },
         "content": { "type": "string" },
         "videoUrl": { "type": "string", "format": "uri" },

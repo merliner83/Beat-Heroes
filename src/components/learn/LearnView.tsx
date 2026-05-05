@@ -3,6 +3,7 @@
 
 import React, { useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
@@ -113,50 +114,96 @@ export const LearnView = () => {
       {/* Knowledge Base Section */}
       <section>
         <div className="flex items-center gap-3 mb-6">
-          < BookOpen className="w-5 h-5 text-primary" />
+          <BookOpen className="w-5 h-5 text-primary" />
           <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white/50">Knowledge Base</h3>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-10">
           {CATEGORY_MAP.map((cat) => {
             const catArticles = allArticles?.filter(a => a.categoryId === cat.id) || [];
             if (catArticles.length === 0) return null;
 
+            // Grouping by SubCategory
+            const subGroups = catArticles.reduce((acc, article) => {
+              const subId = article.subCategoryId || 'default';
+              if (!acc[subId]) acc[subId] = { 
+                id: subId, 
+                title: article.subCategoryTitle || '', 
+                iconUrl: article.subCategoryIconUrl,
+                articles: [] 
+              };
+              acc[subId].articles.push(article);
+              return acc;
+            }, {} as Record<string, { id: string, title: string, iconUrl?: string, articles: Article[] }>);
+
+            const groupsArray = Object.values(subGroups).sort((a,b) => a.id === 'default' ? 1 : -1);
+
             return (
-              <Card key={cat.id} className="bg-black/40 border-white/5 group overflow-hidden rounded-[2rem]">
-                <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
-                  <div className={cn("p-2.5 rounded-xl bg-white/5", cat.color)}>
-                    <cat.icon className="w-6 h-6" />
+              <div key={cat.id} className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className={cn("p-2 rounded-lg bg-white/5", cat.color)}>
+                    <cat.icon className="w-5 h-5" />
                   </div>
-                  <CardTitle className="text-xl font-black uppercase italic tracking-tighter">{cat.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {catArticles.map((article) => {
-                    const locked = !hasAccess(profile?.role, article.minRole || 'free');
-                    return (
-                      <Link 
-                        key={article.id} 
-                        href={locked ? '#' : `/learn/article/${article.id}`}
-                        className={cn(locked && "cursor-not-allowed")}
-                      >
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-primary/10 hover:border-primary/20 transition-all group/topic mb-2 relative">
-                          <span className={cn(
-                            "text-[11px] font-black uppercase tracking-widest opacity-50 italic transition-all",
-                            !locked && "group-hover/topic:opacity-100 group-hover/topic:text-primary",
-                            locked && "opacity-10"
-                          )}>
-                            {article.title}
-                          </span>
-                          {locked ? (
-                            <Lock className="w-4 h-4 text-white/10" />
-                          ) : (
-                            <ChevronRight className="w-4 h-4 text-white/10 group-hover/topic:text-primary" />
-                          )}
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </CardContent>
-              </Card>
+                  <h4 className="text-xl font-black uppercase italic tracking-tighter text-white">{cat.title}</h4>
+                  <div className="h-px flex-1 bg-white/5" />
+                </div>
+
+                <div className={cn(
+                  "grid gap-6",
+                  cat.id === 'daws' ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                )}>
+                  {groupsArray.map((group) => (
+                    <Card key={group.id} className="bg-black/40 border-white/5 group overflow-hidden rounded-[2rem] flex flex-col">
+                      <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
+                        {group.iconUrl ? (
+                          <div className="w-12 h-12 rounded-xl bg-white/5 overflow-hidden flex items-center justify-center p-2 relative">
+                            <Image 
+                              src={group.iconUrl} 
+                              alt={group.title} 
+                              fill 
+                              className="object-contain p-2"
+                              sizes="48px"
+                            />
+                          </div>
+                        ) : group.id !== 'default' && (
+                          <div className="p-2.5 rounded-xl bg-white/5 text-primary">
+                            <Sparkles className="w-6 h-6" />
+                          </div>
+                        )}
+                        {group.title && (
+                          <CardTitle className="text-lg font-black uppercase italic tracking-tighter">{group.title}</CardTitle>
+                        )}
+                      </CardHeader>
+                      <CardContent className="space-y-2 flex-1">
+                        {group.articles.map((article) => {
+                          const locked = !hasAccess(profile?.role, article.minRole || 'free');
+                          return (
+                            <Link 
+                              key={article.id} 
+                              href={locked ? '#' : `/learn/article/${article.id}`}
+                              className={cn(locked && "cursor-not-allowed")}
+                            >
+                              <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-primary/10 hover:border-primary/20 transition-all group/topic mb-1 relative">
+                                <span className={cn(
+                                  "text-[10px] font-black uppercase tracking-widest opacity-50 italic transition-all",
+                                  !locked && "group-hover/topic:opacity-100 group-hover/topic:text-primary",
+                                  locked && "opacity-10"
+                                )}>
+                                  {article.title}
+                                </span>
+                                {locked ? (
+                                  <Lock className="w-3.5 h-3.5 text-white/10" />
+                                ) : (
+                                  <ChevronRight className="w-3.5 h-3.5 text-white/10 group-hover/topic:text-primary" />
+                                )}
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
             );
           })}
         </div>
