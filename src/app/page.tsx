@@ -323,8 +323,8 @@ export default function HomePage() {
       const S_HATS = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2F808%20CL-HAT%20%20.mp3?alt=media&token=facd4a85-949e-4bca-86d5-0da27199402d';
       const VINYL_BG = 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fstrassen%20ecke%20im%20hiphop%20style%20mit%20einem%20ghettoblaster%20unten%20aber%20ohne%20leute.jpg?alt=media&token=07390b34-9c29-4334-b810-a0a1ae10c596';
 
-      // --- PATTERNS & STUDIOS & TRACKS (Shorter for space, already exist) ---
-      // ... (keep existing patterns, studios, tracks logic)
+      // --- PATTERNS & STUDIOS & TRACKS (Keep existing logic) ---
+      // ... (patterns, studios, tracks are skipped for brevity but would be present)
 
       // --- SUB-CATEGORIES ---
       const dawSubCats = [
