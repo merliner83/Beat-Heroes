@@ -158,9 +158,8 @@ export default function HomePage() {
         const snap = await getDocs(collection(db, colName));
         backupData[colName] = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        // Handle nested sub-collections
         if (colName === 'levels') {
-          backupData.sounds = {}; // Map of levelId -> sounds[]
+          backupData.sounds = {};
           for (const levelDoc of snap.docs) {
             const soundsSnap = await getDocs(collection(db, 'levels', levelDoc.id, 'sounds'));
             if (!soundsSnap.empty) {
@@ -170,7 +169,7 @@ export default function HomePage() {
         }
         
         if (colName === 'users') {
-          backupData.userProgressData = {}; // Map of userId -> { progress: [], patternProgress: [] }
+          backupData.userProgressData = {};
           for (const userDoc of snap.docs) {
             const progressSnap = await getDocs(collection(db, 'users', userDoc.id, 'progress'));
             const patternSnap = await getDocs(collection(db, 'users', userDoc.id, 'patternProgress'));
@@ -195,10 +194,10 @@ export default function HomePage() {
 
       toast({ 
         title: "Database Backup Complete!", 
-        description: "Entire dataset has been exported. Choose your location in the browser dialog." 
+        description: "Entire dataset has been exported." 
       });
     } catch (e) {
-      toast({ variant: "destructive", title: "Backup Failed", description: "Could not fetch all collections." });
+      toast({ variant: "destructive", title: "Backup Failed" });
     } finally {
       setIsBackingUp(false);
     }
@@ -228,7 +227,6 @@ export default function HomePage() {
           }
         }
 
-        // Restore Sounds (Levels Sub-collection)
         if (data.sounds) {
           for (const [levelId, levelSounds] of Object.entries(data.sounds)) {
             if (Array.isArray(levelSounds)) {
@@ -243,7 +241,6 @@ export default function HomePage() {
           }
         }
 
-        // Restore User Progress (Users Sub-collections)
         if (data.userProgressData) {
           for (const [userId, userStore] of Object.entries(data.userProgressData)) {
             const typedStore = userStore as any;
@@ -268,9 +265,9 @@ export default function HomePage() {
           }
         }
 
-        toast({ title: "Full Restore Successful", description: `${restoreCount} entries updated from backup.` });
+        toast({ title: "Full Restore Successful", description: `${restoreCount} entries updated.` });
       } catch (err) {
-        toast({ variant: "destructive", title: "Restore Failed", description: "Invalid backup format." });
+        toast({ variant: "destructive", title: "Restore Failed" });
       } finally {
         setIsRestoring(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
