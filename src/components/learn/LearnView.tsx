@@ -23,7 +23,7 @@ import {
   Target
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { LearnApp, Article, hasAccess } from '@/lib/game/types';
+import { LearnApp, Article, hasAccess, SubCategory } from '@/lib/game/types';
 import {
   Accordion,
   AccordionContent,
@@ -59,9 +59,11 @@ export const LearnView = () => {
   const db = useFirestore();
 
   const learnAppsQuery = useMemoFirebase(() => db ? query(collection(db, 'learnApps')) : null, [db]);
+  const subCategoriesQuery = useMemoFirebase(() => db ? query(collection(db, 'subCategories')) : null, [db]);
   const articlesQuery = useMemoFirebase(() => db ? query(collection(db, 'articles')) : null, [db]);
 
   const { data: allLearnApps } = useCollection<LearnApp>(learnAppsQuery);
+  const { data: allSubCategories } = useCollection<SubCategory>(subCategoriesQuery);
   const { data: allArticles } = useCollection<Article>(articlesQuery);
 
   const filteredLearnApps = useMemo(() => {
@@ -69,10 +71,8 @@ export const LearnView = () => {
     return allLearnApps.filter(a => hasAccess(profile?.role, a.minRole || 'free'));
   }, [allLearnApps, profile?.role]);
 
-  // Helper to format article title in list
   const formatListTitle = (article: Article, subTitle?: string) => {
     if (!subTitle) return article.title;
-    // Remove subCategory name from title for cleaner list view if it exists
     const prefix = `${subTitle}:`;
     if (article.title.startsWith(prefix)) {
       return article.title.replace(prefix, '').trim();
@@ -137,28 +137,11 @@ export const LearnView = () => {
         <div className="space-y-10">
           {CATEGORY_MAP.map((cat) => {
             const catArticles = allArticles?.filter(a => a.categoryId === cat.id) || [];
-            if (catArticles.length === 0) return null;
+            const catSubCats = allSubCategories?.filter(sc => sc.categoryId === cat.id) || [];
+            
+            if (catArticles.length === 0 && catSubCats.length === 0) return null;
 
-            // Verbessertes Grouping: Wir extrahieren Titel und Icon aus dem ersten verfügbaren Artikel der Gruppe
-            const subGroups = catArticles.reduce((acc, article) => {
-              const subId = article.subCategoryId || 'direct';
-              if (!acc[subId]) acc[subId] = { 
-                id: subId, 
-                title: '', 
-                iconUrl: '',
-                articles: [] 
-              };
-              
-              // Falls dieser Artikel Meta-Infos hat und die Gruppe noch keine, füllen wir sie auf
-              if (!acc[subId].title && article.subCategoryTitle) acc[subId].title = article.subCategoryTitle;
-              if (!acc[subId].iconUrl && article.subCategoryIconUrl) acc[subId].iconUrl = article.subCategoryIconUrl;
-              
-              acc[subId].articles.push(article);
-              return acc;
-            }, {} as Record<string, { id: string, title: string, iconUrl?: string, articles: Article[] }>);
-
-            const directArticles = subGroups['direct']?.articles || [];
-            const groupList = Object.values(subGroups).filter(g => g.id !== 'direct');
+            const directArticles = catArticles.filter(a => !a.subCategoryId);
 
             return (
               <div key={cat.id} className="space-y-4">
@@ -171,7 +154,6 @@ export const LearnView = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Direct Articles (Stage 2) */}
                   {directArticles.map((article) => {
                     const locked = !hasAccess(profile?.role, article.minRole || 'free');
                     return (
@@ -191,59 +173,63 @@ export const LearnView = () => {
                   })}
                 </div>
 
-                {/* Sub-Categories (Stage 3 via Accordion) */}
-                {groupList.length > 0 && (
+                {catSubCats.length > 0 && (
                   <Accordion type="single" collapsible className="space-y-3">
-                    {groupList.map((group) => (
-                      <AccordionItem 
-                        key={group.id} 
-                        value={group.id}
-                        className="border-none bg-black/40 rounded-2xl overflow-hidden border border-white/5"
-                      >
-                        <AccordionTrigger className="px-6 py-5 hover:no-underline group">
-                          <div className="flex items-center gap-4">
-                            {group.iconUrl && (
-                              <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center p-1.5 shrink-0 overflow-hidden relative">
-                                <Image 
-                                  src={group.iconUrl} 
-                                  alt={group.title || 'Sub-Category'} 
-                                  fill 
-                                  className="object-contain p-1"
-                                  sizes="40px"
-                                />
-                              </div>
-                            )}
-                            <span className="text-lg font-black uppercase italic tracking-tighter text-left group-hover:text-primary transition-colors">
-                              {group.title || 'Other Modules'}
-                            </span>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-6 pt-2 space-y-2">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {group.articles.map((article) => {
-                              const locked = !hasAccess(profile?.role, article.minRole || 'free');
-                              return (
-                                <Link 
-                                  key={article.id} 
-                                  href={locked ? '#' : `/learn/article/${article.id}`}
-                                  className={cn("block", locked && "cursor-not-allowed")}
-                                >
-                                  <div className="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-primary/5 hover:border-primary/20 transition-all group/item flex items-center justify-between">
-                                    <span className={cn(
-                                      "text-[11px] font-black uppercase tracking-widest italic opacity-60",
-                                      !locked && "group-hover/item:text-primary group-hover/item:opacity-100"
-                                    )}>
-                                      {formatListTitle(article, group.title)}
-                                    </span>
-                                    {locked ? <Lock className="w-3 h-3 text-white/10" /> : <ChevronRight className="w-3 h-3 text-white/10 group-hover/item:text-primary" />}
-                                  </div>
-                                </Link>
-                              );
-                            })}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
+                    {catSubCats.map((group) => {
+                      const groupArticles = allArticles?.filter(a => a.subCategoryId === group.id) || [];
+                      if (groupArticles.length === 0) return null;
+
+                      return (
+                        <AccordionItem 
+                          key={group.id} 
+                          value={group.id}
+                          className="border-none bg-black/40 rounded-2xl overflow-hidden border border-white/5"
+                        >
+                          <AccordionTrigger className="px-6 py-5 hover:no-underline group">
+                            <div className="flex items-center gap-4">
+                              {group.iconUrl && (
+                                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center p-1.5 shrink-0 overflow-hidden relative">
+                                  <Image 
+                                    src={group.iconUrl} 
+                                    alt={group.title || 'Sub-Category'} 
+                                    fill 
+                                    className="object-contain p-1"
+                                    sizes="40px"
+                                  />
+                                </div>
+                              )}
+                              <span className="text-lg font-black uppercase italic tracking-tighter text-left group-hover:text-primary transition-colors">
+                                {group.title}
+                              </span>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="px-6 pb-6 pt-2 space-y-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {groupArticles.map((article) => {
+                                const locked = !hasAccess(profile?.role, article.minRole || 'free');
+                                return (
+                                  <Link 
+                                    key={article.id} 
+                                    href={locked ? '#' : `/learn/article/${article.id}`}
+                                    className={cn("block", locked && "cursor-not-allowed")}
+                                  >
+                                    <div className="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-primary/5 hover:border-primary/20 transition-all group/item flex items-center justify-between">
+                                      <span className={cn(
+                                        "text-[11px] font-black uppercase tracking-widest italic opacity-60",
+                                        !locked && "group-hover/item:text-primary group-hover/item:opacity-100"
+                                      )}>
+                                        {formatListTitle(article, group.title)}
+                                      </span>
+                                      {locked ? <Lock className="w-3 h-3 text-white/10" /> : <ChevronRight className="w-3 h-3 text-white/10 group-hover/item:text-primary" />}
+                                    </div>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      );
+                    })}
                   </Accordion>
                 )}
               </div>

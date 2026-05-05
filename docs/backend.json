@@ -145,6 +145,19 @@
       },
       "required": ["patternId", "accuracy"]
     },
+    "SubCategory": {
+      "title": "SubCategory",
+      "type": "object",
+      "description": "Eine Unterkategorie für die Knowledge Base.",
+      "properties": {
+        "id": { "type": "string" },
+        "categoryId": { "type": "string", "description": "ID der Hauptkategorie (z.B. daws, intro)." },
+        "title": { "type": "string" },
+        "iconUrl": { "type": "string" },
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" }
+      },
+      "required": ["id", "categoryId", "title"]
+    },
     "Article": {
       "title": "Article",
       "type": "object",
@@ -152,9 +165,7 @@
       "properties": {
         "id": { "type": "string" },
         "categoryId": { "type": "string" },
-        "subCategoryId": { "type": "string" },
-        "subCategoryTitle": { "type": "string" },
-        "subCategoryIconUrl": { "type": "string" },
+        "subCategoryId": { "type": "string", "description": "Verknüpfung zur SubCategory." },
         "title": { "type": "string" },
         "content": { "type": "string" },
         "videoUrl": { "type": "string", "format": "uri" },
@@ -210,6 +221,10 @@
     "/users/{userId}/patternProgress/{patternId}": {
       "schema": "#/backend/entities/PatternProgress",
       "description": "Pattern-Fortschritt."
+    },
+    "/subCategories/{subCategoryId}": {
+      "schema": "#/backend/entities/SubCategory",
+      "description": "Unterkategorien."
     },
     "/articles/{articleId}": {
       "schema": "#/backend/entities/Article",
