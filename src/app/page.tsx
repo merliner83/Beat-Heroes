@@ -414,7 +414,7 @@ export default function HomePage() {
       await syncItem('learnApps', 'learn-ear-training', { id: 'learn-ear-training', name: 'EAR TRAINING', type: 'ear-training', minRole: 'free' });
       await syncItem('learnApps', 'learn-rhythm-trainer', { id: 'learn-rhythm-trainer', name: 'RHYTHM MASTER', type: 'rhythm-trainer', minRole: 'free' });
 
-      // DAW Articles Sync
+      // DAW Articles Sync (Stage 3 Hierachy)
       const daws = [
         { id: 'gb', title: 'GarageBand', icon: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FGabriel%20Studio.png?alt=media&token=2f1e1b66-7f23-461b-9377-f738ea0ce79f' },
         { id: 'cb', title: 'Cubase', icon: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/studios%2FNoxxos%20Studio.png?alt=media&token=fa9f78bc-965b-4af2-bfde-4f0383a87d98' },
@@ -444,6 +444,15 @@ export default function HomePage() {
           });
         }
       }
+
+      // 2-Stage Article Example (Introduction)
+      await syncItem('articles', 'art-welcome', {
+        id: 'art-welcome',
+        categoryId: 'intro',
+        title: 'Willkommen im Hub',
+        content: 'Dies ist ein 2-stufiger Artikel direkt in der Kategorie Introduction.\n\nHier findest du alle Infos für den Start.',
+        minRole: 'free'
+      });
 
       toast({ 
         title: "Master Rack Synced!", 

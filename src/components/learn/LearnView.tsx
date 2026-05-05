@@ -4,7 +4,6 @@
 import React, { useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import { 
@@ -25,6 +24,12 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LearnApp, Article, hasAccess } from '@/lib/game/types';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const CATEGORY_MAP = [
   { id: 'intro', title: 'Introduction', icon: BookOpen, color: 'text-primary' },
@@ -63,6 +68,17 @@ export const LearnView = () => {
     if (!allLearnApps) return [];
     return allLearnApps.filter(a => hasAccess(profile?.role, a.minRole || 'free'));
   }, [allLearnApps, profile?.role]);
+
+  // Helper to format article title in list
+  const formatListTitle = (article: Article, subTitle?: string) => {
+    if (!subTitle) return article.title;
+    // Remove subCategory name from title for cleaner list view if it exists
+    const prefix = `${subTitle}:`;
+    if (article.title.startsWith(prefix)) {
+      return article.title.replace(prefix, '').trim();
+    }
+    return article.title;
+  };
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-20">
@@ -117,14 +133,15 @@ export const LearnView = () => {
           <BookOpen className="w-5 h-5 text-primary" />
           <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white/50">Knowledge Base</h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-10">
+        
+        <div className="space-y-10">
           {CATEGORY_MAP.map((cat) => {
             const catArticles = allArticles?.filter(a => a.categoryId === cat.id) || [];
             if (catArticles.length === 0) return null;
 
-            // Grouping by SubCategory
+            // Grouping logic for 2 or 3 stages
             const subGroups = catArticles.reduce((acc, article) => {
-              const subId = article.subCategoryId || 'default';
+              const subId = article.subCategoryId || 'direct';
               if (!acc[subId]) acc[subId] = { 
                 id: subId, 
                 title: article.subCategoryTitle || '', 
@@ -135,74 +152,95 @@ export const LearnView = () => {
               return acc;
             }, {} as Record<string, { id: string, title: string, iconUrl?: string, articles: Article[] }>);
 
-            const groupsArray = Object.values(subGroups).sort((a,b) => a.id === 'default' ? 1 : -1);
+            const directArticles = subGroups['direct']?.articles || [];
+            const groupList = Object.values(subGroups).filter(g => g.id !== 'direct');
 
             return (
-              <div key={cat.id} className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className={cn("p-2 rounded-lg bg-white/5", cat.color)}>
-                    <cat.icon className="w-5 h-5" />
+              <div key={cat.id} className="space-y-4">
+                <div className="flex items-center gap-4 px-2">
+                  <div className={cn("p-2.5 rounded-xl bg-white/5", cat.color)}>
+                    <cat.icon className="w-6 h-6" />
                   </div>
-                  <h4 className="text-xl font-black uppercase italic tracking-tighter text-white">{cat.title}</h4>
+                  <h4 className="text-2xl font-black uppercase italic tracking-tighter text-white">{cat.title}</h4>
                   <div className="h-px flex-1 bg-white/5" />
                 </div>
 
-                <div className={cn(
-                  "grid gap-6",
-                  cat.id === 'daws' ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                )}>
-                  {groupsArray.map((group) => (
-                    <Card key={group.id} className="bg-black/40 border-white/5 group overflow-hidden rounded-[2rem] flex flex-col">
-                      <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-4">
-                        {group.iconUrl ? (
-                          <div className="w-12 h-12 rounded-xl bg-white/5 overflow-hidden flex items-center justify-center p-2 relative">
-                            <Image 
-                              src={group.iconUrl} 
-                              alt={group.title} 
-                              fill 
-                              className="object-contain p-2"
-                              sizes="48px"
-                            />
-                          </div>
-                        ) : group.id !== 'default' && (
-                          <div className="p-2.5 rounded-xl bg-white/5 text-primary">
-                            <Sparkles className="w-6 h-6" />
-                          </div>
-                        )}
-                        {group.title && (
-                          <CardTitle className="text-lg font-black uppercase italic tracking-tighter">{group.title}</CardTitle>
-                        )}
-                      </CardHeader>
-                      <CardContent className="space-y-2 flex-1">
-                        {group.articles.map((article) => {
-                          const locked = !hasAccess(profile?.role, article.minRole || 'free');
-                          return (
-                            <Link 
-                              key={article.id} 
-                              href={locked ? '#' : `/learn/article/${article.id}`}
-                              className={cn(locked && "cursor-not-allowed")}
-                            >
-                              <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-primary/10 hover:border-primary/20 transition-all group/topic mb-1 relative">
-                                <span className={cn(
-                                  "text-[10px] font-black uppercase tracking-widest opacity-50 italic transition-all",
-                                  !locked && "group-hover/topic:opacity-100 group-hover/topic:text-primary",
-                                  locked && "opacity-10"
-                                )}>
-                                  {article.title}
-                                </span>
-                                {locked ? (
-                                  <Lock className="w-3.5 h-3.5 text-white/10" />
-                                ) : (
-                                  <ChevronRight className="w-3.5 h-3.5 text-white/10 group-hover/topic:text-primary" />
-                                )}
-                              </div>
-                            </Link>
-                          );
-                        })}
-                      </CardContent>
-                    </Card>
-                  ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Direct Articles (Stage 2) */}
+                  {directArticles.map((article) => {
+                    const locked = !hasAccess(profile?.role, article.minRole || 'free');
+                    return (
+                      <Link 
+                        key={article.id} 
+                        href={locked ? '#' : `/learn/article/${article.id}`}
+                        className={cn("block group", locked && "cursor-not-allowed opacity-50")}
+                      >
+                        <div className="p-5 rounded-2xl bg-black/40 border border-white/5 hover:border-primary/30 transition-all flex items-center justify-between">
+                          <span className="text-sm font-black uppercase tracking-widest italic group-hover:text-primary transition-colors">
+                            {article.title}
+                          </span>
+                          {locked ? <Lock className="w-4 h-4 text-white/20" /> : <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-primary" />}
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
+
+                {/* Sub-Categories (Stage 3 via Accordion) */}
+                {groupList.length > 0 && (
+                  <Accordion type="single" collapsible className="space-y-3">
+                    {groupList.map((group) => (
+                      <AccordionItem 
+                        key={group.id} 
+                        value={group.id}
+                        className="border-none bg-black/40 rounded-2xl overflow-hidden border border-white/5"
+                      >
+                        <AccordionTrigger className="px-6 py-5 hover:no-underline group">
+                          <div className="flex items-center gap-4">
+                            {group.iconUrl && (
+                              <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center p-1.5 shrink-0 overflow-hidden relative">
+                                <Image 
+                                  src={group.iconUrl} 
+                                  alt={group.title} 
+                                  fill 
+                                  className="object-contain p-1"
+                                  sizes="40px"
+                                />
+                              </div>
+                            )}
+                            <span className="text-lg font-black uppercase italic tracking-tighter text-left group-hover:text-primary transition-colors">
+                              {group.title}
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-6 pb-6 pt-2 space-y-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {group.articles.map((article) => {
+                              const locked = !hasAccess(profile?.role, article.minRole || 'free');
+                              return (
+                                <Link 
+                                  key={article.id} 
+                                  href={locked ? '#' : `/learn/article/${article.id}`}
+                                  className={cn("block", locked && "cursor-not-allowed")}
+                                >
+                                  <div className="p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-primary/5 hover:border-primary/20 transition-all group/item flex items-center justify-between">
+                                    <span className={cn(
+                                      "text-[11px] font-black uppercase tracking-widest italic opacity-60",
+                                      !locked && "group-hover/item:text-primary group-hover/item:opacity-100"
+                                    )}>
+                                      {formatListTitle(article, group.title)}
+                                    </span>
+                                    {locked ? <Lock className="w-3 h-3 text-white/10" /> : <ChevronRight className="w-3 h-3 text-white/10 group-hover/item:text-primary" />}
+                                  </div>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                )}
               </div>
             );
           })}
