@@ -83,10 +83,9 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     return match ? match[1] : null;
   };
 
-  // Zentralisierte Rendering-Logik für alle Inhaltselemente
   const renderLine = (line: string, idx: number) => {
     const trimmedLine = line.trim();
-    if (!trimmedLine) return <div key={idx} className="h-6" />;
+    if (!trimmedLine) return <div key={idx} className="h-4" />;
 
     // --- GAP ---
     if (trimmedLine.startsWith('GAP:')) {
@@ -96,13 +95,13 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
 
     // --- SEPARATOR ---
     if (trimmedLine === '---') {
-      return <div key={idx} className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent my-12" />;
+      return <div key={idx} className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent my-10" />;
     }
 
     // --- INLINE VIDEO (9:16) ---
     if (trimmedLine.startsWith('VIDEO:')) {
       return (
-        <div key={idx} className="mb-10 animate-in fade-in slide-in-from-top-6 duration-700">
+        <div key={idx} className="mb-8 animate-in fade-in slide-in-from-top-6 duration-700">
           <div className="relative aspect-[9/16] max-w-[280px] mx-auto bg-black rounded-[2rem] border-4 border-white/10 overflow-hidden shadow-2xl">
             <video src={trimmedLine.replace('VIDEO:', '').trim()} controls className="w-full h-full object-cover" playsInline />
           </div>
@@ -115,7 +114,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       const vidId = getYoutubeId(trimmedLine.replace('YOUTUBE:', '').trim());
       if (!vidId) return null;
       return (
-        <div key={idx} className="mb-10 animate-in fade-in zoom-in-95 duration-500">
+        <div key={idx} className="mb-8 animate-in fade-in zoom-in-95 duration-500">
           <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 bg-black shadow-xl">
             <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${vidId}`} frameBorder="0" allowFullScreen></iframe>
           </div>
@@ -126,7 +125,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     // --- INLINE IMAGE ---
     if (trimmedLine.startsWith('IMAGE:')) {
       return (
-        <div key={idx} className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div key={idx} className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-lg">
             <Image src={trimmedLine.replace('IMAGE:', '').trim()} alt="Content Image" fill className="object-cover" sizes="(max-width: 768px) 100vw, 800px" />
           </div>
@@ -138,7 +137,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     if (trimmedLine.startsWith('###') || trimmedLine.startsWith('SUB:')) {
       const content = trimmedLine.replace(/^###\s*|^SUB:\s*/, '');
       return (
-        <div key={idx} className="mb-4 mt-4">
+        <div key={idx} className="mb-4 mt-2">
           <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em] text-primary italic leading-none">
             {content}
           </span>
@@ -150,7 +149,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     if (trimmedLine.startsWith('##')) {
       const content = trimmedLine.replace(/^##\s*/, '');
       return (
-        <h4 key={idx} className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white/95 mb-6 mt-6 leading-tight">
+        <h4 key={idx} className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white/95 mb-6 mt-4 leading-tight">
           {content}
         </h4>
       );
@@ -160,7 +159,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     if (trimmedLine.startsWith('#')) {
       const content = trimmedLine.replace(/^#\s*/, '');
       return (
-        <h3 key={idx} className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-white mb-8 border-b border-white/10 pb-4 mt-8 leading-none">
+        <h3 key={idx} className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-white mb-8 border-b border-white/10 pb-4 mt-6 leading-none">
           {content}
         </h3>
       );
@@ -168,7 +167,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
 
     // --- DEFAULT TEXT ---
     return (
-      <p key={idx} className="text-base md:text-lg text-white/90 leading-relaxed font-medium mb-8 selection:bg-primary/30">
+      <p key={idx} className="text-base md:text-lg text-white/80 leading-relaxed font-normal mb-6 selection:bg-primary/30 whitespace-pre-line">
         {line}
       </p>
     );
@@ -188,24 +187,24 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         const Icon = PHASE_ICONS[displayMainTitle.split(':')[0].trim()] || Play;
 
         return (
-          <div key={blockIdx} className="mb-16 gemini-border animate-in fade-in slide-in-from-bottom-4 duration-700 shadow-2xl">
-            <div className="p-8 md:p-12 bg-black/50 backdrop-blur-2xl">
-              <div className="flex items-center gap-6 mb-10">
-                <div className="w-16 h-16 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
-                  <Icon className="w-8 h-8 text-primary" />
+          <div key={blockIdx} className="mb-12 gemini-border animate-in fade-in slide-in-from-bottom-4 duration-700 shadow-2xl">
+            <div className="p-6 md:p-10 bg-black/50 backdrop-blur-2xl">
+              <div className="flex items-center gap-5 mb-8">
+                <div className="w-14 h-14 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+                  <Icon className="w-7 h-7 text-primary" />
                 </div>
-                <h4 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white leading-none">
+                <h4 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white leading-none">
                   {displayMainTitle}
                 </h4>
               </div>
               
-              <div className="mb-4">
+              <div className="mb-2">
                 {description.split('\n').map((line, lineIdx) => renderLine(line, blockIdx * 100 + lineIdx))}
               </div>
               
               {linkedArticleId && (
                 <Link href={`/learn/article/${linkedArticleId}`}>
-                  <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 rounded-full px-8 italic font-black uppercase text-xs h-12 mt-8 tracking-widest">
+                  <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 rounded-full px-8 italic font-black uppercase text-xs h-12 mt-6 tracking-widest">
                     Learn More <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </Link>
@@ -215,9 +214,9 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         );
       }
 
-      // --- NORMALE BLÖCKE (Zeile für Zeile rendern) ---
+      // --- NORMALE BLÖCKE ---
       return (
-        <div key={blockIdx} className="mb-4">
+        <div key={blockIdx} className="mb-2">
           {trimmedBlock.split('\n').map((line, lineIdx) => renderLine(line, blockIdx * 100 + lineIdx))}
         </div>
       );
@@ -241,7 +240,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       </header>
 
       <main className="max-w-3xl mx-auto p-6 md:p-16 space-y-16 pb-48">
-        <section className="bg-white/2 border border-white/5 p-8 md:p-16 rounded-[3rem] backdrop-blur-sm shadow-inner">
+        <section className="bg-white/2 border border-white/5 p-8 md:p-14 rounded-[3rem] backdrop-blur-sm shadow-inner">
           {renderContent(article.content)}
         </section>
 
