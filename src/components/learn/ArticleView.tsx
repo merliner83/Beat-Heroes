@@ -83,6 +83,19 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     return match ? match[1] : null;
   };
 
+  /**
+   * Hilfsfunktion zum Parsen von Inline-Formatierungen wie **fett**.
+   */
+  const parseInlineFormatting = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i} className="font-black text-white">{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  };
+
   const renderLine = (line: string, idx: number) => {
     const trimmedLine = line.trim();
     if (!trimmedLine) return <div key={idx} className="h-4" />;
@@ -139,7 +152,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       return (
         <div key={idx} className="mb-4 mt-2">
           <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em] text-primary italic leading-none">
-            {content}
+            {parseInlineFormatting(content)}
           </span>
         </div>
       );
@@ -150,7 +163,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       const content = trimmedLine.replace(/^##\s*/, '');
       return (
         <h4 key={idx} className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white/95 mb-6 mt-4 leading-tight">
-          {content}
+          {parseInlineFormatting(content)}
         </h4>
       );
     }
@@ -160,7 +173,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       const content = trimmedLine.replace(/^#\s*/, '');
       return (
         <h3 key={idx} className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-white mb-8 border-b border-white/10 pb-4 mt-6 leading-none">
-          {content}
+          {parseInlineFormatting(content)}
         </h3>
       );
     }
@@ -168,7 +181,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     // --- DEFAULT TEXT ---
     return (
       <p key={idx} className="text-base md:text-lg text-white/80 leading-relaxed font-normal mb-6 selection:bg-primary/30 whitespace-pre-line">
-        {line}
+        {parseInlineFormatting(line)}
       </p>
     );
   };
