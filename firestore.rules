@@ -24,6 +24,9 @@ service cloud.firestore {
       match /patternProgress/{patternId} {
         allow read, write: if isOwner(userId);
       }
+      match /articleProgress/{articleId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     // Studios
@@ -67,8 +70,8 @@ service cloud.firestore {
       allow write: if isSignedIn();
     }
 
-    // SubCategories
-    match /subCategories/{subCategoryId} {
+    // Learn SubCategories
+    match /learnSubCats/{subCategoryId} {
       allow read: if true;
       allow write: if isSignedIn();
     }
