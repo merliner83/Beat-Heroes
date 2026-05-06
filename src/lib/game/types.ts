@@ -101,6 +101,8 @@ export interface UserProfile {
   email?: string;
   role: UserRole;
   streetCred: number;
+  displayName?: string;
+  isPublic?: boolean;
 }
 
 export interface LearnCategory {

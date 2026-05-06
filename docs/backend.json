@@ -112,12 +112,14 @@
     "UserProfile": {
       "title": "UserProfile",
       "type": "object",
-      "description": "Nutzer-Statistiken.",
+      "description": "Nutzer-Statistiken und Einstellungen.",
       "properties": {
         "uid": { "type": "string" },
         "email": { "type": "string", "format": "email" },
         "role": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" },
-        "streetCred": { "type": "number", "default": 0 }
+        "streetCred": { "type": "number", "default": 0 },
+        "displayName": { "type": "string", "description": "Öffentlich angezeigter Name." },
+        "isPublic": { "type": "boolean", "default": false, "description": "Ob der Nutzer im Highscore erscheint." }
       },
       "required": ["uid"]
     },
