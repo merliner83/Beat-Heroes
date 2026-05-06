@@ -216,12 +216,34 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         );
       }
       
-      // --- HEADLINES ---
-      if (block.startsWith('#')) {
+      // --- SUB-HEADLINES (##) ---
+      if (block.startsWith('## ')) {
+        return (
+          <div key={idx} className="mb-6 mt-2">
+            <h4 className="text-lg md:text-xl font-black uppercase italic tracking-tighter text-white/90">
+              {block.replace(/^##\s*/, '')}
+            </h4>
+          </div>
+        );
+      }
+
+      // --- TINY SUBTITLE / LABEL (### or SUB:) ---
+      if (block.startsWith('### ') || block.startsWith('SUB:')) {
+        return (
+          <div key={idx} className="mb-4 -mt-2">
+            <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-primary/70 italic">
+              {block.replace(/^(###|SUB:)\s*/, '')}
+            </span>
+          </div>
+        );
+      }
+      
+      // --- MAIN HEADLINES (#) ---
+      if (block.startsWith('# ')) {
         return (
           <div key={idx} className="mb-10">
             <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white mb-6 border-b border-white/5 pb-2">
-              {block.replace(/^#+\s*/, '')}
+              {block.replace(/^#\s*/, '')}
             </h3>
           </div>
         );
