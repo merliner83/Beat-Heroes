@@ -83,9 +83,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     return match ? match[1] : null;
   };
 
-  /**
-   * Hilfsfunktion zum Parsen von Inline-Formatierungen wie **fett**.
-   */
   const parseInlineFormatting = (text: string) => {
     const parts = text.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, i) => {
@@ -100,18 +97,15 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     const trimmedLine = line.trim();
     if (!trimmedLine) return <div key={idx} className="h-4" />;
 
-    // --- GAP ---
     if (trimmedLine.startsWith('GAP:')) {
       const height = parseInt(trimmedLine.replace('GAP:', '').trim(), 10) || 20;
       return <div key={idx} style={{ height: `${height}px` }} />;
     }
 
-    // --- SEPARATOR ---
     if (trimmedLine === '---') {
       return <div key={idx} className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent my-10" />;
     }
 
-    // --- INLINE VIDEO (9:16) ---
     if (trimmedLine.startsWith('VIDEO:')) {
       return (
         <div key={idx} className="mb-8 animate-in fade-in slide-in-from-top-6 duration-700">
@@ -122,7 +116,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       );
     }
 
-    // --- INLINE YOUTUBE ---
     if (trimmedLine.startsWith('YOUTUBE:')) {
       const vidId = getYoutubeId(trimmedLine.replace('YOUTUBE:', '').trim());
       if (!vidId) return null;
@@ -135,18 +128,20 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       );
     }
 
-    // --- INLINE IMAGE ---
     if (trimmedLine.startsWith('IMAGE:')) {
       return (
         <div key={idx} className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-lg">
-            <Image src={trimmedLine.replace('IMAGE:', '').trim()} alt="Content Image" fill className="object-cover" sizes="(max-width: 768px) 100vw, 800px" />
+          <div className="relative w-full rounded-3xl overflow-hidden border border-white/10 shadow-lg bg-white/5">
+            <img 
+              src={trimmedLine.replace('IMAGE:', '').trim()} 
+              alt="Content Image" 
+              className="w-full h-auto block"
+            />
           </div>
         </div>
       );
     }
 
-    // --- LABELS (### or SUB:) ---
     if (trimmedLine.startsWith('###') || trimmedLine.startsWith('SUB:')) {
       const content = trimmedLine.replace(/^###\s*|^SUB:\s*/, '');
       return (
@@ -158,7 +153,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       );
     }
     
-    // --- SUB-HEADLINES (##) ---
     if (trimmedLine.startsWith('##')) {
       const content = trimmedLine.replace(/^##\s*/, '');
       return (
@@ -168,7 +162,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       );
     }
 
-    // --- MAIN HEADLINES (#) ---
     if (trimmedLine.startsWith('#')) {
       const content = trimmedLine.replace(/^#\s*/, '');
       return (
@@ -178,7 +171,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       );
     }
 
-    // --- DEFAULT TEXT ---
     return (
       <p key={idx} className="text-base md:text-lg text-white/80 leading-relaxed font-normal mb-6 selection:bg-primary/30 whitespace-pre-line">
         {parseInlineFormatting(line)}
@@ -191,7 +183,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     return blocks.map((block, blockIdx) => {
       const trimmedBlock = block.trim();
 
-      // --- PHASE BLOCKS ---
       if (trimmedBlock.startsWith('PHASE:')) {
         const parts = trimmedBlock.replace('PHASE:', '').split('|');
         const displayMainTitle = parts[0]?.trim() || '';
@@ -227,7 +218,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         );
       }
 
-      // --- NORMALE BLÖCKE ---
       return (
         <div key={blockIdx} className="mb-2">
           {trimmedBlock.split('\n').map((line, lineIdx) => renderLine(line, blockIdx * 100 + lineIdx))}
@@ -263,7 +253,13 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
               {article.imageUrls.map((url, idx) => (
                 <div key={idx} className="relative aspect-square rounded-3xl overflow-hidden border border-white/5 bg-black/40 group">
-                  <Image src={url} alt="Reference" fill className="object-cover transition-transform duration-700 group-hover:scale-110" sizes="(max-width: 768px) 50vw, 300px" />
+                  <Image 
+                    src={url} 
+                    alt="Reference" 
+                    fill 
+                    className="object-contain transition-transform duration-700 group-hover:scale-110 p-2" 
+                    sizes="(max-width: 768px) 50vw, 300px" 
+                  />
                 </div>
               ))}
             </div>
