@@ -95,6 +95,18 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         const linkedArticleId = parts[2]?.trim();
         const Icon = PHASE_ICONS[titleAndPhase] || Play;
 
+        // Extrahiere Medien-Tags aus der Beschreibung
+        const videoMatches = description.match(/VIDEO:(\S+)/g) || [];
+        const youtubeMatches = description.match(/YOUTUBE:(\S+)/g) || [];
+        const imageMatches = description.match(/IMAGE:(\S+)/g) || [];
+
+        // Säubere die Beschreibung von den Tags für die Textanzeige
+        const cleanDescription = description
+          .replace(/VIDEO:\S+/g, '')
+          .replace(/YOUTUBE:\S+/g, '')
+          .replace(/IMAGE:\S+/g, '')
+          .trim();
+
         return (
           <div key={idx} className="mb-8 gemini-border animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="p-8 bg-black/40 backdrop-blur-xl">
@@ -104,7 +116,40 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
                 </div>
                 <h4 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white leading-none">{titleAndPhase}</h4>
               </div>
-              <p className="text-base md:text-xl text-white/60 leading-relaxed font-normal mb-6">{description}</p>
+              
+              {cleanDescription && (
+                <p className="text-base md:text-xl text-white/60 leading-relaxed font-normal mb-6">{cleanDescription}</p>
+              )}
+
+              {/* Medien-Inhalte innerhalb der Phase rendern */}
+              <div className="space-y-6 mb-6">
+                {videoMatches.map((m, i) => {
+                  const url = m.replace('VIDEO:', '');
+                  return (
+                    <div key={i} className="relative aspect-[9/16] max-w-[240px] mx-auto rounded-2xl border-4 border-white/10 overflow-hidden shadow-2xl">
+                       <video src={url} controls className="w-full h-full object-cover" />
+                    </div>
+                  );
+                })}
+                {youtubeMatches.map((m, i) => {
+                  const url = m.replace('YOUTUBE:', '');
+                  const vidId = getYoutubeId(url);
+                  if (!vidId) return null;
+                  return (
+                    <div key={i} className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-xl">
+                      <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${vidId}`} frameBorder="0" allowFullScreen></iframe>
+                    </div>
+                  );
+                })}
+                {imageMatches.map((m, i) => {
+                  const url = m.replace('IMAGE:', '');
+                  return (
+                    <div key={i} className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-lg">
+                      <Image src={url} alt="Phase Media" fill className="object-cover" sizes="600px" />
+                    </div>
+                  );
+                })}
+              </div>
               
               {linkedArticleId && (
                 <Link href={`/learn/article/${linkedArticleId}`}>
