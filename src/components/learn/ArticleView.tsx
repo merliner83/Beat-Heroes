@@ -85,6 +85,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         const parts = block.replace('PHASE:', '').split('|');
         const titleAndPhase = parts[0]?.trim() || '';
         const description = parts[1]?.trim() || '';
+        const linkedArticleId = parts[2]?.trim(); // New: Optional third part for links
         const Icon = PHASE_ICONS[titleAndPhase] || Play;
 
         return (
@@ -96,7 +97,15 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
                 </div>
                 <h4 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white leading-none">{titleAndPhase}</h4>
               </div>
-              <p className="text-base md:text-xl text-white/60 leading-relaxed font-normal">{description}</p>
+              <p className="text-base md:text-xl text-white/60 leading-relaxed font-normal mb-6">{description}</p>
+              
+              {linkedArticleId && (
+                <Link href={`/learn/article/${linkedArticleId}`}>
+                  <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 rounded-full px-6 italic font-black uppercase text-xs h-10">
+                    Learn More <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         );
