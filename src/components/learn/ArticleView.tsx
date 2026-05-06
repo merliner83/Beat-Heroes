@@ -83,47 +83,96 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     return match ? match[1] : null;
   };
 
-  const renderDescriptionLines = (text: string) => {
-    return text.split('\n').map((line, idx) => {
-      const trimmedLine = line.trim();
-      if (!trimmedLine) return <div key={idx} className="h-4" />;
+  // Zentralisierte Rendering-Logik für alle Inhaltselemente
+  const renderLine = (line: string, idx: number) => {
+    const trimmedLine = line.trim();
+    if (!trimmedLine) return <div key={idx} className="h-4" />;
 
-      if (trimmedLine.startsWith('###') || trimmedLine.startsWith('SUB:')) {
-        const content = trimmedLine.replace(/^###\s*|^SUB:\s*/, '');
-        return (
-          <div key={idx} className="mb-2 mt-2">
-            <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-primary/70 italic">
-              {content}
-            </span>
+    // --- GAP ---
+    if (trimmedLine.startsWith('GAP:')) {
+      const height = parseInt(trimmedLine.replace('GAP:', '').trim(), 10) || 20;
+      return <div key={idx} style={{ height: `${height}px` }} />;
+    }
+
+    // --- SEPARATOR ---
+    if (trimmedLine === '---') {
+      return <div key={idx} className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent my-10" />;
+    }
+
+    // --- INLINE VIDEO (9:16) ---
+    if (trimmedLine.startsWith('VIDEO:')) {
+      return (
+        <div key={idx} className="mb-8 animate-in fade-in slide-in-from-top-6 duration-700">
+          <div className="relative aspect-[9/16] max-w-[280px] mx-auto bg-black rounded-[2rem] border-4 border-white/10 overflow-hidden shadow-2xl">
+            <video src={trimmedLine.replace('VIDEO:', '').trim()} controls className="w-full h-full object-cover" playsInline />
           </div>
-        );
-      }
-      
-      if (trimmedLine.startsWith('##')) {
-        const content = trimmedLine.replace(/^##\s*/, '');
-        return (
-          <h4 key={idx} className="text-base md:text-lg font-black uppercase italic tracking-tighter text-white/90 mb-2">
-            {content}
-          </h4>
-        );
-      }
+        </div>
+      );
+    }
 
-      if (trimmedLine.startsWith('#')) {
-        const content = trimmedLine.replace(/^#\s*/, '');
-        return (
-          <h3 key={idx} className="text-lg md:text-xl font-black uppercase italic tracking-tighter text-white mb-3 border-b border-white/5 pb-1">
-            {content}
-          </h3>
-        );
-      }
+    // --- INLINE YOUTUBE ---
+    if (trimmedLine.startsWith('YOUTUBE:')) {
+      const vidId = getYoutubeId(trimmedLine.replace('YOUTUBE:', '').trim());
+      if (!vidId) return null;
+      return (
+        <div key={idx} className="mb-8 animate-in fade-in zoom-in-95 duration-500">
+          <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 bg-black shadow-xl">
+            <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${vidId}`} frameBorder="0" allowFullScreen></iframe>
+          </div>
+        </div>
+      );
+    }
 
-      return <p key={idx} className="text-base md:text-lg text-white/60 leading-relaxed font-normal mb-4">{line}</p>;
-    });
+    // --- INLINE IMAGE ---
+    if (trimmedLine.startsWith('IMAGE:')) {
+      return (
+        <div key={idx} className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-lg">
+            <Image src={trimmedLine.replace('IMAGE:', '').trim()} alt="Content Image" fill className="object-cover" sizes="(max-width: 768px) 100vw, 800px" />
+          </div>
+        </div>
+      );
+    }
+
+    // --- LABELS (### or SUB:) ---
+    if (trimmedLine.startsWith('###') || trimmedLine.startsWith('SUB:')) {
+      const content = trimmedLine.replace(/^###\s*|^SUB:\s*/, '');
+      return (
+        <div key={idx} className="mb-3 mt-2">
+          <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-primary/70 italic">
+            {content}
+          </span>
+        </div>
+      );
+    }
+    
+    // --- SUB-HEADLINES (##) ---
+    if (trimmedLine.startsWith('##')) {
+      const content = trimmedLine.replace(/^##\s*/, '');
+      return (
+        <h4 key={idx} className="text-base md:text-lg font-black uppercase italic tracking-tighter text-white/90 mb-4 mt-2">
+          {content}
+        </h4>
+      );
+    }
+
+    // --- MAIN HEADLINES (#) ---
+    if (trimmedLine.startsWith('#')) {
+      const content = trimmedLine.replace(/^#\s*/, '');
+      return (
+        <h3 key={idx} className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white mb-6 border-b border-white/5 pb-2 mt-4">
+          {content}
+        </h3>
+      );
+    }
+
+    // --- DEFAULT TEXT ---
+    return <p key={idx} className="text-base md:text-lg text-white/60 leading-relaxed font-normal mb-6">{line}</p>;
   };
 
   const renderContent = (content: string) => {
     const blocks = content.split('\n\n');
-    return blocks.map((block, idx) => {
+    return blocks.map((block, blockIdx) => {
       const trimmedBlock = block.trim();
 
       // --- PHASE BLOCKS ---
@@ -134,20 +183,10 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         const linkedArticleId = parts[2]?.trim();
         const Icon = PHASE_ICONS[displayMainTitle.split(':')[0].trim()] || Play;
 
-        const videoMatches = description.match(/VIDEO:(\S+)/g) || [];
-        const youtubeMatches = description.match(/YOUTUBE:(\S+)/g) || [];
-        const imageMatches = description.match(/IMAGE:(\S+)/g) || [];
-
-        const cleanDescription = description
-          .replace(/VIDEO:\S+/g, '')
-          .replace(/YOUTUBE:\S+/g, '')
-          .replace(/IMAGE:\S+/g, '')
-          .trim();
-
         return (
-          <div key={idx} className="mb-8 gemini-border animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="p-8 bg-black/40 backdrop-blur-xl">
-              <div className="flex items-center gap-5 mb-6">
+          <div key={blockIdx} className="mb-12 gemini-border animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="p-6 md:p-10 bg-black/40 backdrop-blur-xl">
+              <div className="flex items-center gap-5 mb-8">
                 <div className="w-14 h-14 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5">
                   <Icon className="w-7 h-7 text-primary" />
                 </div>
@@ -156,37 +195,13 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
                 </h4>
               </div>
               
-              {cleanDescription && (
-                <div className="mb-8">
-                  {renderDescriptionLines(cleanDescription)}
-                </div>
-              )}
-
-              <div className="space-y-6 mb-6">
-                {videoMatches.map((m, i) => (
-                  <div key={i} className="relative aspect-[9/16] max-w-[240px] mx-auto rounded-2xl border-4 border-white/10 overflow-hidden shadow-2xl">
-                     <video src={m.replace('VIDEO:', '')} controls className="w-full h-full object-cover" />
-                  </div>
-                ))}
-                {youtubeMatches.map((m, i) => {
-                  const vidId = getYoutubeId(m.replace('YOUTUBE:', ''));
-                  if (!vidId) return null;
-                  return (
-                    <div key={i} className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-xl">
-                      <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${vidId}`} frameBorder="0" allowFullScreen></iframe>
-                    </div>
-                  );
-                })}
-                {imageMatches.map((m, i) => (
-                  <div key={i} className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-lg">
-                    <Image src={m.replace('IMAGE:', '')} alt="Phase Media" fill className="object-cover" sizes="600px" />
-                  </div>
-                ))}
+              <div className="mb-4">
+                {description.split('\n').map((line, lineIdx) => renderLine(line, blockIdx * 100 + lineIdx))}
               </div>
               
               {linkedArticleId && (
                 <Link href={`/learn/article/${linkedArticleId}`}>
-                  <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 rounded-full px-6 italic font-black uppercase text-xs h-10 mt-4">
+                  <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 rounded-full px-6 italic font-black uppercase text-xs h-10 mt-6">
                     Learn More <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </Link>
@@ -196,92 +211,10 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         );
       }
 
-      // --- FLEXIBLE GAP ---
-      if (trimmedBlock.startsWith('GAP:')) {
-        const height = parseInt(trimmedBlock.replace('GAP:', '').trim(), 10) || 20;
-        return <div key={idx} style={{ height: `${height}px` }} />;
-      }
-
-      // --- SEPARATOR ---
-      if (trimmedBlock === '---') {
-        return <div key={idx} className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent my-10" />;
-      }
-
-      // --- INLINE VIDEO (9:16) ---
-      if (trimmedBlock.startsWith('VIDEO:')) {
-        return (
-          <div key={idx} className="mb-12 animate-in fade-in slide-in-from-top-6 duration-700">
-            <div className="relative aspect-[9/16] max-w-[320px] mx-auto bg-black rounded-[2.5rem] border-8 border-white/10 overflow-hidden shadow-2xl">
-              <video src={trimmedBlock.replace('VIDEO:', '').trim()} controls className="w-full h-full object-cover" playsInline />
-            </div>
-          </div>
-        );
-      }
-
-      // --- INLINE YOUTUBE ---
-      if (trimmedBlock.startsWith('YOUTUBE:')) {
-        const vidId = getYoutubeId(trimmedBlock.replace('YOUTUBE:', '').trim());
-        if (!vidId) return null;
-        return (
-          <div key={idx} className="mb-12 animate-in fade-in zoom-in-95 duration-500">
-            <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 bg-black shadow-xl">
-              <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${vidId}`} frameBorder="0" allowFullScreen></iframe>
-            </div>
-          </div>
-        );
-      }
-
-      // --- INLINE IMAGE ---
-      if (trimmedBlock.startsWith('IMAGE:')) {
-        return (
-          <div key={idx} className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-lg">
-              <Image src={trimmedBlock.replace('IMAGE:', '').trim()} alt="Article Image" fill className="object-cover" sizes="(max-width: 768px) 100vw, 800px" />
-            </div>
-          </div>
-        );
-      }
-
-      // --- TINY SUBTITLE / LABEL (### or SUB:) ---
-      if (trimmedBlock.startsWith('###') || trimmedBlock.startsWith('SUB:')) {
-        const content = trimmedBlock.replace(/^###\s*|^SUB:\s*/, '');
-        return (
-          <div key={idx} className="mb-4 mt-2">
-            <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-primary/70 italic">
-              {content}
-            </span>
-          </div>
-        );
-      }
-      
-      // --- SUB-HEADLINES (##) ---
-      if (trimmedBlock.startsWith('##')) {
-        const content = trimmedBlock.replace(/^##\s*/, '');
-        return (
-          <div key={idx} className="mb-6 mt-2">
-            <h4 className="text-lg md:text-xl font-black uppercase italic tracking-tighter text-white/90">
-              {content}
-            </h4>
-          </div>
-        );
-      }
-
-      // --- MAIN HEADLINES (#) ---
-      if (trimmedBlock.startsWith('#')) {
-        const content = trimmedBlock.replace(/^#\s*/, '');
-        return (
-          <div key={idx} className="mb-10">
-            <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white mb-6 border-b border-white/5 pb-2">
-              {content}
-            </h3>
-          </div>
-        );
-      }
-
-      // --- DEFAULT TEXT ---
+      // --- NORMALE BLÖCKE (Zeile für Zeile rendern) ---
       return (
-        <div key={idx} className="mb-12">
-          <p className="text-lg md:text-xl text-white/60 leading-relaxed font-normal whitespace-pre-line">{trimmedBlock}</p>
+        <div key={blockIdx} className="mb-4">
+          {trimmedBlock.split('\n').map((line, lineIdx) => renderLine(line, blockIdx * 100 + lineIdx))}
         </div>
       );
     });
@@ -303,7 +236,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-6 md:p-16 space-y-16 pb-48">
+      <main className="max-w-4xl mx-auto p-6 md:p-16 space-y-12 pb-48">
         <section className="bg-white/2 border border-white/5 p-8 md:p-16 rounded-[3rem] backdrop-blur-sm">
           {renderContent(article.content)}
         </section>
