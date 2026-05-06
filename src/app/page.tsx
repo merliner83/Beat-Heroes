@@ -239,7 +239,13 @@ export default function HomePage() {
       // 3. Artikel Initialisierung
       const arts = [
         // EINFÜHRUNG
-        { id: 'art-welcome', categoryId: 'intro', title: 'Willkommen im Hub', content: 'Dein zentraler Knotenpunkt für Musikproduktion.\n\nYOUTUBE:https://www.youtube.com/watch?v=dQw4w9WgXcQ', order: 10 },
+        { 
+          id: 'art-welcome', 
+          categoryId: 'intro', 
+          title: 'Willkommen im Hub', 
+          content: `# Syntax Anleitung\n\nHier lernst du, wie du deine Artikel mit Medien gestaltest!\n\nPHASE:COMPOSING|Dies ist ein Phasen-Block mit Icon. Du kannst ihn nutzen um Workflows zu erklären.|art-comp-basics\n\nYOUTUBE:https://www.youtube.com/watch?v=dQw4w9WgXcQ\n\nIMAGE:https://picsum.photos/seed/syntax/800/400\n\n# Hochformat Videos\n\nVIDEO:https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/videos%2Ftutorial-sample.mp4?alt=media\n\nVerwende einfach das Präfix VIDEO:, YOUTUBE: oder IMAGE: gefolgt von der URL in einer neuen Zeile.`, 
+          order: 10 
+        },
         { id: 'art-producing', categoryId: 'intro', title: 'Producing', content: 'Die Kunst des Erschaffens.', order: 20 },
         { id: 'art-sampling', categoryId: 'intro', title: 'Sampling', content: 'Finde die perfekten Sounds.', order: 30 },
         { id: 'art-djing-intro', categoryId: 'intro', title: 'DJing', content: 'Mixe deine Tracks.', order: 40 },
