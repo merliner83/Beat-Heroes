@@ -47,13 +47,12 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
   const [quizFinished, setQuizFinished] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
 
-  // Fetch quiz from the separate 'learnQuizzes' collection
   const quizRef = useMemoFirebase(() => {
     if (!db || !article.id) return null;
     return doc(db, 'learnQuizzes', article.id);
   }, [db, article.id]);
 
-  const { data: quizData, isLoading: isLoadingQuiz } = useDoc<LearnQuiz>(quizRef);
+  const { data: quizData } = useDoc<LearnQuiz>(quizRef);
 
   const handleQuizSubmit = () => {
     if (!quizData || !quizData.questions) return;
@@ -87,20 +86,20 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
   const renderContent = (content: string) => {
     const blocks = content.split('\n\n');
     return blocks.map((block, idx) => {
+      const trimmedBlock = block.trim();
+
       // --- PHASE BLOCKS ---
-      if (block.startsWith('PHASE:')) {
-        const parts = block.replace('PHASE:', '').split('|');
+      if (trimmedBlock.startsWith('PHASE:')) {
+        const parts = trimmedBlock.replace('PHASE:', '').split('|');
         const displayMainTitle = parts[0]?.trim() || '';
         const description = parts[1]?.trim() || '';
         const linkedArticleId = parts[2]?.trim();
         const Icon = PHASE_ICONS[displayMainTitle] || Play;
 
-        // Extrahiere Medien-Tags aus der Beschreibung
         const videoMatches = description.match(/VIDEO:(\S+)/g) || [];
         const youtubeMatches = description.match(/YOUTUBE:(\S+)/g) || [];
         const imageMatches = description.match(/IMAGE:(\S+)/g) || [];
 
-        // Säubere die Beschreibung von den Tags für die Textanzeige
         const cleanDescription = description
           .replace(/VIDEO:\S+/g, '')
           .replace(/YOUTUBE:\S+/g, '')
@@ -114,30 +113,23 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
                 <div className="w-14 h-14 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5">
                   <Icon className="w-7 h-7 text-primary" />
                 </div>
-                <div className="flex flex-col justify-center">
-                  <h4 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white leading-none">
-                    {displayMainTitle}
-                  </h4>
-                </div>
+                <h4 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white leading-none">
+                  {displayMainTitle}
+                </h4>
               </div>
               
               {cleanDescription && (
                 <p className="text-base md:text-xl text-white/60 leading-relaxed font-normal mb-8 whitespace-pre-line">{cleanDescription}</p>
               )}
 
-              {/* Medien-Inhalte innerhalb der Phase rendern */}
               <div className="space-y-6 mb-6">
-                {videoMatches.map((m, i) => {
-                  const url = m.replace('VIDEO:', '');
-                  return (
-                    <div key={i} className="relative aspect-[9/16] max-w-[240px] mx-auto rounded-2xl border-4 border-white/10 overflow-hidden shadow-2xl">
-                       <video src={url} controls className="w-full h-full object-cover" />
-                    </div>
-                  );
-                })}
+                {videoMatches.map((m, i) => (
+                  <div key={i} className="relative aspect-[9/16] max-w-[240px] mx-auto rounded-2xl border-4 border-white/10 overflow-hidden shadow-2xl">
+                     <video src={m.replace('VIDEO:', '')} controls className="w-full h-full object-cover" />
+                  </div>
+                ))}
                 {youtubeMatches.map((m, i) => {
-                  const url = m.replace('YOUTUBE:', '');
-                  const vidId = getYoutubeId(url);
+                  const vidId = getYoutubeId(m.replace('YOUTUBE:', ''));
                   if (!vidId) return null;
                   return (
                     <div key={i} className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-xl">
@@ -145,14 +137,11 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
                     </div>
                   );
                 })}
-                {imageMatches.map((m, i) => {
-                  const url = m.replace('IMAGE:', '');
-                  return (
-                    <div key={i} className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-lg">
-                      <Image src={url} alt="Phase Media" fill className="object-cover" sizes="600px" />
-                    </div>
-                  );
-                })}
+                {imageMatches.map((m, i) => (
+                  <div key={i} className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-lg">
+                    <Image src={m.replace('IMAGE:', '')} alt="Phase Media" fill className="object-cover" sizes="600px" />
+                  </div>
+                ))}
               </div>
               
               {linkedArticleId && (
@@ -168,32 +157,30 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       }
 
       // --- FLEXIBLE GAP ---
-      if (block.startsWith('GAP:')) {
-        const height = parseInt(block.replace('GAP:', '').trim(), 10) || 20;
+      if (trimmedBlock.startsWith('GAP:')) {
+        const height = parseInt(trimmedBlock.replace('GAP:', '').trim(), 10) || 20;
         return <div key={idx} style={{ height: `${height}px` }} />;
       }
 
       // --- SEPARATOR ---
-      if (block.trim() === '---') {
+      if (trimmedBlock === '---') {
         return <div key={idx} className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent my-10" />;
       }
 
       // --- INLINE VIDEO (9:16) ---
-      if (block.startsWith('VIDEO:')) {
-        const videoUrl = block.replace('VIDEO:', '').trim();
+      if (trimmedBlock.startsWith('VIDEO:')) {
         return (
           <div key={idx} className="mb-12 animate-in fade-in slide-in-from-top-6 duration-700">
             <div className="relative aspect-[9/16] max-w-[320px] mx-auto bg-black rounded-[2.5rem] border-8 border-white/10 overflow-hidden shadow-2xl">
-              <video src={videoUrl} controls className="w-full h-full object-cover" playsInline />
+              <video src={trimmedBlock.replace('VIDEO:', '').trim()} controls className="w-full h-full object-cover" playsInline />
             </div>
           </div>
         );
       }
 
       // --- INLINE YOUTUBE ---
-      if (block.startsWith('YOUTUBE:')) {
-        const url = block.replace('YOUTUBE:', '').trim();
-        const vidId = getYoutubeId(url);
+      if (trimmedBlock.startsWith('YOUTUBE:')) {
+        const vidId = getYoutubeId(trimmedBlock.replace('YOUTUBE:', '').trim());
         if (!vidId) return null;
         return (
           <div key={idx} className="mb-12 animate-in fade-in zoom-in-95 duration-500">
@@ -205,45 +192,47 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       }
 
       // --- INLINE IMAGE ---
-      if (block.startsWith('IMAGE:')) {
-        const imageUrl = block.replace('IMAGE:', '').trim();
+      if (trimmedBlock.startsWith('IMAGE:')) {
         return (
           <div key={idx} className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-lg">
-              <Image src={imageUrl} alt="Article Image" fill className="object-cover" sizes="(max-width: 768px) 100vw, 800px" />
+              <Image src={trimmedBlock.replace('IMAGE:', '').trim()} alt="Article Image" fill className="object-cover" sizes="(max-width: 768px) 100vw, 800px" />
             </div>
-          </div>
-        );
-      }
-      
-      // --- SUB-HEADLINES (##) ---
-      if (block.startsWith('## ')) {
-        return (
-          <div key={idx} className="mb-6 mt-2">
-            <h4 className="text-lg md:text-xl font-black uppercase italic tracking-tighter text-white/90">
-              {block.replace(/^##\s*/, '')}
-            </h4>
           </div>
         );
       }
 
       // --- TINY SUBTITLE / LABEL (### or SUB:) ---
-      if (block.startsWith('### ') || block.startsWith('SUB:')) {
+      if (trimmedBlock.startsWith('###') || trimmedBlock.startsWith('SUB:')) {
+        const content = trimmedBlock.replace(/^###\s*|^SUB:\s*/, '');
         return (
-          <div key={idx} className="mb-4 -mt-2">
+          <div key={idx} className="mb-4 mt-2">
             <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-primary/70 italic">
-              {block.replace(/^(###|SUB:)\s*/, '')}
+              {content}
             </span>
           </div>
         );
       }
       
+      // --- SUB-HEADLINES (##) ---
+      if (trimmedBlock.startsWith('##')) {
+        const content = trimmedBlock.replace(/^##\s*/, '');
+        return (
+          <div key={idx} className="mb-6 mt-2">
+            <h4 className="text-lg md:text-xl font-black uppercase italic tracking-tighter text-white/90">
+              {content}
+            </h4>
+          </div>
+        );
+      }
+
       // --- MAIN HEADLINES (#) ---
-      if (block.startsWith('# ')) {
+      if (trimmedBlock.startsWith('#')) {
+        const content = trimmedBlock.replace(/^#\s*/, '');
         return (
           <div key={idx} className="mb-10">
             <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white mb-6 border-b border-white/5 pb-2">
-              {block.replace(/^#\s*/, '')}
+              {content}
             </h3>
           </div>
         );
@@ -252,7 +241,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       // --- DEFAULT TEXT ---
       return (
         <div key={idx} className="mb-12">
-          <p className="text-lg md:text-xl text-white/60 leading-relaxed font-normal whitespace-pre-line">{block}</p>
+          <p className="text-lg md:text-xl text-white/60 leading-relaxed font-normal whitespace-pre-line">{trimmedBlock}</p>
         </div>
       );
     });
