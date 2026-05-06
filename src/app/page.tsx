@@ -77,7 +77,13 @@ export default function HomePage() {
     if (user && db && !isUserLoading) {
       if (!profile || profile.email !== (user.email ?? '')) {
         const userRef = doc(db, 'users', user.uid);
-        const data = { uid: user.uid, email: user.email ?? '', streetCred: profile?.streetCred ?? 0, role: profile?.role ?? 'free' };
+        const data = { 
+          uid: user.uid, 
+          email: user.email ?? '', 
+          streetCred: profile?.streetCred ?? 0, 
+          role: profile?.role ?? 'free',
+          isPublic: profile?.isPublic ?? false // Ensure isPublic exists for rules
+        };
         setDoc(userRef, data, { merge: true }).catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: userRef.path, operation: 'write', requestResourceData: data })));
       }
     }
