@@ -110,7 +110,7 @@ export default function HomePage() {
             (docData as any).patternProgress = pattProgSnap.docs.map(ppd => ({ id: ppd.id, ...ppd.data() }));
 
             const artProgSnap = await getDocs(collection(db, col, d.id, 'articleProgress'));
-            (docData as any).articleProgress = artProgSnap.docs.map(apd => ({ id: apid.id, ...apd.data() }));
+            (docData as any).articleProgress = artProgSnap.docs.map(apd => ({ id: apd.id, ...apd.data() }));
           }
           
           return docData;
