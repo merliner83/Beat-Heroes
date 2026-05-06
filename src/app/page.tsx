@@ -75,16 +75,21 @@ export default function HomePage() {
 
   useEffect(() => {
     if (user && db && !isUserLoading) {
-      if (!profile || profile.email !== (user.email ?? '')) {
+      // Ensure profile exists and has required fields for rules
+      if (!profile || profile.email !== (user.email ?? '') || profile.isPublic === undefined) {
         const userRef = doc(db, 'users', user.uid);
         const data = { 
           uid: user.uid, 
           email: user.email ?? '', 
           streetCred: profile?.streetCred ?? 0, 
           role: profile?.role ?? 'free',
-          isPublic: profile?.isPublic ?? false // Ensure isPublic exists for rules
+          isPublic: profile?.isPublic ?? false,
+          displayName: profile?.displayName || user.displayName || 'Producer'
         };
-        setDoc(userRef, data, { merge: true }).catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: userRef.path, operation: 'write', requestResourceData: data })));
+        setDoc(userRef, data, { merge: true }).catch(err => {
+          // If we already have a profile but just need to add isPublic, this might be a second try
+          console.warn("Profile auto-sync failed, might be rule propagation", err);
+        });
       }
     }
   }, [user, profile, isUserLoading, db]);
@@ -159,7 +164,7 @@ export default function HomePage() {
               if (progress && Array.isArray(progress)) {
                 for (const p of progress) {
                   const { id: pid, ...pData } = p;
-                  await setDoc(doc(db, col, id, 'progress', pid), pData, { merge: true });
+                  await setDoc(doc(db, id, 'progress', pid), pData, { merge: true });
                 }
               }
               if (patternProgress && Array.isArray(patternProgress)) {

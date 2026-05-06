@@ -16,9 +16,13 @@ service cloud.firestore {
 
     // User Profile
     match /users/{userId} {
-      // Allow read if owner OR if the profile is marked public
-      // We use .get() to handle cases where the field might be missing
-      allow read: if isOwner(userId) || (resource != null && resource.data.get('isPublic', false) == true);
+      // Allow single document read if owner OR if the profile is marked public
+      allow get: if isOwner(userId) || (resource != null && resource.data.get('isPublic', false) == true);
+      
+      // Allow listing users ONLY if the query filters for isPublic == true
+      // This is critical for the leaderboard query
+      allow list: if resource.data.isPublic == true;
+      
       allow write: if isOwner(userId);
       
       match /progress/{levelId} {
