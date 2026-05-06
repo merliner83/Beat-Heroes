@@ -1,27 +1,32 @@
 
 "use client";
 
-import React from 'react';
-import { Article } from '@/lib/game/types';
+import React, { useState } from 'react';
+import { Article, getAccuracyColor } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { 
   ArrowLeft, 
   Video, 
   Image as ImageIcon, 
   Music, 
-  FileText, 
   Mic, 
   Scissors, 
   Layers, 
   Sliders, 
-  Disc,
   Play,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Youtube,
+  HelpCircle,
+  CheckCircle2,
+  Zap,
+  Check
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useUser, useFirestore } from '@/firebase';
+import { doc, setDoc, serverTimestamp, increment } from 'firebase/firestore';
 
 interface ArticleViewProps {
   article: Article;
@@ -37,111 +42,82 @@ const PHASE_ICONS: Record<string, any> = {
 };
 
 export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
+  const db = useFirestore();
+  const { user } = useUser();
+  const [selectedOptions, setSelectedOptions] = useState<Record<number, number>>({});
+  const [quizFinished, setQuizFinished] = useState(false);
+  const [quizScore, setQuizScore] = useState(0);
+
+  const handleQuizSubmit = () => {
+    if (!article.quiz) return;
+    let correct = 0;
+    article.quiz.forEach((q, idx) => {
+      if (selectedOptions[idx] === q.correctOption) correct++;
+    });
+    const score = Math.round((correct / article.quiz.length) * 100);
+    setQuizScore(score);
+    setQuizFinished(true);
+
+    if (user && db) {
+      setDoc(doc(db, 'users', user.uid, 'articleProgress', article.id), {
+        articleId: article.id,
+        completed: true,
+        quizScore: score,
+        completedAt: serverTimestamp()
+      }, { merge: true });
+      
+      if (score >= 80) {
+        setDoc(doc(db, 'users', user.uid), { streetCred: increment(250) }, { merge: true });
+      }
+    }
+  };
+
+  const getYoutubeId = (url: string) => {
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : null;
+  };
+
   const renderContent = (content: string) => {
     const blocks = content.split('\n\n');
     return blocks.map((block, idx) => {
-      // Check for Phase Card Marker (Format: PHASE:Title|Content|linkId)
       if (block.startsWith('PHASE:')) {
         const parts = block.replace('PHASE:', '').split('|');
         const titleAndPhase = parts[0]?.trim() || '';
         const description = parts[1]?.trim() || '';
-        const linkId = parts[2]?.trim() || '';
-        
         const Icon = PHASE_ICONS[titleAndPhase] || Play;
-
-        // Extract first line for potential italic formatting if it starts/ends with *
-        const formattedDescription = description.split('\n').map((line, lIdx) => {
-          if (line.startsWith('*') && line.endsWith('*')) {
-            return <em key={lIdx} className="block mb-1 text-white/80 not-italic font-bold">{line.replace(/\*/g, '')}</em>;
-          }
-          return <span key={lIdx}>{line}</span>;
-        });
 
         return (
           <div key={idx} className="mb-8 gemini-border animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="p-8 bg-black/40 backdrop-blur-xl">
               <div className="flex items-center gap-5 mb-5">
-                <div className="w-14 h-14 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 shadow-inner">
+                <div className="w-14 h-14 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5">
                   <Icon className="w-7 h-7 text-primary" />
                 </div>
-                <h4 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white leading-none pr-4">
-                  {titleAndPhase}
-                </h4>
+                <h4 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white leading-none">{titleAndPhase}</h4>
               </div>
-              <p className="text-base md:text-xl text-white/60 leading-relaxed font-normal">
-                {formattedDescription}
-              </p>
-              
-              {linkId && (
-                <Link href={`/learn/article/${linkId}`} className="mt-8 block">
-                  <Button variant="ghost" size="sm" className="w-full justify-between h-12 px-6 rounded-xl bg-primary/5 hover:bg-primary/10 border border-primary/20 text-[11px] font-black uppercase tracking-widest text-primary transition-all">
-                    Deep Dive: {titleAndPhase}
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        );
-      }
-
-      // Check for YouTube Link
-      const ytMatch = block.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
-      
-      if (ytMatch) {
-        const videoId = ytMatch[1];
-        const lines = block.split('\n');
-        const titleLine = lines[0].includes('http') ? '' : lines[0];
-        
-        return (
-          <div key={idx} className="my-10 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {titleLine && (
-              <h4 className="text-xs font-black uppercase tracking-[0.3em] text-primary/60 italic">{titleLine}</h4>
-            )}
-            <div className="relative rounded-[2.5rem] overflow-hidden border border-white/10 bg-black aspect-video shadow-2xl group">
-              <iframe
-                width="100%"
-                height="100%"
-                src={`https://www.youtube.com/embed/${videoId}`}
-                title="YouTube video player"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="opacity-80 group-hover:opacity-100 transition-opacity"
-              ></iframe>
+              <p className="text-base md:text-xl text-white/60 leading-relaxed font-normal">{description}</p>
             </div>
           </div>
         );
       }
       
-      // Standard text block
       if (block.startsWith('#')) {
         return (
-          <div key={idx} className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white mb-6 pr-10 border-b border-white/5 pb-2">
+          <div key={idx} className="mb-10">
+            <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white mb-6 border-b border-white/5 pb-2">
               {block.replace(/^#+\s*/, '')}
             </h3>
           </div>
         );
       }
 
-      const isIntro = idx === 0;
-      
       return (
-        <div key={idx} className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <p className={cn(
-            "text-white/60 leading-relaxed font-normal pr-8",
-            isIntro ? "text-xl md:text-2xl text-white/90" : "text-lg md:text-xl"
-          )}>
-            {block}
-          </p>
+        <div key={idx} className="mb-12">
+          <p className="text-lg md:text-xl text-white/60 leading-relaxed font-normal">{block}</p>
         </div>
       );
     });
   };
-
-  const hasVideo = !!article.videoUrl;
-  const hasImages = article.imageUrls && article.imageUrls.length > 0;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-primary font-body">
@@ -150,63 +126,101 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 p-4 md:p-6">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/5">
-              <ArrowLeft className="w-5 h-5 text-white/40" />
-            </Button>
+            <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/5"><ArrowLeft className="w-5 h-5 text-white/40" /></Button>
           </Link>
           <div className="flex flex-col">
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">KnowHow Lab</span>
-            <h1 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter leading-none pr-8">{article.title}</h1>
+            <h1 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter leading-none pr-8 truncate max-w-[250px] md:max-w-md">{article.title}</h1>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-6 md:p-16 space-y-16 pb-32">
-        <section>
-          <div className="bg-white/2 border border-white/5 p-10 md:p-16 rounded-[3rem] backdrop-blur-sm shadow-2xl">
-            {renderContent(article.content)}
-          </div>
-        </section>
-
-        {hasVideo && (
-          <section className="animate-in fade-in slide-in-from-bottom-6 duration-700">
-            <div className="flex items-center gap-3 mb-8 justify-center">
-              <Video className="w-5 h-5 text-primary" />
-              <h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/30 italic">Tutorial Feed</h3>
-            </div>
-            
-            <div className="relative aspect-[9/16] max-w-[400px] mx-auto group">
-              <div className="absolute -inset-4 bg-primary/10 blur-3xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative h-full w-full bg-black rounded-[3rem] border-8 border-white/10 overflow-hidden shadow-2xl">
-                <video 
-                  src={article.videoUrl} 
-                  controls 
-                  className="w-full h-full object-cover"
-                  playsInline
-                />
-              </div>
+      <main className="max-w-4xl mx-auto p-6 md:p-16 space-y-16 pb-48">
+        {article.videoUrl && (
+          <section className="animate-in fade-in slide-in-from-top-6 duration-700">
+            <div className="relative aspect-[9/16] max-w-[320px] mx-auto bg-black rounded-[2.5rem] border-8 border-white/10 overflow-hidden shadow-2xl">
+              <video src={article.videoUrl} controls className="w-full h-full object-cover" playsInline />
             </div>
           </section>
         )}
 
-        {hasImages && (
-          <section className="animate-in fade-in slide-in-from-bottom-6 duration-700">
-            <div className="flex items-center gap-3 mb-8">
-              <ImageIcon className="w-5 h-5 text-[#00E676]" />
-              <h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/30 italic">Reference Shots</h3>
-            </div>
+        <section className="bg-white/2 border border-white/5 p-10 md:p-16 rounded-[3rem] backdrop-blur-sm">
+          {renderContent(article.content)}
+        </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {article.imageUrls?.map((url, idx) => (
-                <div key={idx} className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/5 group shadow-xl">
-                  <Image 
-                    src={url} 
-                    alt={`Reference ${idx + 1}`} 
-                    fill 
-                    className="object-cover group-hover:scale-110 transition-transform duration-700"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        {article.youtubeUrls && article.youtubeUrls.length > 0 && (
+          <section className="space-y-10">
+            <div className="flex items-center gap-3 justify-center"><Youtube className="w-5 h-5 text-red-500" /><h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/30 italic">Video References</h3></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {article.youtubeUrls.slice(0, 5).map((url, i) => {
+                const vidId = getYoutubeId(url);
+                if (!vidId) return null;
+                return (
+                  <div key={i} className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 bg-black">
+                    <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${vidId}`} frameBorder="0" allowFullScreen></iframe>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {article.quiz && article.quiz.length > 0 && (
+          <section className="gemini-border-primary">
+            <div className="p-8 md:p-12 bg-black/60 rounded-[3rem]">
+              <div className="flex items-center gap-3 mb-10"><HelpCircle className="w-6 h-6 text-primary" /><h3 className="text-xl font-black uppercase italic tracking-tighter">Knowledge Check</h3></div>
+              {!quizFinished ? (
+                <div className="space-y-10">
+                  {article.quiz.map((q, idx) => (
+                    <div key={idx} className="space-y-4">
+                      <p className="text-lg font-bold">{(idx + 1)}. {q.question}</p>
+                      <div className="grid gap-3">
+                        {q.options.map((opt, oIdx) => (
+                          <Button 
+                            key={oIdx} 
+                            variant="outline" 
+                            onClick={() => setSelectedOptions({ ...selectedOptions, [idx]: oIdx })}
+                            className={cn(
+                              "justify-start h-14 px-6 rounded-xl border-white/5 text-left whitespace-normal",
+                              selectedOptions[idx] === oIdx ? "bg-primary/20 border-primary text-primary" : "bg-white/5"
+                            )}
+                          >
+                            {opt}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <Button onClick={handleQuizSubmit} className="w-full h-16 bg-white text-black font-black uppercase italic rounded-2xl">Submit Quiz</Button>
+                </div>
+              ) : (
+                <div className="text-center space-y-8 animate-in zoom-in-95">
+                  <div className="inline-block relative">
+                    <CheckCircle2 className="w-20 h-20 mx-auto" style={{ color: getAccuracyColor(quizScore) }} />
+                    <Zap className="absolute -top-2 -right-2 w-8 h-8 text-[#FFEA00] animate-pulse" fill="currentColor" />
+                  </div>
+                  <div>
+                    <h4 className="text-5xl font-black italic tracking-tighter" style={{ color: getAccuracyColor(quizScore) }}>{quizScore}%</h4>
+                    <p className="text-xs uppercase font-black tracking-widest opacity-40 mt-2">Sync Grade</p>
+                  </div>
+                  {quizScore >= 80 ? (
+                    <div className="bg-[#00E676]/10 border border-[#00E676]/20 p-4 rounded-xl text-[#00E676] text-xs font-black uppercase tracking-widest">+250 Street Cred Unlocked</div>
+                  ) : (
+                    <Button onClick={() => { setQuizFinished(false); setSelectedOptions({}); }} variant="outline" className="h-14 px-8 rounded-xl font-black uppercase italic">Retry Attempt</Button>
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {article.imageUrls && article.imageUrls.length > 0 && (
+          <section className="space-y-8">
+            <div className="flex items-center gap-3"><ImageIcon className="w-5 h-5 text-[#00E676]" /><h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/30 italic">Reference Shots</h3></div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {article.imageUrls.slice(0, 5).map((url, idx) => (
+                <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-white/5">
+                  <Image src={url} alt="Reference" fill className="object-cover" />
                 </div>
               ))}
             </div>
@@ -216,8 +230,8 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
 
       <footer className="fixed bottom-0 w-full p-6 flex justify-center z-[60] pointer-events-none">
         <Link href="/" className="pointer-events-auto">
-          <Button className="h-16 px-12 bg-primary hover:bg-primary/90 text-white font-black uppercase italic rounded-full shadow-[0_20px_50px_rgba(255,51,153,0.3)] hover:scale-105 active:scale-95 transition-all">
-            Got it, Lab!
+          <Button className="h-16 px-12 bg-primary hover:bg-primary/90 text-white font-black uppercase italic rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all">
+            <Check className="mr-2 h-5 w-5" /> Got it, Lab!
           </Button>
         </Link>
       </footer>

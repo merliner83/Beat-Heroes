@@ -10,29 +10,28 @@
         "name": { "type": "string" },
         "description": { "type": "string" },
         "coverColor": { "type": "string" },
-        "imageUrl": { "type": "string", "description": "Pfad zum Studio-Bild (z.B. /studios/house1.png)" },
-        "district": { "type": "string", "description": "Der Stadtteil/Distrikt, in dem das Studio liegt." },
+        "imageUrl": { "type": "string", "description": "Pfad zum Studio-Bild." },
+        "district": { "type": "string" },
         "tags": { 
           "type": "array", 
-          "items": { "type": "string" },
-          "description": "Stile oder Kategorien (z.B. Hip-Hop, Techno)." 
+          "items": { "type": "string" }
         },
-        "linkUrl": { "type": "string", "format": "uri", "description": "Eine externe Webseite oder Social Media Link." },
-        "linkLabel": { "type": "string", "description": "Der Text, der für den Link angezeigt werden soll." },
-        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free", "description": "Mindestens erforderliche Rolle für dieses Studio." }
+        "linkUrl": { "type": "string", "format": "uri" },
+        "linkLabel": { "type": "string" },
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" }
       },
       "required": ["id", "name"]
     },
     "Track": {
       "title": "Track",
       "type": "object",
-      "description": "Ein Audio-Track, der als Backing-Track für Spiele oder Vorschau dient.",
+      "description": "Ein Audio-Track.",
       "properties": {
         "id": { "type": "string" },
-        "studioId": { "type": "string", "description": "Zugehörigkeit zu einem Studio." },
+        "studioId": { "type": "string" },
         "name": { "type": "string" },
-        "author": { "type": "string", "description": "Der Produzent des Tracks." },
-        "duration": { "type": "number", "description": "Länge in Sekunden." },
+        "author": { "type": "string" },
+        "duration": { "type": "number" },
         "url": { "type": "string", "format": "uri" }
       },
       "required": ["id", "name", "url"]
@@ -45,20 +44,20 @@
         "id": { "type": "string" },
         "studioId": { "type": "string" },
         "name": { "type": "string" },
-        "type": { "type": "string", "enum": ["rhythm-producer", "sample-hunter", "sample-catcher"], "description": "Der technische Typ des Spiels." },
-        "bpm": { "type": "number", "description": "Geschwindigkeit." },
-        "difficulty": { "type": "number", "description": "Schwierigkeitsgrad (1-4)" },
-        "trackId": { "type": "string", "description": "ID des zugehörigen Tracks." },
-        "backingTrackUrl": { "type": "string", "format": "uri", "description": "Backing Track URL." },
-        "backgroundImageUrl": { "type": "string", "format": "uri", "description": "Hintergrundbild." },
-        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free", "description": "Rollen-Hürde." }
+        "type": { "type": "string", "enum": ["rhythm-producer", "sample-hunter", "sample-catcher"] },
+        "bpm": { "type": "number" },
+        "difficulty": { "type": "number" },
+        "trackId": { "type": "string" },
+        "backingTrackUrl": { "type": "string", "format": "uri" },
+        "backgroundImageUrl": { "type": "string", "format": "uri" },
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" }
       },
       "required": ["id", "studioId", "name", "type"]
     },
     "LearnApp": {
       "title": "LearnApp",
       "type": "object",
-      "description": "Ein pädagogisches Modul im Learn Center.",
+      "description": "Ein pädagogisches Modul.",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
@@ -74,7 +73,7 @@
       "properties": {
         "id": { "type": "string" },
         "gameId": { "type": "string" },
-        "difficulty": { "type": "number", "description": "1 bis 4" },
+        "difficulty": { "type": "number" },
         "name": { "type": "string" }
       },
       "required": ["id", "gameId", "difficulty"]
@@ -86,11 +85,10 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "sampleUrl": { "type": "string", "format": "uri", "description": "Der Sound, der für dieses Pattern abgespielt wird." },
+        "sampleUrl": { "type": "string", "format": "uri" },
         "steps": { 
           "type": "array", 
-          "items": { "type": "number" },
-          "description": "Schritte (0-127)."
+          "items": { "type": "number" }
         }
       },
       "required": ["id", "name", "steps"]
@@ -98,7 +96,7 @@
     "Sound": {
       "title": "Sound",
       "type": "object",
-      "description": "Ein Instrument-Trigger innerhalb eines Levels.",
+      "description": "Ein Instrument-Trigger.",
       "properties": {
         "id": { "type": "string" },
         "levelId": { "type": "string" },
@@ -114,7 +112,7 @@
     "UserProfile": {
       "title": "UserProfile",
       "type": "object",
-      "description": "Nutzer-Statistiken und Rollen.",
+      "description": "Nutzer-Statistiken.",
       "properties": {
         "uid": { "type": "string" },
         "email": { "type": "string", "format": "email" },
@@ -145,13 +143,13 @@
       },
       "required": ["patternId", "accuracy"]
     },
-    "SubCategory": {
-      "title": "SubCategory",
+    "LearnSubCat": {
+      "title": "LearnSubCat",
       "type": "object",
       "description": "Eine Unterkategorie für die Knowledge Base.",
       "properties": {
         "id": { "type": "string" },
-        "categoryId": { "type": "string", "description": "ID der Hauptkategorie (z.B. daws, intro)." },
+        "categoryId": { "type": "string" },
         "title": { "type": "string" },
         "iconUrl": { "type": "string" },
         "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" }
@@ -165,7 +163,7 @@
       "properties": {
         "id": { "type": "string" },
         "categoryId": { "type": "string" },
-        "subCategoryId": { "type": "string", "description": "Verknüpfung zur SubCategory." },
+        "subCategoryId": { "type": "string" },
         "title": { "type": "string" },
         "content": { "type": "string" },
         "videoUrl": { "type": "string", "format": "uri" },
@@ -173,9 +171,36 @@
           "type": "array", 
           "items": { "type": "string" }
         },
+        "youtubeUrls": { 
+          "type": "array", 
+          "items": { "type": "string" }
+        },
+        "quiz": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": { "type": "string" },
+              "options": { "type": "array", "items": { "type": "string" } },
+              "correctOption": { "type": "number" }
+            }
+          }
+        },
         "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" }
       },
       "required": ["id", "title"]
+    },
+    "ArticleProgress": {
+      "title": "ArticleProgress",
+      "type": "object",
+      "description": "Artikel-Fortschritt.",
+      "properties": {
+        "articleId": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "quizScore": { "type": "number" },
+        "completedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["articleId", "completed"]
     }
   },
   "auth": {
@@ -222,8 +247,12 @@
       "schema": "#/backend/entities/PatternProgress",
       "description": "Pattern-Fortschritt."
     },
-    "/subCategories/{subCategoryId}": {
-      "schema": "#/backend/entities/SubCategory",
+    "/users/{userId}/articleProgress/{articleId}": {
+      "schema": "#/backend/entities/ArticleProgress",
+      "description": "Artikel-Fortschritt."
+    },
+    "/learnSubCats/{subCategoryId}": {
+      "schema": "#/backend/entities/LearnSubCat",
       "description": "Unterkategorien."
     },
     "/articles/{articleId}": {
