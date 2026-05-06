@@ -80,6 +80,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
   const renderContent = (content: string) => {
     const blocks = content.split('\n\n');
     return blocks.map((block, idx) => {
+      // --- PHASE BLOCKS ---
       if (block.startsWith('PHASE:')) {
         const parts = block.replace('PHASE:', '').split('|');
         const titleAndPhase = parts[0]?.trim() || '';
@@ -100,7 +101,46 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
           </div>
         );
       }
+
+      // --- INLINE VIDEO (9:16) ---
+      if (block.startsWith('VIDEO:')) {
+        const videoUrl = block.replace('VIDEO:', '').trim();
+        return (
+          <div key={idx} className="mb-12 animate-in fade-in slide-in-from-top-6 duration-700">
+            <div className="relative aspect-[9/16] max-w-[320px] mx-auto bg-black rounded-[2.5rem] border-8 border-white/10 overflow-hidden shadow-2xl">
+              <video src={videoUrl} controls className="w-full h-full object-cover" playsInline />
+            </div>
+          </div>
+        );
+      }
+
+      // --- INLINE YOUTUBE ---
+      if (block.startsWith('YOUTUBE:')) {
+        const url = block.replace('YOUTUBE:', '').trim();
+        const vidId = getYoutubeId(url);
+        if (!vidId) return null;
+        return (
+          <div key={idx} className="mb-12 animate-in fade-in zoom-in-95 duration-500">
+            <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 bg-black shadow-xl">
+              <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${vidId}`} frameBorder="0" allowFullScreen></iframe>
+            </div>
+          </div>
+        );
+      }
+
+      // --- INLINE IMAGE ---
+      if (block.startsWith('IMAGE:')) {
+        const imageUrl = block.replace('IMAGE:', '').trim();
+        return (
+          <div key={idx} className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-lg">
+              <Image src={imageUrl} alt="Article Image" fill className="object-cover" sizes="(max-width: 768px) 100vw, 800px" />
+            </div>
+          </div>
+        );
+      }
       
+      // --- HEADLINES ---
       if (block.startsWith('#')) {
         return (
           <div key={idx} className="mb-10">
@@ -111,6 +151,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         );
       }
 
+      // --- DEFAULT TEXT ---
       return (
         <div key={idx} className="mb-12">
           <p className="text-lg md:text-xl text-white/60 leading-relaxed font-normal">{block}</p>
@@ -136,23 +177,30 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       </header>
 
       <main className="max-w-4xl mx-auto p-6 md:p-16 space-y-16 pb-48">
-        {article.videoUrl && (
-          <section className="animate-in fade-in slide-in-from-top-6 duration-700">
-            <div className="relative aspect-[9/16] max-w-[320px] mx-auto bg-black rounded-[2.5rem] border-8 border-white/10 overflow-hidden shadow-2xl">
-              <video src={article.videoUrl} controls className="w-full h-full object-cover" playsInline />
+        <section className="bg-white/2 border border-white/5 p-8 md:p-16 rounded-[3rem] backdrop-blur-sm">
+          {renderContent(article.content)}
+        </section>
+
+        {/* Global Reference Grid for images not placed inline */}
+        {article.imageUrls && article.imageUrls.length > 0 && (
+          <section className="space-y-8">
+            <div className="flex items-center gap-3"><ImageIcon className="w-5 h-5 text-[#00E676]" /><h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/30 italic">Reference Gallery</h3></div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {article.imageUrls.map((url, idx) => (
+                <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-white/5 bg-black/40">
+                  <Image src={url} alt="Reference" fill className="object-cover" sizes="(max-width: 768px) 50vw, 300px" />
+                </div>
+              ))}
             </div>
           </section>
         )}
 
-        <section className="bg-white/2 border border-white/5 p-10 md:p-16 rounded-[3rem] backdrop-blur-sm">
-          {renderContent(article.content)}
-        </section>
-
+        {/* Global Youtube Grid for links not placed inline */}
         {article.youtubeUrls && article.youtubeUrls.length > 0 && (
-          <section className="space-y-10">
-            <div className="flex items-center gap-3 justify-center"><Youtube className="w-5 h-5 text-red-500" /><h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/30 italic">Video References</h3></div>
+          <section className="space-y-8">
+            <div className="flex items-center gap-3 justify-center"><Youtube className="w-5 h-5 text-red-500" /><h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/30 italic">YouTube Archive</h3></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {article.youtubeUrls.slice(0, 5).map((url, i) => {
+              {article.youtubeUrls.map((url, i) => {
                 const vidId = getYoutubeId(url);
                 if (!vidId) return null;
                 return (
@@ -210,19 +258,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
                   )}
                 </div>
               )}
-            </div>
-          </section>
-        )}
-
-        {article.imageUrls && article.imageUrls.length > 0 && (
-          <section className="space-y-8">
-            <div className="flex items-center gap-3"><ImageIcon className="w-5 h-5 text-[#00E676]" /><h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/30 italic">Reference Shots</h3></div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {article.imageUrls.slice(0, 5).map((url, idx) => (
-                <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-white/5">
-                  <Image src={url} alt="Reference" fill className="object-cover" />
-                </div>
-              ))}
             </div>
           </section>
         )}

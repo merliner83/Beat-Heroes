@@ -98,7 +98,6 @@ export default function HomePage() {
         data[col] = await Promise.all(snap.docs.map(async (d) => {
           const docData = { id: d.id, ...d.data() };
           
-          // Check for subcollections
           if (col === 'levels') {
             const soundsSnap = await getDocs(collection(db, col, d.id, 'sounds'));
             (docData as any).sounds = soundsSnap.docs.map(sd => ({ id: sd.id, ...sd.data() }));
@@ -145,7 +144,6 @@ export default function HomePage() {
               const rootRef = doc(db, col, id);
               await setDoc(rootRef, rest, { merge: true });
 
-              // Restore subcollections
               if (sounds && Array.isArray(sounds)) {
                 for (const s of sounds) {
                   const { id: sid, ...sData } = s;
@@ -196,7 +194,7 @@ export default function HomePage() {
         const payload: any = {};
         let needs = false;
         Object.keys(data).forEach(k => { 
-          if (!fData[k] || (Array.isArray(data[k]) && (!fData[k] || fData[k].length === 0))) { 
+          if (fData[k] === undefined || (Array.isArray(data[k]) && (!fData[k] || fData[k].length === 0))) { 
             payload[k] = data[k]; 
             needs = true; 
           } 
@@ -209,7 +207,6 @@ export default function HomePage() {
     };
 
     try {
-      // --- SUB-CATEGORIES ---
       const subs = [
         { id: 'sc-gb', categoryId: 'daws', title: 'GarageBand', iconUrl: 'https://picsum.photos/seed/gb/100/100' },
         { id: 'sc-cb', categoryId: 'daws', title: 'Cubase', iconUrl: 'https://picsum.photos/seed/cb/100/100' },
@@ -222,31 +219,11 @@ export default function HomePage() {
       ];
       for (const s of subs) await sync('learnSubCats', s.id, s);
 
-      // --- ARTICLES ---
       const arts = [
-        // EINFÜHRUNG
-        { id: 'art-welcome', categoryId: 'intro', title: 'Willkommen im Hub', content: 'Dein zentraler Knotenpunkt für Musikproduktion.', minRole: 'free' },
-        { id: 'art-producing-basics', categoryId: 'intro', title: 'Producing', content: 'Hier lernst du die Grundlagen der Musikproduktion.', minRole: 'free', quiz: [{ question: 'Was ist eine DAW?', options: ['Digital Audio Workstation', 'Dark Audio Wave', 'Dynamic Audio Web'], correctOption: 0 }] },
-        { id: 'art-sampling-basics', categoryId: 'intro', title: 'Sampling', content: 'Die Kunst, vorhandene Klänge neu zu kontextualisieren.', minRole: 'free' },
-        { id: 'art-djing-basics', categoryId: 'intro', title: 'DJing', content: 'Grundlagen des Auflegens und Mixens.', minRole: 'free' },
-        { id: 'art-equipment-intro', categoryId: 'intro', title: 'Equipment', content: 'Was du wirklich brauchst, um zu starten.', minRole: 'free' },
-        
-        // DAWS - GarageBand
-        { id: 'art-gb-basics', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'GarageBand: Basics', content: 'Erste Schritte in GarageBand.', minRole: 'free' },
-        { id: 'art-gb-shortcuts', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'GarageBand: Shortcuts', content: 'Die wichtigsten Tastenkombinationen.', minRole: 'free' },
-        { id: 'art-gb-vocal', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'GarageBand: Vocal Chain', content: 'Dein Setup für perfekte Vocals.', minRole: 'free' },
-        { id: 'art-gb-master', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'GarageBand: Mastering Chain', content: 'Der finale Schliff für deinen Track.', minRole: 'free' },
-        
-        // DAWS - Logic
-        { id: 'art-lp-basics', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'Logic Pro: Basics', content: 'Profi-Produktion leicht gemacht.', minRole: 'free' },
-        
-        // EFFEKTE
-        { id: 'art-eq', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Equalizer', content: 'Forme deinen Sound mit dem EQ.', minRole: 'free' },
-        { id: 'art-reverb', categoryId: 'effects', subCategoryId: 'sc-snd', title: 'Reverb', content: 'Erzeuge Raumtiefe mit Hall.', minRole: 'free' },
-        
-        // RECORDING - Instrumente
-        { id: 'art-drums', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Drums', content: 'Wie man ein Schlagzeug mikrofoniert.', minRole: 'free' },
-        { id: 'art-git-ac', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Gitarre (Akustisch)', content: 'Der natürliche Sound der Akustikgitarre.', minRole: 'free' }
+        { id: 'art-welcome', categoryId: 'intro', title: 'Willkommen im Hub', content: 'Dein zentraler Knotenpunkt für Musikproduktion.\n\nYOUTUBE:https://www.youtube.com/watch?v=dQw4w9WgXcQ\n\nHier siehst du ein Beispiel-Video direkt im Text.', minRole: 'free' },
+        { id: 'art-producing-basics', categoryId: 'intro', title: 'Producing', content: 'Hier lernst du die Grundlagen der Musikproduktion.\n\n# Workflow\n\nPHASE:COMPOSING|Entwickle deine erste Melodie mit dem MIDI Editor.\n\nIMAGE:https://picsum.photos/seed/producing/800/400\n\nProducing ist ein kreativer Prozess.', minRole: 'free', quiz: [{ question: 'Was ist eine DAW?', options: ['Digital Audio Workstation', 'Dark Audio Wave', 'Dynamic Audio Web'], correctOption: 0 }] },
+        { id: 'art-gb-basics', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'GarageBand: Basics', content: 'Erste Schritte in GarageBand.\n\nVIDEO:https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/videos%2Ftutorial_example.mp4?alt=media\n\nIn diesem Tutorial zeigen wir dir das Interface.', minRole: 'free' },
+        { id: 'art-eq', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Equalizer', content: 'Forme deinen Sound mit dem EQ.\n\nIMAGE:https://picsum.photos/seed/eq/800/400\n\nDer EQ ist dein wichtigstes Werkzeug.', minRole: 'free' }
       ];
       for (const a of arts) await sync('articles', a.id, a);
 
