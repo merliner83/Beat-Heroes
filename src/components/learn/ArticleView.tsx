@@ -90,10 +90,16 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       // --- PHASE BLOCKS ---
       if (block.startsWith('PHASE:')) {
         const parts = block.replace('PHASE:', '').split('|');
-        const titleAndPhase = parts[0]?.trim() || '';
+        const rawTitle = parts[0]?.trim() || '';
+        
+        // Parsing title and subtitle (Separator is :)
+        const [mainTitle, ...subTitleParts] = rawTitle.split(':');
+        const subTitle = subTitleParts.join(':').trim();
+        const displayMainTitle = mainTitle.trim();
+        
         const description = parts[1]?.trim() || '';
         const linkedArticleId = parts[2]?.trim();
-        const Icon = PHASE_ICONS[titleAndPhase] || Play;
+        const Icon = PHASE_ICONS[displayMainTitle] || Play;
 
         // Extrahiere Medien-Tags aus der Beschreibung
         const videoMatches = description.match(/VIDEO:(\S+)/g) || [];
@@ -110,15 +116,24 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         return (
           <div key={idx} className="mb-8 gemini-border animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="p-8 bg-black/40 backdrop-blur-xl">
-              <div className="flex items-center gap-5 mb-5">
+              <div className="flex items-center gap-5 mb-6">
                 <div className="w-14 h-14 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5">
                   <Icon className="w-7 h-7 text-primary" />
                 </div>
-                <h4 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white leading-none">{titleAndPhase}</h4>
+                <div className="flex flex-col justify-center">
+                  <h4 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white leading-none">
+                    {displayMainTitle}
+                  </h4>
+                  {subTitle && (
+                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-primary/70 mt-1.5 italic">
+                      {subTitle}
+                    </span>
+                  )}
+                </div>
               </div>
               
               {cleanDescription && (
-                <p className="text-base md:text-xl text-white/60 leading-relaxed font-normal mb-6">{cleanDescription}</p>
+                <p className="text-base md:text-xl text-white/60 leading-relaxed font-normal mb-8">{cleanDescription}</p>
               )}
 
               {/* Medien-Inhalte innerhalb der Phase rendern */}
@@ -153,7 +168,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
               
               {linkedArticleId && (
                 <Link href={`/learn/article/${linkedArticleId}`}>
-                  <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 rounded-full px-6 italic font-black uppercase text-xs h-10">
+                  <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 rounded-full px-6 italic font-black uppercase text-xs h-10 mt-4">
                     Learn More <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </Link>
