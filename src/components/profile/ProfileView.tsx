@@ -3,7 +3,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, limit, doc, updateDoc, where } from 'firebase/firestore';
 import { Studio, Game, Level, LevelProgress, LearnApp, getAccuracyColor, UserProfile, LearnCategory, Article, ArticleProgress } from '@/lib/game/types';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
@@ -62,9 +62,14 @@ export const ProfileView = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [collapsedStudios, setCollapsedStudios] = useState<Record<string, boolean>>({});
 
-  // Leaderboard Query
+  // Leaderboard Query - MUST filter by isPublic to match security rules
   const leaderboardQuery = useMemoFirebase(() => 
-    db ? query(collection(db, 'users'), orderBy('streetCred', 'desc'), limit(10)) : null, 
+    db ? query(
+      collection(db, 'users'), 
+      where('isPublic', '==', true),
+      orderBy('streetCred', 'desc'), 
+      limit(10)
+    ) : null, 
   [db]);
   const { data: leaderboard } = useCollection<UserProfile>(leaderboardQuery);
 
@@ -87,7 +92,7 @@ export const ProfileView = () => {
   const { data: categories } = useCollection<LearnCategory>(categoriesQuery);
   const { data: articles } = useCollection<Article>(articlesQuery);
 
-  // Rank Calculation
+  // Rank Calculation (based on public leaderboard)
   const userRank = useMemo(() => {
     if (!leaderboard || !profile) return '?';
     const index = leaderboard.findIndex(u => u.uid === profile.uid);
@@ -98,12 +103,8 @@ export const ProfileView = () => {
   const performanceData = useMemo(() => {
     if (!userProgress) return [];
     
-    // Combine all activities that have accuracy and completedAt
-    const allSessions = [...(userProgress || [])];
-    
-    // Group by week (last 6 weeks)
-    const weeks: Record<string, { totalAcc: number, count: number }> = {};
     const now = new Date();
+    const weeks: Record<string, { totalAcc: number, count: number }> = {};
     
     for (let i = 5; i >= 0; i--) {
       const d = new Date();
@@ -112,7 +113,7 @@ export const ProfileView = () => {
       weeks[weekLabel] = { totalAcc: 0, count: 0 };
     }
 
-    allSessions.forEach(s => {
+    userProgress.forEach(s => {
       if (!s.completedAt) return;
       const date = new Date(s.completedAt.seconds ? s.completedAt.seconds * 1000 : s.completedAt);
       const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 3600 * 24));
