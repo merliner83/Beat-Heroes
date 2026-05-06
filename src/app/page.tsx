@@ -243,13 +243,13 @@ export default function HomePage() {
           id: 'art-welcome', 
           categoryId: 'intro', 
           title: 'Willkommen im Hub', 
-          content: `# Syntax Anleitung\n\nHier lernst du, wie du deine Artikel mit Medien gestaltest!\n\nPHASE:COMPOSING|Dies ist ein Phasen-Block mit Icon. Du kannst ihn nutzen um Workflows zu erklären.|art-comp-basics\n\nYOUTUBE:https://www.youtube.com/watch?v=dQw4w9WgXcQ\n\nIMAGE:https://picsum.photos/seed/syntax/800/400\n\n# Hochformat Videos\n\nVIDEO:https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/videos%2Ftutorial-sample.mp4?alt=media\n\nVerwende einfach das Präfix VIDEO:, YOUTUBE: oder IMAGE: gefolgt von der URL in einer neuen Zeile.`, 
+          content: `Willkommen in deinem persönlichen Music-Producing Labor!\n\nHier erfährst du alles, was du wissen musst, um vom ersten Beat bis zum fertigen Mix durchzustarten. Nutze die Kategorien, um tiefer in spezifische Themen einzutauchen.`, 
           order: 10 
         },
-        { id: 'art-producing', categoryId: 'intro', title: 'Producing', content: 'Die Kunst des Erschaffens.', order: 20 },
-        { id: 'art-sampling', categoryId: 'intro', title: 'Sampling', content: 'Finde die perfekten Sounds.', order: 30 },
-        { id: 'art-djing-intro', categoryId: 'intro', title: 'DJing', content: 'Mixe deine Tracks.', order: 40 },
-        { id: 'art-equipment', categoryId: 'intro', title: 'Equipment', content: 'Was du wirklich brauchst.', order: 50 },
+        { id: 'art-producing', categoryId: 'intro', title: 'Producing', content: 'Die Kunst des Erschaffens von Musik am Computer.', order: 20 },
+        { id: 'art-sampling', categoryId: 'intro', title: 'Sampling', content: 'Finde die perfekten Sounds und nutze sie kreativ.', order: 30 },
+        { id: 'art-djing-intro', categoryId: 'intro', title: 'DJing', content: 'Mixe deine Tracks und sorge für Stimmung.', order: 40 },
+        { id: 'art-equipment', categoryId: 'intro', title: 'Equipment', content: 'Was du wirklich für dein Studio brauchst.', order: 50 },
 
         // DAWS - GarageBand
         { id: 'art-gb-basics', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'Basics', order: 10 },
@@ -276,12 +276,12 @@ export default function HomePage() {
         { id: 'art-ab-master', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'MasteringChain', order: 40 },
 
         // COMPOSING
-        { id: 'art-comp-basics', categoryId: 'composing', title: 'Composing Basics', content: 'Melodie und Harmonie.', order: 10 },
-        { id: 'art-arrangement', categoryId: 'composing', title: 'Arrangement', content: 'Vom Loop zum Song.', order: 20 },
-        { id: 'art-sounddesign', categoryId: 'composing', title: 'Sound Design', content: 'Klänge erschaffen.', order: 30 },
+        { id: 'art-comp-basics', categoryId: 'composing', title: 'Composing Basics', content: 'Melodie und Harmonie verstehen.', order: 10 },
+        { id: 'art-arrangement', categoryId: 'composing', title: 'Arrangement', content: 'Vom Loop zum fertigen Song.', order: 20 },
+        { id: 'art-sounddesign', categoryId: 'composing', title: 'Sound Design', content: 'Eigene Klänge von Grund auf erschaffen.', order: 30 },
 
         // RECORDING
-        { id: 'art-rec-basics', categoryId: 'recording', title: 'Recording Basics', content: 'Signalkette verstehen.', order: 10 },
+        { id: 'art-rec-basics', categoryId: 'recording', title: 'Recording Basics', content: 'Die Signalkette richtig verstehen.', order: 10 },
         { id: 'art-alphorn', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Alphorn', order: 10 },
         { id: 'art-drums', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Drums', order: 20 },
         { id: 'art-git-ak', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Gitarre (Akustisch)', order: 30 },
@@ -312,10 +312,10 @@ export default function HomePage() {
         { id: 'art-vocalchops', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'VocalChops', order: 60 },
 
         // DJING
-        { id: 'art-dj-basics', categoryId: 'djing', title: 'DJing Basics', content: 'Einstieg.', order: 10 },
+        { id: 'art-dj-basics', categoryId: 'djing', title: 'DJing Basics', content: 'Der Einstieg in die Welt des Auflegens.', order: 10 },
         { id: 'art-dj-equip', categoryId: 'djing', title: 'Equipment', content: 'Controller vs CDJs.', order: 20 },
-        { id: 'art-dj-mix', categoryId: 'djing', title: 'Mixen', content: 'Beatmatching.', order: 30 },
-        { id: 'art-dj-scratch', categoryId: 'djing', title: 'Scratchen', content: 'Basics.', order: 40 },
+        { id: 'art-dj-mix', categoryId: 'djing', title: 'Mixen', content: 'Grundlagen des Beatmatching.', order: 30 },
+        { id: 'art-dj-scratch', categoryId: 'djing', title: 'Scratchen', content: 'Basics und erste Techniken.', order: 40 },
 
         // SOCIAL MEDIA
         { id: 'art-social-basics', categoryId: 'social', title: 'SocialMedia Basics', order: 10 },
@@ -326,7 +326,7 @@ export default function HomePage() {
         { id: 'art-social-stream', categoryId: 'social', title: 'Streaming', order: 60 },
 
         // RECHTE
-        { id: 'art-rights-basics', categoryId: 'rights', title: 'RechteBasics', content: 'Copyright.', order: 10 }
+        { id: 'art-rights-basics', categoryId: 'rights', title: 'RechteBasics', content: 'Copyright und Urheberrecht verstehen.', order: 10 }
       ];
       for (const a of arts) await sync('articles', a.id, a);
 
