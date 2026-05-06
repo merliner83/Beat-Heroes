@@ -79,15 +79,20 @@ export const LearnView = () => {
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-32">
+      {/* Hero Section */}
       <section className="relative p-8 rounded-[2rem] bg-gradient-to-br from-primary/10 via-black to-black border border-white/5 overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] -z-10" />
         <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter mb-4 text-gradient">Master the Lab</h2>
         <p className="text-sm md:text-lg opacity-50 max-w-2xl font-medium tracking-tight">Vom ersten Beat bis zum globalen Release – hier lernst du alles für deine Musikkarriere.</p>
       </section>
 
+      {/* Interactive Modules Grid */}
       {filteredLearnApps.length > 0 && (
         <section>
-          <div className="flex items-center gap-3 mb-6"><Gamepad2 className="w-5 h-5 text-primary" /><h3 className="text-xs font-black uppercase tracking-[0.5em] text-white/50">Special Modules</h3></div>
+          <div className="flex items-center gap-3 mb-6">
+            <Gamepad2 className="w-5 h-5 text-primary" />
+            <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white/50">Special Modules</h3>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {filteredLearnApps.map((app) => {
               const Icon = APP_ICON_MAP[app.type] || Gamepad2;
@@ -96,7 +101,9 @@ export const LearnView = () => {
                 <Link key={app.id} href={`/session/${app.id}`}>
                   <div className="gemini-border group transition-transform hover:scale-[1.02] active:scale-95">
                     <div className="p-4 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-3 justify-center min-h-[140px]">
-                      <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10"><Icon className="w-6 h-6" style={{ color }} /></div>
+                      <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10">
+                        <Icon className="w-6 h-6" style={{ color }} />
+                      </div>
                       <h4 className="text-sm font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">{app.name}</h4>
                     </div>
                   </div>
@@ -107,75 +114,104 @@ export const LearnView = () => {
         </section>
       )}
 
+      {/* Main Knowledge Base with nested Accordions */}
       <section>
-        <div className="flex items-center gap-3 mb-6"><BookOpen className="w-5 h-5 text-primary" /><h3 className="text-xs font-black uppercase tracking-[0.5em] text-white/50">Knowledge Base</h3></div>
-        <div className="space-y-10">
+        <div className="flex items-center gap-3 mb-6">
+          <BookOpen className="w-5 h-5 text-primary" />
+          <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white/50">Knowledge Base</h3>
+        </div>
+
+        <Accordion type="multiple" className="space-y-6">
           {CATEGORY_MAP.map((cat) => {
             const catArticles = allArticles?.filter(a => a.categoryId === cat.id) || [];
             const catSubCats = allSubCategories?.filter(sc => sc.categoryId === cat.id) || [];
+            
             if (catArticles.length === 0 && catSubCats.length === 0) return null;
 
             const directArticles = catArticles.filter(a => !a.subCategoryId);
 
             return (
-              <div key={cat.id} className="space-y-4">
-                <div className="flex items-center gap-4 px-2">
-                  <div className={cn("p-2 rounded-xl bg-white/5", cat.color)}><cat.icon className="w-5 h-5" /></div>
-                  <h4 className="text-2xl font-black uppercase italic tracking-tighter text-white">{cat.title}</h4>
-                  <div className="h-px flex-1 bg-white/5" />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {directArticles.map((article) => {
-                    const locked = !hasAccess(profile?.role, article.minRole || 'free');
-                    return (
-                      <Link key={article.id} href={locked ? '#' : `/learn/article/${article.id}`} className={cn("block group", locked && "cursor-not-allowed opacity-50")}>
-                        <div className="p-4 rounded-xl bg-black/40 border border-white/5 hover:border-primary/30 transition-all flex items-center justify-between">
-                          <span className="text-xs font-black uppercase tracking-widest italic group-hover:text-primary transition-colors">{article.title}</span>
-                          {locked ? <Lock className="w-3 h-3 text-white/20" /> : <ChevronRight className="w-3 h-3 text-white/20" />}
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-
-                {catSubCats.length > 0 && (
-                  <Accordion type="single" collapsible className="space-y-3">
-                    {catSubCats.map((group) => {
-                      const groupArticles = allArticles?.filter(a => a.subCategoryId === group.id) || [];
-                      if (groupArticles.length === 0) return null;
-                      return (
-                        <AccordionItem key={group.id} value={group.id} className="border-none bg-black/40 rounded-xl overflow-hidden border border-white/5">
-                          <AccordionTrigger className="px-5 py-4 hover:no-underline group">
-                            <div className="flex items-center gap-3">
-                              {group.iconUrl && <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center p-1 overflow-hidden relative"><Image src={group.iconUrl} alt={group.title} fill className="object-contain p-1" sizes="32px" /></div>}
-                              <span className="text-base font-black uppercase italic tracking-tighter text-left group-hover:text-primary transition-colors">{group.title}</span>
+              <AccordionItem key={cat.id} value={cat.id} className="border-none">
+                <AccordionTrigger className="hover:no-underline group p-0">
+                  <div className="flex items-center gap-4 w-full px-2">
+                    <div className={cn("p-2 rounded-xl bg-white/5 transition-transform group-hover:scale-110", cat.color)}>
+                      <cat.icon className="w-5 h-5" />
+                    </div>
+                    <h4 className="text-2xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors">
+                      {cat.title}
+                    </h4>
+                    <div className="h-px flex-1 bg-white/5 mx-4" />
+                  </div>
+                </AccordionTrigger>
+                
+                <AccordionContent className="pt-6 pb-2 space-y-6">
+                  {/* Direct Articles Grid */}
+                  {directArticles.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {directArticles.map((article) => {
+                        const locked = !hasAccess(profile?.role, article.minRole || 'free');
+                        return (
+                          <Link key={article.id} href={locked ? '#' : `/learn/article/${article.id}`} className={cn("block group/art", locked && "cursor-not-allowed opacity-50")}>
+                            <div className="p-4 rounded-xl bg-black/40 border border-white/5 hover:border-primary/30 transition-all flex items-center justify-between">
+                              <span className="text-xs font-black uppercase tracking-widest italic group-hover/art:text-primary transition-colors">
+                                {article.title}
+                              </span>
+                              {locked ? <Lock className="w-3 h-3 text-white/20" /> : <ChevronRight className="w-3 h-3 text-white/20" />}
                             </div>
-                          </AccordionTrigger>
-                          <AccordionContent className="px-5 pb-5 pt-0">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              {groupArticles.map((article) => {
-                                const locked = !hasAccess(profile?.role, article.minRole || 'free');
-                                return (
-                                  <Link key={article.id} href={locked ? '#' : `/learn/article/${article.id}`} className={cn("block", locked && "cursor-not-allowed")}>
-                                    <div className="p-3 rounded-lg bg-white/5 border border-white/5 hover:border-primary/20 flex items-center justify-between group/item">
-                                      <span className="text-[10px] font-black uppercase tracking-widest italic opacity-60 group-hover/item:text-primary">{formatListTitle(article, group.title)}</span>
-                                      {locked ? <Lock className="w-2.5 h-2.5 text-white/10" /> : <ChevronRight className="w-2.5 h-2.5 text-white/10" />}
-                                    </div>
-                                  </Link>
-                                );
-                              })}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      );
-                    })}
-                  </Accordion>
-                )}
-              </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Sub-Categories (Nested Accordion) */}
+                  {catSubCats.length > 0 && (
+                    <Accordion type="single" collapsible className="space-y-3">
+                      {catSubCats.map((group) => {
+                        const groupArticles = allArticles?.filter(a => a.subCategoryId === group.id) || [];
+                        if (groupArticles.length === 0) return null;
+                        
+                        return (
+                          <AccordionItem key={group.id} value={group.id} className="border-none bg-black/40 rounded-xl overflow-hidden border border-white/5">
+                            <AccordionTrigger className="px-5 py-4 hover:no-underline group/sub">
+                              <div className="flex items-center gap-3">
+                                {group.iconUrl && (
+                                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center p-1 overflow-hidden relative">
+                                    <Image src={group.iconUrl} alt={group.title} fill className="object-contain p-1" sizes="32px" />
+                                  </div>
+                                )}
+                                <span className="text-base font-black uppercase italic tracking-tighter text-left group-hover/sub:text-primary transition-colors">
+                                  {group.title}
+                                </span>
+                              </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-5 pb-5 pt-0">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {groupArticles.map((article) => {
+                                  const locked = !hasAccess(profile?.role, article.minRole || 'free');
+                                  return (
+                                    <Link key={article.id} href={locked ? '#' : `/learn/article/${article.id}`} className={cn("block", locked && "cursor-not-allowed")}>
+                                      <div className="p-3 rounded-lg bg-white/5 border border-white/5 hover:border-primary/20 flex items-center justify-between group/item">
+                                        <span className="text-[10px] font-black uppercase tracking-widest italic opacity-60 group-hover/item:text-primary">
+                                          {formatListTitle(article, group.title)}
+                                        </span>
+                                        {locked ? <Lock className="w-2.5 h-2.5 text-white/10" /> : <ChevronRight className="w-2.5 h-2.5 text-white/10" />}
+                                      </div>
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        );
+                      })}
+                    </Accordion>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
             );
           })}
-        </div>
+        </Accordion>
       </section>
     </div>
   );
