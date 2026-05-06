@@ -25,8 +25,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
 const StudioCard = ({ studio, isLocked }: { studio: Studio; isLocked: boolean }) => (
   <div className={cn(
@@ -75,7 +73,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (user && db && !isUserLoading) {
-      // Ensure profile exists and has required fields for rules
+      // Ensure profile exists and has required fields for rules and leaderboard
       if (!profile || profile.email !== (user.email ?? '') || profile.isPublic === undefined) {
         const userRef = doc(db, 'users', user.uid);
         const data = { 
@@ -87,8 +85,7 @@ export default function HomePage() {
           displayName: profile?.displayName || user.displayName || 'Producer'
         };
         setDoc(userRef, data, { merge: true }).catch(err => {
-          // If we already have a profile but just need to add isPublic, this might be a second try
-          console.warn("Profile auto-sync failed, might be rule propagation", err);
+          console.warn("Profile auto-sync failed", err);
         });
       }
     }
@@ -96,6 +93,18 @@ export default function HomePage() {
 
   const studiosQuery = useMemoFirebase(() => db ? query(collection(db, 'studios')) : null, [db]);
   const { data: studios, isLoading: isLoadingStudios } = useCollection<Studio>(studiosQuery);
+
+  const handleSCButtonClick = () => {
+    if (user?.isAnonymous) {
+      toast({
+        title: "Login Required",
+        description: "Sign in with Google to start scoring points and see your rank in the global leaderboard!",
+        variant: "destructive"
+      });
+      return;
+    }
+    handleTabChange('progress');
+  };
 
   const handleBackup = async () => {
     if (!db || profile?.role !== 'admin') return;
@@ -338,7 +347,10 @@ export default function HomePage() {
         <div className="flex justify-between w-full max-w-7xl items-center mb-6">
           <h1 className="text-4xl md:text-7xl font-black uppercase italic text-gradient">BeatHero</h1>
           <div className="flex items-center gap-4">
-            <div onClick={() => setActiveTab('progress')} className="gemini-border p-2 px-4 bg-black/80 cursor-pointer flex items-center gap-2">
+            <div 
+              onClick={handleSCButtonClick} 
+              className="gemini-border p-2 px-4 bg-black/80 cursor-pointer flex items-center gap-2 hover:bg-black transition-colors"
+            >
               <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
               <span className="font-black italic">{profile?.streetCred?.toLocaleString() || 0} SC</span>
             </div>
