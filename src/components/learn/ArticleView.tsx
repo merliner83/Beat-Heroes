@@ -133,7 +133,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
               </div>
               
               {cleanDescription && (
-                <p className="text-base md:text-xl text-white/60 leading-relaxed font-normal mb-8">{cleanDescription}</p>
+                <p className="text-base md:text-xl text-white/60 leading-relaxed font-normal mb-8 whitespace-pre-line">{cleanDescription}</p>
               )}
 
               {/* Medien-Inhalte innerhalb der Phase rendern */}
@@ -176,6 +176,17 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
             </div>
           </div>
         );
+      }
+
+      // --- FLEXIBLE GAP ---
+      if (block.startsWith('GAP:')) {
+        const height = parseInt(block.replace('GAP:', '').trim(), 10) || 20;
+        return <div key={idx} style={{ height: `${height}px` }} />;
+      }
+
+      // --- SEPARATOR ---
+      if (block.trim() === '---') {
+        return <div key={idx} className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent my-10" />;
       }
 
       // --- INLINE VIDEO (9:16) ---
@@ -252,7 +263,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       // --- DEFAULT TEXT ---
       return (
         <div key={idx} className="mb-12">
-          <p className="text-lg md:text-xl text-white/60 leading-relaxed font-normal">{block}</p>
+          <p className="text-lg md:text-xl text-white/60 leading-relaxed font-normal whitespace-pre-line">{block}</p>
         </div>
       );
     });
