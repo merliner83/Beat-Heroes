@@ -103,11 +103,21 @@ export interface UserProfile {
   streetCred: number;
 }
 
+export interface LearnCategory {
+  id: string;
+  title: string;
+  iconName: string;
+  colorClass: string;
+  order: number;
+  minRole?: UserRole;
+}
+
 export interface LearnSubCat {
   id: string;
   categoryId: string;
   title: string;
   iconUrl?: string;
+  order: number;
   minRole?: UserRole;
 }
 
@@ -124,6 +134,7 @@ export interface Article {
   title: string;
   content: string;
   videoUrl?: string;
+  order: number;
   imageUrls?: string[];
   youtubeUrls?: string[];
   quiz?: QuizQuestion[];

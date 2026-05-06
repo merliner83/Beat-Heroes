@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc, getDocs } from 'firebase/firestore';
-import { Studio, Game, Article, Track, hasAccess, LearnApp, TriggerPattern, LearnSubCat } from '@/lib/game/types';
+import { Studio, Game, Article, Track, hasAccess, LearnApp, TriggerPattern, LearnSubCat, LearnCategory } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn, initiateGoogleSignIn, initiateSignOut } from '@/firebase/non-blocking-login';
@@ -91,7 +91,7 @@ export default function HomePage() {
     setIsBackingUp(true);
     try {
       const data: any = {};
-      const rootCols = ['studios', 'tracks', 'games', 'learnApps', 'levels', 'patterns', 'learnSubCats', 'articles', 'users'];
+      const rootCols = ['studios', 'tracks', 'games', 'learnApps', 'levels', 'patterns', 'learnCategories', 'learnSubCats', 'articles', 'users'];
       
       for (const col of rootCols) {
         const snap = await getDocs(collection(db, col));
@@ -110,7 +110,7 @@ export default function HomePage() {
             (docData as any).patternProgress = pattProgSnap.docs.map(ppd => ({ id: ppd.id, ...ppd.data() }));
 
             const artProgSnap = await getDocs(collection(db, col, d.id, 'articleProgress'));
-            (docData as any).articleProgress = artProgSnap.docs.map(apd => ({ id: apd.id, ...apd.data() }));
+            (docData as any).articleProgress = artProgSnap.docs.map(apd => ({ id: apid.id, ...apd.data() }));
           }
           
           return docData;
@@ -207,107 +207,120 @@ export default function HomePage() {
     };
 
     try {
-      // 1. LearnSubCats Initialisierung
+      // 1. LearnCategories Initialisierung
+      const cats = [
+        { id: 'intro', title: 'Einführung', iconName: 'BookOpen', colorClass: 'text-primary', order: 10 },
+        { id: 'daws', title: 'DAWs', iconName: 'Cpu', colorClass: 'text-[#00E676]', order: 20 },
+        { id: 'composing', title: 'Composing', iconName: 'Music', colorClass: 'text-[#FFEA00]', order: 30 },
+        { id: 'recording', title: 'Recording', iconName: 'Mic2', colorClass: 'text-[#FF3D00]', order: 40 },
+        { id: 'effects', title: 'Effekte', iconName: 'Wand2', colorClass: 'text-[#3838FA]', order: 50 },
+        { id: 'djing', title: 'DJing', iconName: 'Disc', colorClass: 'text-primary', order: 60 },
+        { id: 'social', title: 'Social Media', iconName: 'Share2', colorClass: 'text-[#00FFFF]', order: 70 },
+        { id: 'rights', title: 'Rechte', iconName: 'Scale', colorClass: 'text-[#EB3D99]', order: 80 }
+      ];
+      for (const c of cats) await sync('learnCategories', c.id, c);
+
+      // 2. LearnSubCats Initialisierung
       const subs = [
         // DAWs
-        { id: 'sc-gb', categoryId: 'daws', title: 'GarageBand', iconUrl: 'https://picsum.photos/seed/gb/100/100' },
-        { id: 'sc-cub', categoryId: 'daws', title: 'Cubase', iconUrl: 'https://picsum.photos/seed/cb/100/100' },
-        { id: 'sc-lp', categoryId: 'daws', title: 'Logic Pro', iconUrl: 'https://picsum.photos/seed/lp/100/100' },
-        { id: 'sc-ab', categoryId: 'daws', title: 'Ableton Live', iconUrl: 'https://picsum.photos/seed/ab/100/100' },
+        { id: 'sc-gb', categoryId: 'daws', title: 'GarageBand', iconUrl: 'https://picsum.photos/seed/gb/100/100', order: 10 },
+        { id: 'sc-cub', categoryId: 'daws', title: 'Cubase', iconUrl: 'https://picsum.photos/seed/cb/100/100', order: 20 },
+        { id: 'sc-lp', categoryId: 'daws', title: 'Logic Pro', iconUrl: 'https://picsum.photos/seed/lp/100/100', order: 30 },
+        { id: 'sc-ab', categoryId: 'daws', title: 'Ableton Live', iconUrl: 'https://picsum.photos/seed/ab/100/100', order: 40 },
         // Recording
-        { id: 'sc-instr', categoryId: 'recording', title: 'Instrumente', iconUrl: 'https://picsum.photos/seed/instr/100/100' },
+        { id: 'sc-instr', categoryId: 'recording', title: 'Instrumente', iconUrl: 'https://picsum.photos/seed/instr/100/100', order: 10 },
         // Effekte
-        { id: 'sc-ins', categoryId: 'effects', title: 'Insert-Effekte', iconUrl: 'https://picsum.photos/seed/ins/100/100' },
-        { id: 'sc-snd', categoryId: 'effects', title: 'Send-Effekte', iconUrl: 'https://picsum.photos/seed/snd/100/100' },
-        { id: 'sc-crt', categoryId: 'effects', title: 'Kreative Effekte', iconUrl: 'https://picsum.photos/seed/crt/100/100' }
+        { id: 'sc-ins', categoryId: 'effects', title: 'Insert-Effekte', iconUrl: 'https://picsum.photos/seed/ins/100/100', order: 10 },
+        { id: 'sc-snd', categoryId: 'effects', title: 'Send-Effekte', iconUrl: 'https://picsum.photos/seed/snd/100/100', order: 20 },
+        { id: 'sc-crt', categoryId: 'effects', title: 'Kreative Effekte', iconUrl: 'https://picsum.photos/seed/crt/100/100', order: 30 }
       ];
       for (const s of subs) await sync('learnSubCats', s.id, s);
 
-      // 2. Artikel Initialisierung
+      // 3. Artikel Initialisierung
       const arts = [
         // EINFÜHRUNG
-        { id: 'art-welcome', categoryId: 'intro', title: 'Willkommen im Hub', content: 'Dein zentraler Knotenpunkt für Musikproduktion.\n\nYOUTUBE:https://www.youtube.com/watch?v=dQw4w9WgXcQ\n\nHier siehst du ein Beispiel-Video direkt im Text.', minRole: 'free' },
-        { id: 'art-producing', categoryId: 'intro', title: 'Producing', content: 'Die Kunst des Erschaffens.\n\n# Workflow\n\nPHASE:COMPOSING|Entwickle deine erste Melodie.\n\nIMAGE:https://picsum.photos/seed/producing/800/400', minRole: 'free' },
-        { id: 'art-sampling', categoryId: 'intro', title: 'Sampling', content: 'Finde die perfekten Sounds.', minRole: 'free' },
-        { id: 'art-djing-intro', categoryId: 'intro', title: 'DJing', content: 'Mixe deine Tracks.', minRole: 'free' },
-        { id: 'art-equipment', categoryId: 'intro', title: 'Equipment', content: 'Was du wirklich brauchst.', minRole: 'free' },
+        { id: 'art-welcome', categoryId: 'intro', title: 'Willkommen im Hub', content: 'Dein zentraler Knotenpunkt für Musikproduktion.\n\nYOUTUBE:https://www.youtube.com/watch?v=dQw4w9WgXcQ', order: 10 },
+        { id: 'art-producing', categoryId: 'intro', title: 'Producing', content: 'Die Kunst des Erschaffens.', order: 20 },
+        { id: 'art-sampling', categoryId: 'intro', title: 'Sampling', content: 'Finde die perfekten Sounds.', order: 30 },
+        { id: 'art-djing-intro', categoryId: 'intro', title: 'DJing', content: 'Mixe deine Tracks.', order: 40 },
+        { id: 'art-equipment', categoryId: 'intro', title: 'Equipment', content: 'Was du wirklich brauchst.', order: 50 },
 
         // DAWS - GarageBand
-        { id: 'art-gb-basics', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'GarageBand: Basics', content: 'Erste Schritte in GarageBand.', minRole: 'free' },
-        { id: 'art-gb-shortcuts', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'GarageBand: Shortcuts', content: 'Werde schneller mit Tastenbefehlen.', minRole: 'free' },
-        { id: 'art-gb-vocal', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'GarageBand: VocalChain', content: 'Die perfekte Kette für deine Stimme.', minRole: 'free' },
-        { id: 'art-gb-master', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'GarageBand: MasteringChain', content: 'Das Finale für deinen Mix.', minRole: 'free' },
+        { id: 'art-gb-basics', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'Basics', order: 10 },
+        { id: 'art-gb-shortcuts', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'Shortcuts', order: 20 },
+        { id: 'art-gb-vocal', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'VocalChain', order: 30 },
+        { id: 'art-gb-master', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'MasteringChain', order: 40 },
 
         // DAWS - Cubase
-        { id: 'art-cub-basics', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'Cubase: Basics', content: 'Professionelles Interface verstehen.', minRole: 'free' },
-        { id: 'art-cub-shortcuts', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'Cubase: Shortcuts', content: 'Profis nutzen Shortcuts.', minRole: 'free' },
-        { id: 'art-cub-vocal', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'Cubase: VocalChain', content: 'Channel Strip Mastering.', minRole: 'free' },
-        { id: 'art-cub-master', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'Cubase: MasteringChain', content: 'Precision Mastering.', minRole: 'free' },
+        { id: 'art-cub-basics', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'Basics', order: 10 },
+        { id: 'art-cub-shortcuts', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'Shortcuts', order: 20 },
+        { id: 'art-cub-vocal', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'VocalChain', order: 30 },
+        { id: 'art-cub-master', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'MasteringChain', order: 40 },
 
         // DAWS - Logic Pro
-        { id: 'art-lp-basics', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'Logic Pro: Basics', content: 'Apple Pro Audio Workflow.', minRole: 'free' },
-        { id: 'art-lp-shortcuts', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'Logic Pro: Shortcuts', content: 'Workflow Booster.', minRole: 'free' },
-        { id: 'art-lp-vocal', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'Logic Pro: VocalChain', content: 'High-End Vocal Chain.', minRole: 'free' },
-        { id: 'art-lp-master', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'Logic Pro: MasteringChain', content: 'Finaler Schliff.', minRole: 'free' },
+        { id: 'art-lp-basics', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'Basics', order: 10 },
+        { id: 'art-lp-shortcuts', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'Shortcuts', order: 20 },
+        { id: 'art-lp-vocal', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'VocalChain', order: 30 },
+        { id: 'art-lp-master', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'MasteringChain', order: 40 },
 
         // DAWS - Ableton Live
-        { id: 'art-ab-basics', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'Ableton Live: Basics', content: 'Session vs Arrangement View.', minRole: 'free' },
-        { id: 'art-ab-shortcuts', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'Ableton Live: Shortcuts', content: 'Live Performance Speed.', minRole: 'free' },
-        { id: 'art-ab-vocal', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'Ableton Live: VocalChain', content: 'Creative Vocals.', minRole: 'free' },
-        { id: 'art-ab-master', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'Ableton Live: MasteringChain', content: 'Electronic Mastering.', minRole: 'free' },
+        { id: 'art-ab-basics', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'Basics', order: 10 },
+        { id: 'art-ab-shortcuts', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'Shortcuts', order: 20 },
+        { id: 'art-ab-vocal', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'VocalChain', order: 30 },
+        { id: 'art-ab-master', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'MasteringChain', order: 40 },
 
         // COMPOSING
-        { id: 'art-comp-basics', categoryId: 'composing', title: 'Composing Basics', content: 'Melodie und Harmonie.', minRole: 'free' },
-        { id: 'art-arrangement', categoryId: 'composing', title: 'Arrangement', content: 'Vom Loop zum Song.', minRole: 'free' },
-        { id: 'art-sounddesign', categoryId: 'composing', title: 'Sound Design', content: 'Eigene Klänge erschaffen.', minRole: 'free' },
+        { id: 'art-comp-basics', categoryId: 'composing', title: 'Composing Basics', content: 'Melodie und Harmonie.', order: 10 },
+        { id: 'art-arrangement', categoryId: 'composing', title: 'Arrangement', content: 'Vom Loop zum Song.', order: 20 },
+        { id: 'art-sounddesign', categoryId: 'composing', title: 'Sound Design', content: 'Klänge erschaffen.', order: 30 },
 
         // RECORDING
-        { id: 'art-rec-basics', categoryId: 'recording', title: 'Recording Basics', content: 'Signalkette verstehen.', minRole: 'free' },
-        { id: 'art-alphorn', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Instrumente: Alphorn', content: 'Tradition trifft Studio.', minRole: 'free' },
-        { id: 'art-drums', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Instrumente: Drums', content: 'Miking Techniken.', minRole: 'free' },
-        { id: 'art-git-ak', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Instrumente: Gitarre (Akustisch)', content: 'Der warme Klang.', minRole: 'free' },
-        { id: 'art-git-el', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Instrumente: Gitarre (Elektrisch)', content: 'Amps und Effekte.', minRole: 'free' },
-        { id: 'art-harfe', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Instrumente: Harfe', content: 'Filigrane Abnahme.', minRole: 'free' },
-        { id: 'art-horn', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Instrumente: Horn', content: 'Druckvolle Bläser.', minRole: 'free' },
+        { id: 'art-rec-basics', categoryId: 'recording', title: 'Recording Basics', content: 'Signalkette verstehen.', order: 10 },
+        { id: 'art-alphorn', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Alphorn', order: 10 },
+        { id: 'art-drums', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Drums', order: 20 },
+        { id: 'art-git-ak', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Gitarre (Akustisch)', order: 30 },
+        { id: 'art-git-el', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Gitarre (Elektrisch)', order: 40 },
+        { id: 'art-harfe', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Harfe', order: 50 },
+        { id: 'art-horn', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Horn', order: 60 },
 
         // EFFEKTE - Insert
-        { id: 'art-ins-basics', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Insert-Effekte Basics', content: 'Direkt im Signalweg.', minRole: 'free' },
-        { id: 'art-eq', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Insert-Effekte: Equalizer', content: 'Frequenzkontrolle.', minRole: 'free', quiz: [{ question: 'Was macht ein EQ?', options: ['Frequenzen anheben/absenken', 'Lautstärke begrenzen', 'Hall hinzufügen'], correctOption: 0 }] },
-        { id: 'art-comp', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Insert-Effekte: Kompressor', content: 'Dynamikbändiger.', minRole: 'free' },
-        { id: 'art-deesser', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Insert-Effekte: De-Esser', content: 'S-Laute entfernen.', minRole: 'free' },
-        { id: 'art-distortion', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Insert-Effekte: Distortion', content: 'Sättigung und Dreck.', minRole: 'free' },
-        { id: 'art-gate', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Insert-Effekte: NoiseGate', content: 'Stille erzwingen.', minRole: 'free' },
+        { id: 'art-ins-basics', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Basics', order: 10 },
+        { id: 'art-eq', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Equalizer', order: 20 },
+        { id: 'art-comp', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Kompressor', order: 30 },
+        { id: 'art-deesser', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'De-Esser', order: 40 },
+        { id: 'art-distortion', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Distortion', order: 50 },
+        { id: 'art-gate', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'NoiseGate', order: 60 },
 
         // EFFEKTE - Send
-        { id: 'art-snd-basics', categoryId: 'effects', subCategoryId: 'sc-snd', title: 'Send-Effekte Basics', content: 'Parallelbearbeitung.', minRole: 'free' },
-        { id: 'art-reverb', categoryId: 'effects', subCategoryId: 'sc-snd', title: 'Send-Effekte: Reverb', content: 'Räumlichkeit schaffen.', minRole: 'free' },
-        { id: 'art-delay', categoryId: 'effects', subCategoryId: 'sc-snd', title: 'Send-Effekte: Delay', content: 'Echo Effekte.', minRole: 'free' },
-        { id: 'art-par-comp', categoryId: 'effects', subCategoryId: 'sc-snd', title: 'Send-Effekte: Parallel Kompression', content: 'Druck und Details.', minRole: 'free' },
+        { id: 'art-snd-basics', categoryId: 'effects', subCategoryId: 'sc-snd', title: 'Basics', order: 10 },
+        { id: 'art-reverb', categoryId: 'effects', subCategoryId: 'sc-snd', title: 'Reverb', order: 20 },
+        { id: 'art-delay', categoryId: 'effects', subCategoryId: 'sc-snd', title: 'Delay', order: 30 },
+        { id: 'art-par-comp', categoryId: 'effects', subCategoryId: 'sc-snd', title: 'Parallel Kompression', order: 40 },
 
         // EFFEKTE - Kreativ
-        { id: 'art-sidechain', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Kreative Effekte: SideChain Kompressor', content: 'Pumping Effekt.', minRole: 'free' },
-        { id: 'art-glitch', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Kreative Effekte: Glitch', content: 'Digitaler Fehler als Kunst.', minRole: 'free' },
-        { id: 'art-autotune', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Kreative Effekte: Autotune', content: 'Der moderne Sound.', minRole: 'free' },
-        { id: 'art-vocoder', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Kreative Effekte: Vocoder/Talkbox', content: 'Roboter-Stimmen.', minRole: 'free' },
-        { id: 'art-pitch', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Kreative Effekte: Pitch/Formant', content: 'Pitch Shifting Basics.', minRole: 'free' },
-        { id: 'art-vocalchops', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Kreative Effekte: VocalChops', content: 'Vocals als Instrument.', minRole: 'free' },
+        { id: 'art-sidechain', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'SideChain Kompressor', order: 10 },
+        { id: 'art-glitch', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Glitch', order: 20 },
+        { id: 'art-autotune', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Autotune', order: 30 },
+        { id: 'art-vocoder', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Vocoder/Talkbox', order: 40 },
+        { id: 'art-pitch', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Pitch/Formant', order: 50 },
+        { id: 'art-vocalchops', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'VocalChops', order: 60 },
 
         // DJING
-        { id: 'art-dj-basics', categoryId: 'djing', title: 'DJing Basics', content: 'Einstieg in das Auflegen.', minRole: 'free' },
-        { id: 'art-dj-equip', categoryId: 'djing', title: 'DJing Equipment', content: 'Controller vs CDJs.', minRole: 'free' },
-        { id: 'art-dj-mix', categoryId: 'djing', title: 'Mixen', content: 'Beatmatching und Übergänge.', minRole: 'free' },
-        { id: 'art-dj-scratch', categoryId: 'djing', title: 'Scratchen', content: 'Turntablism Basics.', minRole: 'free' },
+        { id: 'art-dj-basics', categoryId: 'djing', title: 'DJing Basics', content: 'Einstieg.', order: 10 },
+        { id: 'art-dj-equip', categoryId: 'djing', title: 'Equipment', content: 'Controller vs CDJs.', order: 20 },
+        { id: 'art-dj-mix', categoryId: 'djing', title: 'Mixen', content: 'Beatmatching.', order: 30 },
+        { id: 'art-dj-scratch', categoryId: 'djing', title: 'Scratchen', content: 'Basics.', order: 40 },
 
         // SOCIAL MEDIA
-        { id: 'art-social-basics', categoryId: 'social', title: 'SocialMedia Basics', content: 'Präsenz zeigen.', minRole: 'free' },
-        { id: 'art-social-tools', categoryId: 'social', title: 'Tools', content: 'Apps für Creator.', minRole: 'free' },
-        { id: 'art-social-content', categoryId: 'social', title: 'Content', content: 'Was soll ich posten?', minRole: 'free' },
-        { id: 'art-social-brand', categoryId: 'social', title: 'Brand', content: 'Deine Identität.', minRole: 'free' },
-        { id: 'art-social-web', categoryId: 'social', title: 'Website / App', content: 'Eigene Plattformen.', minRole: 'free' },
-        { id: 'art-social-stream', categoryId: 'social', title: 'Streaming', content: 'Spotify und Co.', minRole: 'free' },
+        { id: 'art-social-basics', categoryId: 'social', title: 'SocialMedia Basics', order: 10 },
+        { id: 'art-social-tools', categoryId: 'social', title: 'Tools', order: 20 },
+        { id: 'art-social-content', categoryId: 'social', title: 'Content', order: 30 },
+        { id: 'art-social-brand', categoryId: 'social', title: 'Brand', order: 40 },
+        { id: 'art-social-web', categoryId: 'social', title: 'Website / App', order: 50 },
+        { id: 'art-social-stream', categoryId: 'social', title: 'Streaming', order: 60 },
 
         // RECHTE
-        { id: 'art-rights-basics', categoryId: 'rights', title: 'RechteBasics', content: 'Copyright und GEMA.', minRole: 'free' }
+        { id: 'art-rights-basics', categoryId: 'rights', title: 'RechteBasics', content: 'Copyright.', order: 10 }
       ];
       for (const a of arts) await sync('articles', a.id, a);
 
@@ -377,4 +390,3 @@ export default function HomePage() {
     </div>
   );
 }
-

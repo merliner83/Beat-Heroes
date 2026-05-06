@@ -24,7 +24,7 @@ import {
   Scale
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { LearnApp, Article, hasAccess, LearnSubCat } from '@/lib/game/types';
+import { LearnApp, Article, hasAccess, LearnSubCat, LearnCategory } from '@/lib/game/types';
 import {
   Accordion,
   AccordionContent,
@@ -32,16 +32,20 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const CATEGORY_MAP = [
-  { id: 'intro', title: 'Einführung', icon: BookOpen, color: 'text-primary' },
-  { id: 'daws', title: 'DAWs', icon: Cpu, color: 'text-[#00E676]' },
-  { id: 'composing', title: 'Composing', icon: Music, color: 'text-[#FFEA00]' },
-  { id: 'recording', title: 'Recording', icon: Mic2, color: 'text-[#FF3D00]' },
-  { id: 'effects', title: 'Effekte', icon: Wand2, color: 'text-[#3838FA]' },
-  { id: 'djing', title: 'DJing', icon: Disc, color: 'text-primary' },
-  { id: 'social', title: 'Social Media', icon: Share2, color: 'text-[#00FFFF]' },
-  { id: 'rights', title: 'Rechte', icon: Scale, color: 'text-[#EB3D99]' }
-];
+const ICON_COMPONENTS: Record<string, any> = {
+  BookOpen,
+  Cpu,
+  Music,
+  Mic2,
+  Wand2,
+  Disc,
+  Share2,
+  Scale,
+  Sparkles,
+  Gamepad2,
+  Headphones,
+  Target
+};
 
 const APP_ICON_MAP: Record<string, any> = {
   'ear-training': Headphones,
@@ -58,10 +62,12 @@ export const LearnView = () => {
   const db = useFirestore();
 
   const learnAppsQuery = useMemoFirebase(() => db ? query(collection(db, 'learnApps')) : null, [db]);
+  const categoriesQuery = useMemoFirebase(() => db ? query(collection(db, 'learnCategories')) : null, [db]);
   const subCategoriesQuery = useMemoFirebase(() => db ? query(collection(db, 'learnSubCats')) : null, [db]);
   const articlesQuery = useMemoFirebase(() => db ? query(collection(db, 'articles')) : null, [db]);
 
   const { data: allLearnApps } = useCollection<LearnApp>(learnAppsQuery);
+  const { data: allCategories } = useCollection<LearnCategory>(categoriesQuery);
   const { data: allSubCategories } = useCollection<LearnSubCat>(subCategoriesQuery);
   const { data: allArticles } = useCollection<Article>(articlesQuery);
 
@@ -70,12 +76,10 @@ export const LearnView = () => {
     return allLearnApps.filter(a => hasAccess(profile?.role, a.minRole || 'free'));
   }, [allLearnApps, profile?.role]);
 
-  const formatListTitle = (article: Article, subTitle?: string) => {
-    if (!subTitle) return article.title;
-    const prefix = `${subTitle}:`;
-    if (article.title.startsWith(prefix)) return article.title.replace(prefix, '').trim();
-    return article.title;
-  };
+  const sortedCategories = useMemo(() => {
+    if (!allCategories) return [];
+    return [...allCategories].sort((a, b) => (a.order || 0) - (b.order || 0));
+  }, [allCategories]);
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-32">
@@ -122,20 +126,26 @@ export const LearnView = () => {
         </div>
 
         <Accordion type="multiple" className="space-y-6">
-          {CATEGORY_MAP.map((cat) => {
+          {sortedCategories.map((cat) => {
             const catArticles = allArticles?.filter(a => a.categoryId === cat.id) || [];
             const catSubCats = allSubCategories?.filter(sc => sc.categoryId === cat.id) || [];
             
             if (catArticles.length === 0 && catSubCats.length === 0) return null;
 
-            const directArticles = catArticles.filter(a => !a.subCategoryId);
+            const directArticles = catArticles
+              .filter(a => !a.subCategoryId)
+              .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            const sortedSubCats = [...catSubCats].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            const Icon = ICON_COMPONENTS[cat.iconName] || BookOpen;
 
             return (
               <AccordionItem key={cat.id} value={cat.id} className="border-none">
                 <AccordionTrigger className="hover:no-underline group p-0">
                   <div className="flex items-center gap-4 w-full px-2">
-                    <div className={cn("p-2 rounded-xl bg-white/5 transition-transform group-hover:scale-110", cat.color)}>
-                      <cat.icon className="w-5 h-5" />
+                    <div className={cn("p-2 rounded-xl bg-white/5 transition-transform group-hover:scale-110", cat.colorClass)}>
+                      <Icon className="w-5 h-5" />
                     </div>
                     <h4 className="text-2xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors">
                       {cat.title}
@@ -165,10 +175,13 @@ export const LearnView = () => {
                   )}
 
                   {/* Sub-Categories (Nested Accordion) */}
-                  {catSubCats.length > 0 && (
+                  {sortedSubCats.length > 0 && (
                     <Accordion type="single" collapsible className="space-y-3">
-                      {catSubCats.map((group) => {
-                        const groupArticles = allArticles?.filter(a => a.subCategoryId === group.id) || [];
+                      {sortedSubCats.map((group) => {
+                        const groupArticles = allArticles
+                          ?.filter(a => a.subCategoryId === group.id)
+                          .sort((a, b) => (a.order || 0) - (b.order || 0)) || [];
+                        
                         if (groupArticles.length === 0) return null;
                         
                         return (
@@ -193,7 +206,7 @@ export const LearnView = () => {
                                     <Link key={article.id} href={locked ? '#' : `/learn/article/${article.id}`} className={cn("block", locked && "cursor-not-allowed")}>
                                       <div className="p-3 rounded-lg bg-white/5 border border-white/5 hover:border-primary/20 flex items-center justify-between group/item">
                                         <span className="text-[10px] font-black uppercase tracking-widest italic opacity-60 group-hover/item:text-primary">
-                                          {formatListTitle(article, group.title)}
+                                          {article.title}
                                         </span>
                                         {locked ? <Lock className="w-2.5 h-2.5 text-white/10" /> : <ChevronRight className="w-2.5 h-2.5 text-white/10" />}
                                       </div>
