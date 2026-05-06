@@ -127,6 +127,12 @@ export interface QuizQuestion {
   correctOption: number;
 }
 
+export interface LearnQuiz {
+  id: string;
+  articleId: string;
+  questions: QuizQuestion[];
+}
+
 export interface Article {
   id: string;
   categoryId: string;
@@ -137,7 +143,6 @@ export interface Article {
   order: number;
   imageUrls?: string[];
   youtubeUrls?: string[];
-  quiz?: QuizQuestion[];
   minRole?: UserRole;
 }
 

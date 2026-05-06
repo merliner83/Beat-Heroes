@@ -2,11 +2,10 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Article, getAccuracyColor } from '@/lib/game/types';
+import { Article, LearnQuiz, getAccuracyColor } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { 
   ArrowLeft, 
-  Video, 
   Image as ImageIcon, 
   Music, 
   Mic, 
@@ -25,7 +24,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc, serverTimestamp, increment } from 'firebase/firestore';
 
 interface ArticleViewProps {
@@ -48,13 +47,21 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
   const [quizFinished, setQuizFinished] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
 
+  // Fetch quiz from the separate 'learnQuizzes' collection
+  const quizRef = useMemoFirebase(() => {
+    if (!db || !article.id) return null;
+    return doc(db, 'learnQuizzes', article.id);
+  }, [db, article.id]);
+
+  const { data: quizData, isLoading: isLoadingQuiz } = useDoc<LearnQuiz>(quizRef);
+
   const handleQuizSubmit = () => {
-    if (!article.quiz) return;
+    if (!quizData || !quizData.questions) return;
     let correct = 0;
-    article.quiz.forEach((q, idx) => {
+    quizData.questions.forEach((q, idx) => {
       if (selectedOptions[idx] === q.correctOption) correct++;
     });
-    const score = Math.round((correct / article.quiz.length) * 100);
+    const score = Math.round((correct / quizData.questions.length) * 100);
     setQuizScore(score);
     setQuizFinished(true);
 
@@ -85,7 +92,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         const parts = block.replace('PHASE:', '').split('|');
         const titleAndPhase = parts[0]?.trim() || '';
         const description = parts[1]?.trim() || '';
-        const linkedArticleId = parts[2]?.trim(); // New: Optional third part for links
+        const linkedArticleId = parts[2]?.trim();
         const Icon = PHASE_ICONS[titleAndPhase] || Play;
 
         return (
@@ -190,7 +197,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
           {renderContent(article.content)}
         </section>
 
-        {/* Global Reference Grid for images not placed inline */}
         {article.imageUrls && article.imageUrls.length > 0 && (
           <section className="space-y-8">
             <div className="flex items-center gap-3"><ImageIcon className="w-5 h-5 text-[#00E676]" /><h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/30 italic">Reference Gallery</h3></div>
@@ -204,7 +210,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
           </section>
         )}
 
-        {/* Global Youtube Grid for links not placed inline */}
         {article.youtubeUrls && article.youtubeUrls.length > 0 && (
           <section className="space-y-8">
             <div className="flex items-center gap-3 justify-center"><Youtube className="w-5 h-5 text-red-500" /><h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/30 italic">YouTube Archive</h3></div>
@@ -222,13 +227,13 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
           </section>
         )}
 
-        {article.quiz && article.quiz.length > 0 && (
+        {quizData && quizData.questions && quizData.questions.length > 0 && (
           <section className="gemini-border-primary">
             <div className="p-8 md:p-12 bg-black/60 rounded-[3rem]">
               <div className="flex items-center gap-3 mb-10"><HelpCircle className="w-6 h-6 text-primary" /><h3 className="text-xl font-black uppercase italic tracking-tighter">Knowledge Check</h3></div>
               {!quizFinished ? (
                 <div className="space-y-10">
-                  {article.quiz.map((q, idx) => (
+                  {quizData.questions.map((q, idx) => (
                     <div key={idx} className="space-y-4">
                       <p className="text-lg font-bold">{(idx + 1)}. {q.question}</p>
                       <div className="grid gap-3">

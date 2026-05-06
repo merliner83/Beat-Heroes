@@ -191,7 +191,18 @@
           "type": "array", 
           "items": { "type": "string" }
         },
-        "quiz": {
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" }
+      },
+      "required": ["id", "title", "order"]
+    },
+    "LearnQuiz": {
+      "title": "LearnQuiz",
+      "type": "object",
+      "description": "Ein Quiz zu einem Artikel.",
+      "properties": {
+        "id": { "type": "string", "description": "Gleich der Article-ID." },
+        "articleId": { "type": "string" },
+        "questions": {
           "type": "array",
           "items": {
             "type": "object",
@@ -201,10 +212,9 @@
               "correctOption": { "type": "number" }
             }
           }
-        },
-        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" }
+        }
       },
-      "required": ["id", "title", "order"]
+      "required": ["id", "articleId", "questions"]
     },
     "ArticleProgress": {
       "title": "ArticleProgress",
@@ -278,6 +288,10 @@
     "/articles/{articleId}": {
       "schema": "#/backend/entities/Article",
       "description": "Artikel."
+    },
+    "/learnQuizzes/{quizId}": {
+      "schema": "#/backend/entities/LearnQuiz",
+      "description": "Quizzes."
     }
   }
 }
