@@ -83,6 +83,44 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     return match ? match[1] : null;
   };
 
+  const renderDescriptionLines = (text: string) => {
+    return text.split('\n').map((line, idx) => {
+      const trimmedLine = line.trim();
+      if (!trimmedLine) return <div key={idx} className="h-4" />;
+
+      if (trimmedLine.startsWith('###') || trimmedLine.startsWith('SUB:')) {
+        const content = trimmedLine.replace(/^###\s*|^SUB:\s*/, '');
+        return (
+          <div key={idx} className="mb-2 mt-2">
+            <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-primary/70 italic">
+              {content}
+            </span>
+          </div>
+        );
+      }
+      
+      if (trimmedLine.startsWith('##')) {
+        const content = trimmedLine.replace(/^##\s*/, '');
+        return (
+          <h4 key={idx} className="text-base md:text-lg font-black uppercase italic tracking-tighter text-white/90 mb-2">
+            {content}
+          </h4>
+        );
+      }
+
+      if (trimmedLine.startsWith('#')) {
+        const content = trimmedLine.replace(/^#\s*/, '');
+        return (
+          <h3 key={idx} className="text-lg md:text-xl font-black uppercase italic tracking-tighter text-white mb-3 border-b border-white/5 pb-1">
+            {content}
+          </h3>
+        );
+      }
+
+      return <p key={idx} className="text-base md:text-lg text-white/60 leading-relaxed font-normal mb-4">{line}</p>;
+    });
+  };
+
   const renderContent = (content: string) => {
     const blocks = content.split('\n\n');
     return blocks.map((block, idx) => {
@@ -94,7 +132,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         const displayMainTitle = parts[0]?.trim() || '';
         const description = parts[1]?.trim() || '';
         const linkedArticleId = parts[2]?.trim();
-        const Icon = PHASE_ICONS[displayMainTitle] || Play;
+        const Icon = PHASE_ICONS[displayMainTitle.split(':')[0].trim()] || Play;
 
         const videoMatches = description.match(/VIDEO:(\S+)/g) || [];
         const youtubeMatches = description.match(/YOUTUBE:(\S+)/g) || [];
@@ -119,7 +157,9 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
               </div>
               
               {cleanDescription && (
-                <p className="text-base md:text-xl text-white/60 leading-relaxed font-normal mb-8 whitespace-pre-line">{cleanDescription}</p>
+                <div className="mb-8">
+                  {renderDescriptionLines(cleanDescription)}
+                </div>
               )}
 
               <div className="space-y-6 mb-6">
