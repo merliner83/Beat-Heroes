@@ -90,13 +90,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       // --- PHASE BLOCKS ---
       if (block.startsWith('PHASE:')) {
         const parts = block.replace('PHASE:', '').split('|');
-        const rawTitle = parts[0]?.trim() || '';
-        
-        // Parsing title and subtitle (Separator is :)
-        const [mainTitle, ...subTitleParts] = rawTitle.split(':');
-        const subTitle = subTitleParts.join(':').trim();
-        const displayMainTitle = mainTitle.trim();
-        
+        const displayMainTitle = parts[0]?.trim() || '';
         const description = parts[1]?.trim() || '';
         const linkedArticleId = parts[2]?.trim();
         const Icon = PHASE_ICONS[displayMainTitle] || Play;
@@ -124,11 +118,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
                   <h4 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white leading-none">
                     {displayMainTitle}
                   </h4>
-                  {subTitle && (
-                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-primary/70 mt-1.5 italic">
-                      {subTitle}
-                    </span>
-                  )}
                 </div>
               </div>
               
