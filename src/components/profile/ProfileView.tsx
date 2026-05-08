@@ -62,7 +62,7 @@ export const ProfileView = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [collapsedStudios, setCollapsedStudios] = useState<Record<string, boolean>>({});
 
-  // Leaderboard Query - MUST filter by isPublic to match security rules
+  // Leaderboard Query - Explicitly filter by isPublic for rules compliance
   const leaderboardQuery = useMemoFirebase(() => 
     db ? query(
       collection(db, 'users'), 
@@ -92,7 +92,7 @@ export const ProfileView = () => {
   const { data: categories } = useCollection<LearnCategory>(categoriesQuery);
   const { data: articles } = useCollection<Article>(articlesQuery);
 
-  // Rank Calculation (based on public leaderboard)
+  // Rank Calculation
   const userRank = useMemo(() => {
     if (!leaderboard || !profile) return '?';
     const index = leaderboard.findIndex(u => u.uid === profile.uid);
@@ -318,7 +318,10 @@ export const ProfileView = () => {
                    <Button 
                      variant="outline" 
                      disabled={isUpdating}
-                     onClick={() => handleUpdateProfile({ displayName: (document.getElementById('display-name-input') as HTMLInputElement).value })}
+                     onClick={() => {
+                        const input = document.getElementById('display-name-input') as HTMLInputElement;
+                        handleUpdateProfile({ displayName: input.value });
+                     }}
                      className="rounded-xl h-12 font-black uppercase italic px-6"
                    >Save</Button>
                  </div>

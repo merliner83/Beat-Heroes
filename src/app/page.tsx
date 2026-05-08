@@ -74,7 +74,12 @@ export default function HomePage() {
   useEffect(() => {
     if (user && db && !isUserLoading) {
       // Ensure profile exists and has required fields for rules and leaderboard
-      if (!profile || profile.email !== (user.email ?? '') || profile.isPublic === undefined) {
+      const needsSync = !profile || 
+                        profile.email !== (user.email ?? '') || 
+                        profile.isPublic === undefined || 
+                        profile.streetCred === undefined;
+
+      if (needsSync) {
         const userRef = doc(db, 'users', user.uid);
         const data = { 
           uid: user.uid, 
