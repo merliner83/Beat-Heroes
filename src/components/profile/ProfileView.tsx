@@ -4,7 +4,7 @@
 import React, { useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { Studio, Game, Level, LevelProgress, getAccuracyColor, UserProfile, LearnCategory, Article, ArticleProgress, getRankInfo } from '@/lib/game/types';
+import { Studio, Game, Level, LevelProgress, getAccuracyColor, UserProfile, LearnCategory, Article, ArticleProgress } from '@/lib/game/types';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { 
@@ -46,14 +46,12 @@ export const ProfileView = () => {
   const auth = useAuth();
   const [collapsedStudios, setCollapsedStudios] = React.useState<Record<string, boolean>>({});
 
-  // Leaderboard Query to determine Rank (needed for global rank calculation)
   const leaderboardQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'users'), orderBy('streetCred', 'desc'), limit(100));
   }, [db]);
   const { data: leaderboard } = useCollection<UserProfile>(leaderboardQuery);
 
-  // User Data Queries
   const studiosQuery = useMemoFirebase(() => db ? query(collection(db, 'studios')) : null, [db]);
   const gamesQuery = useMemoFirebase(() => db ? query(collection(db, 'games')) : null, [db]);
   const levelsQuery = useMemoFirebase(() => db ? query(collection(db, 'levels')) : null, [db]);
@@ -73,7 +71,7 @@ export const ProfileView = () => {
   const globalRank = useMemo(() => {
     if (!leaderboard || !user) return null;
     const index = leaderboard.findIndex(p => p.uid === user.uid);
-    return index !== -1 ? `${index + 1}` : '> 100';
+    return index !== -1 ? `${index + 1}` : '--';
   }, [leaderboard, user]);
 
   const performanceData = useMemo(() => {
@@ -145,30 +143,26 @@ export const ProfileView = () => {
 
   const isAnonymous = user?.isAnonymous;
   const streetCred = profile?.streetCred || 0;
-  const rankInfo = getRankInfo(streetCred);
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-32 max-w-6xl mx-auto">
       
-      {/* 1. TOP HIGHLIGHTS */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* GLOBAL RANK CARD - Now showing as Rank number only */}
         <div className="gemini-border">
           <div className="p-8 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[40px] -z-10" />
             <div className="relative">
-              <span className="text-4xl">{rankInfo.icon}</span>
+              <span className="text-4xl">👑</span>
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Global Rank</p>
               <h3 className="text-5xl font-black italic tracking-tighter text-white uppercase leading-none">
-                # {globalRank || '--'}
+                # {globalRank}
               </h3>
             </div>
           </div>
         </div>
 
-        {/* STREET CRED */}
         <div className="gemini-border-accent">
           <div className="p-8 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4">
             <Zap className="w-10 h-10 text-[#FFEA00]" fill="currentColor" />
@@ -181,7 +175,6 @@ export const ProfileView = () => {
           </div>
         </div>
 
-        {/* SYNC PERFORMANCE */}
         <div className="gemini-border-primary">
           <div className="p-8 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4">
             <TrendingUp className="w-10 h-10 text-[#00E676]" />
@@ -195,7 +188,6 @@ export const ProfileView = () => {
         </div>
       </section>
 
-      {/* 2. WEEKLY PERFORMANCE CHART */}
       <section className="gemini-border-primary">
         <div className="p-8 bg-black/40 backdrop-blur-xl">
            <div className="flex items-center justify-between mb-8">
@@ -222,7 +214,6 @@ export const ProfileView = () => {
         </div>
       </section>
 
-      {/* 3. LOGIN HINT FOR ANONYMOUS */}
       {isAnonymous && (
         <section className="max-w-2xl mx-auto w-full">
           <div className="bg-white/5 border border-dashed border-white/10 p-8 rounded-3xl text-center space-y-6">
@@ -236,7 +227,6 @@ export const ProfileView = () => {
         </section>
       )}
 
-      {/* 4. KNOWLEDGE PROGRESS */}
       <section>
         <div className="flex items-center gap-3 mb-6">
           <BookOpen className="w-5 h-5 text-primary" />
@@ -262,7 +252,6 @@ export const ProfileView = () => {
         </div>
       </section>
 
-      {/* 5. STUDIO & GAME PROGRESS */}
       <section>
         <div className="flex items-center gap-3 mb-6">
           <Music className="w-5 h-5 text-primary" />

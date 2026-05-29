@@ -185,7 +185,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       const saveProg = async () => {
         const progRef = doc(db, 'users', user.uid, 'progress', level.id);
         const snap = await getDoc(progRef);
-        const oldAcc = snap.exists() ? snap.data().accuracy : 0;
+        const oldAcc = snap.exists() ? (snap.data().accuracy || 0) : 0;
         
         if (score.accuracy > oldAcc) {
           await setDoc(progRef, { levelId: level.id, accuracy: score.accuracy, completedAt: serverTimestamp() }, { merge: true });

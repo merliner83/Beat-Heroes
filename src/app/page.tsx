@@ -120,7 +120,7 @@ export default function HomePage() {
             (docData as any).patternProgress = pattProgSnap.docs.map(ppd => ({ id: ppd.id, ...ppd.data() }));
 
             const artProgSnap = await getDocs(collection(db, col, d.id, 'articleProgress'));
-            (docData as any).articleProgress = artProgSnap.docs.map(apd => ({ id: apd.id, ...apd.data() }));
+            (docData as any).articleProgress = artProgSnap.docs.map(apd => ({ id: apid, ...apd.data() }));
           }
           
           return docData;
@@ -229,7 +229,6 @@ export default function HomePage() {
         { id: 'rights', title: 'Rechte', iconName: 'Scale', colorClass: 'text-[#EB3D99]', order: 80 }
       ];
       for (const c of cats) {
-        // Explicitly update title if it exists to support rename
         const ref = doc(db, 'learnCategories', c.id);
         const snap = await getDoc(ref);
         if (snap.exists() && snap.data().title !== c.title) {
@@ -239,36 +238,18 @@ export default function HomePage() {
         await sync('learnCategories', c.id, c);
       }
 
-      // 2. LearnSubCats
-      const subs = [
-        { id: 'sc-gb', categoryId: 'daws', title: 'GarageBand', iconUrl: 'https://picsum.photos/seed/gb/100/100', order: 10 },
-        { id: 'sc-cub', categoryId: 'daws', title: 'Cubase', iconUrl: 'https://picsum.photos/seed/cb/100/100', order: 20 },
-        { id: 'sc-lp', categoryId: 'daws', title: 'Logic Pro', iconUrl: 'https://picsum.photos/seed/lp/100/100', order: 30 },
-        { id: 'sc-ab', categoryId: 'daws', title: 'Ableton Live', iconUrl: 'https://picsum.photos/seed/ab/100/100', order: 40 },
-        { id: 'sc-instr', categoryId: 'recording', title: 'Instrumente', iconUrl: 'https://picsum.photos/seed/instr/100/100', order: 10 },
-        { id: 'sc-ins', categoryId: 'effects', title: 'Insert-Effekte', iconUrl: 'https://picsum.photos/seed/ins/100/100', order: 10 },
-        { id: 'sc-snd', categoryId: 'effects', title: 'Send-Effekte', iconUrl: 'https://picsum.photos/seed/snd/100/100', order: 20 },
-        { id: 'sc-crt', categoryId: 'effects', title: 'Kreative Effekte', iconUrl: 'https://picsum.photos/seed/crt/100/100', order: 30 }
-      ];
-      for (const s of subs) await sync('learnSubCats', s.id, s);
-
-      // 3. Artikel & Quizzes with maxPoints
+      // 2. Artikel & Quizzes with maxPoints
       const arts = [
         { id: 'art-welcome', categoryId: 'intro', title: 'Willkommen im Hub', content: 'Willkommen in deinem persönlichen Music-Producing Labor!', order: 10, maxPoints: 100 },
         { id: 'art-producing', categoryId: 'intro', title: 'Producing', content: 'Die Kunst des Erschaffens von Musik am Computer.', order: 20, maxPoints: 100 },
         { id: 'art-sampling', categoryId: 'intro', title: 'Sampling', content: 'Finde die perfekten Sounds und nutze sie kreativ.', order: 30, maxPoints: 100 },
         { id: 'art-djing-intro', categoryId: 'intro', title: 'DJing', content: 'Mixe deine Tracks und sorge für Stimmung.', order: 40, maxPoints: 100 },
         { id: 'art-equipment', categoryId: 'intro', title: 'Equipment', content: 'Was du wirklich für dein Studio brauchst.', order: 50, maxPoints: 100 },
-        { id: 'art-gb-basics', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'Basics', order: 10, maxPoints: 250 },
-        { id: 'art-gb-shortcuts', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'Shortcuts', order: 20, maxPoints: 250 },
-        { id: 'art-cub-basics', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'Basics', order: 10, maxPoints: 250 },
-        { id: 'art-lp-basics', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'Basics', order: 10, maxPoints: 250 },
-        { id: 'art-ab-basics', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'Basics', order: 10, maxPoints: 250 },
+        { id: 'art-gb-basics', categoryId: 'daws', title: 'Basics', order: 10, maxPoints: 250 },
         { id: 'art-comp-basics', categoryId: 'composing', title: 'Composing Basics', content: 'Melodie und Harmonie verstehen.', order: 10, maxPoints: 200 },
         { id: 'art-arrangement', categoryId: 'composing', title: 'Arrangement', content: 'Vom Loop zum fertigen Song.', order: 20, maxPoints: 200 },
         { id: 'art-rec-basics', categoryId: 'recording', title: 'Recording Basics', content: 'Die Signalkette richtig verstehen.', order: 10, maxPoints: 200 },
-        { id: 'art-ins-basics', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Basics', order: 10, maxPoints: 200 },
-        { id: 'art-rights-basics', categoryId: 'rights', title: 'RechteBasics', content: 'Copyright und Urheberrecht verstehen.', order: 10, maxPoints: 200 }
+        { id: 'art-rights-basics', categoryId: 'rights', title: 'Rechte Basics', content: 'Copyright und Urheberrecht verstehen.', order: 10, maxPoints: 200 }
       ];
       for (const a of arts) {
         await sync('articles', a.id, a);
@@ -297,7 +278,6 @@ export default function HomePage() {
   };
 
   const streetCred = profile?.streetCred || 0;
-  const rank = getRankInfo(streetCred);
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col relative">
@@ -309,7 +289,7 @@ export default function HomePage() {
               onClick={handleSCButtonClick} 
               className="gemini-border p-2 px-4 bg-black/80 cursor-pointer flex items-center gap-2 hover:bg-black transition-colors"
             >
-              <Zap className="w-4 h-4" style={{ color: rank.color }} fill="currentColor" />
+              <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
               <span className="font-black italic">{streetCred.toLocaleString()} SC</span>
             </div>
             <DropdownMenu>

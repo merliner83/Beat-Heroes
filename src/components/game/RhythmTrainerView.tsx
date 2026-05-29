@@ -41,8 +41,6 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
 
   const patternsQuery = useMemoFirebase(() => db ? query(collection(db, 'patterns')) : null, [db]);
   const { data: patterns } = useCollection<TriggerPattern>(patternsQuery);
-  const progressQuery = useMemoFirebase(() => user && db ? query(collection(db, 'users', user.uid, 'patternProgress')) : null, [user, db]);
-  const { data: patternProgress } = useCollection<PatternProgress>(progressQuery);
 
   const selectedPattern = useMemo(() => patterns?.find(p => p.id === selectedPatternId), [patterns, selectedPatternId]);
 
@@ -69,10 +67,11 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     if (user && db) {
       const progRef = doc(db, 'users', user.uid, 'patternProgress', selectedPattern.id);
       const snap = await getDoc(progRef);
-      const oldAcc = snap.exists() ? snap.data().accuracy : 0;
+      const oldAcc = snap.exists() ? (snap.data().accuracy || 0) : 0;
       if (accuracy > oldAcc) {
         await setDoc(progRef, { patternId: selectedPattern.id, accuracy, completedAt: serverTimestamp() }, { merge: true });
-        const deltaSC = Math.round(((accuracy - oldAcc) / 100) * (game.maxPoints || 500));
+        const deltaAcc = accuracy - oldAcc;
+        const deltaSC = Math.round((deltaAcc / 100) * (game.maxPoints || 500));
         await setDoc(doc(db, 'users', user.uid), { streetCred: increment(deltaSC) }, { merge: true });
       }
     }

@@ -161,10 +161,11 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
       const save = async () => {
         const progRef = doc(db, 'users', user.uid, 'progress', level.id);
         const snap = await getDoc(progRef);
-        const oldAcc = snap.exists() ? snap.data().accuracy : 0;
+        const oldAcc = snap.exists() ? (snap.data().accuracy || 0) : 0;
         if (score.accuracy > oldAcc) {
           await setDoc(progRef, { levelId: level.id, accuracy: score.accuracy, completedAt: serverTimestamp() }, { merge: true });
-          const deltaSC = Math.round(((score.accuracy - oldAcc) / 100) * (game.maxPoints || 500));
+          const deltaAcc = score.accuracy - oldAcc;
+          const deltaSC = Math.round((deltaAcc / 100) * (game.maxPoints || 500));
           await setDoc(doc(db, 'users', user.uid), { streetCred: increment(deltaSC) }, { merge: true });
         }
       };

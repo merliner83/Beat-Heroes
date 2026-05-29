@@ -133,7 +133,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
     if (user && db) {
       const progRef = doc(db, 'users', user.uid, 'progress', level.id);
       const snap = await getDoc(progRef);
-      const oldAcc = snap.exists() ? snap.data().accuracy : 0;
+      const oldAcc = snap.exists() ? (snap.data().accuracy || 0) : 0;
       
       if (avgScore > oldAcc) {
         await setDoc(progRef, { levelId: level.id, accuracy: avgScore, completedAt: serverTimestamp() }, { merge: true });

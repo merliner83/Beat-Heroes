@@ -6,22 +6,19 @@ import { Article, LearnQuiz, getAccuracyColor } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { 
   ArrowLeft, 
-  Image as ImageIcon, 
-  Music, 
-  Mic, 
-  Scissors, 
-  Layers, 
-  Sliders, 
   Play,
-  Sparkles,
   ArrowRight,
-  Youtube,
   HelpCircle,
   CheckCircle2,
   Zap,
-  Check
+  Check,
+  Music,
+  Mic,
+  Scissors,
+  Layers,
+  Sparkles,
+  Sliders
 } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
@@ -55,8 +52,8 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
 
       if (score > oldScore) {
         await setDoc(progRef, { articleId: article.id, completed: true, quizScore: score, completedAt: serverTimestamp() }, { merge: true });
-        const deltaScore = score - oldScore;
-        const deltaSC = Math.round((deltaScore / 100) * (article.maxPoints || 250));
+        const deltaAcc = score - oldScore;
+        const deltaSC = Math.round((deltaAcc / 100) * (article.maxPoints || 250));
         await setDoc(doc(db, 'users', user.uid), { streetCred: increment(deltaSC) }, { merge: true });
       }
     }
@@ -94,6 +91,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
   };
 
   const renderContent = (content: string) => {
+    if (!content) return null;
     return content.split('\n\n').map((block, bIdx) => {
       const trimmed = block.trim();
       if (trimmed.startsWith('PHASE:')) {
