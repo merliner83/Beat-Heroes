@@ -3,7 +3,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, doc, updateDoc, orderBy, limit } from 'firebase/firestore';
 import { Studio, Game, Level, LevelProgress, getAccuracyColor, UserProfile, LearnCategory, Article, ArticleProgress, getRankInfo } from '@/lib/game/types';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,8 @@ import {
   LogIn,
   ChevronDown,
   ChevronUp,
-  Trophy
+  Trophy,
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
@@ -51,7 +52,14 @@ export const ProfileView = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [collapsedStudios, setCollapsedStudios] = useState<Record<string, boolean>>({});
 
-  // User Queries
+  // Leaderboard Query
+  const leaderboardQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, 'users'), orderBy('streetCred', 'desc'), limit(100));
+  }, [db]);
+  const { data: leaderboard, isLoading: isLoadingLeaderboard } = useCollection<UserProfile>(leaderboardQuery);
+
+  // User Data Queries
   const studiosQuery = useMemoFirebase(() => db ? query(collection(db, 'studios')) : null, [db]);
   const gamesQuery = useMemoFirebase(() => db ? query(collection(db, 'games')) : null, [db]);
   const levelsQuery = useMemoFirebase(() => db ? query(collection(db, 'levels')) : null, [db]);
@@ -67,6 +75,12 @@ export const ProfileView = () => {
   const { data: articleProgress } = useCollection<ArticleProgress>(articleProgressQuery);
   const { data: categories } = useCollection<LearnCategory>(categoriesQuery);
   const { data: articles } = useCollection<Article>(articlesQuery);
+
+  const globalRank = useMemo(() => {
+    if (!leaderboard || !user) return null;
+    const index = leaderboard.findIndex(p => p.uid === user.uid);
+    return index !== -1 ? `# ${index + 1}` : '> 100';
+  }, [leaderboard, user]);
 
   const performanceData = useMemo(() => {
     if (!userProgress) return [];
@@ -154,10 +168,16 @@ export const ProfileView = () => {
         <div className="gemini-border">
           <div className="p-8 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[40px] -z-10" />
-            <span className="text-4xl">{rankInfo.icon}</span>
+            <div className="relative">
+              <span className="text-4xl">{rankInfo.icon}</span>
+              <div className="absolute -bottom-2 -right-2 bg-primary text-white text-[10px] font-black px-1.5 rounded-full border border-black">
+                {globalRank || '...'}
+              </div>
+            </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Producer Rank</p>
-              <h3 className="text-2xl font-black italic tracking-tighter text-white uppercase leading-none">{rankInfo.name}</h3>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Global Rank</p>
+              <h3 className="text-2xl font-black italic tracking-tighter text-white uppercase leading-none">{globalRank || 'Loading...'}</h3>
+              <p className="text-[9px] font-black uppercase tracking-widest opacity-20 mt-1">{rankInfo.name}</p>
             </div>
           </div>
         </div>
@@ -216,7 +236,36 @@ export const ProfileView = () => {
         </div>
       </section>
 
-      {/* 3. SETTINGS & LOGIN HINT */}
+      {/* 3. LEADERBOARD PREVIEW */}
+      <section className="gemini-border">
+        <div className="p-8 bg-black/40 backdrop-blur-xl">
+          <div className="flex items-center gap-3 mb-8">
+            <Users className="w-5 h-5 text-primary" />
+            <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white">Top Producers</h3>
+          </div>
+          <div className="space-y-3">
+            {isLoadingLeaderboard ? (
+              <div className="h-20 flex items-center justify-center opacity-20"><Loader2 className="w-6 h-6 animate-spin" /></div>
+            ) : leaderboard?.slice(0, 5).map((p, idx) => (
+              <div key={p.uid} className={cn(
+                "flex items-center justify-between p-3 rounded-xl border border-white/5",
+                p.uid === user?.uid ? "bg-primary/10 border-primary/30" : "bg-white/2"
+              )}>
+                <div className="flex items-center gap-4">
+                  <span className="text-[10px] font-black italic opacity-20 w-4"># {idx + 1}</span>
+                  <span className="text-sm font-black italic uppercase tracking-tight">{p.displayName || 'Anonymous Producer'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black italic text-[#FFEA00]">{p.streetCred.toLocaleString()}</span>
+                  <Zap className="w-3 h-3 text-[#FFEA00]" fill="currentColor" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. SETTINGS & LOGIN HINT */}
       <section className="max-w-2xl mx-auto w-full">
         {isAnonymous ? (
           <div className="bg-white/5 border border-dashed border-white/10 p-8 rounded-3xl text-center space-y-6">
@@ -244,7 +293,7 @@ export const ProfileView = () => {
         )}
       </section>
 
-      {/* 4. KNOWLEDGE PROGRESS */}
+      {/* 5. KNOWLEDGE PROGRESS */}
       <section>
         <div className="flex items-center gap-3 mb-6">
           <BookOpen className="w-5 h-5 text-primary" />
@@ -270,7 +319,7 @@ export const ProfileView = () => {
         </div>
       </section>
 
-      {/* 5. STUDIO & GAME PROGRESS */}
+      {/* 6. STUDIO & GAME PROGRESS */}
       <section>
         <div className="flex items-center gap-3 mb-6">
           <Music className="w-5 h-5 text-primary" />

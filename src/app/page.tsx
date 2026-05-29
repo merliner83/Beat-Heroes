@@ -117,10 +117,10 @@ export default function HomePage() {
             (docData as any).progress = progSnap.docs.map(pd => ({ id: pd.id, ...pd.data() }));
             
             const pattProgSnap = await getDocs(collection(db, col, d.id, 'patternProgress'));
-            (docData as any).patternProgress = pattProgSnap.docs.map(ppd => ({ id: pd.id, ...ppd.data() }));
+            (docData as any).patternProgress = pattProgSnap.docs.map(ppd => ({ id: ppd.id, ...ppd.data() }));
 
             const artProgSnap = await getDocs(collection(db, col, d.id, 'articleProgress'));
-            (docData as any).articleProgress = artProgSnap.docs.map(apd => ({ id: apid.id, ...apd.data() }));
+            (docData as any).articleProgress = artProgSnap.docs.map(apd => ({ id: apd.id, ...apd.data() }));
           }
           
           return docData;
@@ -163,7 +163,7 @@ export default function HomePage() {
               if (progress && Array.isArray(progress)) {
                 for (const p of progress) {
                   const { id: pid, ...pData } = p;
-                  await setDoc(doc(db, id, 'progress', pid), pData, { merge: true });
+                  await setDoc(doc(db, col, id, 'progress', pid), pData, { merge: true });
                 }
               }
               if (patternProgress && Array.isArray(patternProgress)) {

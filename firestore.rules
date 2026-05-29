@@ -14,10 +14,11 @@ service cloud.firestore {
 
     // --- COLLECTION MATCHES ---
 
-    // User Profile: Streng privat - NUR der Besitzer darf lesen und schreiben.
-    // 'list' ist untersagt, um Leaderboard-Fehler zu vermeiden.
+    // User Profile: Besitzer darf alles. Andere angemeldete Nutzer dürfen Profile auflisten (Leaderboard).
     match /users/{userId} {
-      allow get, write: if isOwner(userId);
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow write: if isOwner(userId);
       
       match /progress/{levelId} {
         allow read, write: if isOwner(userId);
