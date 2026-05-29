@@ -62,15 +62,17 @@ export const ProfileView = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [collapsedStudios, setCollapsedStudios] = useState<Record<string, boolean>>({});
 
-  // Leaderboard Query - Explicitly filter by isPublic for rules compliance
-  const leaderboardQuery = useMemoFirebase(() => 
-    db ? query(
+  // Leaderboard Query - Explicitly filter by isPublic for rules compliance.
+  // We use useMemoFirebase to ensure the query is stable and only run when DB is ready.
+  const leaderboardQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(
       collection(db, 'users'), 
       where('isPublic', '==', true),
       orderBy('streetCred', 'desc'), 
       limit(10)
-    ) : null, 
-  [db]);
+    );
+  }, [db]);
   const { data: leaderboard } = useCollection<UserProfile>(leaderboardQuery);
 
   // User Queries
