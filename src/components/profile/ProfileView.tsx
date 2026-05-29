@@ -1,14 +1,12 @@
 
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, doc, updateDoc, orderBy, limit } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { Studio, Game, Level, LevelProgress, getAccuracyColor, UserProfile, LearnCategory, Article, ArticleProgress, getRankInfo } from '@/lib/game/types';
 import { Progress } from '@/components/ui/progress';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { 
   Zap, 
   Target, 
@@ -16,15 +14,12 @@ import {
   Music, 
   Loader2,
   TrendingUp,
-  Settings,
   BarChart3,
   Calendar,
   BookOpen,
   LogIn,
   ChevronDown,
-  ChevronUp,
-  Trophy,
-  Users
+  ChevronUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
@@ -49,15 +44,14 @@ export const ProfileView = () => {
   const { user, profile, isUserLoading } = useUser();
   const db = useFirestore();
   const auth = useAuth();
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [collapsedStudios, setCollapsedStudios] = useState<Record<string, boolean>>({});
+  const [collapsedStudios, setCollapsedStudios] = React.useState<Record<string, boolean>>({});
 
-  // Leaderboard Query to determine Rank
+  // Leaderboard Query to determine Rank (needed internally for index calculation)
   const leaderboardQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'users'), orderBy('streetCred', 'desc'), limit(100));
   }, [db]);
-  const { data: leaderboard, isLoading: isLoadingLeaderboard } = useCollection<UserProfile>(leaderboardQuery);
+  const { data: leaderboard } = useCollection<UserProfile>(leaderboardQuery);
 
   // User Data Queries
   const studiosQuery = useMemoFirebase(() => db ? query(collection(db, 'studios')) : null, [db]);
@@ -138,12 +132,6 @@ export const ProfileView = () => {
     }).sort((a, b) => (a.order || 0) - (b.order || 0));
   }, [categories, articles, articleProgress]);
 
-  const handleUpdateProfile = async (updates: Partial<UserProfile>) => {
-    if (!db || !profile) return;
-    setIsUpdating(true);
-    try { await updateDoc(doc(db, 'users', profile.uid), updates); } catch (e) {} finally { setIsUpdating(false); }
-  };
-
   const toggleStudio = (id: string) => { setCollapsedStudios(prev => ({ ...prev, [id]: !prev[id] })); };
 
   if (isUserLoading || isLoadingStudios) {
@@ -164,7 +152,7 @@ export const ProfileView = () => {
       
       {/* 1. TOP HIGHLIGHTS */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* GLOBAL RANK */}
+        {/* GLOBAL RANK CARD */}
         <div className="gemini-border">
           <div className="p-8 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[40px] -z-10" />
@@ -232,9 +220,9 @@ export const ProfileView = () => {
         </div>
       </section>
 
-      {/* 3. SETTINGS & LOGIN HINT */}
-      <section className="max-w-2xl mx-auto w-full">
-        {isAnonymous ? (
+      {/* 3. LOGIN HINT FOR ANONYMOUS */}
+      {isAnonymous && (
+        <section className="max-w-2xl mx-auto w-full">
           <div className="bg-white/5 border border-dashed border-white/10 p-8 rounded-3xl text-center space-y-6">
             <LogIn className="w-12 h-12 text-primary mx-auto opacity-40" />
             <div>
@@ -243,22 +231,8 @@ export const ProfileView = () => {
             </div>
             <Button onClick={() => auth && initiateGoogleSignIn(auth)} className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Login with Google</Button>
           </div>
-        ) : (
-          <div className="bg-black/60 border border-white/5 p-8 rounded-3xl space-y-8">
-            <div className="flex items-center gap-3">
-              <Settings className="w-5 h-5 text-primary" />
-              <h3 className="text-xs font-black uppercase tracking-[0.5em]">Profile Settings</h3>
-            </div>
-            <div className="space-y-4 max-w-md">
-              <Label className="text-[10px] font-black uppercase tracking-widest opacity-40">Street Name</Label>
-              <div className="flex gap-2">
-                <Input defaultValue={profile?.displayName || ''} placeholder="Your producer alias..." className="bg-white/5 border-white/10 font-black italic rounded-xl h-12" id="display-name-input" />
-                <Button variant="outline" disabled={isUpdating} onClick={() => { const input = document.getElementById('display-name-input') as HTMLInputElement; handleUpdateProfile({ displayName: input.value }); }} className="rounded-xl h-12 font-black uppercase italic px-6">Save</Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* 4. KNOWLEDGE PROGRESS */}
       <section>
