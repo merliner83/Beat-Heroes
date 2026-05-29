@@ -163,7 +163,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
           const dx = p.x - activeNote.pos.x;
           const dy = p.y - activeNote.pos.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          return distance < 18;
+          return distance < 12; // Adjust collision radius for percentage coords
         });
 
         if (hitProjectile) {
@@ -211,15 +211,25 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist > 30) {
+      const rect = containerRef.current?.getBoundingClientRect();
+      const w = rect?.width || 1000;
+      const h = rect?.height || 800;
+
+      // Slingshot logic: direction is opposite to pull
       const angle = Math.atan2(dy, dx);
-      const power = Math.min(dist / 8, 35);
+      const powerBase = Math.min(dist / 10, 40);
       
+      // Calculate velocities in percentage units per frame
+      // Power is scaled to container dimensions to prevent distortion
+      const vx = (Math.cos(angle) * powerBase * (100 / w)) * 1.5;
+      const vy = (Math.sin(angle) * powerBase * (100 / h)) * 1.5;
+
       const newProjectile: Projectile = {
         id: `p-${Date.now()}`,
         x: MPC_POS.x,
         y: MPC_POS.y,
-        vx: (Math.cos(angle) * power) / 2.5,
-        vy: (Math.sin(angle) * power) / 2.5,
+        vx,
+        vy,
         rotation: 0
       };
       
@@ -241,6 +251,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       ]);
       setScore({ hits: 0, misses: 0, accuracy: 100 });
       setIsFinished(false);
+      setProjectiles([]);
       
       const secondsPerBeat = 60 / bpm;
       const now = audioEngine.getContextTime();
@@ -324,19 +335,19 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
 
         {aiming && (
           <div 
-            className="absolute z-10 origin-left pointer-events-none select-none"
+            className="absolute z-10 origin-left pointer-events-none select-none transition-opacity duration-200"
             style={{ 
               left: `${MPC_POS.x}%`, 
               top: `${MPC_POS.y}%`, 
               width: `${aiming.length}px`,
               transform: `rotate(${aiming.angle}deg)`,
-              height: '180px', 
-              marginTop: '-90px', 
-              background: 'linear-gradient(90deg, rgba(255, 51, 153, 0.9) 0%, rgba(0, 255, 255, 0.4) 50%, transparent 100%)',
-              clipPath: 'polygon(0 40%, 100% 0, 100% 100%, 0 60%)',
-              boxShadow: '0 0 60px rgba(255, 51, 153, 0.5)',
-              opacity: 0.6,
-              filter: 'blur(2px)'
+              height: '240px', 
+              marginTop: '-120px', 
+              background: 'linear-gradient(90deg, rgba(255, 51, 153, 0.8) 0%, rgba(0, 255, 255, 0.3) 60%, transparent 100%)',
+              clipPath: 'polygon(0 48%, 100% 0, 100% 100%, 0 52%)',
+              boxShadow: '0 0 80px rgba(255, 51, 153, 0.4)',
+              opacity: 0.7,
+              filter: 'blur(3px)'
             }}
           />
         )}
