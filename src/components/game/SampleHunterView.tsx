@@ -6,14 +6,13 @@ import { Game, Level, Sound, GameScore, SoundType, getAccuracyColor } from '@/li
 import { audioEngine } from '@/lib/game/audio-engine';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Trophy, Loader2, Sparkles, XCircle, LayoutGrid, ArrowLeft, Percent, Disc, Music, Radio, Mic } from 'lucide-react';
+import { Trophy, Loader2, Sparkles, XCircle, LayoutGrid, ArrowLeft, Percent, Disc, Music, Radio, Mic, MoveDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const PASS_THRESHOLD = 80;
 const DIFFICULTY_REWARDS: Record<number, number> = { 1: 50, 2: 100, 3: 200, 4: 1000 };
@@ -73,6 +72,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [dragCurrent, setDragCurrent] = useState({ x: 0, y: 0 });
   const [hasStartedFade, setHasStartedFade] = useState(false);
+  const [showHint, setShowHint] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>(null);
@@ -82,7 +82,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const FADE_DURATION = 2;
   const MPC_POS = { x: 50, y: 72 }; 
 
-  const mpcImage = PlaceHolderImages.find(img => img.id === 'mpc-classic');
+  const MPC_IMAGE_URL = "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800&auto=format&fit=crop";
 
   const SAMPLE_LIFETIME = 
     level.difficulty === 1 ? 3000 : 
@@ -194,6 +194,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     setDragCurrent({ x: e.clientX, y: e.clientY });
+    if (showHint) setShowHint(false);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -342,25 +343,33 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         )}
 
         <div 
-          className="absolute z-50 pointer-events-none transition-all duration-300 select-none w-[240px] sm:w-[320px] md:w-[480px]"
+          className="absolute z-50 pointer-events-none transition-all duration-300 select-none w-[280px] sm:w-[380px] md:w-[520px]"
           style={{ 
             left: `${MPC_POS.x}%`, 
             top: `${MPC_POS.y}%`, 
             transform: `translate(-50%, -50%) ${pull ? `translate(${-pull.x}px, ${-pull.y}px)` : ''}`
           }}
         >
-          <div className="relative w-full aspect-video">
-            <div className="absolute -inset-10 bg-primary/20 blur-[80px] pointer-events-none" />
-            <div className="relative w-full h-full rounded-2xl overflow-hidden border-2 border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] bg-black">
+          <div className="relative w-full aspect-square md:aspect-video flex items-center justify-center">
+            {/* Hint Icon */}
+            {isPlaying && showHint && !isDragging && (
+              <div className="absolute top-[-60px] left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center animate-bounce">
+                <MoveDown className="w-10 h-10 text-primary drop-shadow-[0_0_10px_rgba(255,51,153,0.8)]" />
+              </div>
+            )}
+
+            <div className="absolute -inset-10 bg-primary/20 blur-[80px] pointer-events-none rounded-full" />
+            <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden border-2 border-white/10 shadow-[0_40px_80px_rgba(0,0,0,0.9)] bg-black/80">
                <Image 
-                  src={mpcImage?.imageUrl || "https://picsum.photos/seed/beathero-mpc/600/800"}
-                  data-ai-hint={mpcImage?.imageHint || "drum machine"}
+                  src={MPC_IMAGE_URL}
+                  data-ai-hint="drum machine"
                   alt="MPC Drummachine"
                   fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 500px"
+                  className="object-cover opacity-90"
+                  sizes="(max-width: 768px) 100vw, 800px"
                   priority
                />
+               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             </div>
           </div>
         </div>
