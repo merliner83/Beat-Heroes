@@ -14,7 +14,7 @@ service cloud.firestore {
 
     // --- COLLECTION MATCHES ---
 
-    // User Profile: Besitzer darf alles. Andere angemeldete Nutzer dürfen Profile auflisten (Leaderboard).
+    // User Profile: Owner has full access. Signed-in users can list profiles to calculate global rank.
     match /users/{userId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();

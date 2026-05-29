@@ -52,7 +52,7 @@ export const ProfileView = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [collapsedStudios, setCollapsedStudios] = useState<Record<string, boolean>>({});
 
-  // Leaderboard Query
+  // Leaderboard Query to determine Rank
   const leaderboardQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'users'), orderBy('streetCred', 'desc'), limit(100));
@@ -164,20 +164,16 @@ export const ProfileView = () => {
       
       {/* 1. TOP HIGHLIGHTS */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* RANK */}
+        {/* GLOBAL RANK */}
         <div className="gemini-border">
           <div className="p-8 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[40px] -z-10" />
             <div className="relative">
               <span className="text-4xl">{rankInfo.icon}</span>
-              <div className="absolute -bottom-2 -right-2 bg-primary text-white text-[10px] font-black px-1.5 rounded-full border border-black">
-                {globalRank || '...'}
-              </div>
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Global Rank</p>
-              <h3 className="text-2xl font-black italic tracking-tighter text-white uppercase leading-none">{globalRank || 'Loading...'}</h3>
-              <p className="text-[9px] font-black uppercase tracking-widest opacity-20 mt-1">{rankInfo.name}</p>
+              <h3 className="text-5xl font-black italic tracking-tighter text-white uppercase leading-none">{globalRank || '# --'}</h3>
             </div>
           </div>
         </div>
@@ -236,36 +232,7 @@ export const ProfileView = () => {
         </div>
       </section>
 
-      {/* 3. LEADERBOARD PREVIEW */}
-      <section className="gemini-border">
-        <div className="p-8 bg-black/40 backdrop-blur-xl">
-          <div className="flex items-center gap-3 mb-8">
-            <Users className="w-5 h-5 text-primary" />
-            <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white">Top Producers</h3>
-          </div>
-          <div className="space-y-3">
-            {isLoadingLeaderboard ? (
-              <div className="h-20 flex items-center justify-center opacity-20"><Loader2 className="w-6 h-6 animate-spin" /></div>
-            ) : leaderboard?.slice(0, 5).map((p, idx) => (
-              <div key={p.uid} className={cn(
-                "flex items-center justify-between p-3 rounded-xl border border-white/5",
-                p.uid === user?.uid ? "bg-primary/10 border-primary/30" : "bg-white/2"
-              )}>
-                <div className="flex items-center gap-4">
-                  <span className="text-[10px] font-black italic opacity-20 w-4"># {idx + 1}</span>
-                  <span className="text-sm font-black italic uppercase tracking-tight">{p.displayName || 'Anonymous Producer'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-black italic text-[#FFEA00]">{p.streetCred.toLocaleString()}</span>
-                  <Zap className="w-3 h-3 text-[#FFEA00]" fill="currentColor" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 4. SETTINGS & LOGIN HINT */}
+      {/* 3. SETTINGS & LOGIN HINT */}
       <section className="max-w-2xl mx-auto w-full">
         {isAnonymous ? (
           <div className="bg-white/5 border border-dashed border-white/10 p-8 rounded-3xl text-center space-y-6">
@@ -293,7 +260,7 @@ export const ProfileView = () => {
         )}
       </section>
 
-      {/* 5. KNOWLEDGE PROGRESS */}
+      {/* 4. KNOWLEDGE PROGRESS */}
       <section>
         <div className="flex items-center gap-3 mb-6">
           <BookOpen className="w-5 h-5 text-primary" />
@@ -319,7 +286,7 @@ export const ProfileView = () => {
         </div>
       </section>
 
-      {/* 6. STUDIO & GAME PROGRESS */}
+      {/* 5. STUDIO & GAME PROGRESS */}
       <section>
         <div className="flex items-center gap-3 mb-6">
           <Music className="w-5 h-5 text-primary" />
