@@ -63,9 +63,9 @@ export const ProfileView = () => {
   const [collapsedStudios, setCollapsedStudios] = useState<Record<string, boolean>>({});
 
   // Leaderboard Query - Explicitly filter by isPublic for rules compliance.
-  // We use useMemoFirebase to ensure the query is stable and only run when DB is ready.
   const leaderboardQuery = useMemoFirebase(() => {
     if (!db) return null;
+    // We only query documents where isPublic is explicitly true.
     return query(
       collection(db, 'users'), 
       where('isPublic', '==', true),
