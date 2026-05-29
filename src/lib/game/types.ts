@@ -36,6 +36,7 @@ export interface Game {
   backingTrackUrl?: string;
   backgroundImageUrl?: string;
   minRole?: UserRole;
+  maxPoints?: number;
 }
 
 export interface LearnApp {
@@ -43,6 +44,7 @@ export interface LearnApp {
   name: string;
   type: 'ear-training' | 'rhythm-trainer';
   minRole?: UserRole;
+  maxPoints?: number;
 }
 
 export interface Level {
@@ -146,6 +148,7 @@ export interface Article {
   imageUrls?: string[];
   youtubeUrls?: string[];
   minRole?: UserRole;
+  maxPoints?: number;
 }
 
 export function hasAccess(userRole: UserRole = 'free', requiredRole: UserRole = 'free'): boolean {
@@ -160,4 +163,12 @@ export function getAccuracyColor(accuracy: number): string {
   if (accuracy >= 65) return '#FFEA00';
   if (accuracy >= 35) return '#FF9100';
   return '#FF3D00';
+}
+
+export function getRankInfo(streetCred: number) {
+  if (streetCred >= 25000) return { name: "GLOBAL HERO", color: "#FF3D00", icon: "👑" };
+  if (streetCred >= 10000) return { name: "BEAT LEGEND", color: "#EB3D99", icon: "💎" };
+  if (streetCred >= 5000) return { name: "STUDIO PRO", color: "#3838FA", icon: "🎧" };
+  if (streetCred >= 1000) return { name: "RISING STAR", color: "#FFEA00", icon: "🔥" };
+  return { name: "BEDROOM PRODUCER", color: "#00E676", icon: "🎹" };
 }

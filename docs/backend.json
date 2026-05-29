@@ -50,7 +50,8 @@
         "trackId": { "type": "string" },
         "backingTrackUrl": { "type": "string", "format": "uri" },
         "backgroundImageUrl": { "type": "string", "format": "uri" },
-        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" }
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" },
+        "maxPoints": { "type": "number", "default": 500 }
       },
       "required": ["id", "studioId", "name", "type"]
     },
@@ -62,7 +63,8 @@
         "id": { "type": "string" },
         "name": { "type": "string" },
         "type": { "type": "string", "enum": ["ear-training", "rhythm-trainer"] },
-        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" }
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" },
+        "maxPoints": { "type": "number", "default": 1000 }
       },
       "required": ["id", "name", "type"]
     },
@@ -118,8 +120,7 @@
         "email": { "type": "string", "format": "email" },
         "role": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" },
         "streetCred": { "type": "number", "default": 0 },
-        "displayName": { "type": "string", "description": "Öffentlich angezeigter Name." },
-        "isPublic": { "type": "boolean", "default": false, "description": "Ob der Nutzer im Highscore erscheint." }
+        "displayName": { "type": "string", "description": "Öffentlich angezeigter Name." }
       },
       "required": ["uid"]
     },
@@ -193,7 +194,8 @@
           "type": "array", 
           "items": { "type": "string" }
         },
-        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" }
+        "minRole": { "type": "string", "enum": ["admin", "producer", "pro", "free"], "default": "free" },
+        "maxPoints": { "type": "number", "default": 250 }
       },
       "required": ["id", "title", "order"]
     },

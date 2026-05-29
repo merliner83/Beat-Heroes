@@ -4,7 +4,7 @@
 import React, { useMemo, useState } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, doc, updateDoc } from 'firebase/firestore';
-import { Studio, Game, Level, LevelProgress, getAccuracyColor, UserProfile, LearnCategory, Article, ArticleProgress } from '@/lib/game/types';
+import { Studio, Game, Level, LevelProgress, getAccuracyColor, UserProfile, LearnCategory, Article, ArticleProgress, getRankInfo } from '@/lib/game/types';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -21,9 +21,9 @@ import {
   Calendar,
   BookOpen,
   LogIn,
-  Activity,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Trophy
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
@@ -68,26 +68,21 @@ export const ProfileView = () => {
   const { data: categories } = useCollection<LearnCategory>(categoriesQuery);
   const { data: articles } = useCollection<Article>(articlesQuery);
 
-  // Weekly Stats & Chart Data
   const performanceData = useMemo(() => {
     if (!userProgress) return [];
-    
     const now = new Date();
     const weeks: Record<string, { totalAcc: number, count: number }> = {};
-    
     for (let i = 5; i >= 0; i--) {
       const d = new Date();
       d.setDate(now.getDate() - (i * 7));
       const weekLabel = `W${6-i}`;
       weeks[weekLabel] = { totalAcc: 0, count: 0 };
     }
-
     userProgress.forEach(s => {
       if (!s.completedAt) return;
       const date = new Date(s.completedAt.seconds ? s.completedAt.seconds * 1000 : s.completedAt);
       const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 3600 * 24));
       const weekIdx = Math.floor(diffDays / 7);
-      
       if (weekIdx >= 0 && weekIdx <= 5) {
         const label = `W${6-weekIdx}`;
         if (weeks[label]) {
@@ -96,7 +91,6 @@ export const ProfileView = () => {
         }
       }
     });
-
     return Object.entries(weeks).map(([name, data]) => ({
       name,
       accuracy: data.count > 0 ? Math.round(data.totalAcc / data.count) : null
@@ -104,26 +98,28 @@ export const ProfileView = () => {
   }, [userProgress]);
 
   const stats = useMemo(() => {
-    if (!userProgress || userProgress.length === 0) return { avgAccuracy: 0, completedSessions: 0 };
+    if (!userProgress || userProgress.length === 0) return { avgAccuracy: 0 };
     const totalAccuracy = userProgress.reduce((acc, curr) => acc + curr.accuracy, 0);
-    return {
-      avgAccuracy: Math.round(totalAccuracy / userProgress.length),
-      completedSessions: userProgress.length
-    };
+    return { avgAccuracy: Math.round(totalAccuracy / userProgress.length) };
   }, [userProgress]);
 
   const categoryProgress = useMemo(() => {
     if (!categories || !articles || !articleProgress) return [];
     return categories.map(cat => {
       const catArticles = articles.filter(a => a.categoryId === cat.id);
-      const completedCount = catArticles.filter(a => 
-        articleProgress.some(ap => ap.articleId === a.id && ap.completed)
-      ).length;
+      const earned = catArticles.reduce((acc, a) => {
+        const prog = articleProgress.find(ap => ap.articleId === a.id);
+        const score = prog?.quizScore || 0;
+        return acc + (score / 100) * (a.maxPoints || 250);
+      }, 0);
+      const totalPossible = catArticles.reduce((acc, a) => acc + (a.maxPoints || 250), 0);
       return {
         ...cat,
-        total: catArticles.length,
-        completed: completedCount,
-        percent: catArticles.length > 0 ? Math.round((completedCount / catArticles.length) * 100) : 0
+        earned: Math.round(earned),
+        total: totalPossible,
+        percent: totalPossible > 0 ? Math.round((earned / totalPossible) * 100) : 0,
+        completedCount: catArticles.filter(a => articleProgress.some(ap => ap.articleId === a.id && ap.completed)).length,
+        articleCount: catArticles.length
       };
     }).sort((a, b) => (a.order || 0) - (b.order || 0));
   }, [categories, articles, articleProgress]);
@@ -131,18 +127,10 @@ export const ProfileView = () => {
   const handleUpdateProfile = async (updates: Partial<UserProfile>) => {
     if (!db || !profile) return;
     setIsUpdating(true);
-    try {
-      await updateDoc(doc(db, 'users', profile.uid), updates);
-    } catch (e) {
-      console.error("Update failed", e);
-    } finally {
-      setIsUpdating(false);
-    }
+    try { await updateDoc(doc(db, 'users', profile.uid), updates); } catch (e) {} finally { setIsUpdating(false); }
   };
 
-  const toggleStudio = (id: string) => {
-    setCollapsedStudios(prev => ({ ...prev, [id]: !prev[id] }));
-  };
+  const toggleStudio = (id: string) => { setCollapsedStudios(prev => ({ ...prev, [id]: !prev[id] })); };
 
   if (isUserLoading || isLoadingStudios) {
     return (
@@ -154,20 +142,22 @@ export const ProfileView = () => {
   }
 
   const isAnonymous = user?.isAnonymous;
+  const streetCred = profile?.streetCred || 0;
+  const rankInfo = getRankInfo(streetCred);
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-32 max-w-6xl mx-auto">
       
       {/* 1. TOP HIGHLIGHTS */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* SESSIONS */}
+        {/* RANK */}
         <div className="gemini-border">
           <div className="p-8 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[40px] -z-10" />
-            <Activity className="w-10 h-10 text-primary" />
+            <span className="text-4xl">{rankInfo.icon}</span>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Total Sessions</p>
-              <h3 className="text-6xl font-black italic tracking-tighter text-white">{stats.completedSessions}</h3>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Producer Rank</p>
+              <h3 className="text-2xl font-black italic tracking-tighter text-white uppercase leading-none">{rankInfo.name}</h3>
             </div>
           </div>
         </div>
@@ -179,7 +169,7 @@ export const ProfileView = () => {
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Total Street Cred</p>
               <h3 className="text-6xl font-black italic tracking-tighter text-white">
-                {profile?.streetCred?.toLocaleString() || 0}
+                {streetCred.toLocaleString()}
               </h3>
             </div>
           </div>
@@ -190,7 +180,7 @@ export const ProfileView = () => {
           <div className="p-8 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4">
             <TrendingUp className="w-10 h-10 text-[#00E676]" />
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Avg. Performance</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Avg. Sync</p>
               <h3 className="text-6xl font-black italic tracking-tighter transition-colors duration-500" style={{ color: getAccuracyColor(stats.avgAccuracy) }}>
                 {stats.avgAccuracy}%
               </h3>
@@ -205,7 +195,7 @@ export const ProfileView = () => {
            <div className="flex items-center justify-between mb-8">
              <div className="flex items-center gap-3">
                <BarChart3 className="w-5 h-5 text-primary" />
-               <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white">Weekly Performance</h3>
+               <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white">Sync History</h3>
              </div>
              <div className="flex items-center gap-2 opacity-30 text-[10px] font-black uppercase tracking-widest">
                <Calendar className="w-4 h-4" /> Last 6 Weeks
@@ -216,31 +206,10 @@ export const ProfileView = () => {
              <ResponsiveContainer width="100%" height="100%">
                <LineChart data={performanceData}>
                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                 <XAxis 
-                   dataKey="name" 
-                   axisLine={false} 
-                   tickLine={false} 
-                   tick={{ fill: '#ffffff40', fontSize: 10, fontWeight: 900 }} 
-                 />
-                 <YAxis 
-                   domain={[0, 100]} 
-                   axisLine={false} 
-                   tickLine={false} 
-                   tick={{ fill: '#ffffff20', fontSize: 10 }} 
-                 />
-                 <ChartTooltip 
-                    contentStyle={{ backgroundColor: '#000', border: '1px solid #ffffff10', borderRadius: '12px' }}
-                    labelStyle={{ color: '#ffffff40', fontSize: '10px', fontWeight: 900 }}
-                 />
-                 <Line 
-                    type="monotone" 
-                    dataKey="accuracy" 
-                    stroke="#FF3399" 
-                    strokeWidth={4} 
-                    dot={{ fill: '#FF3399', r: 4, strokeWidth: 0 }}
-                    activeDot={{ r: 8, stroke: '#fff', strokeWidth: 2 }}
-                    connectNulls
-                 />
+                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#ffffff40', fontSize: 10, fontWeight: 900 }} />
+                 <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fill: '#ffffff20', fontSize: 10 }} />
+                 <ChartTooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #ffffff10', borderRadius: '12px' }} labelStyle={{ color: '#ffffff40', fontSize: '10px', fontWeight: 900 }} />
+                 <Line type="monotone" dataKey="accuracy" stroke="#FF3399" strokeWidth={4} dot={{ fill: '#FF3399', r: 4, strokeWidth: 0 }} activeDot={{ r: 8, stroke: '#fff', strokeWidth: 2 }} connectNulls />
                </LineChart>
              </ResponsiveContainer>
            </div>
@@ -256,37 +225,19 @@ export const ProfileView = () => {
               <h4 className="text-xl font-black uppercase italic tracking-tight mb-2">Save your Progress</h4>
               <p className="text-sm opacity-40 font-medium">Log dich ein, um deine Erfolge dauerhaft in der Cloud zu speichern.</p>
             </div>
-            <Button onClick={() => auth && initiateGoogleSignIn(auth)} className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">
-               Login with Google
-            </Button>
+            <Button onClick={() => auth && initiateGoogleSignIn(auth)} className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Login with Google</Button>
           </div>
         ) : (
           <div className="bg-black/60 border border-white/5 p-8 rounded-3xl space-y-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Settings className="w-5 h-5 text-primary" />
-                <h3 className="text-xs font-black uppercase tracking-[0.5em]">Profile Settings</h3>
-              </div>
+            <div className="flex items-center gap-3">
+              <Settings className="w-5 h-5 text-primary" />
+              <h3 className="text-xs font-black uppercase tracking-[0.5em]">Profile Settings</h3>
             </div>
-
             <div className="space-y-4 max-w-md">
               <Label className="text-[10px] font-black uppercase tracking-widest opacity-40">Street Name</Label>
               <div className="flex gap-2">
-                <Input 
-                  defaultValue={profile?.displayName || ''} 
-                  placeholder="Your producer alias..."
-                  className="bg-white/5 border-white/10 font-black italic rounded-xl h-12"
-                  id="display-name-input"
-                />
-                <Button 
-                  variant="outline" 
-                  disabled={isUpdating}
-                  onClick={() => {
-                    const input = document.getElementById('display-name-input') as HTMLInputElement;
-                    handleUpdateProfile({ displayName: input.value });
-                  }}
-                  className="rounded-xl h-12 font-black uppercase italic px-6"
-                >Save</Button>
+                <Input defaultValue={profile?.displayName || ''} placeholder="Your producer alias..." className="bg-white/5 border-white/10 font-black italic rounded-xl h-12" id="display-name-input" />
+                <Button variant="outline" disabled={isUpdating} onClick={() => { const input = document.getElementById('display-name-input') as HTMLInputElement; handleUpdateProfile({ displayName: input.value }); }} className="rounded-xl h-12 font-black uppercase italic px-6">Save</Button>
               </div>
             </div>
           </div>
@@ -303,25 +254,23 @@ export const ProfileView = () => {
            {categoryProgress.map(cat => (
              <div key={cat.id} className="p-5 rounded-2xl bg-white/5 border border-white/5">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className={cn("p-1.5 rounded-lg bg-black/40", cat.colorClass)}>
-                    <BookOpen className="w-4 h-4" />
-                  </div>
+                  <div className={cn("p-1.5 rounded-lg bg-black/40", cat.colorClass)}><BookOpen className="w-4 h-4" /></div>
                   <h4 className="text-[10px] font-black uppercase italic tracking-tighter truncate">{cat.title}</h4>
                 </div>
                 <div className="flex justify-between items-baseline mb-2">
-                   <span className="text-[9px] font-black uppercase opacity-20">Sync Rate</span>
+                   <span className="text-[9px] font-black uppercase opacity-20">Fulfillment</span>
                    <span className="text-lg font-black italic" style={{ color: getAccuracyColor(cat.percent) }}>{cat.percent}%</span>
                 </div>
                 <Progress value={cat.percent} className="h-1" />
                 <p className="text-[8px] font-black uppercase tracking-widest opacity-20 mt-2 text-right">
-                  {cat.completed} / {cat.total} Quizzes
+                  {cat.earned} / {cat.total} SC
                 </p>
              </div>
            ))}
         </div>
       </section>
 
-      {/* 5. STUDIO & GAME PROGRESS (Collapsible) */}
+      {/* 5. STUDIO & GAME PROGRESS */}
       <section>
         <div className="flex items-center gap-3 mb-6">
           <Music className="w-5 h-5 text-primary" />
@@ -332,17 +281,11 @@ export const ProfileView = () => {
             const studioGames = games?.filter(g => g.studioId === studio.id) || [];
             if (studioGames.length === 0) return null;
             const isCollapsed = collapsedStudios[studio.id];
-
             return (
               <div key={studio.id} className="gemini-border-primary overflow-hidden">
-                <div 
-                  onClick={() => toggleStudio(studio.id)}
-                  className="p-5 bg-black/60 flex items-center justify-between cursor-pointer hover:bg-black/40 transition-colors"
-                >
+                <div onClick={() => toggleStudio(studio.id)} className="p-5 bg-black/60 flex items-center justify-between cursor-pointer hover:bg-black/40 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-black italic text-primary border border-primary/20">
-                      {studio.name.charAt(0)}
-                    </div>
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-black italic text-primary border border-primary/20">{studio.name.charAt(0)}</div>
                     <h4 className="text-sm font-black uppercase italic tracking-widest">{studio.name}</h4>
                   </div>
                   <div className="flex items-center gap-6">
@@ -350,7 +293,6 @@ export const ProfileView = () => {
                     {isCollapsed ? <ChevronDown className="w-5 h-5 opacity-20" /> : <ChevronUp className="w-5 h-5 opacity-20" />}
                   </div>
                 </div>
-                
                 {!isCollapsed && (
                   <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-3 bg-black/20 animate-in slide-in-from-top-2 duration-300">
                     {studioGames.map(game => {
@@ -361,7 +303,6 @@ export const ProfileView = () => {
                       }, 0);
                       const mastery = gameLevels.length > 0 ? Math.round(totalAccuracy / gameLevels.length) : 0;
                       const Icon = GAME_ICON_MAP[game.type] || Music;
-
                       return (
                         <div key={game.id} className="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center gap-4">
                           <Icon className="w-5 h-5 text-primary opacity-40 shrink-0" />

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState, useRef } from 'react';
@@ -5,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc, getDocs } from 'firebase/firestore';
-import { Studio, hasAccess, LearnQuiz } from '@/lib/game/types';
+import { Studio, hasAccess, LearnQuiz, getRankInfo } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn, initiateGoogleSignIn, initiateSignOut } from '@/firebase/non-blocking-login';
@@ -119,7 +120,7 @@ export default function HomePage() {
             (docData as any).patternProgress = pattProgSnap.docs.map(ppd => ({ id: pd.id, ...ppd.data() }));
 
             const artProgSnap = await getDocs(collection(db, col, d.id, 'articleProgress'));
-            (docData as any).articleProgress = artProgSnap.docs.map(apd => ({ id: apd.id, ...apd.data() }));
+            (docData as any).articleProgress = artProgSnap.docs.map(apd => ({ id: apid.id, ...apd.data() }));
           }
           
           return docData;
@@ -216,8 +217,6 @@ export default function HomePage() {
     };
 
     try {
-      // Knowledge Base Content Only - Hardcoded studios removed per request
-
       // 1. LearnCategories
       const cats = [
         { id: 'intro', title: 'Einführung', iconName: 'BookOpen', colorClass: 'text-primary', order: 10 },
@@ -244,66 +243,23 @@ export default function HomePage() {
       ];
       for (const s of subs) await sync('learnSubCats', s.id, s);
 
-      // 3. Artikel & Quizzes
+      // 3. Artikel & Quizzes with maxPoints
       const arts = [
-        { id: 'art-welcome', categoryId: 'intro', title: 'Willkommen im Hub', content: 'Willkommen in deinem persönlichen Music-Producing Labor!', order: 10 },
-        { id: 'art-producing', categoryId: 'intro', title: 'Producing', content: 'Die Kunst des Erschaffens von Musik am Computer.', order: 20 },
-        { id: 'art-sampling', categoryId: 'intro', title: 'Sampling', content: 'Finde die perfekten Sounds und nutze sie kreativ.', order: 30 },
-        { id: 'art-djing-intro', categoryId: 'intro', title: 'DJing', content: 'Mixe deine Tracks und sorge für Stimmung.', order: 40 },
-        { id: 'art-equipment', categoryId: 'intro', title: 'Equipment', content: 'Was du wirklich für dein Studio brauchst.', order: 50 },
-        { id: 'art-gb-basics', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'Basics', order: 10 },
-        { id: 'art-gb-shortcuts', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'Shortcuts', order: 20 },
-        { id: 'art-gb-vocal', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'VocalChain', order: 30 },
-        { id: 'art-gb-master', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'MasteringChain', order: 40 },
-        { id: 'art-cub-basics', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'Basics', order: 10 },
-        { id: 'art-cub-shortcuts', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'Shortcuts', order: 20 },
-        { id: 'art-cub-vocal', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'VocalChain', order: 30 },
-        { id: 'art-cub-master', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'MasteringChain', order: 40 },
-        { id: 'art-lp-basics', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'Basics', order: 10 },
-        { id: 'art-lp-shortcuts', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'Shortcuts', order: 20 },
-        { id: 'art-lp-vocal', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'VocalChain', order: 30 },
-        { id: 'art-lp-master', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'MasteringChain', order: 40 },
-        { id: 'art-ab-basics', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'Basics', order: 10 },
-        { id: 'art-ab-shortcuts', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'Shortcuts', order: 20 },
-        { id: 'art-ab-vocal', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'VocalChain', order: 30 },
-        { id: 'art-ab-master', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'MasteringChain', order: 40 },
-        { id: 'art-comp-basics', categoryId: 'composing', title: 'Composing Basics', content: 'Melodie und Harmonie verstehen.', order: 10 },
-        { id: 'art-arrangement', categoryId: 'composing', title: 'Arrangement', content: 'Vom Loop zum fertigen Song.', order: 20 },
-        { id: 'art-sounddesign', categoryId: 'composing', title: 'Sound Design', content: 'Eigene Klänge von Grund auf erschaffen.', order: 30 },
-        { id: 'art-rec-basics', categoryId: 'recording', title: 'Recording Basics', content: 'Die Signalkette richtig verstehen.', order: 10 },
-        { id: 'art-alphorn', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Alphorn', order: 10 },
-        { id: 'art-drums', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Drums', order: 20 },
-        { id: 'art-git-ak', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Gitarre (Akustisch)', order: 30 },
-        { id: 'art-git-el', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Gitarre (Elektrisch)', order: 40 },
-        { id: 'art-harfe', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Harfe', order: 50 },
-        { id: 'art-horn', categoryId: 'recording', subCategoryId: 'sc-instr', title: 'Horn', order: 60 },
-        { id: 'art-ins-basics', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Basics', order: 10 },
-        { id: 'art-eq', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Equalizer', order: 20 },
-        { id: 'art-comp', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Kompressor', order: 30 },
-        { id: 'art-deesser', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'De-Esser', order: 40 },
-        { id: 'art-distortion', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Distortion', order: 50 },
-        { id: 'art-gate', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'NoiseGate', order: 60 },
-        { id: 'art-snd-basics', categoryId: 'effects', subCategoryId: 'sc-snd', title: 'Basics', order: 10 },
-        { id: 'art-reverb', categoryId: 'effects', subCategoryId: 'sc-snd', title: 'Reverb', order: 20 },
-        { id: 'art-delay', categoryId: 'effects', subCategoryId: 'sc-snd', title: 'Delay', order: 30 },
-        { id: 'art-par-comp', categoryId: 'effects', subCategoryId: 'sc-snd', title: 'Parallel Kompression', order: 40 },
-        { id: 'art-sidechain', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'SideChain Kompressor', order: 10 },
-        { id: 'art-glitch', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Glitch', order: 20 },
-        { id: 'art-autotune', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Autotune', order: 30 },
-        { id: 'art-vocoder', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Vocoder/Talkbox', order: 40 },
-        { id: 'art-pitch', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'Pitch/Formant', order: 50 },
-        { id: 'art-vocalchops', categoryId: 'effects', subCategoryId: 'sc-crt', title: 'VocalChops', order: 60 },
-        { id: 'art-dj-basics', categoryId: 'djing', title: 'DJing Basics', content: 'Der Einstieg in die Welt des Auflegens.', order: 10 },
-        { id: 'art-dj-equip', categoryId: 'djing', title: 'Equipment', content: 'Controller vs CDJs.', order: 20 },
-        { id: 'art-dj-mix', categoryId: 'djing', title: 'Mixen', content: 'Grundlagen des Beatmatching.', order: 30 },
-        { id: 'art-dj-scratch', categoryId: 'djing', title: 'Scratchen', content: 'Basics und erste Techniken.', order: 40 },
-        { id: 'art-social-basics', categoryId: 'social', title: 'SocialMedia Basics', order: 10 },
-        { id: 'art-social-tools', categoryId: 'social', title: 'Tools', order: 20 },
-        { id: 'art-social-content', categoryId: 'social', title: 'Content', order: 30 },
-        { id: 'art-social-brand', categoryId: 'social', title: 'Brand', order: 40 },
-        { id: 'art-social-web', categoryId: 'social', title: 'Website / App', order: 50 },
-        { id: 'art-social-stream', categoryId: 'social', title: 'Streaming', order: 60 },
-        { id: 'art-rights-basics', categoryId: 'rights', title: 'RechteBasics', content: 'Copyright und Urheberrecht verstehen.', order: 10 }
+        { id: 'art-welcome', categoryId: 'intro', title: 'Willkommen im Hub', content: 'Willkommen in deinem persönlichen Music-Producing Labor!', order: 10, maxPoints: 100 },
+        { id: 'art-producing', categoryId: 'intro', title: 'Producing', content: 'Die Kunst des Erschaffens von Musik am Computer.', order: 20, maxPoints: 100 },
+        { id: 'art-sampling', categoryId: 'intro', title: 'Sampling', content: 'Finde die perfekten Sounds und nutze sie kreativ.', order: 30, maxPoints: 100 },
+        { id: 'art-djing-intro', categoryId: 'intro', title: 'DJing', content: 'Mixe deine Tracks und sorge für Stimmung.', order: 40, maxPoints: 100 },
+        { id: 'art-equipment', categoryId: 'intro', title: 'Equipment', content: 'Was du wirklich für dein Studio brauchst.', order: 50, maxPoints: 100 },
+        { id: 'art-gb-basics', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'Basics', order: 10, maxPoints: 250 },
+        { id: 'art-gb-shortcuts', categoryId: 'daws', subCategoryId: 'sc-gb', title: 'Shortcuts', order: 20, maxPoints: 250 },
+        { id: 'art-cub-basics', categoryId: 'daws', subCategoryId: 'sc-cub', title: 'Basics', order: 10, maxPoints: 250 },
+        { id: 'art-lp-basics', categoryId: 'daws', subCategoryId: 'sc-lp', title: 'Basics', order: 10, maxPoints: 250 },
+        { id: 'art-ab-basics', categoryId: 'daws', subCategoryId: 'sc-ab', title: 'Basics', order: 10, maxPoints: 250 },
+        { id: 'art-comp-basics', categoryId: 'composing', title: 'Composing Basics', content: 'Melodie und Harmonie verstehen.', order: 10, maxPoints: 200 },
+        { id: 'art-arrangement', categoryId: 'composing', title: 'Arrangement', content: 'Vom Loop zum fertigen Song.', order: 20, maxPoints: 200 },
+        { id: 'art-rec-basics', categoryId: 'recording', title: 'Recording Basics', content: 'Die Signalkette richtig verstehen.', order: 10, maxPoints: 200 },
+        { id: 'art-ins-basics', categoryId: 'effects', subCategoryId: 'sc-ins', title: 'Basics', order: 10, maxPoints: 200 },
+        { id: 'art-rights-basics', categoryId: 'rights', title: 'RechteBasics', content: 'Copyright und Urheberrecht verstehen.', order: 10, maxPoints: 200 }
       ];
       for (const a of arts) {
         await sync('articles', a.id, a);
@@ -331,6 +287,9 @@ export default function HomePage() {
     } catch (e) { toast({ variant: "destructive", title: "Sync Failed" }); } finally { setIsSyncing(false); }
   };
 
+  const streetCred = profile?.streetCred || 0;
+  const rank = getRankInfo(streetCred);
+
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col relative">
       <header className="sticky top-0 p-4 md:p-8 flex flex-col items-center z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
@@ -341,8 +300,8 @@ export default function HomePage() {
               onClick={handleSCButtonClick} 
               className="gemini-border p-2 px-4 bg-black/80 cursor-pointer flex items-center gap-2 hover:bg-black transition-colors"
             >
-              <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
-              <span className="font-black italic">{profile?.streetCred?.toLocaleString() || 0} SC</span>
+              <Zap className="w-4 h-4" style={{ color: rank.color }} fill="currentColor" />
+              <span className="font-black italic">{streetCred.toLocaleString()} SC</span>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
