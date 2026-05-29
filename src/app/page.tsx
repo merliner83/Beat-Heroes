@@ -225,10 +225,19 @@ export default function HomePage() {
         { id: 'recording', title: 'Recording', iconName: 'Mic2', colorClass: 'text-[#FF3D00]', order: 40 },
         { id: 'effects', title: 'Effekte', iconName: 'Wand2', colorClass: 'text-[#3838FA]', order: 50 },
         { id: 'djing', title: 'DJing', iconName: 'Disc', colorClass: 'text-primary', order: 60 },
-        { id: 'social', title: 'Social Media', iconName: 'Share2', colorClass: 'text-[#00FFFF]', order: 70 },
+        { id: 'social', title: 'Media & Release', iconName: 'Share2', colorClass: 'text-[#00FFFF]', order: 70 },
         { id: 'rights', title: 'Rechte', iconName: 'Scale', colorClass: 'text-[#EB3D99]', order: 80 }
       ];
-      for (const c of cats) await sync('learnCategories', c.id, c);
+      for (const c of cats) {
+        // Explicitly update title if it exists to support rename
+        const ref = doc(db, 'learnCategories', c.id);
+        const snap = await getDoc(ref);
+        if (snap.exists() && snap.data().title !== c.title) {
+          await setDoc(ref, { title: c.title }, { merge: true });
+          fixed++;
+        }
+        await sync('learnCategories', c.id, c);
+      }
 
       // 2. LearnSubCats
       const subs = [

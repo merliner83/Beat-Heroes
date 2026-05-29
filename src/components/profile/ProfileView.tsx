@@ -46,7 +46,7 @@ export const ProfileView = () => {
   const auth = useAuth();
   const [collapsedStudios, setCollapsedStudios] = React.useState<Record<string, boolean>>({});
 
-  // Leaderboard Query to determine Rank (needed internally for index calculation)
+  // Leaderboard Query to determine Rank (needed for global rank calculation)
   const leaderboardQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'users'), orderBy('streetCred', 'desc'), limit(100));
@@ -73,7 +73,7 @@ export const ProfileView = () => {
   const globalRank = useMemo(() => {
     if (!leaderboard || !user) return null;
     const index = leaderboard.findIndex(p => p.uid === user.uid);
-    return index !== -1 ? `# ${index + 1}` : '> 100';
+    return index !== -1 ? `${index + 1}` : '> 100';
   }, [leaderboard, user]);
 
   const performanceData = useMemo(() => {
@@ -152,7 +152,7 @@ export const ProfileView = () => {
       
       {/* 1. TOP HIGHLIGHTS */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* GLOBAL RANK CARD */}
+        {/* GLOBAL RANK CARD - Now showing as Rank number only */}
         <div className="gemini-border">
           <div className="p-8 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[40px] -z-10" />
@@ -161,7 +161,9 @@ export const ProfileView = () => {
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Global Rank</p>
-              <h3 className="text-5xl font-black italic tracking-tighter text-white uppercase leading-none">{globalRank || '# --'}</h3>
+              <h3 className="text-5xl font-black italic tracking-tighter text-white uppercase leading-none">
+                # {globalRank || '--'}
+              </h3>
             </div>
           </div>
         </div>
