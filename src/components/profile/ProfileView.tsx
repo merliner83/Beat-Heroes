@@ -253,7 +253,7 @@ export const ProfileView = () => {
           <div className="bg-white/5 border border-dashed border-white/10 p-8 rounded-3xl text-center space-y-6">
             <LogIn className="w-12 h-12 text-primary mx-auto opacity-40" />
             <div>
-              <h4 className="text-xl font-black uppercase italic tracking-tight mb-2">Safe your Progress</h4>
+              <h4 className="text-xl font-black uppercase italic tracking-tight mb-2">Save your Progress</h4>
               <p className="text-sm opacity-40 font-medium">Log dich ein, um deine Erfolge dauerhaft in der Cloud zu speichern.</p>
             </div>
             <Button onClick={() => auth && initiateGoogleSignIn(auth)} className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">

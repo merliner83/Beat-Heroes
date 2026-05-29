@@ -71,7 +71,6 @@ export default function HomePage() {
 
   useEffect(() => {
     if (user && db && !isUserLoading) {
-      // Basic profile sync - everything private by default
       const needsSync = !profile || profile.email !== (user.email ?? '');
 
       if (needsSync) {
@@ -218,7 +217,21 @@ export default function HomePage() {
     };
 
     try {
-      // 1. LearnCategories
+      // 1. Studios
+      const stds = [
+        { id: 'lab-one', name: 'BeatHero Lab', description: 'Das Hauptquartier für futuristische Beats.', coverColor: '#FF3399', district: 'CITY CENTER', tags: ['Beginner', 'Core'], minRole: 'free' }
+      ];
+      for (const s of stds) await sync('studios', s.id, s);
+
+      // 2. Games
+      const gms = [
+        { id: 'gm-beathero', studioId: 'lab-one', name: 'Beat Hero', type: 'rhythm-producer', bpm: 120, difficulty: 1, minRole: 'free' },
+        { id: 'gm-vinylhunter', studioId: 'lab-one', name: 'Vinyl Hunter', type: 'sample-hunter', bpm: 128, difficulty: 1, minRole: 'free', backgroundImageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010' },
+        { id: 'gm-samplecatcher', studioId: 'lab-one', name: 'Sample Catcher', type: 'sample-catcher', bpm: 110, difficulty: 1, minRole: 'free' }
+      ];
+      for (const g of gms) await sync('games', g.id, g);
+
+      // 3. LearnCategories
       const cats = [
         { id: 'intro', title: 'Einführung', iconName: 'BookOpen', colorClass: 'text-primary', order: 10 },
         { id: 'daws', title: 'DAWs', iconName: 'Cpu', colorClass: 'text-[#00E676]', order: 20 },
@@ -231,7 +244,7 @@ export default function HomePage() {
       ];
       for (const c of cats) await sync('learnCategories', c.id, c);
 
-      // 2. LearnSubCats
+      // 4. LearnSubCats
       const subs = [
         { id: 'sc-gb', categoryId: 'daws', title: 'GarageBand', iconUrl: 'https://picsum.photos/seed/gb/100/100', order: 10 },
         { id: 'sc-cub', categoryId: 'daws', title: 'Cubase', iconUrl: 'https://picsum.photos/seed/cb/100/100', order: 20 },
@@ -244,7 +257,7 @@ export default function HomePage() {
       ];
       for (const s of subs) await sync('learnSubCats', s.id, s);
 
-      // 3. Artikel & Quizzes
+      // 5. Artikel & Quizzes
       const arts = [
         { id: 'art-welcome', categoryId: 'intro', title: 'Willkommen im Hub', content: 'Willkommen in deinem persönlichen Music-Producing Labor!', order: 10 },
         { id: 'art-producing', categoryId: 'intro', title: 'Producing', content: 'Die Kunst des Erschaffens von Musik am Computer.', order: 20 },
@@ -308,7 +321,6 @@ export default function HomePage() {
       for (const a of arts) {
         await sync('articles', a.id, a);
         
-        // Auto-create Default Quiz for every article
         const quizData: LearnQuiz = {
           id: a.id,
           articleId: a.id,

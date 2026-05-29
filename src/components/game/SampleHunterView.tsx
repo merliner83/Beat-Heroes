@@ -80,9 +80,9 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const bpm = game.bpm || 128;
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
-  const MPC_POS = { x: 50, y: 72 }; 
+  const MPC_POS = { x: 50, y: 75 }; 
 
-  const MPC_IMAGE_URL = "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=800&auto=format&fit=crop";
+  const MPC_IMAGE_URL = game.backgroundImageUrl || "https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010";
 
   const SAMPLE_LIFETIME = 
     level.difficulty === 1 ? 3000 : 
@@ -343,33 +343,33 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         )}
 
         <div 
-          className="absolute z-50 pointer-events-none transition-all duration-300 select-none w-[280px] sm:w-[380px] md:w-[520px]"
+          className="absolute z-50 pointer-events-none transition-all duration-300 select-none w-[280px] sm:w-[380px] md:w-[480px]"
           style={{ 
             left: `${MPC_POS.x}%`, 
             top: `${MPC_POS.y}%`, 
             transform: `translate(-50%, -50%) ${pull ? `translate(${-pull.x}px, ${-pull.y}px)` : ''}`
           }}
         >
-          <div className="relative w-full aspect-square md:aspect-video flex items-center justify-center">
+          <div className="relative w-full aspect-[768/429] flex items-center justify-center">
             {/* Hint Icon */}
             {isPlaying && showHint && !isDragging && (
-              <div className="absolute top-[-60px] left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center animate-bounce">
+              <div className="absolute top-[-80px] left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center animate-bounce">
                 <MoveDown className="w-10 h-10 text-primary drop-shadow-[0_0_10px_rgba(255,51,153,0.8)]" />
               </div>
             )}
 
             <div className="absolute -inset-10 bg-primary/20 blur-[80px] pointer-events-none rounded-full" />
-            <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden border-2 border-white/10 shadow-[0_40px_80px_rgba(0,0,0,0.9)] bg-black/80">
+            <div className="relative w-full h-full rounded-2xl overflow-hidden border-2 border-white/10 shadow-[0_40px_80px_rgba(0,0,0,0.9)] bg-black/80">
                <Image 
                   src={MPC_IMAGE_URL}
                   data-ai-hint="drum machine"
                   alt="MPC Drummachine"
                   fill
-                  className="object-cover opacity-90"
+                  className="object-contain p-2"
                   sizes="(max-width: 768px) 100vw, 800px"
                   priority
                />
-               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
             </div>
           </div>
         </div>
