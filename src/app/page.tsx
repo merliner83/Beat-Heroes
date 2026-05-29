@@ -1,18 +1,18 @@
 
 "use client";
 
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc, getDocs } from 'firebase/firestore';
-import { Studio, Game, Article, Track, hasAccess, LearnApp, TriggerPattern, LearnSubCat, LearnCategory, LearnQuiz } from '@/lib/game/types';
+import { Studio, hasAccess, LearnQuiz } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn, initiateGoogleSignIn, initiateSignOut } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { cn } from '@/lib/utils';
-import { RefreshCw, Loader2, Zap, LayoutGrid, GraduationCap, Lock, User as UserIcon, LogOut, LogIn, Download, Upload } from 'lucide-react';
+import { RefreshCw, Loader2, Zap, LayoutGrid, GraduationCap, Lock, LogOut, LogIn, Download, Upload } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LearnView } from '@/components/learn/LearnView';
 import { ProfileView } from '@/components/profile/ProfileView';
@@ -20,8 +20,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -73,11 +71,8 @@ export default function HomePage() {
 
   useEffect(() => {
     if (user && db && !isUserLoading) {
-      // Ensure profile exists and has required fields for rules and leaderboard
-      const needsSync = !profile || 
-                        profile.email !== (user.email ?? '') || 
-                        profile.isPublic === undefined || 
-                        profile.streetCred === undefined;
+      // Basic profile sync - everything private by default
+      const needsSync = !profile || profile.email !== (user.email ?? '');
 
       if (needsSync) {
         const userRef = doc(db, 'users', user.uid);
@@ -86,7 +81,6 @@ export default function HomePage() {
           email: user.email ?? '', 
           streetCred: profile?.streetCred ?? 0, 
           role: profile?.role ?? 'free',
-          isPublic: profile?.isPublic ?? false,
           displayName: profile?.displayName || user.displayName || 'Producer'
         };
         setDoc(userRef, data, { merge: true }).catch(err => {
@@ -100,14 +94,6 @@ export default function HomePage() {
   const { data: studios, isLoading: isLoadingStudios } = useCollection<Studio>(studiosQuery);
 
   const handleSCButtonClick = () => {
-    if (user?.isAnonymous) {
-      toast({
-        title: "Login Required",
-        description: "Sign in with Google to start scoring points and see your rank in the global leaderboard!",
-        variant: "destructive"
-      });
-      return;
-    }
     handleTabChange('progress');
   };
 

@@ -1,17 +1,15 @@
 
 "use client";
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit, doc, updateDoc, where } from 'firebase/firestore';
 import { Studio, Game, Level, LevelProgress, LearnApp, getAccuracyColor, UserProfile, LearnCategory, Article, ArticleProgress } from '@/lib/game/types';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { 
-  Trophy, 
   Zap, 
   Target, 
   Headphones, 
@@ -19,16 +17,14 @@ import {
   Music, 
   Loader2,
   TrendingUp,
-  Award,
   Settings,
-  Globe,
-  Lock,
-  ChevronDown,
-  ChevronUp,
   BarChart3,
   Calendar,
   BookOpen,
-  LogIn
+  LogIn,
+  Activity,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
@@ -43,11 +39,6 @@ import {
 import { initiateGoogleSignIn } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 
-const APP_ICON_MAP: Record<string, any> = {
-  'ear-training': Headphones,
-  'rhythm-trainer': Target
-};
-
 const GAME_ICON_MAP: Record<string, any> = {
   'rhythm-producer': Music,
   'sample-hunter': Target,
@@ -58,28 +49,13 @@ export const ProfileView = () => {
   const { user, profile, isUserLoading } = useUser();
   const db = useFirestore();
   const auth = useAuth();
-  const [showSettings, setShowSettings] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [collapsedStudios, setCollapsedStudios] = useState<Record<string, boolean>>({});
-
-  // Leaderboard Query - Explicitly filter by isPublic for rules compliance.
-  const leaderboardQuery = useMemoFirebase(() => {
-    if (!db) return null;
-    // We only query documents where isPublic is explicitly true.
-    return query(
-      collection(db, 'users'), 
-      where('isPublic', '==', true),
-      orderBy('streetCred', 'desc'), 
-      limit(10)
-    );
-  }, [db]);
-  const { data: leaderboard } = useCollection<UserProfile>(leaderboardQuery);
 
   // User Queries
   const studiosQuery = useMemoFirebase(() => db ? query(collection(db, 'studios')) : null, [db]);
   const gamesQuery = useMemoFirebase(() => db ? query(collection(db, 'games')) : null, [db]);
   const levelsQuery = useMemoFirebase(() => db ? query(collection(db, 'levels')) : null, [db]);
-  const learnAppsQuery = useMemoFirebase(() => db ? query(collection(db, 'learnApps')) : null, [db]);
   const progressQuery = useMemoFirebase(() => user && db ? query(collection(db, 'users', user.uid, 'progress')) : null, [user, db]);
   const articleProgressQuery = useMemoFirebase(() => user && db ? query(collection(db, 'users', user.uid, 'articleProgress')) : null, [user, db]);
   const categoriesQuery = useMemoFirebase(() => db ? query(collection(db, 'learnCategories')) : null, [db]);
@@ -88,18 +64,10 @@ export const ProfileView = () => {
   const { data: studios, isLoading: isLoadingStudios } = useCollection<Studio>(studiosQuery);
   const { data: games } = useCollection<Game>(gamesQuery);
   const { data: levels } = useCollection<Level>(levelsQuery);
-  const { data: learnApps } = useCollection<LearnApp>(learnAppsQuery);
   const { data: userProgress } = useCollection<LevelProgress>(progressQuery);
   const { data: articleProgress } = useCollection<ArticleProgress>(articleProgressQuery);
   const { data: categories } = useCollection<LearnCategory>(categoriesQuery);
   const { data: articles } = useCollection<Article>(articlesQuery);
-
-  // Rank Calculation
-  const userRank = useMemo(() => {
-    if (!leaderboard || !profile) return '?';
-    const index = leaderboard.findIndex(u => u.uid === profile.uid);
-    return index !== -1 ? index + 1 : '>10';
-  }, [leaderboard, profile]);
 
   // Weekly Stats & Chart Data
   const performanceData = useMemo(() => {
@@ -193,20 +161,15 @@ export const ProfileView = () => {
       
       {/* 1. TOP HIGHLIGHTS */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* RANK */}
+        {/* SESSIONS */}
         <div className="gemini-border">
           <div className="p-8 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[40px] -z-10" />
-            <Globe className="w-10 h-10 text-primary" />
+            <Activity className="w-10 h-10 text-primary" />
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Global Rank</p>
-              <h3 className="text-6xl font-black italic tracking-tighter text-white">#{userRank}</h3>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Total Sessions</p>
+              <h3 className="text-6xl font-black italic tracking-tighter text-white">{stats.completedSessions}</h3>
             </div>
-            {!profile?.isPublic && (
-              <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest opacity-30">
-                <Lock className="w-3 h-3" /> Private Status
-              </div>
-            )}
           </div>
         </div>
 
@@ -228,7 +191,7 @@ export const ProfileView = () => {
           <div className="p-8 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4">
             <TrendingUp className="w-10 h-10 text-[#00E676]" />
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Sync Performance</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Avg. Performance</p>
               <h3 className="text-6xl font-black italic tracking-tighter transition-colors duration-500" style={{ color: getAccuracyColor(stats.avgAccuracy) }}>
                 {stats.avgAccuracy}%
               </h3>
@@ -291,8 +254,8 @@ export const ProfileView = () => {
           <div className="bg-white/5 border border-dashed border-white/10 p-8 rounded-3xl text-center space-y-6">
             <LogIn className="w-12 h-12 text-primary mx-auto opacity-40" />
             <div>
-              <h4 className="text-xl font-black uppercase italic tracking-tight mb-2">Join the Highscore</h4>
-              <p className="text-sm opacity-40 font-medium">Log dich ein, um deinen Rang zu sichern und auf dem globalen Leaderboard zu erscheinen.</p>
+              <h4 className="text-xl font-black uppercase italic tracking-tight mb-2">Safe your Progress</h4>
+              <p className="text-sm opacity-40 font-medium">Log dich ein, um deine Erfolge dauerhaft in der Cloud zu speichern.</p>
             </div>
             <Button onClick={() => auth && initiateGoogleSignIn(auth)} className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">
                Login with Google
@@ -303,42 +266,29 @@ export const ProfileView = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Settings className="w-5 h-5 text-primary" />
-                <h3 className="text-xs font-black uppercase tracking-[0.5em]">Profile Privacy</h3>
+                <h3 className="text-xs font-black uppercase tracking-[0.5em]">Profile Settings</h3>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-               <div className="space-y-4">
-                 <Label className="text-[10px] font-black uppercase tracking-widest opacity-40">Street Name</Label>
-                 <div className="flex gap-2">
-                   <Input 
-                     defaultValue={profile?.displayName || ''} 
-                     placeholder="Your producer alias..."
-                     className="bg-white/5 border-white/10 font-black italic rounded-xl h-12"
-                     id="display-name-input"
-                   />
-                   <Button 
-                     variant="outline" 
-                     disabled={isUpdating}
-                     onClick={() => {
-                        const input = document.getElementById('display-name-input') as HTMLInputElement;
-                        handleUpdateProfile({ displayName: input.value });
-                     }}
-                     className="rounded-xl h-12 font-black uppercase italic px-6"
-                   >Save</Button>
-                 </div>
-               </div>
-
-               <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                 <div className="space-y-0.5">
-                    <Label className="text-[10px] font-black uppercase tracking-widest opacity-40">Public Profile</Label>
-                    <p className="text-[9px] opacity-20 uppercase font-black">Show on highscore list</p>
-                 </div>
-                 <Switch 
-                   checked={profile?.isPublic || false} 
-                   onCheckedChange={(val) => handleUpdateProfile({ isPublic: val })}
-                 />
-               </div>
+            <div className="space-y-4 max-w-md">
+              <Label className="text-[10px] font-black uppercase tracking-widest opacity-40">Street Name</Label>
+              <div className="flex gap-2">
+                <Input 
+                  defaultValue={profile?.displayName || ''} 
+                  placeholder="Your producer alias..."
+                  className="bg-white/5 border-white/10 font-black italic rounded-xl h-12"
+                  id="display-name-input"
+                />
+                <Button 
+                  variant="outline" 
+                  disabled={isUpdating}
+                  onClick={() => {
+                    const input = document.getElementById('display-name-input') as HTMLInputElement;
+                    handleUpdateProfile({ displayName: input.value });
+                  }}
+                  className="rounded-xl h-12 font-black uppercase italic px-6"
+                >Save</Button>
+              </div>
             </div>
           </div>
         )}
