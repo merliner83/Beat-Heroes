@@ -3,8 +3,8 @@
 
 import React, { useMemo, useState } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit, doc, updateDoc, where } from 'firebase/firestore';
-import { Studio, Game, Level, LevelProgress, LearnApp, getAccuracyColor, UserProfile, LearnCategory, Article, ArticleProgress } from '@/lib/game/types';
+import { collection, query, doc, updateDoc } from 'firebase/firestore';
+import { Studio, Game, Level, LevelProgress, getAccuracyColor, UserProfile, LearnCategory, Article, ArticleProgress } from '@/lib/game/types';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { 
   Zap, 
   Target, 
-  Headphones, 
   LayoutGrid, 
   Music, 
   Loader2,

@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, increment, setDoc, serverTimestamp } from 'firebase/firestore';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const PASS_THRESHOLD = 80;
 const DIFFICULTY_REWARDS: Record<number, number> = { 1: 50, 2: 100, 3: 200, 4: 1000 };
@@ -80,6 +81,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
   const MPC_POS = { x: 50, y: 72 }; 
+
+  const mpcImage = PlaceHolderImages.find(img => img.id === 'mpc-classic');
 
   const SAMPLE_LIFETIME = 
     level.difficulty === 1 ? 3000 : 
@@ -339,19 +342,20 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         )}
 
         <div 
-          className="absolute z-50 pointer-events-none transition-all duration-300 select-none"
+          className="absolute z-50 pointer-events-none transition-all duration-300 select-none w-[240px] sm:w-[320px] md:w-[480px]"
           style={{ 
             left: `${MPC_POS.x}%`, 
             top: `${MPC_POS.y}%`, 
             transform: `translate(-50%, -50%) ${pull ? `translate(${-pull.x}px, ${-pull.y}px)` : ''}`
           }}
         >
-          <div className="relative w-full max-w-[500px] aspect-video">
+          <div className="relative w-full aspect-video">
             <div className="absolute -inset-10 bg-primary/20 blur-[80px] pointer-events-none" />
             <div className="relative w-full h-full rounded-2xl overflow-hidden border-2 border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] bg-black">
                <Image 
-                  src="https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010"
-                  alt="808 Drummachine"
+                  src={mpcImage?.imageUrl || "https://picsum.photos/seed/beathero-mpc/600/800"}
+                  data-ai-hint={mpcImage?.imageHint || "drum machine"}
+                  alt="MPC Drummachine"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 500px"
