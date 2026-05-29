@@ -7,16 +7,16 @@
       "imageHint": "neon studio"
     },
     {
+      "id": "io-808",
+      "description": "io-808 Browser Drum Machine",
+      "imageUrl": "https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010",
+      "imageHint": "drum machine"
+    },
+    {
       "id": "mpc-classic",
       "description": "Vintage MPC Drum Sampler",
       "imageUrl": "https://picsum.photos/seed/beathero-mpc/600/800",
       "imageHint": "drum machine"
-    },
-    {
-      "id": "dark-urban",
-      "description": "Dark Urban Architecture Example",
-      "imageUrl": "https://picsum.photos/seed/dark-urban/600/800",
-      "imageHint": "dark building"
     }
   ]
 }

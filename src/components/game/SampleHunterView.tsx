@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -82,7 +81,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const FADE_DURATION = 2;
   const MPC_POS = { x: 50, y: 75 }; 
 
-  const MPC_IMAGE_URL = game.backgroundImageUrl || "https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010";
+  const MPC_IMAGE_URL = "https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010";
 
   const SAMPLE_LIFETIME = 
     level.difficulty === 1 ? 3000 : 
@@ -363,7 +362,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
                <Image 
                   src={MPC_IMAGE_URL}
                   data-ai-hint="drum machine"
-                  alt="MPC Drummachine"
+                  alt="808 Drummachine"
                   fill
                   className="object-contain p-2"
                   sizes="(max-width: 768px) 100vw, 800px"

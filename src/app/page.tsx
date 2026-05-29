@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState, useRef } from 'react';
@@ -117,7 +116,7 @@ export default function HomePage() {
             (docData as any).progress = progSnap.docs.map(pd => ({ id: pd.id, ...pd.data() }));
             
             const pattProgSnap = await getDocs(collection(db, col, d.id, 'patternProgress'));
-            (docData as any).patternProgress = pattProgSnap.docs.map(ppd => ({ id: ppd.id, ...ppd.data() }));
+            (docData as any).patternProgress = pattProgSnap.docs.map(ppd => ({ id: pd.id, ...ppd.data() }));
 
             const artProgSnap = await getDocs(collection(db, col, d.id, 'articleProgress'));
             (docData as any).articleProgress = artProgSnap.docs.map(apd => ({ id: apd.id, ...apd.data() }));
@@ -226,7 +225,16 @@ export default function HomePage() {
       // 2. Games
       const gms = [
         { id: 'gm-beathero', studioId: 'lab-one', name: 'Beat Hero', type: 'rhythm-producer', bpm: 120, difficulty: 1, minRole: 'free' },
-        { id: 'gm-vinylhunter', studioId: 'lab-one', name: 'Vinyl Hunter', type: 'sample-hunter', bpm: 128, difficulty: 1, minRole: 'free', backgroundImageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010' },
+        { 
+          id: 'gm-vinylhunter', 
+          studioId: 'lab-one', 
+          name: 'Vinyl Hunter', 
+          type: 'sample-hunter', 
+          bpm: 128, 
+          difficulty: 1, 
+          minRole: 'free', 
+          backgroundImageUrl: 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010' 
+        },
         { id: 'gm-samplecatcher', studioId: 'lab-one', name: 'Sample Catcher', type: 'sample-catcher', bpm: 110, difficulty: 1, minRole: 'free' }
       ];
       for (const g of gms) await sync('games', g.id, g);
