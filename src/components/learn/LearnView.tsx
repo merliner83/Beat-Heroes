@@ -21,16 +21,18 @@ import {
   Headphones,
   ChevronRight,
   Target,
-  Scale
+  Scale,
+  CheckCircle2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { LearnApp, Article, hasAccess, LearnSubCat, LearnCategory } from '@/lib/game/types';
+import { LearnApp, Article, hasAccess, LearnSubCat, LearnCategory, ArticleProgress, getAccuracyColor } from '@/lib/game/types';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Progress } from '@/components/ui/progress';
 
 const ICON_COMPONENTS: Record<string, any> = {
   BookOpen,
@@ -58,18 +60,20 @@ const APP_COLOR_MAP: Record<string, string> = {
 };
 
 export const LearnView = () => {
-  const { profile } = useUser();
+  const { user, profile } = useUser();
   const db = useFirestore();
 
   const learnAppsQuery = useMemoFirebase(() => db ? query(collection(db, 'learnApps')) : null, [db]);
   const categoriesQuery = useMemoFirebase(() => db ? query(collection(db, 'learnCategories')) : null, [db]);
   const subCategoriesQuery = useMemoFirebase(() => db ? query(collection(db, 'learnSubCats')) : null, [db]);
   const articlesQuery = useMemoFirebase(() => db ? query(collection(db, 'articles')) : null, [db]);
+  const articleProgressQuery = useMemoFirebase(() => user && db ? query(collection(db, 'users', user.uid, 'articleProgress')) : null, [user, db]);
 
   const { data: allLearnApps } = useCollection<LearnApp>(learnAppsQuery);
   const { data: allCategories } = useCollection<LearnCategory>(categoriesQuery);
   const { data: allSubCategories } = useCollection<LearnSubCat>(subCategoriesQuery);
   const { data: allArticles } = useCollection<Article>(articlesQuery);
+  const { data: articleProgress } = useCollection<ArticleProgress>(articleProgressQuery);
 
   const filteredLearnApps = useMemo(() => {
     if (!allLearnApps) return [];
@@ -80,6 +84,11 @@ export const LearnView = () => {
     if (!allCategories) return [];
     return [...allCategories].sort((a, b) => (a.order || 0) - (b.order || 0));
   }, [allCategories]);
+
+  const isArticleCompleted = (articleId: string) => {
+    const prog = articleProgress?.find(ap => ap.articleId === articleId);
+    return prog?.completed && (prog.quizScore || 0) >= 80;
+  };
 
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-32">
@@ -132,6 +141,9 @@ export const LearnView = () => {
             
             if (catArticles.length === 0 && catSubCats.length === 0) return null;
 
+            const completedInCat = catArticles.filter(a => isArticleCompleted(a.id)).length;
+            const catPercent = catArticles.length > 0 ? Math.round((completedInCat / catArticles.length) * 100) : 0;
+
             const directArticles = catArticles
               .filter(a => !a.subCategoryId)
               .sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -147,10 +159,26 @@ export const LearnView = () => {
                     <div className={cn("p-2 rounded-xl bg-white/5 transition-transform group-hover:scale-110", cat.colorClass)}>
                       <Icon className="w-5 h-5" />
                     </div>
-                    <h4 className="text-2xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors">
+                    <h4 className="text-2xl font-black uppercase italic tracking-tighter text-white group-hover:text-primary transition-colors whitespace-nowrap">
                       {cat.title}
                     </h4>
-                    <div className="h-px flex-1 bg-white/5 mx-4" />
+                    
+                    <div className="flex-1 flex items-center gap-4 ml-4">
+                      <div className="h-px flex-1 bg-white/5 relative overflow-hidden">
+                        <div 
+                          className="absolute inset-y-0 left-0 transition-all duration-1000 ease-in-out opacity-40"
+                          style={{ 
+                            width: `${catPercent}%`, 
+                            backgroundColor: getAccuracyColor(catPercent) 
+                          }}
+                        />
+                      </div>
+                      {catPercent > 0 && (
+                        <span className="text-[10px] font-black italic opacity-40" style={{ color: getAccuracyColor(catPercent) }}>
+                          {catPercent}%
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </AccordionTrigger>
                 
@@ -160,12 +188,24 @@ export const LearnView = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {directArticles.map((article) => {
                         const locked = !hasAccess(profile?.role, article.minRole || 'free');
+                        const completed = isArticleCompleted(article.id);
                         return (
                           <Link key={article.id} href={locked ? '#' : `/learn/article/${article.id}`} className={cn("block group/art", locked && "cursor-not-allowed opacity-50")}>
-                            <div className="p-4 rounded-xl bg-black/40 border border-white/5 hover:border-primary/30 transition-all flex items-center justify-between">
-                              <span className="text-xs font-black uppercase tracking-widest italic group-hover/art:text-primary transition-colors">
-                                {article.title}
-                              </span>
+                            <div className={cn(
+                              "p-4 rounded-xl border transition-all flex items-center justify-between",
+                              completed 
+                                ? "bg-[#00E676]/10 border-[#00E676]/30" 
+                                : "bg-black/40 border-white/5 hover:border-primary/30"
+                            )}>
+                              <div className="flex items-center gap-3">
+                                {completed && <CheckCircle2 className="w-4 h-4 text-[#00E676]" />}
+                                <span className={cn(
+                                  "text-xs font-black uppercase tracking-widest italic transition-colors",
+                                  completed ? "text-[#00E676]" : "group-hover/art:text-primary"
+                                )}>
+                                  {article.title}
+                                </span>
+                              </div>
                               {locked ? <Lock className="w-3 h-3 text-white/20" /> : <ChevronRight className="w-3 h-3 text-white/20" />}
                             </div>
                           </Link>
@@ -183,31 +223,53 @@ export const LearnView = () => {
                           .sort((a, b) => (a.order || 0) - (b.order || 0)) || [];
                         
                         if (groupArticles.length === 0) return null;
+
+                        const completedInSub = groupArticles.filter(a => isArticleCompleted(a.id)).length;
+                        const subPercent = Math.round((completedInSub / groupArticles.length) * 100);
                         
                         return (
                           <AccordionItem key={group.id} value={group.id} className="border-none bg-black/40 rounded-xl overflow-hidden border border-white/5">
                             <AccordionTrigger className="px-5 py-4 hover:no-underline group/sub">
-                              <div className="flex items-center gap-3">
-                                {group.iconUrl && (
-                                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center p-1 overflow-hidden relative">
-                                    <Image src={group.iconUrl} alt={group.title} fill className="object-contain p-1" sizes="32px" />
-                                  </div>
+                              <div className="flex items-center justify-between w-full pr-4">
+                                <div className="flex items-center gap-3">
+                                  {group.iconUrl && (
+                                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center p-1 overflow-hidden relative">
+                                      <Image src={group.iconUrl} alt={group.title} fill className="object-contain p-1" sizes="32px" />
+                                    </div>
+                                  )}
+                                  <span className="text-base font-black uppercase italic tracking-tighter text-left group-hover/sub:text-primary transition-colors">
+                                    {group.title}
+                                  </span>
+                                </div>
+                                {subPercent > 0 && (
+                                  <span className="text-[9px] font-black italic opacity-30" style={{ color: getAccuracyColor(subPercent) }}>
+                                    {subPercent}%
+                                  </span>
                                 )}
-                                <span className="text-base font-black uppercase italic tracking-tighter text-left group-hover/sub:text-primary transition-colors">
-                                  {group.title}
-                                </span>
                               </div>
                             </AccordionTrigger>
                             <AccordionContent className="px-5 pb-5 pt-0">
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {groupArticles.map((article) => {
                                   const locked = !hasAccess(profile?.role, article.minRole || 'free');
+                                  const completed = isArticleCompleted(article.id);
                                   return (
                                     <Link key={article.id} href={locked ? '#' : `/learn/article/${article.id}`} className={cn("block", locked && "cursor-not-allowed")}>
-                                      <div className="p-3 rounded-lg bg-white/5 border border-white/5 hover:border-primary/20 flex items-center justify-between group/item">
-                                        <span className="text-[10px] font-black uppercase tracking-widest italic opacity-60 group-hover/item:text-primary">
-                                          {article.title}
-                                        </span>
+                                      <div className={cn(
+                                        "p-3 rounded-lg border flex items-center justify-between group/item",
+                                        completed 
+                                          ? "bg-[#00E676]/5 border-[#00E676]/20" 
+                                          : "bg-white/5 border-white/5 hover:border-primary/20"
+                                      )}>
+                                        <div className="flex items-center gap-2">
+                                          {completed && <CheckCircle2 className="w-3 h-3 text-[#00E676]" />}
+                                          <span className={cn(
+                                            "text-[10px] font-black uppercase tracking-widest italic opacity-60 transition-colors",
+                                            completed ? "text-[#00E676]" : "group-hover/item:text-primary"
+                                          )}>
+                                            {article.title}
+                                          </span>
+                                        </div>
                                         {locked ? <Lock className="w-2.5 h-2.5 text-white/10" /> : <ChevronRight className="w-2.5 h-2.5 text-white/10" />}
                                       </div>
                                     </Link>
