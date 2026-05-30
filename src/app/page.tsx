@@ -154,14 +154,14 @@ function HomeContent() {
 
     try {
       const cats = [
-        { id: 'intro', title: 'Einführung', iconName: 'BookOpen', colorClass: 'text-primary', order: 10 },
-        { id: 'daws', title: 'DAWs', iconName: 'Cpu', colorClass: 'text-[#00E676]', order: 20 },
-        { id: 'composing', title: 'Composing', iconName: 'Music', colorClass: 'text-[#FFEA00]', order: 30 },
-        { id: 'recording', title: 'Recording', iconName: 'Mic2', colorClass: 'text-[#FF3D00]', order: 40 },
-        { id: 'effects', title: 'Effekte', iconName: 'Wand2', colorClass: 'text-[#3838FA]', order: 50 },
-        { id: 'djing', title: 'DJing', iconName: 'Disc', colorClass: 'text-primary', order: 60 },
-        { id: 'social', title: 'Media & Release', iconName: 'Share2', colorClass: 'text-[#00FFFF]', order: 70 },
-        { id: 'rights', title: 'Rechte', iconName: 'Scale', colorClass: 'text-[#EB3D99]', order: 80 }
+        { id: 'intro', title: 'Einführung', iconName: 'BookOpen', colorClass: 'text-primary', order: 10, minRole: 'free' },
+        { id: 'daws', title: 'DAWs', iconName: 'Cpu', colorClass: 'text-[#00E676]', order: 20, minRole: 'free' },
+        { id: 'composing', title: 'Composing', iconName: 'Music', colorClass: 'text-[#FFEA00]', order: 30, minRole: 'free' },
+        { id: 'recording', title: 'Recording', iconName: 'Mic2', colorClass: 'text-[#FF3D00]', order: 40, minRole: 'free' },
+        { id: 'effects', title: 'Effekte', iconName: 'Wand2', colorClass: 'text-[#3838FA]', order: 50, minRole: 'free' },
+        { id: 'djing', title: 'DJing', iconName: 'Disc', colorClass: 'text-primary', order: 60, minRole: 'free' },
+        { id: 'social', title: 'Media & Release', iconName: 'Share2', colorClass: 'text-[#00FFFF]', order: 70, minRole: 'free' },
+        { id: 'rights', title: 'Rechte', iconName: 'Scale', colorClass: 'text-[#EB3D99]', order: 80, minRole: 'free' }
       ];
       for (const c of cats) {
         await setDoc(doc(db, 'learnCategories', c.id), c, { merge: true });

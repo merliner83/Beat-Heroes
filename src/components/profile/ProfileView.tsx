@@ -6,7 +6,6 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { Studio, Game, Level, LevelProgress, getAccuracyColor, UserProfile, LearnCategory, Article, ArticleProgress } from '@/lib/game/types';
 import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
 import { 
   Zap, 
   Target, 
@@ -17,7 +16,6 @@ import {
   BarChart3,
   Calendar,
   BookOpen,
-  LogIn,
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
@@ -31,8 +29,6 @@ import {
   Tooltip as ChartTooltip, 
   ResponsiveContainer 
 } from 'recharts';
-import { initiateGoogleSignIn } from '@/firebase/non-blocking-login';
-import { useAuth } from '@/firebase/provider';
 
 const GAME_ICON_MAP: Record<string, any> = {
   'rhythm-producer': Music,
@@ -43,7 +39,6 @@ const GAME_ICON_MAP: Record<string, any> = {
 export const ProfileView = () => {
   const { user, profile, isUserLoading } = useUser();
   const db = useFirestore();
-  const auth = useAuth();
   const [collapsedStudios, setCollapsedStudios] = React.useState<Record<string, boolean>>({});
 
   const leaderboardQuery = useMemoFirebase(() => {
@@ -141,7 +136,6 @@ export const ProfileView = () => {
     );
   }
 
-  const isAnonymous = user?.isAnonymous;
   const streetCred = profile?.streetCred || 0;
 
   return (
@@ -213,19 +207,6 @@ export const ProfileView = () => {
            </div>
         </div>
       </section>
-
-      {isAnonymous && (
-        <section className="max-w-2xl mx-auto w-full">
-          <div className="bg-white/5 border border-dashed border-white/10 p-8 rounded-3xl text-center space-y-6">
-            <LogIn className="w-12 h-12 text-primary mx-auto opacity-40" />
-            <div>
-              <h4 className="text-xl font-black uppercase italic tracking-tight mb-2">Save your Progress</h4>
-              <p className="text-sm opacity-40 font-medium">Log dich ein, um deine Erfolge dauerhaft in der Cloud zu speichern.</p>
-            </div>
-            <Button onClick={() => auth && initiateGoogleSignIn(auth)} className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Login with Google</Button>
-          </div>
-        </section>
-      )}
 
       <section>
         <div className="flex items-center gap-3 mb-6">
