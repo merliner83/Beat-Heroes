@@ -1,18 +1,19 @@
 
 "use client";
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { useSearchParams } from 'next/navigation';
+import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import { collection, query, doc, setDoc, getDoc, getDocs } from 'firebase/firestore';
-import { Studio, hasAccess, LearnQuiz, getRankInfo } from '@/lib/game/types';
+import { Studio, hasAccess, LearnQuiz, Article } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn, initiateGoogleSignIn, initiateSignOut } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { cn } from '@/lib/utils';
-import { RefreshCw, Loader2, Zap, LayoutGrid, GraduationCap, Lock, LogOut, LogIn, Download, Upload } from 'lucide-react';
+import { RefreshCw, Loader2, Zap, LayoutGrid, GraduationCap, Lock, LogOut, LogIn, Download, Upload, Sparkles, ArrowRight, UserPlus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LearnView } from '@/components/learn/LearnView';
 import { ProfileView } from '@/components/profile/ProfileView';
@@ -44,9 +45,10 @@ const StudioCard = ({ studio, isLocked }: { studio: Studio; isLocked: boolean })
   </div>
 );
 
-export default function HomePage() {
+function HomeContent() {
   const db = useFirestore();
   const auth = useAuth();
+  const searchParams = useSearchParams();
   const { user, profile, isUserLoading } = useUser();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,6 +56,10 @@ export default function HomePage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isBackingUp, setIsBackingUp] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+
+  const inviteId = searchParams.get('invite');
+  const invitedArticleRef = useMemoFirebase(() => inviteId && db ? doc(db, 'articles', inviteId) : null, [db, inviteId]);
+  const { data: invitedArticle } = useDoc<Article>(invitedArticleRef);
 
   useEffect(() => {
     const savedTab = localStorage.getItem('beathero_active_tab');
@@ -105,33 +111,14 @@ export default function HomePage() {
       
       for (const col of rootCols) {
         const snap = await getDocs(collection(db, col));
-        data[col] = await Promise.all(snap.docs.map(async (d) => {
-          const docData = { id: d.id, ...d.data() };
-          
-          if (col === 'levels') {
-            const soundsSnap = await getDocs(collection(db, col, d.id, 'sounds'));
-            (docData as any).sounds = soundsSnap.docs.map(sd => ({ id: sd.id, ...sd.data() }));
-          }
-          if (col === 'users') {
-            const progSnap = await getDocs(collection(db, col, d.id, 'progress'));
-            (docData as any).progress = progSnap.docs.map(pd => ({ id: pd.id, ...pd.data() }));
-            
-            const pattProgSnap = await getDocs(collection(db, col, d.id, 'patternProgress'));
-            (docData as any).patternProgress = pattProgSnap.docs.map(ppd => ({ id: ppd.id, ...ppd.data() }));
-
-            const artProgSnap = await getDocs(collection(db, col, d.id, 'articleProgress'));
-            (docData as any).articleProgress = artProgSnap.docs.map(apd => ({ id: apid, ...apd.data() }));
-          }
-          
-          return docData;
-        }));
+        data[col] = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       }
       
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); 
       a.href = url; 
-      a.download = `beathero_full_backup_${new Date().toISOString()}.json`; 
+      a.download = `beathero_backup_${new Date().toISOString()}.json`; 
       a.click();
       toast({ title: "Backup Complete" });
     } catch (e) { toast({ variant: "destructive", title: "Backup Failed" }); } finally { setIsBackingUp(false); }
@@ -148,36 +135,9 @@ export default function HomePage() {
         for (const [col, items] of Object.entries(data)) {
           if (Array.isArray(items)) {
             for (const item of items) {
-              const { id, sounds, progress, patternProgress, articleProgress, ...rest } = item as any;
+              const { id, ...rest } = item as any;
               if (!id) continue;
-              
-              const rootRef = doc(db, col, id);
-              await setDoc(rootRef, rest, { merge: true });
-
-              if (sounds && Array.isArray(sounds)) {
-                for (const s of sounds) {
-                  const { id: sid, ...sData } = s;
-                  await setDoc(doc(db, col, id, 'sounds', sid), sData, { merge: true });
-                }
-              }
-              if (progress && Array.isArray(progress)) {
-                for (const p of progress) {
-                  const { id: pid, ...pData } = p;
-                  await setDoc(doc(db, col, id, 'progress', pid), pData, { merge: true });
-                }
-              }
-              if (patternProgress && Array.isArray(patternProgress)) {
-                for (const pp of patternProgress) {
-                  const { id: ppid, ...ppData } = pp;
-                  await setDoc(doc(db, col, id, 'patternProgress', ppid), ppData, { merge: true });
-                }
-              }
-              if (articleProgress && Array.isArray(articleProgress)) {
-                for (const ap of articleProgress) {
-                  const { id: apid, ...apData } = ap;
-                  await setDoc(doc(db, col, id, 'articleProgress', apid), apData, { merge: true });
-                }
-              }
+              await setDoc(doc(db, col, id), rest, { merge: true });
             }
           }
         }
@@ -190,34 +150,9 @@ export default function HomePage() {
   const setupStudios = async () => {
     if (!db || profile?.role !== 'admin') return;
     setIsSyncing(true);
-    let created = 0, fixed = 0;
-
-    const sync = async (col: string, id: string, data: any) => {
-      const ref = doc(db, col, id);
-      const snap = await getDoc(ref);
-      if (!snap.exists()) { 
-        await setDoc(ref, data); 
-        created++; 
-      }
-      else {
-        const fData = snap.data();
-        const payload: any = {};
-        let needs = false;
-        Object.keys(data).forEach(k => { 
-          if (fData[k] === undefined || (Array.isArray(data[k]) && (!fData[k] || fData[k].length === 0))) { 
-            payload[k] = data[k]; 
-            needs = true; 
-          } 
-        });
-        if (needs) { 
-          await setDoc(ref, payload, { merge: true }); 
-          fixed++; 
-        }
-      }
-    };
+    let fixed = 0;
 
     try {
-      // 1. LearnCategories
       const cats = [
         { id: 'intro', title: 'Einführung', iconName: 'BookOpen', colorClass: 'text-primary', order: 10 },
         { id: 'daws', title: 'DAWs', iconName: 'Cpu', colorClass: 'text-[#00E676]', order: 20 },
@@ -229,55 +164,12 @@ export default function HomePage() {
         { id: 'rights', title: 'Rechte', iconName: 'Scale', colorClass: 'text-[#EB3D99]', order: 80 }
       ];
       for (const c of cats) {
-        const ref = doc(db, 'learnCategories', c.id);
-        const snap = await getDoc(ref);
-        if (snap.exists() && snap.data().title !== c.title) {
-          await setDoc(ref, { title: c.title }, { merge: true });
-          fixed++;
-        }
-        await sync('learnCategories', c.id, c);
+        await setDoc(doc(db, 'learnCategories', c.id), c, { merge: true });
+        fixed++;
       }
-
-      // 2. Artikel & Quizzes with maxPoints
-      const arts = [
-        { id: 'art-welcome', categoryId: 'intro', title: 'Willkommen im Hub', content: 'Willkommen in deinem persönlichen Music-Producing Labor!', order: 10, maxPoints: 100 },
-        { id: 'art-producing', categoryId: 'intro', title: 'Producing', content: 'Die Kunst des Erschaffens von Musik am Computer.', order: 20, maxPoints: 100 },
-        { id: 'art-sampling', categoryId: 'intro', title: 'Sampling', content: 'Finde die perfekten Sounds und nutze sie kreativ.', order: 30, maxPoints: 100 },
-        { id: 'art-djing-intro', categoryId: 'intro', title: 'DJing', content: 'Mixe deine Tracks und sorge für Stimmung.', order: 40, maxPoints: 100 },
-        { id: 'art-equipment', categoryId: 'intro', title: 'Equipment', content: 'Was du wirklich für dein Studio brauchst.', order: 50, maxPoints: 100 },
-        { id: 'art-gb-basics', categoryId: 'daws', title: 'Basics', order: 10, maxPoints: 250 },
-        { id: 'art-comp-basics', categoryId: 'composing', title: 'Composing Basics', content: 'Melodie und Harmonie verstehen.', order: 10, maxPoints: 200 },
-        { id: 'art-arrangement', categoryId: 'composing', title: 'Arrangement', content: 'Vom Loop zum fertigen Song.', order: 20, maxPoints: 200 },
-        { id: 'art-rec-basics', categoryId: 'recording', title: 'Recording Basics', content: 'Die Signalkette richtig verstehen.', order: 10, maxPoints: 200 },
-        { id: 'art-rights-basics', categoryId: 'rights', title: 'Rechte Basics', content: 'Copyright und Urheberrecht verstehen.', order: 10, maxPoints: 200 }
-      ];
-      for (const a of arts) {
-        await sync('articles', a.id, a);
-        
-        const quizData: LearnQuiz = {
-          id: a.id,
-          articleId: a.id,
-          questions: [
-            {
-              question: `Was ist das Hauptthema des Artikels "${a.title}"?`,
-              options: [
-                "Theorie und Grundlagen",
-                "Praktische Anwendung im Studio",
-                "Equipment und Hardware",
-                "Marketing und Releases"
-              ],
-              correctOption: 0
-            }
-          ]
-        };
-        await sync('learnQuizzes', a.id, quizData);
-      }
-
-      toast({ title: "Rack Synced", description: `${created} created, ${fixed} repaired.` });
+      toast({ title: "Rack Synced", description: `${fixed} entries updated.` });
     } catch (e) { toast({ variant: "destructive", title: "Sync Failed" }); } finally { setIsSyncing(false); }
   };
-
-  const streetCred = profile?.streetCred || 0;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col relative">
@@ -290,7 +182,7 @@ export default function HomePage() {
               className="gemini-border p-2 px-4 bg-black/80 cursor-pointer flex items-center gap-2 hover:bg-black transition-colors"
             >
               <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
-              <span className="font-black italic">{streetCred.toLocaleString()} SC</span>
+              <span className="font-black italic">{(profile?.streetCred || 0).toLocaleString()} SC</span>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -302,12 +194,29 @@ export default function HomePage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-black/90 border-white/10 text-white backdrop-blur-xl">
-                <DropdownMenuItem onClick={() => auth && initiateGoogleSignIn(auth)} className="cursor-pointer"><LogIn className="mr-2 h-4 w-4" /> Login with Google</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => auth && initiateSignOut(auth)} className="cursor-pointer text-destructive"><LogOut className="mr-2 h-4 w-4" /> Sign Out</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => auth && initiateGoogleSignIn(auth)} className="cursor-pointer font-bold"><LogIn className="mr-2 h-4 w-4" /> Login with Google</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => auth && initiateSignOut(auth)} className="cursor-pointer text-destructive font-bold"><LogOut className="mr-2 h-4 w-4" /> Sign Out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
+
+        {/* Guest / Unregistered Notice */}
+        {(!user || user.isAnonymous) && (
+          <div className="w-full max-w-7xl mb-6 animate-in slide-in-from-top-4 duration-500">
+            <div className="bg-primary/10 border border-primary/20 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center"><UserPlus className="w-5 h-5 text-primary" /></div>
+                <div>
+                  <h4 className="text-xs font-black uppercase italic tracking-widest text-white">Become a Pro</h4>
+                  <p className="text-[10px] opacity-50 font-bold">Register now to save your SC and progress permanently in the Lab!</p>
+                </div>
+              </div>
+              <Button onClick={() => auth && initiateGoogleSignIn(auth)} className="bg-primary text-white font-black uppercase italic rounded-full h-10 px-8 text-xs hover:scale-105 transition-all">Join the Hub</Button>
+            </div>
+          </div>
+        )}
+
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="bg-white/5 rounded-full p-1 h-12 md:h-14">
             <TabsTrigger value="studios" className="rounded-full px-6 md:px-12 data-[state=active]:bg-primary font-black uppercase italic tracking-tighter"><LayoutGrid className="w-4 h-4 mr-2" /> Studios</TabsTrigger>
@@ -315,7 +224,29 @@ export default function HomePage() {
           </TabsList>
         </Tabs>
       </header>
+      
       <main className="flex-1 w-full max-w-7xl mx-auto py-6 md:py-10 px-4 md:px-6">
+        {invitedArticle && (
+          <div className="mb-10 animate-in zoom-in-95 duration-700">
+            <div className="gemini-border-primary overflow-hidden">
+              <div className="p-6 bg-black/60 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-5">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20"><Sparkles className="w-8 h-8 text-primary" /></div>
+                  <div>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary italic mb-1">Direct Assignment</h3>
+                    <h2 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white">{invitedArticle.title}</h2>
+                  </div>
+                </div>
+                <Link href={`/learn/article/${invitedArticle.id}`}>
+                  <Button className="bg-white text-black font-black uppercase italic rounded-full h-14 px-10 flex items-center gap-2 group shadow-2xl">
+                    Launch Mission <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         <Tabs value={activeTab} className="w-full">
           <TabsContent value="studios" className="m-0">
             {isLoadingStudios ? <div className="h-64 flex flex-col items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div> : (
@@ -333,6 +264,7 @@ export default function HomePage() {
           <TabsContent value="progress" className="m-0"><ProfileView /></TabsContent>
         </Tabs>
       </main>
+
       {profile?.role === 'admin' && (
         <footer className="sticky bottom-0 p-4 border-t border-white/5 bg-black/95 backdrop-blur-2xl flex justify-center gap-4 z-50">
           <input type="file" ref={fileInputRef} onChange={handleRestore} className="hidden" accept=".json" />
@@ -342,5 +274,13 @@ export default function HomePage() {
         </footer>
       )}
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div className="h-screen bg-[#050505] flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>}>
+      <HomeContent />
+    </Suspense>
   );
 }

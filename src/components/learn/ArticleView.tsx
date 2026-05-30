@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { Article, LearnQuiz, getAccuracyColor } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { 
   ArrowLeft, 
   Play,
@@ -17,19 +18,26 @@ import {
   Scissors,
   Layers,
   Sparkles,
-  Sliders
+  Sliders,
+  Share2,
+  UserPlus,
+  LogIn
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc, serverTimestamp, increment, getDoc } from 'firebase/firestore';
+import { initiateGoogleSignIn } from '@/firebase/non-blocking-login';
+import { useAuth } from '@/firebase/provider';
 
 interface ArticleViewProps { article: Article; }
 const PHASE_ICONS: Record<string, any> = { 'COMPOSING': Music, 'RECORDING': Mic, 'EDITING': Scissors, 'ARRANGEMENT': Layers, 'SOUNDDESIGN': Sparkles, 'MIXING / MASTERING': Sliders };
 
 export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
   const db = useFirestore();
-  const { user } = useUser();
+  const auth = useAuth();
+  const { user, profile } = useUser();
+  const { toast } = useToast();
   const [selectedOptions, setSelectedOptions] = useState<Record<number, number>>({});
   const [quizFinished, setQuizFinished] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
@@ -59,9 +67,10 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     }
   };
 
-  const getYoutubeId = (url: string) => {
-    const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
-    return match ? match[1] : null;
+  const handleShareInvite = () => {
+    const inviteLink = `${window.location.origin}/?invite=${article.id}`;
+    navigator.clipboard.writeText(inviteLink);
+    toast({ title: "Invite Link Copied", description: "This article is now assigned and ready to share." });
   };
 
   const parseInlineFormatting = (text: string) => {
@@ -78,11 +87,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     if (trimmed.startsWith('GAP:')) return <div key={idx} style={{ height: `${parseInt(trimmed.replace('GAP:', '').trim()) || 20}px` }} />;
     if (trimmed === '---') return <div key={idx} className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent my-10" />;
     if (trimmed.startsWith('VIDEO:')) return <div key={idx} className="mb-8"><div className="relative aspect-[9/16] max-w-[280px] mx-auto bg-black rounded-[2rem] border-4 border-white/10 overflow-hidden shadow-2xl"><video src={trimmed.replace('VIDEO:', '').trim()} controls className="w-full h-full object-cover" playsInline /></div></div>;
-    if (trimmed.startsWith('YOUTUBE:')) {
-      const vidId = getYoutubeId(trimmed.replace('YOUTUBE:', '').trim());
-      if (!vidId) return null;
-      return <div key={idx} className="mb-8"><div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 bg-black"><iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${vidId}`} frameBorder="0" allowFullScreen></iframe></div></div>;
-    }
     if (trimmed.startsWith('IMAGE:')) return <div key={idx} className="mb-8"><div className="relative w-full rounded-3xl overflow-hidden border border-white/10 shadow-lg bg-white/5"><img src={trimmed.replace('IMAGE:', '').trim()} alt="Content" className="w-full h-auto block" /></div></div>;
     if (trimmed.startsWith('###') || trimmed.startsWith('SUB:')) return <div key={idx} className="mb-4 mt-2"><span className="text-[10px] font-black uppercase tracking-[0.25em] text-primary italic leading-none">{parseInlineFormatting(trimmed.replace(/^###\s*|^SUB:\s*/, ''))}</span></div>;
     if (trimmed.startsWith('##')) return <h4 key={idx} className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white/95 mb-6 mt-4 leading-tight">{parseInlineFormatting(trimmed.replace(/^##\s*/, ''))}</h4>;
@@ -113,9 +117,27 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-primary font-body overflow-x-hidden">
       <div className="fixed inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
-      <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 p-4 md:p-6"><div className="max-w-4xl mx-auto flex items-center gap-4"><Link href="/"><Button variant="ghost" size="icon" className="rounded-full hover:bg-white/5"><ArrowLeft className="w-5 h-5 text-white/40" /></Button></Link>
-        <div className="flex flex-col"><span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">KnowHow Lab</span><h1 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter leading-none pr-8 truncate max-w-[250px] md:max-w-md">{article.title}</h1></div>
+      <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 p-4 md:p-6"><div className="max-w-4xl mx-auto flex items-center justify-between gap-4"><div className="flex items-center gap-4"><Link href="/"><Button variant="ghost" size="icon" className="rounded-full hover:bg-white/5"><ArrowLeft className="w-5 h-5 text-white/40" /></Button></Link>
+        <div className="flex flex-col"><span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">KnowHow Lab</span><h1 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter leading-none pr-8 truncate max-w-[200px] md:max-w-md">{article.title}</h1></div>
+      </div>
+      {profile?.role === 'admin' && (
+        <Button onClick={handleShareInvite} className="bg-primary text-white font-black uppercase italic rounded-full px-6 h-10 text-[10px] flex items-center gap-2 hover:scale-105 transition-all"><Share2 className="w-4 h-4" /> Invite & Assign</Button>
+      )}
       </div></header>
+
+      {(!user || user.isAnonymous) && (
+        <div className="max-w-3xl mx-auto px-6 mt-8">
+           <div className="bg-primary/10 border border-primary/20 p-6 rounded-[2rem] flex flex-col items-center text-center gap-4 shadow-2xl">
+             <UserPlus className="w-8 h-8 text-primary" />
+             <div>
+                <h3 className="text-lg font-black uppercase italic tracking-tight mb-1">Become a Pro</h3>
+                <p className="text-xs opacity-50 font-medium">Register to save your progress and earn permanent SC for this article!</p>
+             </div>
+             <Button onClick={() => auth && initiateGoogleSignIn(auth)} className="bg-primary text-white font-black uppercase italic rounded-full px-10 h-12 shadow-xl hover:scale-105 transition-all flex items-center gap-2"><LogIn className="w-4 h-4" /> Sign In / Register</Button>
+           </div>
+        </div>
+      )}
+
       <main className="max-w-3xl mx-auto p-6 md:p-16 space-y-16 pb-48">
         <section className="bg-white/2 border border-white/5 p-8 md:p-14 rounded-[3rem] backdrop-blur-sm shadow-inner">{renderContent(article.content)}</section>
         {quizData?.questions?.length && (
