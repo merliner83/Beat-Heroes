@@ -19,23 +19,18 @@ import {
   Layers,
   Sparkles,
   Sliders,
-  Share2,
-  UserPlus,
-  LogIn
+  Share2
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc, serverTimestamp, increment, getDoc } from 'firebase/firestore';
-import { initiateGoogleSignIn } from '@/firebase/non-blocking-login';
-import { useAuth } from '@/firebase/provider';
 
 interface ArticleViewProps { article: Article; }
 const PHASE_ICONS: Record<string, any> = { 'COMPOSING': Music, 'RECORDING': Mic, 'EDITING': Scissors, 'ARRANGEMENT': Layers, 'SOUNDDESIGN': Sparkles, 'MIXING / MASTERING': Sliders };
 
 export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
   const db = useFirestore();
-  const auth = useAuth();
   const { user, profile } = useUser();
   const { toast } = useToast();
   const [selectedOptions, setSelectedOptions] = useState<Record<number, number>>({});
@@ -124,19 +119,6 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         <Button onClick={handleShareInvite} className="bg-primary text-white font-black uppercase italic rounded-full px-6 h-10 text-[10px] flex items-center gap-2 hover:scale-105 transition-all"><Share2 className="w-4 h-4" /> Invite & Assign</Button>
       )}
       </div></header>
-
-      {(!user || user.isAnonymous) && (
-        <div className="max-w-3xl mx-auto px-6 mt-8">
-           <div className="bg-primary/10 border border-primary/20 p-6 rounded-[2rem] flex flex-col items-center text-center gap-4 shadow-2xl">
-             <UserPlus className="w-8 h-8 text-primary" />
-             <div>
-                <h3 className="text-lg font-black uppercase italic tracking-tight mb-1">Become a Pro</h3>
-                <p className="text-xs opacity-50 font-medium">Register to save your progress and earn permanent SC for this article!</p>
-             </div>
-             <Button onClick={() => auth && initiateGoogleSignIn(auth)} className="bg-primary text-white font-black uppercase italic rounded-full px-10 h-12 shadow-xl hover:scale-105 transition-all flex items-center gap-2"><LogIn className="w-4 h-4" /> Sign In / Register</Button>
-           </div>
-        </div>
-      )}
 
       <main className="max-w-3xl mx-auto p-6 md:p-16 space-y-16 pb-48">
         <section className="bg-white/2 border border-white/5 p-8 md:p-14 rounded-[3rem] backdrop-blur-sm shadow-inner">{renderContent(article.content)}</section>

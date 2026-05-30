@@ -6,14 +6,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useCollection, useFirestore, useMemoFirebase, useUser, useDoc } from '@/firebase';
-import { collection, query, doc, setDoc, getDoc, getDocs } from 'firebase/firestore';
-import { Studio, hasAccess, LearnQuiz, Article } from '@/lib/game/types';
+import { collection, query, doc, setDoc, getDocs } from 'firebase/firestore';
+import { Studio, hasAccess, Article } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { initiateAnonymousSignIn, initiateGoogleSignIn, initiateSignOut } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { cn } from '@/lib/utils';
-import { RefreshCw, Loader2, Zap, LayoutGrid, GraduationCap, Lock, LogOut, LogIn, Download, Upload, Sparkles, ArrowRight, UserPlus } from 'lucide-react';
+import { RefreshCw, Loader2, Zap, LayoutGrid, GraduationCap, Lock, LogOut, LogIn, Download, Upload, Sparkles, ArrowRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LearnView } from '@/components/learn/LearnView';
 import { ProfileView } from '@/components/profile/ProfileView';
@@ -200,22 +200,6 @@ function HomeContent() {
             </DropdownMenu>
           </div>
         </div>
-
-        {/* Guest / Unregistered Notice */}
-        {(!user || user.isAnonymous) && (
-          <div className="w-full max-w-7xl mb-6 animate-in slide-in-from-top-4 duration-500">
-            <div className="bg-primary/10 border border-primary/20 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center"><UserPlus className="w-5 h-5 text-primary" /></div>
-                <div>
-                  <h4 className="text-xs font-black uppercase italic tracking-widest text-white">Become a Pro</h4>
-                  <p className="text-[10px] opacity-50 font-bold">Register now to save your SC and progress permanently in the Lab!</p>
-                </div>
-              </div>
-              <Button onClick={() => auth && initiateGoogleSignIn(auth)} className="bg-primary text-white font-black uppercase italic rounded-full h-10 px-8 text-xs hover:scale-105 transition-all">Join the Hub</Button>
-            </div>
-          </div>
-        )}
 
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="bg-white/5 rounded-full p-1 h-12 md:h-14">
