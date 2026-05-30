@@ -151,10 +151,17 @@ export interface Article {
   maxPoints?: number;
 }
 
-export function hasAccess(userRole: UserRole = 'free', requiredRole: UserRole = 'free'): boolean {
+/**
+ * Checks if a user has the required access level.
+ * Defaults to 'free' if no role is provided.
+ */
+export function hasAccess(userRole: UserRole | undefined | null = 'free', requiredRole: UserRole = 'free'): boolean {
   const roles: UserRole[] = ['free', 'pro', 'producer', 'admin'];
-  const userIdx = roles.indexOf(userRole);
+  const actualUserRole = userRole || 'free';
+  const userIdx = roles.indexOf(actualUserRole as UserRole);
   const reqIdx = roles.indexOf(requiredRole);
+  // Ensure we handle cases where roles might not be in the list correctly
+  if (userIdx === -1) return false;
   return userIdx >= reqIdx;
 }
 

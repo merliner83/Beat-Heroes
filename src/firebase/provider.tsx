@@ -4,7 +4,7 @@
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Firestore, doc, onSnapshot } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged } from 'firebase/auth';
+import { Auth, User, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
 import { UserProfile } from '@/lib/game/types';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -69,6 +69,19 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     userError: null,
   });
 
+  // Global Auth Initializer: Ensure every visitor has at least an anonymous session
+  useEffect(() => {
+    if (auth && !userAuthState.user && !userAuthState.isUserLoading) {
+      // Small delay to let onAuthStateChanged settle
+      const timer = setTimeout(() => {
+        if (!auth.currentUser) {
+          signInAnonymously(auth).catch(err => console.warn("Auto-auth failed", err));
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [auth, userAuthState.user, userAuthState.isUserLoading]);
+
   useEffect(() => {
     if (!auth || !firestore) {
       setUserAuthState({ user: null, profile: null, isUserLoading: false, userError: new Error("Services missing.") });
@@ -80,25 +93,20 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     const unsubscribeAuth = onAuthStateChanged(
       auth,
       (firebaseUser) => {
-        // Clean up any existing profile listener from a previous session
         if (unsubscribeProfile) {
           unsubscribeProfile();
           unsubscribeProfile = undefined;
         }
 
         if (firebaseUser) {
-          // IMPORTANT: Update the user object immediately so hooks like useUser() 
-          // get the fresh UID. This prevents stale queries from being executed 
-          // with the wrong UID during transition.
           setUserAuthState(prev => ({
             ...prev,
             user: firebaseUser,
-            profile: null, // Clear stale profile
-            isUserLoading: true, // Mark as loading while we fetch the new profile
+            profile: null,
+            isUserLoading: true,
             userError: null,
           }));
 
-          // Listen to the user's profile document
           const profileRef = doc(firestore, 'users', firebaseUser.uid);
           
           unsubscribeProfile = onSnapshot(
@@ -116,13 +124,11 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
                 path: profileRef.path,
                 operation: 'get',
               });
-              // Keep the user but mark loading as finished with error
               setUserAuthState(prev => ({ ...prev, isUserLoading: false, userError: contextualError }));
               errorEmitter.emit('permission-error', contextualError);
             }
           );
         } else {
-          // Explicitly clear everything when no user is authenticated
           setUserAuthState({ user: null, profile: null, isUserLoading: false, userError: null });
         }
       },

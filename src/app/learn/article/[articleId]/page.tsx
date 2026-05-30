@@ -23,7 +23,7 @@ export default function ArticlePage() {
 
   const { data: article, isLoading: isLoadingArticle } = useDoc<Article>(articleRef);
 
-  const isLocked = article && !hasAccess(profile?.role, article.minRole || 'free');
+  const isLocked = article && !hasAccess(profile?.role || 'free', article.minRole || 'free');
 
   if (isUserLoading || isLoadingArticle) {
     return (

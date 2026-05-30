@@ -31,31 +31,31 @@ service cloud.firestore {
       }
     }
 
-    // Studios
+    // Studios: Public read
     match /studios/{studioId} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Tracks
+    // Tracks: Public read
     match /tracks/{trackId} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Games
+    // Games: Public read
     match /games/{gameId} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Learn Apps
+    // Learn Apps: Public read
     match /learnApps/{appId} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Levels & Sounds
+    // Levels & Sounds: Public read
     match /levels/{levelId} {
       allow read: if true;
       allow write: if isSignedIn();
@@ -66,31 +66,31 @@ service cloud.firestore {
       }
     }
 
-    // Patterns
+    // Patterns: Public read
     match /patterns/{patternId} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Learn Categories
+    // Learn Categories: Public read
     match /learnCategories/{categoryId} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Learn SubCategories
+    // Learn SubCategories: Public read
     match /learnSubCats/{subCategoryId} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Articles (Knowledge Base)
+    // Articles (Knowledge Base): Public read
     match /articles/{articleId} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Quizzes
+    // Quizzes: Public read
     match /learnQuizzes/{quizId} {
       allow read: if true;
       allow write: if isSignedIn();

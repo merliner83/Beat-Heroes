@@ -10,7 +10,7 @@ import { collection, query, doc, setDoc, getDocs } from 'firebase/firestore';
 import { Studio, hasAccess, Article } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { initiateAnonymousSignIn, initiateGoogleSignIn, initiateSignOut } from '@/firebase/non-blocking-login';
+import { initiateGoogleSignIn, initiateSignOut } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { cn } from '@/lib/utils';
 import { RefreshCw, Loader2, Zap, LayoutGrid, GraduationCap, Lock, LogOut, LogIn, Download, Upload, Sparkles, ArrowRight } from 'lucide-react';
@@ -70,10 +70,6 @@ function HomeContent() {
     setActiveTab(value);
     localStorage.setItem('beathero_active_tab', value);
   };
-
-  useEffect(() => {
-    if (!user && auth) initiateAnonymousSignIn(auth);
-  }, [user, auth]);
 
   useEffect(() => {
     if (user && db && !isUserLoading) {
