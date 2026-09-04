@@ -84,8 +84,8 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     if (trimmed.startsWith('VIDEO:')) return <div key={idx} className="mb-8"><div className="relative aspect-[9/16] max-w-[280px] mx-auto bg-black rounded-[2rem] border-4 border-white/10 overflow-hidden shadow-2xl"><video src={trimmed.replace('VIDEO:', '').trim()} controls className="w-full h-full object-cover" playsInline /></div></div>;
     if (trimmed.startsWith('IMAGE:')) return <div key={idx} className="mb-8"><div className="relative w-full rounded-3xl overflow-hidden border border-white/10 shadow-lg bg-white/5"><img src={trimmed.replace('IMAGE:', '').trim()} alt="Content" className="w-full h-auto block" /></div></div>;
     if (trimmed.startsWith('###') || trimmed.startsWith('SUB:')) return <div key={idx} className="mb-4 mt-2"><span className="text-[10px] font-black uppercase tracking-[0.25em] text-primary italic leading-none">{parseInlineFormatting(trimmed.replace(/^###\s*|^SUB:\s*/, ''))}</span></div>;
-    if (trimmed.startsWith('##')) return <h4 key={idx} className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white/95 mb-6 mt-4 leading-tight">{parseInlineFormatting(trimmed.replace(/^##\s*/, ''))}</h4>;
-    if (trimmed.startsWith('#')) return <h3 key={idx} className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter text-white mb-8 border-b border-white/10 pb-4 mt-6 leading-none">{parseInlineFormatting(trimmed.replace(/^#\s*/, ''))}</h3>;
+    if (trimmed.startsWith('##')) return <h4 key={idx} className="text-xl md:text-2xl font-bold tracking-tight text-white/95 mb-6 mt-4 leading-tight">{parseInlineFormatting(trimmed.replace(/^##\s*/, ''))}</h4>;
+    if (trimmed.startsWith('#')) return <h3 key={idx} className="text-2xl md:text-4xl font-bold tracking-tight text-white mb-8 border-b border-white/10 pb-4 mt-6 leading-none">{parseInlineFormatting(trimmed.replace(/^#\s*/, ''))}</h3>;
     return <p key={idx} className="text-base md:text-lg text-white/80 leading-relaxed font-normal mb-6 selection:bg-primary/30 whitespace-pre-line">{parseInlineFormatting(line)}</p>;
   };
 
