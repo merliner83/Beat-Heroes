@@ -120,8 +120,8 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       )}
       </div></header>
 
-      <main className="max-w-3xl mx-auto p-6 md:p-16 space-y-16 pb-48">
-        <section className="bg-white/2 border border-white/5 p-8 md:p-14 rounded-[3rem] backdrop-blur-sm shadow-inner">{renderContent(article.content)}</section>
+      <main className="max-w-3xl mx-auto px-6 py-10 md:px-10 md:py-16 space-y-16 pb-48">
+        <section className="max-w-2xl mx-auto">{renderContent(article.content)}</section>
         {quizData?.questions?.length && (
           <section className="gemini-border-primary"><div className="p-8 md:p-14 bg-black/60 rounded-[3rem] backdrop-blur-3xl shadow-2xl">
             <div className="flex items-center gap-4 mb-12"><HelpCircle className="w-8 h-8 text-primary" /><h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter">Knowledge Check</h3></div>
