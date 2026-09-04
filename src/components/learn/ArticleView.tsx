@@ -76,6 +76,8 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
     });
   };
 
+  const getYouTubeEmbedUrl = (url: string) => { const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/); return match ? `https://www.youtube.com/embed/${match[1]}` : null; };
+
   const renderLine = (line: string, idx: number) => {
     const trimmed = line.trim();
     if (!trimmed) return <div key={idx} className="h-4" />;
@@ -122,6 +124,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
 
       <main className="max-w-3xl mx-auto px-6 py-10 md:px-10 md:py-16 space-y-16 pb-48">
         <section className="max-w-2xl mx-auto">{renderContent(article.content)}</section>
+        {article.youtubeUrls?.map((url, idx) => { const embedUrl = getYouTubeEmbedUrl(url); return embedUrl ? <div key={idx} className="max-w-2xl mx-auto"><div className="aspect-video overflow-hidden rounded-2xl border border-white/10 bg-black"><iframe src={embedUrl} title={`YouTube video ${idx + 1}`} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen /></div></div> : null; })}
         {quizData?.questions?.length && (
           <section className="gemini-border-primary"><div className="p-8 md:p-14 bg-black/60 rounded-[3rem] backdrop-blur-3xl shadow-2xl">
             <div className="flex items-center gap-4 mb-12"><HelpCircle className="w-8 h-8 text-primary" /><h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter">Knowledge Check</h3></div>
