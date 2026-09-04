@@ -98,11 +98,11 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
         const title = parts[0]?.trim() || '', desc = parts[1]?.trim() || '', linkedId = parts[2]?.trim();
         const Icon = PHASE_ICONS[title.split(':')[0].trim()] || Play;
         return (
-          <div key={bIdx} className="mb-12 gemini-border shadow-2xl"><div className="p-6 md:p-10 bg-black/50 backdrop-blur-2xl">
+          <section key={bIdx} className="mb-14 border-t border-white/10 pt-8">
             <div className="flex items-center gap-5 mb-8"><div className="w-14 h-14 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10"><Icon className="w-7 h-7 text-primary" /></div><h4 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-white leading-none">{title}</h4></div>
             <div className="mb-2">{desc.split('\n').map((l, lIdx) => renderLine(l, bIdx * 100 + lIdx))}</div>
             {linkedId && <Link href={`/learn/article/${linkedId}`}><Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 rounded-full px-8 italic font-black uppercase text-xs h-12 mt-6 tracking-widest">Learn More <ArrowRight className="ml-2 w-4 h-4" /></Button></Link>}
-          </div></div>
+          </section>
         );
       }
       return <div key={bIdx} className="mb-2">{trimmed.split('\n').map((l, lIdx) => renderLine(l, bIdx * 100 + lIdx))}</div>;
