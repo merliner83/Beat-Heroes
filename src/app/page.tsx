@@ -61,6 +61,7 @@ function HomeContent() {
   const [isEmailLoginOpen, setIsEmailLoginOpen] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  useEffect(() => { if (user && !user.isAnonymous) setIsEmailLoginOpen(false); }, [user]);
 
   const inviteId = searchParams.get('invite');
   const invitedArticleRef = useMemoFirebase(() => inviteId && db ? doc(db, 'articles', inviteId) : null, [db, inviteId]);
