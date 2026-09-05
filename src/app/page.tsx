@@ -10,10 +10,12 @@ import { collection, query, doc, setDoc, getDocs } from 'firebase/firestore';
 import { Studio, hasAccess, Article } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { initiateGoogleSignIn, initiateSignOut } from '@/firebase/non-blocking-login';
+import { initiateGoogleSignIn, initiateEmailSignIn, initiateEmailSignUp, initiateSignOut } from '@/firebase/non-blocking-login';
 import { useAuth } from '@/firebase/provider';
 import { cn } from '@/lib/utils';
 import { RefreshCw, Loader2, Zap, LayoutGrid, GraduationCap, Lock, LogOut, LogIn, Download, Upload, Sparkles, ArrowRight } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LearnView } from '@/components/learn/LearnView';
 import { ProfileView } from '@/components/profile/ProfileView';
@@ -56,6 +58,9 @@ function HomeContent() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isBackingUp, setIsBackingUp] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [isEmailLoginOpen, setIsEmailLoginOpen] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
 
   const inviteId = searchParams.get('invite');
   const invitedArticleRef = useMemoFirebase(() => inviteId && db ? doc(db, 'articles', inviteId) : null, [db, inviteId]);
@@ -191,6 +196,7 @@ function HomeContent() {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-black/90 border-white/10 text-white backdrop-blur-xl">
                 <DropdownMenuItem onClick={() => auth && initiateGoogleSignIn(auth)} className="cursor-pointer font-bold"><LogIn className="mr-2 h-4 w-4" /> Login with Google</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsEmailLoginOpen(true)} className="cursor-pointer font-bold"><LogIn className="mr-2 h-4 w-4" /> Login with Email</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => auth && initiateSignOut(auth)} className="cursor-pointer text-destructive font-bold"><LogOut className="mr-2 h-4 w-4" /> Sign Out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -244,6 +250,7 @@ function HomeContent() {
           <TabsContent value="progress" className="m-0"><ProfileView /></TabsContent>
         </Tabs>
       </main>
+        <Dialog open={isEmailLoginOpen} onOpenChange={setIsEmailLoginOpen}><DialogContent className="bg-[#0a0a0a] border-white/10 text-white"><DialogHeader><DialogTitle>Email Login</DialogTitle></DialogHeader><div className="space-y-4"><Input type="email" placeholder="Email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} /><Input type="password" placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} /><div className="flex gap-3"><Button onClick={() => auth && initiateEmailSignIn(auth, loginEmail, loginPassword)} className="flex-1">Login</Button><Button variant="outline" onClick={() => auth && initiateEmailSignUp(auth, loginEmail, loginPassword)} className="flex-1">Sign Up</Button></div></div></DialogContent></Dialog>
 
       {profile?.role === 'admin' && (
         <footer className="sticky bottom-0 p-4 border-t border-white/5 bg-black/95 backdrop-blur-2xl flex justify-center gap-4 z-50">
