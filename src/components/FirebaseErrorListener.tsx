@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -10,13 +10,12 @@ import { FirestorePermissionError } from '@/firebase/errors';
  */
 export function FirebaseErrorListener() {
   // Use the specific error type for the state for type safety.
-  const [error, setError] = useState<FirestorePermissionError | null>(null);
 
   useEffect(() => {
     // The callback now expects a strongly-typed error, matching the event payload.
     const handleError = (error: FirestorePermissionError) => {
       // Set error in state to trigger a re-render.
-      setError(error);
+      console.error("Firestore permission error", error);
     };
 
     // The typed emitter will enforce that the callback for 'permission-error'
@@ -30,9 +29,6 @@ export function FirebaseErrorListener() {
   }, []);
 
   // On re-render, if an error exists in state, throw it.
-  if (error) {
-    throw error;
-  }
 
   // This component renders nothing.
   return null;
