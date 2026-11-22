@@ -15,9 +15,10 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 ## Firebase
 - **Neu (ab 22.11.2026): Projekt `beat-heroes-ch`**, Firestore `europe-west6`
   (Zürich). Datenmodell und Rollen: `docs/architecture.md`.
-- Altes Projekt `studio-7081808686-cc62f` (USA, Alias `legacy`) ist nur noch
-  Quelle für die Migration; Sounds liegen noch in dessen Bucket, bis Storage
-  im neuen Projekt (braucht Blaze) eingerichtet und kopiert ist.
+- Storage: `beat-heroes-ch.firebasestorage.app` (europe-west6), alle Dateien
+  kopiert, URLs in DB und Code umgeschrieben.
+- Altes Projekt `studio-7081808686-cc62f` (USA, Alias `legacy`): Billing
+  gelöst (23.11.2026), altes Hosting damit offline; nur noch Archiv.
 - Ziel: Firebase nur für Auth, Firestore, Storage (+ App Hosting).
 - Web-Config fest in `src/firebase/config.ts` (öffentlicher Web-Key, ok).
 - `firebase.json` deployt Firestore-Regeln, -Indizes und Storage-Regeln.
@@ -25,8 +26,10 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
   serverseitig änderbar; `scripts/set-role.mjs`.
 - Credits/Fortschritt schreibt nur `POST /api/credits` (Admin SDK).
 - Lokal braucht das Admin SDK `gcloud auth application-default login`.
-- Hosting: Firebase App Hosting; im neuen Projekt noch einzurichten
-  (altes Backend `studio` in `us-central1`).
+- Hosting: App Hosting Backend `beat-heroes` in `europe-west4` (Zürich nicht
+  verfügbar), live: https://beat-heroes--beat-heroes-ch.europe-west4.hosted.app
+  Deploy aus lokalem Code: `firebase deploy --only apphosting` (Claude darf
+  jederzeit deployen, solange niemand online ist). Kein GitHub-Autodeploy.
 - Claude-Vorschau: `.claude/launch.json` startet einen zweiten Dev-Server auf
   Port 9003 mit eigenem Build-Ordner `.next-preview`.
 
@@ -71,9 +74,8 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 - Mobile: zuerst PWA, später Capacitor mit gehosteter App.
 
 ## Offene Punkte
-1. Phase 0 abschliessen: Blaze für `beat-heroes-ch`, Auth-Provider (Google,
-   E-Mail) in der Console aktivieren, Storage-Bucket EU anlegen, Dateien
-   kopieren (`--rewrite-storage`), App-Hosting-Backend EU, erster superAdmin.
+1. Phase 0 abschliessen: Auth in der Console aktivieren (Google, E-Mail),
+   hosted.app-Domain autorisieren, erster superAdmin, Login + Credits testen.
 2. ESLint einrichten, dann `ignoreDuringBuilds` entfernen.
 3. Phase 1: echte Routen, Schulen/Klassen, Zuweisungen, Games-Bereich,
    Learn als Kurse/Lektionen/Blöcke (Producing, MV).
