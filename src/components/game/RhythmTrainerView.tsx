@@ -10,11 +10,12 @@ import { ArrowLeft, Play, Square, Trophy, Target, Brain, Volume2 } from 'lucide-
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, increment, setDoc, serverTimestamp, collection, query, getDoc } from 'firebase/firestore';
+import { collection, query } from 'firebase/firestore';
+import { submitResult } from '@/lib/credits';
 
 const SOUND_MAPPING: Record<string, string> = {
-  'kick': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57',
-  'clave': 'https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/sounds%2FClaves.mp3?alt=media&token=1162b3f6-19d7-4a41-a3b6-9c243cd5d36a'
+  'kick': 'https://firebasestorage.googleapis.com/v0/b/beat-heroes-ch.firebasestorage.app/o/sounds%2FKICK1.mp3?alt=media&token=23415b38-2c12-4462-bb74-385533ad1c57',
+  'clave': 'https://firebasestorage.googleapis.com/v0/b/beat-heroes-ch.firebasestorage.app/o/sounds%2FClaves.mp3?alt=media&token=1162b3f6-19d7-4a41-a3b6-9c243cd5d36a'
 };
 
 const QUIZ_STEPS = 64; 
@@ -65,15 +66,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
     setFinalScore(accuracy);
     setStatus('RESULTS');
     if (user && db) {
-      const progRef = doc(db, 'users', user.uid, 'patternProgress', selectedPattern.id);
-      const snap = await getDoc(progRef);
-      const oldAcc = snap.exists() ? (snap.data().accuracy || 0) : 0;
-      if (accuracy > oldAcc) {
-        await setDoc(progRef, { patternId: selectedPattern.id, accuracy, completedAt: serverTimestamp() }, { merge: true });
-        const deltaAcc = accuracy - oldAcc;
-        const deltaSC = Math.round((deltaAcc / 100) * (game.maxPoints || 500));
-        await setDoc(doc(db, 'users', user.uid), { streetCred: increment(deltaSC) }, { merge: true });
-      }
+      await submitResult(user, { kind: 'pattern', refId: selectedPattern.id, accuracy: accuracy });
     }
   }, [selectedPattern, user, db, game]);
 

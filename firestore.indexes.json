@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "standings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "schoolId", "order": "ASCENDING" },
+        { "fieldPath": "streetCred", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

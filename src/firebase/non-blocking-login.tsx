@@ -7,6 +7,7 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithRedirect,
+  signInWithPopup,
   signOut,
 } from 'firebase/auth';
 
@@ -15,10 +16,21 @@ export function initiateAnonymousSignIn(authInstance: Auth): void {
   signInAnonymously(authInstance);
 }
 
-/** Initiate Google sign-in (non-blocking). */
+/**
+ * Google-Login per Popup. Redirect scheitert in aktuellen Browsern, wenn die
+ * App nicht auf der authDomain (firebaseapp.com) läuft; darum nur als
+ * Ausweichlösung, falls das Popup blockiert wird.
+ */
 export function initiateGoogleSignIn(authInstance: Auth): void {
   const provider = new GoogleAuthProvider();
-  signInWithRedirect(authInstance, provider).catch(err => console.warn("Google sign-in failed", err));
+  signInWithPopup(authInstance, provider).catch(err => {
+    const code = (err as { code?: string })?.code;
+    if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
+      signInWithRedirect(authInstance, provider).catch(e => console.warn("Google sign-in failed", e));
+    } else if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
+      console.warn("Google sign-in failed", err);
+    }
+  });
 }
 
 /** Initiate sign-out (non-blocking). */

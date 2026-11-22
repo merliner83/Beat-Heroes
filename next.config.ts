@@ -2,9 +2,9 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // Erlaubt parallele Dev-Server mit eigenem Build-Ordner (z.B. Claude-Vorschau).
+  distDir: process.env.NEXT_DIST_DIR || '.next',
+  // ESLint ist noch nicht eingerichtet (keine Konfiguration im Repo).
   eslint: {
     ignoreDuringBuilds: true,
   },

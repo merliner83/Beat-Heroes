@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, increment, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { submitResult } from '@/lib/credits';
 
 const PASS_THRESHOLD = 80;
 
@@ -183,16 +183,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
   useEffect(() => {
     if (isFinished && score.accuracy >= PASS_THRESHOLD && user && db) {
       const saveProg = async () => {
-        const progRef = doc(db, 'users', user.uid, 'progress', level.id);
-        const snap = await getDoc(progRef);
-        const oldAcc = snap.exists() ? (snap.data().accuracy || 0) : 0;
-        
-        if (score.accuracy > oldAcc) {
-          await setDoc(progRef, { levelId: level.id, accuracy: score.accuracy, completedAt: serverTimestamp() }, { merge: true });
-          const deltaAcc = score.accuracy - oldAcc;
-          const deltaSC = Math.round((deltaAcc / 100) * (game.maxPoints || 500));
-          await setDoc(doc(db, 'users', user.uid), { streetCred: increment(deltaSC) }, { merge: true });
-        }
+        await submitResult(user, { kind: 'level', refId: level.id, accuracy: score.accuracy });
       };
       saveProg();
     }

@@ -4,7 +4,7 @@
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Firestore, doc, onSnapshot } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
+import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
 import { UserProfile } from '@/lib/game/types';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -69,18 +69,8 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     userError: null,
   });
 
-  // Global Auth Initializer: Ensure every visitor has at least an anonymous session
-  useEffect(() => {
-    if (auth && !userAuthState.user && !userAuthState.isUserLoading) {
-      // Small delay to let onAuthStateChanged settle
-      const timer = setTimeout(() => {
-        if (!auth.currentUser) {
-          signInAnonymously(auth).catch(err => console.warn("Auto-auth failed", err));
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [auth, userAuthState.user, userAuthState.isUserLoading]);
+  // Keine automatische anonyme Anmeldung: Gäste können Inhalte ansehen und
+  // spielen, Fortschritt und Credits gibt es nur mit Schul-Account.
 
   useEffect(() => {
     if (!auth || !firestore) {

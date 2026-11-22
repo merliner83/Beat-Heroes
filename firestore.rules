@@ -1,99 +1,136 @@
-
 rules_version = '2';
+
+// Beat-Heroes – Firestore-Regeln. Datenmodell: docs/architecture.md
+// Grundsatz: Werte (Rolle, Schule, Credits, Fortschritt) schreibt nur der
+// Server (Admin SDK umgeht diese Regeln) oder eine berechtigte Person.
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- HELPER FUNCTIONS ---
-    function isSignedIn() {
+    // --- Hilfsfunktionen ---
+    function signedIn() {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+    function me() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    // --- COLLECTION MATCHES ---
+    function hasProfile() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
 
-    // User Profile: Owner has full access. Signed-in users can list profiles (needed for rank calculation).
+    function myRole() {
+      return hasProfile() ? me().get('role', 'student') : 'student';
+    }
+
+    function mySchool() {
+      return hasProfile() ? me().get('schoolId', null) : null;
+    }
+
+    function isSuperAdmin() {
+      return signedIn() && myRole() == 'superAdmin';
+    }
+
+    function isStaff() {
+      return signedIn() && myRole() in ['teacher', 'schoolAdmin', 'superAdmin'];
+    }
+
+    function isStaffOfSchool(schoolId) {
+      return isSuperAdmin() || (isStaff() && schoolId != null && mySchool() == schoolId);
+    }
+
+    // Felder, die Nutzer:innen im eigenen Dokument selbst setzen dürfen.
+    function selfEditableKeys() {
+      return ['uid', 'email', 'displayName', 'photoURL', 'updatedAt'];
+    }
+
+    // --- Organisation ---
+    match /schools/{schoolId} {
+      allow read: if signedIn();
+      allow write: if isSuperAdmin();
+    }
+
+    match /classes/{classId} {
+      allow read: if isStaffOfSchool(resource.data.schoolId)
+                  || (signedIn() && resource.data.schoolId == mySchool());
+      allow create: if isStaffOfSchool(request.resource.data.schoolId);
+      allow update, delete: if isStaffOfSchool(resource.data.schoolId);
+    }
+
+    // --- Nutzer:innen (privat) ---
     match /users/{userId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow write: if isOwner(userId);
-      
-      match /progress/{levelId} {
-        allow read, write: if isOwner(userId);
-      }
-      match /patternProgress/{patternId} {
-        allow read, write: if isOwner(userId);
-      }
-      match /articleProgress/{articleId} {
-        allow read, write: if isOwner(userId);
-      }
-    }
+      allow get: if signedIn() && (
+        request.auth.uid == userId
+        || isSuperAdmin()
+        || isStaffOfSchool(resource.data.get('schoolId', null))
+      );
+      allow list: if isSuperAdmin();
 
-    // Studios: Public read
-    match /studios/{studioId} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
+      allow create: if signedIn() && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(selfEditableKeys())
+        && request.resource.data.uid == userId;
 
-    // Tracks: Public read
-    match /tracks/{trackId} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
+      allow update: if signedIn() && (
+        (request.auth.uid == userId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(selfEditableKeys()))
+        || isSuperAdmin()
+      );
+      allow delete: if isSuperAdmin();
 
-    // Games: Public read
-    match /games/{gameId} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
-
-    // Learn Apps: Public read
-    match /learnApps/{appId} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
-
-    // Levels & Sounds: Public read
-    match /levels/{levelId} {
-      allow read: if true;
-      allow write: if isSignedIn();
-
-      match /sounds/{soundId} {
-        allow read: if true;
-        allow write: if isSignedIn();
+      // Fortschritt: nur lesen, schreiben tut der Server (/api/credits).
+      match /{progressCol}/{docId} {
+        allow read: if progressCol in ['progress', 'patternProgress', 'articleProgress']
+          && signedIn() && (request.auth.uid == userId || isSuperAdmin()
+            || isStaffOfSchool(get(/databases/$(database)/documents/users/$(userId)).data.get('schoolId', null)));
+        allow write: if false;
       }
     }
 
-    // Patterns: Public read
-    match /patterns/{patternId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+    // --- Credits ---
+    match /standings/{userId} {
+      // Rangliste: lesbar innerhalb derselben Schule (Abfragen müssen nach
+      // schoolId filtern), eigener Eintrag immer.
+      allow read: if signedIn() && (
+        request.auth.uid == userId
+        || isSuperAdmin()
+        || resource.data.schoolId == mySchool()
+      );
+      allow write: if false;
     }
 
-    // Learn Categories: Public read
-    match /learnCategories/{categoryId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+    match /creditEvents/{eventId} {
+      allow read: if signedIn() && (
+        resource.data.uid == request.auth.uid
+        || isStaffOfSchool(resource.data.get('schoolId', null))
+      );
+      allow write: if false;
     }
 
-    // Learn SubCategories: Public read
-    match /learnSubCats/{subCategoryId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+    // --- Lerninhalte (CMS) ---
+    match /{contentCol}/{docId} {
+      allow read: if contentCol in [
+        'studios', 'tracks', 'games', 'learnApps', 'levels', 'patterns',
+        'learnCategories', 'learnSubCats', 'articles'
+      ];
+      allow write: if isSuperAdmin() && contentCol in [
+        'studios', 'tracks', 'games', 'learnApps', 'levels', 'patterns',
+        'learnCategories', 'learnSubCats', 'articles', 'learnQuizzes'
+      ];
     }
 
-    // Articles (Knowledge Base): Public read
-    match /articles/{articleId} {
+    match /levels/{levelId}/sounds/{soundId} {
       allow read: if true;
-      allow write: if isSignedIn();
+      allow write: if isSuperAdmin();
     }
 
-    // Quizzes: Public read
+    // Quiz-Fragen sind lesbar, die Lösungen liegen getrennt in learnQuizKeys
+    // und werden nur serverseitig (/api/credits) zum Werten gelesen.
     match /learnQuizzes/{quizId} {
       allow read: if true;
-      allow write: if isSignedIn();
+    }
+
+    match /learnQuizKeys/{quizId} {
+      allow read, write: if isSuperAdmin();
     }
   }
 }

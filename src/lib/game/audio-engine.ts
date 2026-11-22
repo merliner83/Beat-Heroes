@@ -29,13 +29,14 @@ export class AudioEngine {
 
     if (!this.context) {
       try {
-        const AudioContextClass = (window as any).AudioContext || (window as any).webkitAutoContext;
-        this.context = new AudioContextClass({ sampleRate: 44100 });
-        
-        this.masterGain = this.context.createGain();
-        this.masterGain.connect(this.context.destination);
+        const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
+        const context: AudioContext = new AudioContextClass({ sampleRate: 44100 });
+        this.context = context;
 
-        this.backingGain = this.context.createGain();
+        this.masterGain = context.createGain();
+        this.masterGain.connect(context.destination);
+
+        this.backingGain = context.createGain();
         this.backingGain.connect(this.masterGain);
       } catch (e) {
         console.warn('AudioEngine: Context creation failed', e);
@@ -43,11 +44,13 @@ export class AudioEngine {
       }
     }
 
-    if (this.context.state === 'suspended') {
-      await this.context.resume();
+    const context = this.context;
+    if (!context) return false;
+    if (context.state === 'suspended') {
+      await context.resume();
     }
 
-    return this.context.state === 'running';
+    return context.state === 'running';
   }
 
   getContextTime(): number {

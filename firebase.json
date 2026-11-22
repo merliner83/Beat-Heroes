@@ -1,0 +1,24 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "apphosting": [
+    {
+      "backendId": "beat-heroes",
+      "rootDir": "/",
+      "ignore": [
+        "node_modules",
+        ".git",
+        ".next",
+        ".next-preview",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "functions"
+      ]
+    }
+  ]
+}

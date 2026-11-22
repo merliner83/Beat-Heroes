@@ -22,7 +22,8 @@ import {
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, increment, setDoc, serverTimestamp, collection, query, where, getDoc } from 'firebase/firestore';
+import { collection, query, where } from 'firebase/firestore';
+import { submitResult } from '@/lib/credits';
 
 const FREQUENCY_CONFIG = [
   { freq: 31, label: 'Sub-Bass', q: 0.7 },
@@ -131,16 +132,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
     const avgScore = Math.round(sessionScores.reduce((a, b) => a + b, 0) / TOTAL_ROUNDS);
     setQuizStatus('RESULTS');
     if (user && db) {
-      const progRef = doc(db, 'users', user.uid, 'progress', level.id);
-      const snap = await getDoc(progRef);
-      const oldAcc = snap.exists() ? (snap.data().accuracy || 0) : 0;
-      
-      if (avgScore > oldAcc) {
-        await setDoc(progRef, { levelId: level.id, accuracy: avgScore, completedAt: serverTimestamp() }, { merge: true });
-        const deltaAcc = avgScore - oldAcc;
-        const deltaSC = Math.round((deltaAcc / 100) * (game.maxPoints || 1000));
-        await setDoc(doc(db, 'users', user.uid), { streetCred: increment(deltaSC) }, { merge: true });
-      }
+      await submitResult(user, { kind: 'learnApp', refId: level.id, accuracy: avgScore });
     }
   };
 

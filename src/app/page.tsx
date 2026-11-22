@@ -1,5 +1,6 @@
 
 "use client";
+import { isSuperAdmin } from '@/lib/game/types';
 
 import React, { useEffect, useState, useRef, Suspense } from 'react';
 import Link from 'next/link';
@@ -77,24 +78,18 @@ function HomeContent() {
     localStorage.setItem('beathero_active_tab', value);
   };
 
+  // Eigenes Profil anlegen/aktualisieren. Rolle, Schule und Credits setzt
+  // nur der Server bzw. ein Super-Admin (siehe firestore.rules).
   useEffect(() => {
-    if (user && db && !isUserLoading) {
-      const needsSync = !profile || profile.email !== (user.email ?? '');
-
-      if (needsSync) {
-        const userRef = doc(db, 'users', user.uid);
-        const data = { 
-          uid: user.uid, 
-          email: user.email ?? '', 
-          streetCred: profile?.streetCred ?? 0, 
-          role: profile?.role ?? 'free',
-          displayName: profile?.displayName || user.displayName || 'Producer'
-        };
-        setDoc(userRef, data, { merge: true }).catch(err => {
-          console.warn("Profile auto-sync failed", err);
-        });
-      }
-    }
+    if (!user || !db || isUserLoading || user.isAnonymous) return;
+    const displayName = profile?.displayName || user.displayName || 'Producer';
+    const needsSync = !profile || profile.email !== (user.email ?? '') || profile.displayName !== displayName;
+    if (!needsSync) return;
+    const data: Record<string, string> = { uid: user.uid, email: user.email ?? '', displayName };
+    if (user.photoURL) data.photoURL = user.photoURL;
+    setDoc(doc(db, 'users', user.uid), data, { merge: true }).catch(err => {
+      console.warn("Profile auto-sync failed", err);
+    });
   }, [user, profile, isUserLoading, db]);
 
   const studiosQuery = useMemoFirebase(() => db ? query(collection(db, 'studios')) : null, [db]);
@@ -105,7 +100,7 @@ function HomeContent() {
   };
 
   const handleBackup = async () => {
-    if (!db || profile?.role !== 'admin') return;
+    if (!db || !isSuperAdmin(profile?.role)) return;
     setIsBackingUp(true);
     try {
       const data: any = {};
@@ -128,7 +123,7 @@ function HomeContent() {
 
   const handleRestore = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !db || profile?.role !== 'admin') return;
+    if (!file || !db || !isSuperAdmin(profile?.role)) return;
     setIsRestoring(true);
     const reader = new FileReader();
     reader.onload = async (ev) => {
@@ -150,20 +145,20 @@ function HomeContent() {
   };
 
   const setupStudios = async () => {
-    if (!db || profile?.role !== 'admin') return;
+    if (!db || !isSuperAdmin(profile?.role)) return;
     setIsSyncing(true);
     let fixed = 0;
 
     try {
       const cats = [
-        { id: 'intro', title: 'Einführung', iconName: 'BookOpen', colorClass: 'text-primary', order: 10, minRole: 'free' },
-        { id: 'daws', title: 'DAWs', iconName: 'Cpu', colorClass: 'text-[#00E676]', order: 20, minRole: 'free' },
-        { id: 'composing', title: 'Composing', iconName: 'Music', colorClass: 'text-[#FFEA00]', order: 30, minRole: 'free' },
-        { id: 'recording', title: 'Recording', iconName: 'Mic2', colorClass: 'text-[#FF3D00]', order: 40, minRole: 'free' },
-        { id: 'effects', title: 'Effekte', iconName: 'Wand2', colorClass: 'text-[#3838FA]', order: 50, minRole: 'free' },
-        { id: 'djing', title: 'DJing', iconName: 'Disc', colorClass: 'text-primary', order: 60, minRole: 'free' },
-        { id: 'social', title: 'Media & Release', iconName: 'Share2', colorClass: 'text-[#00FFFF]', order: 70, minRole: 'free' },
-        { id: 'rights', title: 'Rechte', iconName: 'Scale', colorClass: 'text-[#EB3D99]', order: 80, minRole: 'free' }
+        { id: 'intro', title: 'Einführung', iconName: 'BookOpen', colorClass: 'text-primary', order: 10 },
+        { id: 'daws', title: 'DAWs', iconName: 'Cpu', colorClass: 'text-[#00E676]', order: 20 },
+        { id: 'composing', title: 'Composing', iconName: 'Music', colorClass: 'text-[#FFEA00]', order: 30 },
+        { id: 'recording', title: 'Recording', iconName: 'Mic2', colorClass: 'text-[#FF3D00]', order: 40 },
+        { id: 'effects', title: 'Effekte', iconName: 'Wand2', colorClass: 'text-[#3838FA]', order: 50 },
+        { id: 'djing', title: 'DJing', iconName: 'Disc', colorClass: 'text-primary', order: 60 },
+        { id: 'social', title: 'Media & Release', iconName: 'Share2', colorClass: 'text-[#00FFFF]', order: 70 },
+        { id: 'rights', title: 'Rechte', iconName: 'Scale', colorClass: 'text-[#EB3D99]', order: 80 }
       ];
       for (const c of cats) {
         await setDoc(doc(db, 'learnCategories', c.id), c, { merge: true });
@@ -253,7 +248,7 @@ function HomeContent() {
       </main>
         <Dialog open={isEmailLoginOpen} onOpenChange={setIsEmailLoginOpen}><DialogContent className="bg-[#0a0a0a] border-white/10 text-white"><DialogHeader><DialogTitle>Email Login</DialogTitle></DialogHeader><div className="space-y-4"><Input type="email" placeholder="Email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} /><Input type="password" placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} /><div className="flex gap-3"><Button onClick={() => auth && initiateEmailSignIn(auth, loginEmail, loginPassword)} className="flex-1">Login</Button><Button variant="outline" onClick={() => auth && initiateEmailSignUp(auth, loginEmail, loginPassword)} className="flex-1">Sign Up</Button></div></div></DialogContent></Dialog>
 
-      {profile?.role === 'admin' && (
+      {isSuperAdmin(profile?.role) && (
         <footer className="sticky bottom-0 p-4 border-t border-white/5 bg-black/95 backdrop-blur-2xl flex justify-center gap-4 z-50">
           <input type="file" ref={fileInputRef} onChange={handleRestore} className="hidden" accept=".json" />
           <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isRestoring} className="font-black uppercase italic tracking-tighter bg-white/5"><Upload className="w-4 h-4 mr-2" /> Restore</Button>

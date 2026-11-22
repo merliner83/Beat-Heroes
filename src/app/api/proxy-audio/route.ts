@@ -1,35 +1,88 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Ein verbesserter Proxy, um CORS-Sperren bei Audio-Dateien zu umgehen.
- * Er lädt die Datei serverseitig mit neutralen Headern und gibt sie an den Client weiter.
- * Optimiert für schnelleres Caching und direktere Übertragung.
+ * Audio-Proxy, um CORS-Sperren bei Audio-Dateien zu umgehen.
+ *
+ * Sicherheit: Es werden nur HTTPS-URLs von erlaubten Hosts weitergereicht,
+ * damit der Endpunkt nicht als offener Proxy missbraucht werden kann.
+ * Zusätzliche Hosts können über die Umgebungsvariable
+ * AUDIO_PROXY_ALLOWED_HOSTS (kommagetrennt) freigegeben werden.
  */
-export async function GET(request: NextRequest) {
-  const url = request.nextUrl.searchParams.get('url');
 
-  if (!url) {
+const FIREBASE_BUCKETS = ['beat-heroes-ch.firebasestorage.app'];
+
+const DEFAULT_ALLOWED_HOSTS = [
+  'firebasestorage.googleapis.com', // Firebase Storage (nur eigener Bucket, siehe unten)
+  'actions.google.com',             // Metronom- und Demo-Sounds
+];
+
+const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
+
+function allowedHosts(): Set<string> {
+  const extra = (process.env.AUDIO_PROXY_ALLOWED_HOSTS ?? '')
+    .split(',')
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+  return new Set([...DEFAULT_ALLOWED_HOSTS, ...extra]);
+}
+
+function isAllowed(target: URL): boolean {
+  if (target.protocol !== 'https:') return false;
+  const host = target.hostname.toLowerCase();
+  if (!allowedHosts().has(host)) return false;
+
+  // Bei Firebase Storage nur Dateien aus dem eigenen Bucket zulassen.
+  if (host === 'firebasestorage.googleapis.com') {
+    return FIREBASE_BUCKETS.some((b) => target.pathname.startsWith(`/v0/b/${b}/`));
+  }
+  return true;
+}
+
+export async function GET(request: NextRequest) {
+  const raw = request.nextUrl.searchParams.get('url');
+  if (!raw) {
     return new NextResponse('Missing URL parameter', { status: 400 });
   }
 
+  let target: URL;
   try {
-    const response = await fetch(url, {
+    target = new URL(raw);
+  } catch {
+    return new NextResponse('Invalid URL', { status: 400 });
+  }
+
+  if (!isAllowed(target)) {
+    return new NextResponse('URL not allowed', { status: 403 });
+  }
+
+  try {
+    const response = await fetch(target, {
       method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      },
+      redirect: 'error', // keine Weiterleitungen auf fremde Hosts
+      headers: { 'User-Agent': 'BeatHeroes-AudioProxy/1.0' },
       referrerPolicy: 'no-referrer',
     });
 
     if (!response.ok) {
-      throw new Error(`External source returned ${response.status}: ${response.statusText}`);
+      return new NextResponse(`Upstream error ${response.status}`, { status: 502 });
     }
 
     const contentType = response.headers.get('Content-Type') || 'audio/mpeg';
-    const arrayBuffer = await response.arrayBuffer();
+    if (!/^(audio\/|application\/octet-stream|video\/ogg)/i.test(contentType)) {
+      return new NextResponse('Unsupported content type', { status: 415 });
+    }
 
-    // Browser Caching optimieren: 1 Stunde lang cachen
+    const declaredLength = Number(response.headers.get('Content-Length') || 0);
+    if (declaredLength > MAX_BYTES) {
+      return new NextResponse('File too large', { status: 413 });
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    if (arrayBuffer.byteLength > MAX_BYTES) {
+      return new NextResponse('File too large', { status: 413 });
+    }
+
+    // Browser-Caching: 1 Stunde, danach im Hintergrund aktualisieren
     return new NextResponse(arrayBuffer, {
       headers: {
         'Content-Type': contentType,
@@ -38,8 +91,9 @@ export async function GET(request: NextRequest) {
         'Vary': 'Origin',
       },
     });
-  } catch (error: any) {
-    console.error('Audio Proxy Error:', error.message);
-    return new NextResponse(`Audio Proxy Error: ${error.message}`, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('Audio Proxy Error:', message);
+    return new NextResponse('Audio Proxy Error', { status: 500 });
   }
 }
