@@ -72,10 +72,15 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 - Öffentliche Profiländerungen gibt eine Lehrperson frei (Entwurf → Freigabe).
 - Zuweisungssystem: Lehrpersonen (auch der Nutzer) weisen Aufgaben zu.
 - Mobile: zuerst PWA, später Capacitor mit gehosteter App.
+- Name: «Beat Heroes» (ohne Bindestrich) für Menschen, `beat-heroes` technisch.
+- Google-Login per Popup (Redirect scheitert ausserhalb der authDomain).
+- Service Worker: Seiten network-first, sonst kommen Deploys nicht an.
 
 ## Offene Punkte
-1. Phase 0 abschliessen: Auth in der Console aktivieren (Google, E-Mail),
-   hosted.app-Domain autorisieren, erster superAdmin, Login + Credits testen.
+1. Phase 0 erledigt (23.11.2026): Auth aktiv, Live-Domain autorisiert,
+   Nutzer ist superAdmin, Credits live verifiziert. Noch keine Schulen angelegt
+   (Namen der zwei Musikschulen fehlen). App-Name überall auf «Beat Heroes»
+   vereinheitlichen (heute «BeatHero»); technisch `beat-heroes`.
 2. ESLint einrichten, dann `ignoreDuringBuilds` entfernen.
 3. Phase 1: echte Routen, Schulen/Klassen, Zuweisungen, Games-Bereich,
    Learn als Kurse/Lektionen/Blöcke (Producing, MV).
