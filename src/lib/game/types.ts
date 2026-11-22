@@ -1,7 +1,22 @@
 
 export type SoundType = 'kick' | 'clap' | 'percs' | 'misc';
 export type GameType = 'rhythm-producer' | 'sample-hunter' | 'sample-catcher';
-export type UserRole = 'admin' | 'producer' | 'pro' | 'free';
+export type UserRole = 'student' | 'teacher' | 'schoolAdmin' | 'superAdmin';
+/** Alte Abo-Rollen aus Firebase Studio, werden auf neue Rollen abgebildet. */
+export type LegacyRole = 'free' | 'pro' | 'producer' | 'admin';
+const LEGACY_ROLE_MAP: Record<LegacyRole, UserRole> = {
+  free: 'student',
+  pro: 'teacher',
+  producer: 'teacher',
+  admin: 'superAdmin',
+};
+export function normalizeRole(role: string | null | undefined): UserRole {
+  if (!role) return 'student';
+  if (role in LEGACY_ROLE_MAP) return LEGACY_ROLE_MAP[role as LegacyRole];
+  return (['student', 'teacher', 'schoolAdmin', 'superAdmin'] as string[]).includes(role) ? (role as UserRole) : 'student';
+}
+export const isSuperAdmin = (role: string | null | undefined) => normalizeRole(role) === 'superAdmin';
+export const isStaff = (role: string | null | undefined) => normalizeRole(role) !== 'student';
 
 export interface Studio {
   id: string;
@@ -13,7 +28,7 @@ export interface Studio {
   tags?: string[];
   linkUrl?: string;
   linkLabel?: string;
-  minRole?: UserRole;
+  minRole?: UserRole | LegacyRole;
 }
 
 export interface Track {
@@ -35,7 +50,7 @@ export interface Game {
   trackId?: string;
   backingTrackUrl?: string;
   backgroundImageUrl?: string;
-  minRole?: UserRole;
+  minRole?: UserRole | LegacyRole;
   maxPoints?: number;
 }
 
@@ -43,7 +58,7 @@ export interface LearnApp {
   id: string;
   name: string;
   type: 'ear-training' | 'rhythm-trainer';
-  minRole?: UserRole;
+  minRole?: UserRole | LegacyRole;
   maxPoints?: number;
 }
 
@@ -101,10 +116,22 @@ export interface ArticleProgress {
 export interface UserProfile {
   uid: string;
   email?: string;
-  role: UserRole;
-  streetCred: number;
   displayName?: string;
-  isPublic?: boolean;
+  photoURL?: string;
+  /** Geschützt: nur Server/Super-Admin. */
+  role?: UserRole;
+  schoolId?: string | null;
+  classIds?: string[];
+  streetCred?: number;
+}
+
+export interface Standing {
+  id: string;
+  uid: string;
+  displayName: string;
+  schoolId: string | null;
+  classIds?: string[];
+  streetCred: number;
 }
 
 export interface LearnCategory {
@@ -113,7 +140,7 @@ export interface LearnCategory {
   iconName: string;
   colorClass: string;
   order: number;
-  minRole?: UserRole;
+  minRole?: UserRole | LegacyRole;
 }
 
 export interface LearnSubCat {
@@ -122,7 +149,7 @@ export interface LearnSubCat {
   title: string;
   iconUrl?: string;
   order: number;
-  minRole?: UserRole;
+  minRole?: UserRole | LegacyRole;
 }
 
 export interface QuizQuestion {
@@ -147,22 +174,17 @@ export interface Article {
   order: number;
   imageUrls?: string[];
   youtubeUrls?: string[];
-  minRole?: UserRole;
+  minRole?: UserRole | LegacyRole;
   maxPoints?: number;
 }
 
 /**
- * Checks if a user has the required access level.
- * Defaults to 'free' if no role is provided.
+ * Prüft, ob eine Rolle Inhalte mit `requiredRole` sehen darf.
+ * Akzeptiert auch alte Rollenwerte (free/pro/producer/admin).
  */
-export function hasAccess(userRole: UserRole | undefined | null = 'free', requiredRole: UserRole = 'free'): boolean {
-  const roles: UserRole[] = ['free', 'pro', 'producer', 'admin'];
-  const actualUserRole = userRole || 'free';
-  const userIdx = roles.indexOf(actualUserRole as UserRole);
-  const reqIdx = roles.indexOf(requiredRole);
-  // Ensure we handle cases where roles might not be in the list correctly
-  if (userIdx === -1) return false;
-  return userIdx >= reqIdx;
+export function hasAccess(userRole?: string | null, requiredRole?: string | null): boolean {
+  const order: UserRole[] = ['student', 'teacher', 'schoolAdmin', 'superAdmin'];
+  return order.indexOf(normalizeRole(userRole)) >= order.indexOf(normalizeRole(requiredRole));
 }
 
 export function getAccuracyColor(accuracy: number): string {

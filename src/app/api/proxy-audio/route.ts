@@ -9,7 +9,11 @@ import { NextRequest, NextResponse } from 'next/server';
  * AUDIO_PROXY_ALLOWED_HOSTS (kommagetrennt) freigegeben werden.
  */
 
-const FIREBASE_BUCKET = 'studio-7081808686-cc62f.firebasestorage.app';
+// Eigener EU-Bucket; der alte US-Bucket bleibt erlaubt, bis alle URLs migriert sind.
+const FIREBASE_BUCKETS = [
+  'beat-heroes-ch.firebasestorage.app',
+  'studio-7081808686-cc62f.firebasestorage.app',
+];
 
 const DEFAULT_ALLOWED_HOSTS = [
   'firebasestorage.googleapis.com', // Firebase Storage (nur eigener Bucket, siehe unten)
@@ -33,7 +37,7 @@ function isAllowed(target: URL): boolean {
 
   // Bei Firebase Storage nur Dateien aus dem eigenen Bucket zulassen.
   if (host === 'firebasestorage.googleapis.com') {
-    return target.pathname.startsWith(`/v0/b/${FIREBASE_BUCKET}/`);
+    return FIREBASE_BUCKETS.some((b) => target.pathname.startsWith(`/v0/b/${b}/`));
   }
   return true;
 }

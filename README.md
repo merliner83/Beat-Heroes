@@ -12,15 +12,30 @@ npm run typecheck
 
 ## Firebase
 
-Genutzt werden Authentication, Cloud Firestore und Cloud Storage
-(Projekt `studio-7081808686-cc62f`). Die Web-Konfiguration steht in
-`src/firebase/config.ts`.
+Projekt `beat-heroes-ch` (Firestore in `europe-west6`, Zürich). Genutzt werden
+Authentication, Cloud Firestore und Cloud Storage. Die Web-Konfiguration steht
+in `src/firebase/config.ts`, das Datenmodell in `docs/architecture.md`.
 
-Firestore-Regeln deployen:
+API-Routen nutzen das Admin SDK. Lokal braucht es dafür einmal:
 
 ```bash
-firebase deploy --only firestore:rules
+gcloud auth application-default login
 ```
+
+Regeln und Indizes deployen:
+
+```bash
+firebase deploy --only firestore,storage
+```
+
+Rolle setzen (Person muss sich einmal angemeldet haben):
+
+```bash
+node scripts/set-role.mjs person@example.com superAdmin
+```
+
+Inhalte aus dem alten Projekt `studio-7081808686-cc62f` übernehmen:
+`scripts/migrate-from-studio.mjs` (ohne `--write` nur Probelauf).
 
 ## Umgebungsvariablen
 

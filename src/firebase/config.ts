@@ -1,8 +1,10 @@
+// Öffentliche Web-Konfiguration des EU-Projekts (kein Geheimnis).
 export const firebaseConfig = {
-  "projectId": "studio-7081808686-cc62f",
-  "appId": "1:422150463167:web:152f6696edb86cb90d700a",
-  "apiKey": "AIzaSyCSBCdgfNtU5kKopUrON5NWjnl8oElF0y0",
-  "authDomain": "studio-7081808686-cc62f.firebaseapp.com",
+  "projectId": "beat-heroes-ch",
+  "appId": "1:1087160929731:web:ef6523bb7dbd3420a6c176",
+  "storageBucket": "beat-heroes-ch.firebasestorage.app",
+  "apiKey": "AIzaSyDO47-ZIj62Xcl_9VMZ22H2elyALI-X_FQ",
+  "authDomain": "beat-heroes-ch.firebaseapp.com",
   "measurementId": "",
-  "messagingSenderId": "422150463167"
+  "messagingSenderId": "1087160929731"
 };

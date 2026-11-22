@@ -3,8 +3,8 @@
 
 import React, { useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { Studio, Game, Level, LevelProgress, getAccuracyColor, UserProfile, LearnCategory, Article, ArticleProgress } from '@/lib/game/types';
+import { collection, query, orderBy, limit, where } from 'firebase/firestore';
+import { Studio, Game, Level, LevelProgress, getAccuracyColor, Standing, LearnCategory, Article, ArticleProgress } from '@/lib/game/types';
 import { Progress } from '@/components/ui/progress';
 import { 
   Zap, 
@@ -41,11 +41,13 @@ export const ProfileView = () => {
   const db = useFirestore();
   const [collapsedStudios, setCollapsedStudios] = React.useState<Record<string, boolean>>({});
 
+  // Rangliste pro Schule (standings wird nur vom Server geschrieben).
+  const schoolId = profile?.schoolId ?? null;
   const leaderboardQuery = useMemoFirebase(() => {
-    if (!db) return null;
-    return query(collection(db, 'users'), orderBy('streetCred', 'desc'), limit(100));
-  }, [db]);
-  const { data: leaderboard } = useCollection<UserProfile>(leaderboardQuery);
+    if (!db || !user) return null;
+    return query(collection(db, 'standings'), where('schoolId', '==', schoolId), orderBy('streetCred', 'desc'), limit(100));
+  }, [db, user, schoolId]);
+  const { data: leaderboard } = useCollection<Standing>(leaderboardQuery);
 
   const studiosQuery = useMemoFirebase(() => db ? query(collection(db, 'studios')) : null, [db]);
   const gamesQuery = useMemoFirebase(() => db ? query(collection(db, 'games')) : null, [db]);
@@ -149,7 +151,7 @@ export const ProfileView = () => {
               <span className="text-4xl">👑</span>
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Global Rank</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Rang in der Schule</p>
               <h3 className="text-5xl font-black italic tracking-tighter text-white uppercase leading-none">
                 # {globalRank}
               </h3>

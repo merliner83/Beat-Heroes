@@ -1,0 +1,41 @@
+rules_version = '2';
+
+// Beat-Heroes – Storage-Regeln. Datenmodell: docs/architecture.md
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return signedIn()
+        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.get('role', 'student') == 'superAdmin';
+    }
+
+    // Lerninhalte (Sounds, Bilder für Studios/Games/Artikel): öffentlich
+    // lesbar, schreiben nur Super-Admins.
+    // Alles ausser /users/ gilt als Lerninhalt.
+    match /{folder}/{allPaths=**} {
+      allow read: if folder != 'users';
+      allow write: if folder != 'users' && isSuperAdmin()
+        && request.resource.size < 50 * 1024 * 1024;
+    }
+
+    match /{file} {
+      allow read: if true;
+      allow write: if isSuperAdmin() && request.resource.size < 50 * 1024 * 1024;
+    }
+
+    // Eigene Uploads der Schüler:innen (Beats, Avatare) – Phase 2/3.
+    // Lesen/Schreiben vorerst nur durch die Person selbst.
+    match /users/{userId}/{allPaths=**} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow write: if signedIn() && request.auth.uid == userId
+        && request.resource.size < 30 * 1024 * 1024
+        && (request.resource.contentType.matches('audio/.*')
+            || request.resource.contentType.matches('image/.*'));
+    }
+  }
+}

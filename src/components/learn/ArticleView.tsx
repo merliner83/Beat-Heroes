@@ -1,5 +1,6 @@
 
 "use client";
+import { isSuperAdmin } from '@/lib/game/types';
 
 import React, { useState } from 'react';
 import { Article, LearnQuiz, getAccuracyColor } from '@/lib/game/types';
@@ -24,7 +25,8 @@ import {
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
-import { doc, setDoc, serverTimestamp, increment, getDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
+import { submitResult } from '@/lib/credits';
 
 interface ArticleViewProps { article: Article; }
 const PHASE_ICONS: Record<string, any> = { 'COMPOSING': Music, 'RECORDING': Mic, 'EDITING': Scissors, 'ARRANGEMENT': Layers, 'SOUNDDESIGN': Sparkles, 'MIXING / MASTERING': Sliders };
@@ -42,24 +44,18 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
 
   const handleQuizSubmit = async () => {
     if (!quizData?.questions) return;
-    let correct = 0;
-    quizData.questions.forEach((q, idx) => { if (selectedOptions[idx] === q.correctOption) correct++; });
-    const score = Math.round((correct / quizData.questions.length) * 100);
-    setQuizScore(score);
-    setQuizFinished(true);
-
-    if (user && db) {
-      const progRef = doc(db, 'users', user.uid, 'articleProgress', article.id);
-      const snap = await getDoc(progRef);
-      const oldScore = snap.exists() ? (snap.data().quizScore || 0) : 0;
-
-      if (score > oldScore) {
-        await setDoc(progRef, { articleId: article.id, completed: true, quizScore: score, completedAt: serverTimestamp() }, { merge: true });
-        const deltaAcc = score - oldScore;
-        const deltaSC = Math.round((deltaAcc / 100) * (article.maxPoints || 250));
-        await setDoc(doc(db, 'users', user.uid), { streetCred: increment(deltaSC) }, { merge: true });
-      }
+    const answers = quizData.questions.map((_, idx) => selectedOptions[idx] ?? null);
+    if (!user) {
+      toast({ title: "Bitte einloggen", description: "Nur eingeloggt werden Resultate gespeichert." });
+      return;
     }
+    const result = await submitResult(user, { kind: 'article', refId: article.id, answers });
+    if (!result) {
+      toast({ variant: "destructive", title: "Speichern fehlgeschlagen", description: "Bitte nochmals versuchen." });
+      return;
+    }
+    setQuizScore(result.score);
+    setQuizFinished(true);
   };
 
   const handleShareInvite = () => {
@@ -117,7 +113,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 p-4 md:p-6"><div className="max-w-4xl mx-auto flex items-center justify-between gap-4"><div className="flex items-center gap-4"><Link href="/"><Button variant="ghost" size="icon" className="rounded-full hover:bg-white/5"><ArrowLeft className="w-5 h-5 text-white/40" /></Button></Link>
         <div className="flex flex-col"><span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">KnowHow Lab</span><h1 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter leading-none pr-8 truncate max-w-[200px] md:max-w-md">{article.title}</h1></div>
       </div>
-      {profile?.role === 'admin' && (
+      {isSuperAdmin(profile?.role) && (
         <Button onClick={handleShareInvite} className="bg-primary text-white font-black uppercase italic rounded-full px-6 h-10 text-[10px] flex items-center gap-2 hover:scale-105 transition-all"><Share2 className="w-4 h-4" /> Invite & Assign</Button>
       )}
       </div></header>
