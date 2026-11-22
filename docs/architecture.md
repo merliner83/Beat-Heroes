@@ -79,16 +79,20 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
   `approvedBy`, `approvedAt`
 - `handles/{handle}` – `uid`, sorgt für eindeutige Profil-URLs `/@handle`
 
-### Zuweisungen (Phase 1)
-- `assignments/{id}` – `schoolId`, `classId?`, `studentIds[]`, `createdBy`,
+### Zuweisungen (umgesetzt 23.11.2026)
+- `assignments/{id}` – `schoolId`, `classId`, `audience` (`class` | `students`),
+  `studentIds[]`, `createdBy`, `refLabel`,
   `title`, `description`, `kind` (`lesson`, `game`, `learnApp`, `task`,
   `beat`), `refId?`, `dueAt?`, `credits`, `createdAt`
 - `assignments/{id}/submissions/{uid}` – `status` (`open`, `submitted`,
   `approved`, `changes_requested`), `text?`, `fileUrl?`, `beatId?`,
   `feedback?`, `reviewedBy?`
-  Bei automatisch prüfbaren Aufgaben (Lektion, Game) setzt der Server
-  `approved`, sobald der Fortschritt erreicht ist; sonst die Lehrperson.
-  Bei `approved` vergibt der Server die Credits.
+  Schüler:innen reichen ein (Text/Link), die Lehrperson gibt über
+  `POST /api/assignments/review` frei; dabei bucht der Server einmalig die
+  Credits der Aufgabe (`creditedAt`). Inhalte (Lektion, Game, Lern-App)
+  bringen ihre eigenen Credits zusätzlich über `/api/credits`.
+- Klassenbeitritt: `POST /api/classes/join` mit `joinCode` setzt `schoolId`
+  und `classIds` serverseitig.
 
 ### Beats und Kollabos (Phase 3)
 - `beats/{id}` – `ownerId`, `schoolId`, `title`, `audioPath`, `bpm`, `key`,
@@ -108,7 +112,7 @@ Minigame), damit „Producing“ und „MV“ dieselbe Struktur nutzen.
 | Route              | Inhalt                                       |
 |--------------------|----------------------------------------------|
 | `/`                | Dashboard: Credits, Aufgaben, Neues          |
-| `/learn/[kurs]`    | Producing, MV – Lektionen mit Minigames      |
+| `/learn`           | Lernen (heute Knowledge Base + Lern-Apps; Ziel: Kurse Producing, MV) |
 | `/games`           | Arcade                                       |
 | `/beats`           | Beat-Börse, Challenges                       |
 | `/me/edit`         | Profil-Entwurf bearbeiten                    |

@@ -116,7 +116,7 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-4 font-body overflow-hidden select-none">
       <header className="flex justify-between items-center h-20 px-6 bg-black/40 backdrop-blur-xl border-b border-white/5 rounded-t-3xl">
-        <div className="flex items-center gap-4"><Link href="/"><ArrowLeft className="w-6 h-6 text-white/40 hover:text-white transition-all hover:scale-110" /></Link>
+        <div className="flex items-center gap-4"><Link href="/learn"><ArrowLeft className="w-6 h-6 text-white/40 hover:text-white transition-all hover:scale-110" /></Link>
           <div className="flex flex-col"><h1 className="text-xl font-black uppercase italic tracking-tighter text-gradient leading-none">RHYTHM MASTER</h1><p className="text-[10px] opacity-30 uppercase font-black tracking-[0.2em] mt-1">MIDI Lab Interface</p></div>
         </div>
       </header>

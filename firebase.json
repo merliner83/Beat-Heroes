@@ -17,7 +17,8 @@
         ".next-preview",
         "firebase-debug.log",
         "firebase-debug.*.log",
-        "functions"
+        "functions",
+        ".next-build"
       ]
     }
   ]

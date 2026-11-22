@@ -140,7 +140,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
     <div className="flex flex-col h-screen bg-[#050505] text-white p-4 font-body overflow-hidden">
       <header className="flex justify-between items-center h-20 shrink-0 z-50 px-6 bg-black/40 backdrop-blur-xl border-b border-white/5 rounded-t-3xl">
         <div className="flex items-center gap-4">
-          <Link href="/"><ArrowLeft className="w-6 h-6 text-white/40 hover:text-white transition-all hover:scale-110" /></Link>
+          <Link href="/learn"><ArrowLeft className="w-6 h-6 text-white/40 hover:text-white transition-all hover:scale-110" /></Link>
           <div className="pr-12">
             <h1 className="text-lg md:text-xl font-black uppercase italic tracking-tighter text-gradient whitespace-nowrap">EAR TRAINING</h1>
             <p className="text-[10px] opacity-30 uppercase font-black tracking-[0.2em] mt-1">Master the Spectrum</p>
@@ -206,7 +206,7 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
               <div className="text-center space-y-12 animate-in zoom-in-95 mt-6">
                 <Trophy className="w-20 h-20 mx-auto text-[#FFEA00]" />
                 <h3 className="text-6xl font-black italic uppercase tracking-tighter" style={{ color: getAccuracyColor(Math.round(sessionScores.reduce((a,b) => a+b, 0) / TOTAL_ROUNDS)) }}>{Math.round(sessionScores.reduce((a,b) => a+b, 0) / TOTAL_ROUNDS)}%</h3>
-                <div className="flex gap-4"><Button onClick={startQuizSession} variant="outline" className="flex-1 h-16 rounded-xl uppercase font-black italic">New Quiz</Button><Link href="/" className="flex-1"><Button className="w-full h-16 bg-white text-black rounded-xl font-black uppercase italic shadow-xl">Finish</Button></Link></div>
+                <div className="flex gap-4"><Button onClick={startQuizSession} variant="outline" className="flex-1 h-16 rounded-xl uppercase font-black italic">New Quiz</Button><Link href="/learn" className="flex-1"><Button className="w-full h-16 bg-white text-black rounded-xl font-black uppercase italic shadow-xl">Finish</Button></Link></div>
               </div>
             )}
           </div>

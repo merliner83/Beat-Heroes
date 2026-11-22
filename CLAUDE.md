@@ -33,6 +33,12 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 - Claude-Vorschau: `.claude/launch.json` startet einen zweiten Dev-Server auf
   Port 9003 mit eigenem Build-Ordner `.next-preview`.
 
+## Domain
+- `beat-heroes.com` + `www` bei Infomaniak; am Backend `beat-heroes`
+  angemeldet (23.11.2026). DNS: A → 35.219.200.100 (statt .10), neue
+  TXT `fah-claim=016-…`, CNAME `_acme-challenge_…` (Werte via App-Hosting-API
+  `…/backends/beat-heroes/domains/<domain>`). Für Login autorisiert.
+
 ## Serverseitige Teile (relevant für Hosting und Mobile)
 - `src/app/api/proxy-audio/route.ts`: Audio-Proxy gegen CORS, abgesichert per
   Host-Allowlist (eigener Bucket, actions.google.com, plus `AUDIO_PROXY_ALLOWED_HOSTS`).
@@ -82,7 +88,10 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
    (Namen der zwei Musikschulen fehlen). App-Name überall auf «Beat Heroes»
    vereinheitlichen (heute «BeatHero»); technisch `beat-heroes`.
 2. ESLint einrichten, dann `ignoreDuringBuilds` entfernen.
-3. Phase 1: echte Routen, Schulen/Klassen, Zuweisungen, Games-Bereich,
-   Learn als Kurse/Lektionen/Blöcke (Producing, MV).
+3. Phase 1 (Branch `feat/phase1-structure`): erledigt sind Routen mit
+   Navigation (`src/app/(main)/`), Name «Beat Heroes», Schulen (Admin),
+   Klassen mit Beitrittscode, Zuweisungen + Abgaben + Freigabe (`/teacher`).
+   Offen: Learn als Kurse/Lektionen/Blöcke (Producing, MV), Domain
+   beat-heroes.com (DNS bei Infomaniak umstellen, siehe unten).
 4. Phase 2: Profil-Entwurf + Freigabe + öffentliche Seite `/@handle`.
 5. Phase 3: Beat-Börse, Kollabos, Challenges.

@@ -64,7 +64,9 @@ service cloud.firestore {
         || isSuperAdmin()
         || isStaffOfSchool(resource.data.get('schoolId', null))
       );
-      allow list: if isSuperAdmin();
+      // Lehrpersonen listen Schüler:innen ihrer Schule (Abfrage muss nach
+      // schoolId filtern).
+      allow list: if isSuperAdmin() || isStaffOfSchool(resource.data.schoolId);
 
       allow create: if signedIn() && request.auth.uid == userId
         && request.resource.data.keys().hasOnly(selfEditableKeys())
@@ -83,6 +85,49 @@ service cloud.firestore {
           && signedIn() && (request.auth.uid == userId || isSuperAdmin()
             || isStaffOfSchool(get(/databases/$(database)/documents/users/$(userId)).data.get('schoolId', null)));
         allow write: if false;
+      }
+    }
+
+    // --- Zuweisungen ---
+    // audience 'class': ganze Klasse (classId); 'students': nur studentIds.
+    function myClassIds() {
+      return hasProfile() ? me().get('classIds', []) : [];
+    }
+
+    match /assignments/{assignmentId} {
+      allow read: if isStaffOfSchool(resource.data.schoolId)
+        || (signedIn() && resource.data.audience == 'class' && resource.data.classId in myClassIds())
+        || (signedIn() && request.auth.uid in resource.data.studentIds);
+      allow create: if isStaffOfSchool(request.resource.data.schoolId)
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isStaffOfSchool(resource.data.schoolId)
+        && request.resource.data.schoolId == resource.data.schoolId;
+      allow delete: if isStaffOfSchool(resource.data.schoolId);
+
+      function assignment() {
+        return get(/databases/$(database)/documents/assignments/$(assignmentId)).data;
+      }
+
+      function canSeeAssignment() {
+        return (assignment().audience == 'class' && assignment().classId in myClassIds())
+          || request.auth.uid in assignment().studentIds;
+      }
+
+      // Abgabe pro Person (Dokument-ID = uid). Schüler:innen dürfen nur
+      // einreichen; freigeben und Credits vergeben tut /api/assignments/review.
+      match /submissions/{userId} {
+        allow read: if signedIn() && (request.auth.uid == userId
+          || isStaffOfSchool(assignment().schoolId));
+        allow create: if signedIn() && request.auth.uid == userId && canSeeAssignment()
+          && request.resource.data.keys().hasOnly(['uid', 'status', 'text', 'link', 'submittedAt', 'displayName'])
+          && request.resource.data.uid == userId
+          && request.resource.data.status == 'submitted';
+        allow update: if signedIn() && request.auth.uid == userId && canSeeAssignment()
+          && resource.data.status in ['submitted', 'changes_requested']
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['status', 'text', 'link', 'submittedAt', 'displayName'])
+          && request.resource.data.status == 'submitted';
+        allow delete: if false;
       }
     }
 

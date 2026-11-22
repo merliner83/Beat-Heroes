@@ -201,3 +201,64 @@ export function getRankInfo(streetCred: number) {
   if (streetCred >= 1000) return { name: "RISING STAR", color: "#FFEA00", icon: "🔥" };
   return { name: "BEDROOM PRODUCER", color: "#00E676", icon: "🎹" };
 }
+
+// --- Schulen, Klassen, Zuweisungen (docs/architecture.md) ---
+
+export interface School {
+  id: string;
+  name: string;
+  slug?: string;
+}
+
+export interface SchoolClass {
+  id: string;
+  schoolId: string;
+  name: string;
+  teacherIds: string[];
+  joinCode: string;
+  createdAt?: any;
+}
+
+export type AssignmentKind = 'task' | 'level' | 'learnApp' | 'article';
+
+export interface Assignment {
+  id: string;
+  schoolId: string;
+  classId: string;
+  /** 'class' = ganze Klasse, 'students' = nur studentIds */
+  audience: 'class' | 'students';
+  studentIds: string[];
+  createdBy: string;
+  title: string;
+  description?: string;
+  kind: AssignmentKind;
+  /** levelId, learnAppId oder articleId je nach kind */
+  refId?: string | null;
+  refLabel?: string | null;
+  dueAt?: any;
+  credits: number;
+  createdAt?: any;
+}
+
+export type SubmissionStatus = 'submitted' | 'approved' | 'changes_requested';
+
+export interface Submission {
+  id: string;
+  uid: string;
+  displayName?: string;
+  status: SubmissionStatus;
+  text?: string;
+  link?: string;
+  feedback?: string;
+  submittedAt?: any;
+  reviewedAt?: any;
+  credits?: number;
+}
+
+/** Link zum Inhalt einer Zuweisung (oder null bei freien Aufgaben). */
+export function assignmentHref(a: Pick<Assignment, 'kind' | 'refId'>): string | null {
+  if (!a.refId) return null;
+  if (a.kind === 'article') return `/learn/article/${a.refId}`;
+  if (a.kind === 'level' || a.kind === 'learnApp') return `/session/${a.refId}`;
+  return null;
+}

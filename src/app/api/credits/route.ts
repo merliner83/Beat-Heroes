@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FieldValue, DocumentReference } from 'firebase-admin/firestore';
-import { adminAuth, adminDb } from '@/lib/server/firebase-admin';
+import { adminDb } from '@/lib/server/firebase-admin';
+import { HttpError, requireUid, bookCredits } from '@/lib/server/credits';
 import type { CreditKind } from '@/lib/credits';
 
 /**
@@ -25,12 +26,6 @@ type Body = {
   accuracy?: number;
   answers?: (number | null)[];
 };
-
-class HttpError extends Error {
-  constructor(public status: number, message: string) {
-    super(message);
-  }
-}
 
 async function resolveTarget(uid: string, body: Body) {
   const db = adminDb();
@@ -108,24 +103,12 @@ async function resolveTarget(uid: string, body: Body) {
 
 export async function POST(request: NextRequest) {
   try {
-    const header = request.headers.get('authorization') ?? '';
-    const token = header.startsWith('Bearer ') ? header.slice(7) : null;
-    if (!token) throw new HttpError(401, 'Missing token');
-
-    let uid: string;
-    try {
-      const decoded = await adminAuth().verifyIdToken(token);
-      if (decoded.firebase?.sign_in_provider === 'anonymous') throw new Error('anonymous');
-      uid = decoded.uid;
-    } catch {
-      throw new HttpError(401, 'Invalid token');
-    }
+    const uid = await requireUid(request);
 
     const body = (await request.json().catch(() => ({}))) as Body;
     const target = await resolveTarget(uid, body);
     const db = adminDb();
     const userRef = db.doc(`users/${uid}`);
-    const standingRef = db.doc(`standings/${uid}`);
 
     const result = await db.runTransaction(async (tx) => {
       const [progressSnap, userSnap] = await Promise.all([
@@ -146,31 +129,12 @@ export async function POST(request: NextRequest) {
         { merge: true },
       );
 
-      if (awarded > 0) {
-        tx.set(userRef, { streetCred: FieldValue.increment(awarded) }, { merge: true });
-        tx.set(
-          standingRef,
-          {
-            uid,
-            displayName: user.displayName ?? 'Producer',
-            schoolId: user.schoolId ?? null,
-            classIds: user.classIds ?? [],
-            streetCred: FieldValue.increment(awarded),
-            updatedAt: FieldValue.serverTimestamp(),
-          },
-          { merge: true },
-        );
-        tx.create(db.collection('creditEvents').doc(), {
-          uid,
-          schoolId: user.schoolId ?? null,
-          amount: awarded,
-          reason: body.kind,
-          refId: body.refId,
-          score: target.score,
-          createdAt: FieldValue.serverTimestamp(),
-          awardedBy: 'system',
-        });
-      }
+      bookCredits(tx, uid, user, awarded, {
+        reason: body.kind as string,
+        refId: body.refId as string,
+        score: target.score,
+        awardedBy: 'system',
+      });
       return { awarded, score: target.score, best: target.score };
     });
 

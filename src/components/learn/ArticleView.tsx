@@ -110,7 +110,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-primary font-body overflow-x-hidden">
       <div className="fixed inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
-      <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 p-4 md:p-6"><div className="max-w-4xl mx-auto flex items-center justify-between gap-4"><div className="flex items-center gap-4"><Link href="/"><Button variant="ghost" size="icon" className="rounded-full hover:bg-white/5"><ArrowLeft className="w-5 h-5 text-white/40" /></Button></Link>
+      <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 p-4 md:p-6"><div className="max-w-4xl mx-auto flex items-center justify-between gap-4"><div className="flex items-center gap-4"><Link href="/learn"><Button variant="ghost" size="icon" className="rounded-full hover:bg-white/5"><ArrowLeft className="w-5 h-5 text-white/40" /></Button></Link>
         <div className="flex flex-col"><span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary italic">KnowHow Lab</span><h1 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter leading-none pr-8 truncate max-w-[200px] md:max-w-md">{article.title}</h1></div>
       </div>
       {isSuperAdmin(profile?.role) && (
@@ -138,7 +138,7 @@ export const ArticleView: React.FC<ArticleViewProps> = ({ article }) => {
           </div></section>
         )}
       </main>
-      <footer className="fixed bottom-0 w-full p-8 flex justify-center z-[60] pointer-events-none"><Link href="/" className="pointer-events-auto"><Button className="h-16 px-14 bg-primary text-white font-black uppercase italic rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all"><Check className="mr-3 h-6 w-6" /> Got it, Lab!</Button></Link></footer>
+      <footer className="fixed bottom-0 w-full p-8 flex justify-center z-[60] pointer-events-none"><Link href="/learn" className="pointer-events-auto"><Button className="h-16 px-14 bg-primary text-white font-black uppercase italic rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all"><Check className="mr-3 h-6 w-6" /> Got it, Lab!</Button></Link></footer>
     </div>
   );
 };

@@ -42,7 +42,7 @@ export default function ArticlePage() {
         <p className="text-sm opacity-50 mb-8 max-w-xs font-medium uppercase tracking-widest">
           {article?.minRole?.toUpperCase()} Authorization Required
         </p>
-        <Link href="/">
+        <Link href="/learn">
           <Button className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Back to Hub</Button>
         </Link>
       </div>
@@ -55,7 +55,7 @@ export default function ArticlePage() {
         <AlertCircle className="w-16 h-16 text-destructive mb-6" />
         <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2 text-gradient">Data Corrupted</h2>
         <p className="text-sm opacity-50 mb-8 max-w-xs font-medium">This article does not exist in the Knowledge Base.</p>
-        <Link href="/">
+        <Link href="/learn">
           <Button className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Back to Lab</Button>
         </Link>
       </div>

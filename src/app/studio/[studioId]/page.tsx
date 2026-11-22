@@ -118,7 +118,7 @@ export default function StudioPage() {
         <p className="text-sm opacity-50 mb-8 max-w-xs font-medium uppercase tracking-widest">
           {studio?.minRole?.toUpperCase()} Authorization Required
         </p>
-        <Link href="/">
+        <Link href="/games">
           <Button className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Back to Hub</Button>
         </Link>
       </div>
@@ -130,7 +130,7 @@ export default function StudioPage() {
       <div className="fixed inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF3399 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }} />
       
       <div className="max-w-5xl mx-auto relative">
-        <Link href="/" className="inline-flex items-center gap-3 text-sm opacity-40 hover:opacity-100 mb-8 md:mb-12 transition-all uppercase font-black tracking-[0.3em] group">
+        <Link href="/games" className="inline-flex items-center gap-3 text-sm opacity-40 hover:opacity-100 mb-8 md:mb-12 transition-all uppercase font-black tracking-[0.3em] group">
           <ArrowLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" /> Back
         </Link>
 
