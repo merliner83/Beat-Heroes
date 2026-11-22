@@ -45,7 +45,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   const SESSION_DURATION = (20 * 4 * 60) / bpm; 
   const FADE_DURATION = 2;
   const MPC_POS = { x: 50, y: 75 }; 
-  const MPC_IMAGE_URL = "https://firebasestorage.googleapis.com/v0/b/studio-7081808686-cc62f.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010";
+  const MPC_IMAGE_URL = "https://firebasestorage.googleapis.com/v0/b/beat-heroes-ch.firebasestorage.app/o/games%2Fio-808-browser-drum-machine-768x429.png?alt=media&token=bfafaecb-2fc6-4010-944a-b033f3082010";
 
   const SAMPLE_LIFETIME = level.difficulty === 1 ? 3000 : level.difficulty === 2 ? 2200 : level.difficulty === 3 ? 1500 : 900; 
 
