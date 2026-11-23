@@ -98,8 +98,10 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
    Navigation (`src/app/(main)/`), Name «Beat Heroes», Schulen (Admin),
    Klassen mit Beitrittscode, Zuweisungen + Abgaben + Freigabe (`/teacher`).
    Learn als Kurse (Producing, MV) mit Lernpfaden (Talentförderung) ist
-   umgesetzt, siehe `docs/architecture.md`. Offen: MV-Lektionen schreiben,
-   Lektions-Editor im Admin (heute nur Titel editierbar).
+   umgesetzt, siehe `docs/architecture.md`. Lektions-Editor im Admin
+   (`/admin/articles/[id]`, `new?course=…&chapter=…`) mit Live-Vorschau,
+   Bild-Upload, Übungen, YouTube und Quiz. 4 MV-Entwürfe (minRole teacher,
+   `scripts/seed-mv-drafts.mjs`) warten auf Durchsicht durch den Nutzer.
 4. Phase 2 umgesetzt: Profil-Editor (`/me`), Freigabe (`/teacher`),
    Artists-Übersicht und öffentliche Seite `/artists/[handle]`. Games-Seite
    zeigt alle Games (3 Spieltypen × Studios + Lern-Games). Hinweis: Games mit

@@ -35,7 +35,8 @@ export function useLearnData() {
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     const progressById = new Map((progress ?? []).map((p) => [p.articleId ?? p.id, p]));
     const passed = (lessonId: string, minScore = 80) => isLessonPassed(progressById.get(lessonId), minScore);
-    const lessonsOf = (courseId: string) => (articles ?? []).filter((a) => (a.courseId ?? 'producing') === courseId);
+    // Entwürfe (minRole teacher) sehen Schüler:innen gar nicht.
+    const lessonsOf = (courseId: string) => (articles ?? []).filter((a) => (a.courseId ?? 'producing') === courseId && hasAccess(role, a.minRole));
     const courseStats = (courseId: string) => {
       const lessons = lessonsOf(courseId);
       const done = lessons.filter((l) => passed(l.id)).length;

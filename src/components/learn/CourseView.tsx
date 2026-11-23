@@ -2,8 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, ChevronRight, Gamepad2, Loader2, Lock } from 'lucide-react';
-import { Article, getAccuracyColor, hasAccess } from '@/lib/game/types';
+import { ArrowLeft, CheckCircle2, ChevronRight, Gamepad2, Loader2, Lock, Plus } from 'lucide-react';
+import { Article, getAccuracyColor, hasAccess, isSuperAdmin } from '@/lib/game/types';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useLearnData } from './useLearnData';
@@ -77,6 +77,11 @@ export function CourseView({ courseId }: { courseId: string }) {
               </AccordionTrigger>
               <AccordionContent className="pb-6 space-y-5">
                 {ch.description && <p className="text-sm text-white/60">{ch.description}</p>}
+                {isSuperAdmin(data.role) && (
+                  <Link href={`/admin/articles/new?course=${course.id}&chapter=${ch.id}`} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                    <Plus className="w-4 h-4" /> Lektion in diesem Kapitel
+                  </Link>
+                )}
 
                 {apps.length > 0 && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

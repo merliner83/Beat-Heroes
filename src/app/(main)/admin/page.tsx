@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { collection, doc, getDocs, query, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Loader2, ShieldCheck, School as SchoolIcon, Users, BookOpen, Wrench, Download, Upload, RefreshCw } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { Article, School, UserProfile, UserRole, isSuperAdmin, normalizeRole } from '@/lib/game/types';
+import { Article, Course, School, UserProfile, UserRole, isSuperAdmin, normalizeRole } from '@/lib/game/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -211,6 +211,8 @@ export default function AdminPage() {
   const schoolsQuery = useMemoFirebase(() => (db && admin ? query(collection(db, 'schools')) : null), [db, admin]);
   const { data: schools } = useCollection<School>(schoolsQuery);
   const articlesQuery = useMemoFirebase(() => (db && admin ? query(collection(db, 'articles')) : null), [db, admin]);
+  const coursesQuery = useMemoFirebase(() => (db && admin ? query(collection(db, 'courses')) : null), [db, admin]);
+  const { data: courses } = useCollection<Course>(coursesQuery);
   const { data: articles } = useCollection<Article>(articlesQuery);
 
   if (isUserLoading) return <div className="h-64 flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
@@ -225,15 +227,33 @@ export default function AdminPage() {
       <SchoolsSection schools={schools} />
       <PeopleSection schools={schools} />
       <PathsEditor />
-      <Section icon={BookOpen} title="Lerninhalte">
-        <div className="grid gap-2 md:grid-cols-2">
-          {articles?.map((a) => (
-            <Link key={a.id} href={`/admin/articles/${a.id}`} className="p-4 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.06]">
-              <p className="font-bold">{a.title}</p>
-              <p className="text-xs text-white/40">{a.categoryId} · {a.youtubeUrls?.length || 0} YouTube</p>
-            </Link>
+      <Section icon={BookOpen} title="Lektionen">
+        <div className="flex flex-wrap gap-2">
+          {[...(courses ?? [])].sort((a, b) => a.order - b.order).map((c) => (
+            <Link key={c.id} href={`/admin/articles/new?course=${c.id}`}><Button size="sm" variant="outline">+ Lektion in {c.title}</Button></Link>
           ))}
         </div>
+        {[...(courses ?? [])].sort((a, b) => a.order - b.order).map((c) => {
+          const lessons = (articles ?? []).filter((a) => (a.courseId ?? 'producing') === c.id);
+          const chapterTitle = new Map(c.chapters.map((ch) => [ch.id, ch.title]));
+          const chapterOrder = new Map(c.chapters.map((ch) => [ch.id, ch.order]));
+          const sorted = [...lessons].sort((a, b) =>
+            (chapterOrder.get(a.chapterId ?? a.categoryId) ?? 0) - (chapterOrder.get(b.chapterId ?? b.categoryId) ?? 0) || (a.order ?? 0) - (b.order ?? 0));
+          return (
+            <div key={c.id} className="space-y-2">
+              <h3 className="font-black uppercase italic tracking-tighter">{c.title} <span className="text-white/40 text-sm normal-case not-italic font-normal">({lessons.length})</span></h3>
+              {lessons.length === 0 && <p className="text-sm text-white/40">Noch keine Lektionen.</p>}
+              <div className="grid gap-2 md:grid-cols-2">
+                {sorted.map((a) => (
+                  <Link key={a.id} href={`/admin/articles/${a.id}`} className="p-3 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.06]">
+                    <p className="font-bold">{a.title}{a.minRole ? <span className="ml-2 text-xs text-[#FF9100]">Entwurf</span> : null}</p>
+                    <p className="text-xs text-white/40">{chapterTitle.get(a.chapterId ?? a.categoryId) ?? a.categoryId}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </Section>
       <ToolsSection />
     </div>
