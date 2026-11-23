@@ -41,8 +41,8 @@ function StatusLine({ draft }: { draft: ProfileDraft | null }) {
   const map = {
     draft: { icon: Clock, text: 'Entwurf – noch nicht eingereicht', cls: 'text-white/60' },
     submitted: { icon: Send, text: 'Eingereicht – wartet auf Freigabe durch deine Lehrperson', cls: 'text-primary' },
-    changes_requested: { icon: MessageSquareWarning, text: 'Bitte überarbeiten', cls: 'text-[#FF9100]' },
-    approved: { icon: CheckCircle2, text: 'Freigegeben und öffentlich', cls: 'text-[#00E676]' },
+    changes_requested: { icon: MessageSquareWarning, text: 'Bitte überarbeiten', cls: 'text-warning' },
+    approved: { icon: CheckCircle2, text: 'Freigegeben und öffentlich', cls: 'text-success' },
   } as const;
   const s = map[draft.status];
   const Icon = s.icon;
@@ -175,7 +175,7 @@ export function ProfileEditor() {
   return (
     <section className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3"><UserRound className="w-5 h-5 text-primary" /><h2 className="text-xs font-black uppercase tracking-[0.4em] text-white/60">Mein Artist-Profil</h2></div>
+        <div className="flex items-center gap-3"><UserRound className="w-5 h-5 text-primary" /><h2 className="text-base font-bold text-white/90">Mein Artist-Profil</h2></div>
         {published && (
           <Link href={`/artists/${published.handle}`} className="text-sm text-primary flex items-center gap-1 hover:underline">
             Öffentliche Seite <ExternalLink className="w-4 h-4" />
@@ -185,7 +185,7 @@ export function ProfileEditor() {
 
       <StatusLine draft={draft} />
       {!profile?.schoolId && (
-        <p className="text-sm text-[#FF9100]">Tritt zuerst auf der Startseite einer Klasse bei, damit deine Lehrperson dein Profil freigeben kann.</p>
+        <p className="text-sm text-warning">Tritt zuerst auf der Startseite einer Klasse bei, damit deine Lehrperson dein Profil freigeben kann.</p>
       )}
 
       <div className="grid gap-6 md:grid-cols-[160px_1fr]">
@@ -198,7 +198,7 @@ export function ProfileEditor() {
             <span className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><Camera className="w-7 h-7" /></span>
           </button>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={uploadAvatar} />
-          {form.avatarUrl && <button type="button" onClick={() => set('avatarUrl', null)} className="text-xs text-white/40 hover:text-white">Bild entfernen</button>}
+          {form.avatarUrl && <button type="button" onClick={() => set('avatarUrl', null)} className="text-xs text-white/60 hover:text-white">Bild entfernen</button>}
         </div>
 
         <div className="space-y-4">
@@ -210,10 +210,10 @@ export function ProfileEditor() {
           </label>
           <label className="block space-y-1 text-xs text-white/50">Profil-Link
             <div className="flex items-center gap-1">
-              <span className="text-sm text-white/40 shrink-0">/artists/</span>
+              <span className="text-sm text-white/60 shrink-0">/artists/</span>
               <Input value={form.handle} maxLength={30} onChange={(e) => set('handle', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} />
             </div>
-            {!handleOk && form.handle && <span className="text-[#FF9100]">3–30 Zeichen: a–z, 0–9, Bindestrich (nicht am Anfang/Ende)</span>}
+            {!handleOk && form.handle && <span className="text-warning">3–30 Zeichen: a–z, 0–9, Bindestrich (nicht am Anfang/Ende)</span>}
           </label>
           <label className="block space-y-1 text-xs text-white/50">Über mich
             <Textarea value={form.bio ?? ''} maxLength={1500} rows={4} onChange={(e) => set('bio', e.target.value)} placeholder="Was machst du musikalisch? Wer inspiriert dich?" />
@@ -230,7 +230,7 @@ export function ProfileEditor() {
         {form.embeds.map((url) => (
           <div key={url} className="flex items-center gap-2 text-sm bg-white/5 rounded-lg px-3 py-2">
             <span className="flex-1 truncate">{url}</span>
-            <button type="button" onClick={() => set('embeds', form.embeds.filter((x) => x !== url))}><Trash2 className="w-4 h-4 text-white/40 hover:text-destructive" /></button>
+            <button type="button" onClick={() => set('embeds', form.embeds.filter((x) => x !== url))}><Trash2 className="w-4 h-4 text-white/60 hover:text-destructive" /></button>
           </div>
         ))}
         <div className="flex gap-2">
@@ -244,7 +244,7 @@ export function ProfileEditor() {
         {form.links.map((l) => (
           <div key={l.url} className="flex items-center gap-2 text-sm bg-white/5 rounded-lg px-3 py-2">
             <span className="font-bold shrink-0">{l.label || 'Link'}</span><span className="flex-1 truncate text-white/50">{l.url}</span>
-            <button type="button" onClick={() => set('links', form.links.filter((x) => x.url !== l.url))}><Trash2 className="w-4 h-4 text-white/40 hover:text-destructive" /></button>
+            <button type="button" onClick={() => set('links', form.links.filter((x) => x.url !== l.url))}><Trash2 className="w-4 h-4 text-white/60 hover:text-destructive" /></button>
           </div>
         ))}
         <div className="flex gap-2">

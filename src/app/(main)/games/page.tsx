@@ -9,6 +9,7 @@ import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebas
 import { Game, GameType, LearnApp, Level, LevelProgress, Studio, getAccuracyColor, hasAccess } from '@/lib/game/types';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { PageHeader } from '@/components/ds';
 
 type Filter = 'all' | GameType | 'learn';
 
@@ -76,10 +77,7 @@ export default function GamesPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-gradient">Games</h1>
-        <p className="text-white/50 mt-2">Alle Games auf einen Blick. Jedes Spiel gibt es in den Studios mit eigenem Beat und Tempo.</p>
-      </div>
+      <PageHeader title="Games" subtitle="Alle Games auf einen Blick. Jedes Spiel gibt es in den Studios mit eigenem Beat und Tempo." />
 
       <section className="grid gap-3 md:grid-cols-3">
         {TYPE_ORDER.map((t) => {
@@ -90,7 +88,7 @@ export default function GamesPage() {
               className={cn('text-left p-5 rounded-2xl border bg-black transition-colors relative overflow-hidden', filter === t ? 'border-white/40' : 'border-white/10 hover:border-white/25')}>
               <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-[60px] opacity-30" style={{ backgroundColor: info.color }} />
               <Icon className="w-7 h-7 mb-3 relative" style={{ color: info.color }} />
-              <h2 className="text-xl font-black uppercase italic tracking-tighter relative">{info.title}</h2>
+              <h2 className="text-xl h-display relative">{info.title}</h2>
               <p className="text-sm text-white/50 relative">{info.text}</p>
             </button>
           );
@@ -113,7 +111,7 @@ export default function GamesPage() {
             {[...(studios ?? [])].sort((a, b) => a.name.localeCompare(b.name, 'de')).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/60" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Suchen" className="h-9 pl-9 w-40 md:w-56" />
           </div>
         </div>
@@ -131,8 +129,8 @@ export default function GamesPage() {
                 <div className="flex items-center gap-3">
                   <Icon className="w-7 h-7" style={{ color: info.color }} />
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Lern-Game</p>
-                    <h3 className="font-black uppercase italic tracking-tighter text-lg">{app.name}</h3>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Lern-Game</p>
+                    <h3 className="h-display text-lg">{app.name}</h3>
                   </div>
                 </div>
                 <p className="text-sm text-white/50">{info.text}</p>
@@ -151,8 +149,8 @@ export default function GamesPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                   <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between gap-2">
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: info?.color }}>{info?.title ?? game.name}</p>
-                      <h3 className="font-black uppercase italic tracking-tighter text-xl leading-none">{studio.name}</h3>
+                      <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: info?.color }}>{info?.title ?? game.name}</p>
+                      <h3 className="h-display text-xl leading-none">{studio.name}</h3>
                     </div>
                     {game.bpm && <span className="text-xs font-bold text-white/70 shrink-0">{game.bpm} BPM</span>}
                   </div>
@@ -166,20 +164,20 @@ export default function GamesPage() {
                           className="w-11 h-11 rounded-xl border flex flex-col items-center justify-center text-sm font-black hover:scale-105 transition-transform"
                           style={{ borderColor: acc != null ? getAccuracyColor(acc) : 'rgba(255,255,255,0.15)', color: acc != null ? getAccuracyColor(acc) : undefined }}>
                           {idx + 1}
-                          {acc != null && <span className="text-[8px] font-bold leading-none">{acc}%</span>}
+                          {acc != null && <span className="text-xs font-bold leading-none">{acc}%</span>}
                         </Link>
                       );
                     })}
-                    {gameLevels.length === 0 && <p className="text-sm text-white/40">Noch keine Levels.</p>}
+                    {gameLevels.length === 0 && <p className="text-sm text-white/60">Noch keine Levels.</p>}
                   </div>
-                  <Link href={`/studio/${studio.id}`} className="mt-auto text-xs text-white/40 hover:text-white flex items-center gap-1">
+                  <Link href={`/studio/${studio.id}`} className="mt-auto text-xs text-white/60 hover:text-white flex items-center gap-1">
                     Studio & Tracks <ExternalLink className="w-3 h-3" />
                   </Link>
                 </div>
               </div>
             );
           })}
-          {entries.length === 0 && learnGames.length === 0 && <p className="text-white/40">Keine Games gefunden.</p>}
+          {entries.length === 0 && learnGames.length === 0 && <p className="text-white/60">Keine Games gefunden.</p>}
         </div>
       )}
     </div>

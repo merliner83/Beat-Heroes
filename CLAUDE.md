@@ -36,6 +36,15 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 - Claude-Vorschau: `.claude/launch.json` startet einen zweiten Dev-Server auf
   Port 9003 mit eigenem Build-Ordner `.next-preview`.
 
+## Design-System (23.11.2026)
+- Bausteine in `src/components/ds.tsx` (PageHeader, SectionTitle, Panel,
+  Chip, Tag, EmptyState, Loading). Farben als Tailwind-Tokens: `brand`,
+  `success`, `warning`, `credit`, `info`, `violet` (z.B. `text-success`).
+- `.h-display` (fett/kursiv/gross) nur für Titel; `.eyebrow` für Labels;
+  Fliesstext und Buttons normal. Mind. 12px, Text mind. `text-white/60`.
+- Alles auf Deutsch (Schweiz). Handy-Navigation max. 5 Punkte; Lehrperson/
+  Admin im Konto-Menü (Desktop ab xl auch oben).
+
 ## Domain
 - `beat-heroes.com` + `www` bei Infomaniak; am Backend `beat-heroes`
   angemeldet (23.11.2026). DNS: A → 35.219.200.100 (statt .10), neue

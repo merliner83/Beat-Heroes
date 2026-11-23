@@ -140,73 +140,73 @@ export const EarTrainingView: React.FC<EarTrainingViewProps> = ({ game, level })
     <div className="flex flex-col h-screen bg-[#050505] text-white p-4 font-body overflow-hidden">
       <header className="flex justify-between items-center h-20 shrink-0 z-50 px-6 bg-black/40 backdrop-blur-xl border-b border-white/5 rounded-t-3xl">
         <div className="flex items-center gap-4">
-          <Link href="/learn"><ArrowLeft className="w-6 h-6 text-white/40 hover:text-white transition-all hover:scale-110" /></Link>
+          <Link href="/learn"><ArrowLeft className="w-6 h-6 text-white/60 hover:text-white transition-all hover:scale-110" /></Link>
           <div className="pr-12">
-            <h1 className="text-lg md:text-xl font-black uppercase italic tracking-tighter text-gradient whitespace-nowrap">EAR TRAINING</h1>
-            <p className="text-[10px] opacity-30 uppercase font-black tracking-[0.2em] mt-1">Master the Spectrum</p>
+            <h1 className="text-lg md:text-xl h-display text-gradient whitespace-nowrap">EAR TRAINING</h1>
+            <p className="text-xs opacity-30 uppercase font-black tracking-wider mt-1">Frequenzen erkennen</p>
           </div>
         </div>
       </header>
       <main className="flex-1 flex flex-col items-center justify-start p-6 relative overflow-y-auto">
         {(quizStatus === 'IDLE' || mode === 'explore') && (
-          <div className="relative z-50 animate-in fade-in slide-in-from-top-4 duration-500 mb-10">
+          <div className="relative z-50 animate-in fade-in slide-in-from-top-4 duration-300 mb-10">
             <div className="inline-flex p-1.5 bg-white/5 rounded-xl border border-white/5 backdrop-blur-xl shadow-2xl">
-              <Button variant="ghost" onClick={() => { setMode('explore'); setQuizStatus('IDLE'); }} className={cn("rounded-lg px-8 py-6 text-base font-black uppercase tracking-widest", mode === 'explore' ? "bg-white/10 text-white" : "text-white/20")}>Explore</Button>
-              <Button variant="ghost" onClick={() => { setMode('quiz'); if(quizStatus === 'RESULTS' || quizStatus === 'IDLE') setQuizStatus('IDLE'); }} className={cn("rounded-lg px-8 py-6 text-base font-black uppercase tracking-widest", mode === 'quiz' ? "bg-primary text-white" : "text-white/20")}>Quiz Mode</Button>
+              <Button variant="ghost" onClick={() => { setMode('explore'); setQuizStatus('IDLE'); }} className={cn("rounded-lg px-8 py-6 text-base font-black uppercase tracking-widest", mode === 'explore' ? "bg-white/10 text-white" : "text-white/20")}>Erkunden</Button>
+              <Button variant="ghost" onClick={() => { setMode('quiz'); if(quizStatus === 'RESULTS' || quizStatus === 'IDLE') setQuizStatus('IDLE'); }} className={cn("rounded-lg px-8 py-6 text-base font-black uppercase tracking-widest", mode === 'quiz' ? "bg-primary text-white" : "text-white/20")}>Quiz</Button>
             </div>
           </div>
         )}
         {mode === 'explore' && (
-          <div className="w-full max-w-2xl space-y-16 animate-in zoom-in-95 duration-700">
+          <div className="w-full max-w-2xl space-y-16 animate-in zoom-in-95 duration-300">
             <div className="gemini-border-primary">
               <div className="p-10 bg-black/60 backdrop-blur-3xl space-y-8 rounded-xl border border-white/5">
                 <div className="flex flex-col items-center">
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl md:text-6xl font-black italic text-gradient">{currentFreq >= 1000 ? currentFreq / 1000 : currentFreq}</span>
-                    <span className="text-lg font-black opacity-20 uppercase tracking-[0.4em]">{currentFreq >= 1000 ? "KHZ" : "HZ"}</span>
+                    <span className="text-lg font-black opacity-20 uppercase tracking-wider">{currentFreq >= 1000 ? "KHZ" : "HZ"}</span>
                   </div>
                   <span className="text-sm font-black opacity-40 uppercase tracking-widest mt-2">{FREQUENCY_CONFIG.find(c => c.freq === currentFreq)?.label}</span>
                 </div>
                 <Slider min={0} max={FREQUENCY_STEPS.length - 1} step={1} value={[FREQUENCY_STEPS.indexOf(currentFreq)]} onValueChange={handleFrequencyChange} className="py-8" />
               </div>
             </div>
-            <Button onClick={() => toggleNoise()} className={cn("w-full h-20 rounded-2xl text-xl font-black uppercase italic shadow-xl", isPlaying ? "bg-[#FF3D00] text-white" : "bg-white text-black")}>
+            <Button onClick={() => toggleNoise()} className={cn("w-full h-20 rounded-2xl text-xl font-bold shadow-xl", isPlaying ? "bg-[#FF3D00] text-white" : "bg-white text-black")}>
               {isPlaying ? <><Pause className="mr-4 w-7 h-7" fill="currentColor" /> Stop Engine</> : <><Play className="mr-4 w-7 h-7" fill="currentColor" /> Play Noise</>}
             </Button>
           </div>
         )}
         {mode === 'quiz' && (
-          <div className="w-full max-w-3xl animate-in slide-in-from-bottom-8 duration-700">
+          <div className="w-full max-w-3xl animate-in slide-in-from-bottom-8 duration-300">
             {quizStatus === 'IDLE' && (
               <div className="text-center space-y-10 mt-6">
                 <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto border border-primary/20"><Headphones className="w-10 h-10 text-primary" /></div>
-                <div><h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter mb-3">EAR TRAINING</h2><p className="text-[11px] opacity-40 uppercase tracking-[0.3em]">6 Rounds frequency identification</p></div>
-                <Button onClick={startQuizSession} className="w-full h-20 md:h-32 bg-primary text-white text-xl md:text-3xl font-black uppercase italic rounded-2xl shadow-2xl">Start Quiz</Button>
+                <div><h2 className="text-3xl md:text-4xl h-display mb-3">EAR TRAINING</h2><p className="text-xs opacity-40 uppercase tracking-wider">6 Runden: Welche Frequenz hörst du?</p></div>
+                <Button onClick={startQuizSession} className="w-full h-20 md:h-32 bg-primary text-white text-xl md:text-3xl font-bold rounded-2xl shadow-2xl">Quiz starten</Button>
                 {weeklyAverage > 0 && <div className="flex items-center justify-center gap-3 text-sm opacity-30 font-black uppercase tracking-widest pt-4"><BarChart3 className="w-5 h-5" /> Weekly Average: <span style={{ color: getAccuracyColor(weeklyAverage) }}>{weeklyAverage}%</span></div>}
               </div>
             )}
             {(quizStatus === 'PLAYING' || quizStatus === 'FEEDBACK') && (
               <div className="space-y-8 pt-10">
                 <div className="flex justify-between items-center bg-white/5 px-6 py-4 rounded-xl border border-white/5">
-                   <div className="text-[10px] font-black uppercase tracking-widest opacity-40">Round {round} / {TOTAL_ROUNDS}</div>
-                   <Button variant="ghost" onClick={() => toggleNoise()} className={cn("h-10 rounded-lg px-6 text-[9px] font-black uppercase tracking-widest border", isPlaying ? "bg-primary text-white border-primary" : "bg-white/5 border-white/10")}>{isPlaying ? "Pause" : "Play Sound"}</Button>
+                   <div className="text-xs font-black uppercase tracking-widest opacity-40">Round {round} / {TOTAL_ROUNDS}</div>
+                   <Button variant="ghost" onClick={() => toggleNoise()} className={cn("h-10 rounded-lg px-6 text-xs font-black uppercase tracking-widest border", isPlaying ? "bg-primary text-white border-primary" : "bg-white/5 border-white/10")}>{isPlaying ? "Pause" : "Ton abspielen"}</Button>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   {FREQUENCY_STEPS.map(freq => (
-                    <Button key={freq} disabled={quizStatus === 'FEEDBACK'} onClick={() => handleGuess(freq)} className={cn("w-full h-16 rounded-lg border flex flex-col items-center justify-center transition-all", quizStatus === 'FEEDBACK' ? (freq === targetFreq ? "bg-[#00E676] text-black shadow-lg" : freq === lastGuess ? "bg-[#FF3D00] text-white" : "opacity-10 bg-transparent") : "bg-white/5 border-white/10")}>
+                    <Button key={freq} disabled={quizStatus === 'FEEDBACK'} onClick={() => handleGuess(freq)} className={cn("w-full h-16 rounded-lg border flex flex-col items-center justify-center transition-all", quizStatus === 'FEEDBACK' ? (freq === targetFreq ? "bg-success text-black shadow-lg" : freq === lastGuess ? "bg-[#FF3D00] text-white" : "opacity-10 bg-transparent") : "bg-white/5 border-white/10")}>
                       <span className="text-base font-black italic">{freq >= 1000 ? freq / 1000 : freq}</span>
-                      <span className="text-[8px] font-black opacity-50 uppercase">{freq >= 1000 ? "KHZ" : "HZ"}</span>
+                      <span className="text-xs font-black opacity-50 uppercase">{freq >= 1000 ? "KHZ" : "HZ"}</span>
                     </Button>
                   ))}
                 </div>
-                {quizStatus === 'FEEDBACK' && <Button onClick={nextRound} className="w-full h-16 bg-white text-black text-lg font-black uppercase italic rounded-xl shadow-xl">Next Round</Button>}
+                {quizStatus === 'FEEDBACK' && <Button onClick={nextRound} className="w-full h-16 bg-white text-black text-lg font-bold rounded-xl shadow-xl">Nächste Runde</Button>}
               </div>
             )}
             {quizStatus === 'RESULTS' && (
               <div className="text-center space-y-12 animate-in zoom-in-95 mt-6">
-                <Trophy className="w-20 h-20 mx-auto text-[#FFEA00]" />
+                <Trophy className="w-20 h-20 mx-auto text-credit" />
                 <h3 className="text-6xl font-black italic uppercase tracking-tighter" style={{ color: getAccuracyColor(Math.round(sessionScores.reduce((a,b) => a+b, 0) / TOTAL_ROUNDS)) }}>{Math.round(sessionScores.reduce((a,b) => a+b, 0) / TOTAL_ROUNDS)}%</h3>
-                <div className="flex gap-4"><Button onClick={startQuizSession} variant="outline" className="flex-1 h-16 rounded-xl uppercase font-black italic">New Quiz</Button><Link href="/learn" className="flex-1"><Button className="w-full h-16 bg-white text-black rounded-xl font-black uppercase italic shadow-xl">Finish</Button></Link></div>
+                <div className="flex gap-4"><Button onClick={startQuizSession} variant="outline" className="flex-1 h-16 rounded-xl uppercase font-black italic">Neues Quiz</Button><Link href="/learn" className="flex-1"><Button className="w-full h-16 bg-white text-black rounded-xl font-bold shadow-xl">Fertig</Button></Link></div>
               </div>
             )}
           </div>

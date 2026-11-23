@@ -68,10 +68,10 @@ export const SamplerPad: React.FC<SamplerPadProps> = ({ label, shortcut, onPress
           msUserSelect: 'none'
         }}
       >
-        <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest opacity-40 mb-2 pointer-events-none select-none">
+        <span className="text-xs md:text-xs font-black uppercase tracking-widest opacity-40 mb-2 pointer-events-none select-none">
           {shortcut}
         </span>
-        <span className="text-[11px] md:text-sm font-black uppercase italic tracking-tighter line-clamp-1 pointer-events-none select-none">
+        <span className="text-xs md:text-sm h-display line-clamp-1 pointer-events-none select-none">
           {label}
         </span>
       </button>

@@ -132,8 +132,8 @@ export const ProfileView = () => {
   if (isUserLoading || isLoadingStudios) {
     return (
       <div className="h-64 flex flex-col items-center justify-center gap-4">
-        <Loader2 className="w-10 h-10 animate-spin text-[#FFEA00]" />
-        <p className="text-xs font-black uppercase tracking-[0.4em] opacity-30">Loading Rack Stats...</p>
+        <Loader2 className="w-10 h-10 animate-spin text-credit" />
+        <p className="text-xs font-semibold uppercase tracking-wider opacity-30">Statistik wird geladen …</p>
       </div>
     );
   }
@@ -141,7 +141,7 @@ export const ProfileView = () => {
   const streetCred = profile?.streetCred || 0;
 
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 pb-32 max-w-6xl mx-auto">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300 pb-32 max-w-6xl mx-auto">
       
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="gemini-border">
@@ -151,7 +151,7 @@ export const ProfileView = () => {
               <span className="text-4xl">👑</span>
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Rang in der Schule</p>
+              <p className="text-xs font-semibold uppercase tracking-wider opacity-40 mb-1">Rang in der Schule</p>
               <h3 className="text-5xl font-black italic tracking-tighter text-white uppercase leading-none">
                 # {globalRank}
               </h3>
@@ -161,9 +161,9 @@ export const ProfileView = () => {
 
         <div className="gemini-border-accent">
           <div className="p-8 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4">
-            <Zap className="w-10 h-10 text-[#FFEA00]" fill="currentColor" />
+            <Zap className="w-10 h-10 text-credit" fill="currentColor" />
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Total Street Cred</p>
+              <p className="text-xs font-semibold uppercase tracking-wider opacity-40 mb-1">Credits total</p>
               <h3 className="text-6xl font-black italic tracking-tighter text-white">
                 {streetCred.toLocaleString()}
               </h3>
@@ -173,9 +173,9 @@ export const ProfileView = () => {
 
         <div className="gemini-border-primary">
           <div className="p-8 bg-black/40 backdrop-blur-xl flex flex-col items-center text-center gap-4">
-            <TrendingUp className="w-10 h-10 text-[#00E676]" />
+            <TrendingUp className="w-10 h-10 text-success" />
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-1">Avg. Sync</p>
+              <p className="text-xs font-semibold uppercase tracking-wider opacity-40 mb-1">Ø Trefferquote</p>
               <h3 className="text-6xl font-black italic tracking-tighter transition-colors duration-500" style={{ color: getAccuracyColor(stats.avgAccuracy) }}>
                 {stats.avgAccuracy}%
               </h3>
@@ -189,9 +189,9 @@ export const ProfileView = () => {
            <div className="flex items-center justify-between mb-8">
              <div className="flex items-center gap-3">
                <BarChart3 className="w-5 h-5 text-primary" />
-               <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white">Sync History</h3>
+               <h3 className="text-xs font-semibold uppercase tracking-wider text-white">Trefferquote der letzten Wochen</h3>
              </div>
-             <div className="flex items-center gap-2 opacity-30 text-[10px] font-black uppercase tracking-widest">
+             <div className="flex items-center gap-2 opacity-30 text-xs font-black uppercase tracking-widest">
                <Calendar className="w-4 h-4" /> Last 6 Weeks
              </div>
            </div>
@@ -213,21 +213,21 @@ export const ProfileView = () => {
       <section>
         <div className="flex items-center gap-3 mb-6">
           <BookOpen className="w-5 h-5 text-primary" />
-          <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white/50">Quiz Mastery</h3>
+          <h3 className="text-base font-bold text-white/90">Fortschritt in den Lektionen</h3>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
            {categoryProgress.map(cat => (
              <div key={cat.id} className="p-5 rounded-2xl bg-white/5 border border-white/5">
                 <div className="flex items-center gap-3 mb-4">
                   <div className={cn("p-1.5 rounded-lg bg-black/40", cat.colorClass)}><BookOpen className="w-4 h-4" /></div>
-                  <h4 className="text-[10px] font-black uppercase italic tracking-tighter truncate">{cat.title}</h4>
+                  <h4 className="text-xs h-display truncate">{cat.title}</h4>
                 </div>
                 <div className="flex justify-between items-baseline mb-2">
-                   <span className="text-[9px] font-black uppercase opacity-20">Fulfillment</span>
+                   <span className="text-xs font-black uppercase opacity-20">Erreicht</span>
                    <span className="text-lg font-black italic" style={{ color: getAccuracyColor(cat.percent) }}>{cat.percent}%</span>
                 </div>
                 <Progress value={cat.percent} className="h-1" />
-                <p className="text-[8px] font-black uppercase tracking-widest opacity-20 mt-2 text-right">
+                <p className="text-xs font-black uppercase tracking-widest opacity-20 mt-2 text-right">
                   {cat.earned} / {cat.total} SC
                 </p>
              </div>
@@ -238,7 +238,7 @@ export const ProfileView = () => {
       <section>
         <div className="flex items-center gap-3 mb-6">
           <Music className="w-5 h-5 text-primary" />
-          <h3 className="text-xs font-black uppercase tracking-[0.5em] text-white/50">Studio Sessions</h3>
+          <h3 className="text-base font-bold text-white/90">Games</h3>
         </div>
         <div className="space-y-4">
           {studios?.map(studio => {
@@ -249,11 +249,11 @@ export const ProfileView = () => {
               <div key={studio.id} className="gemini-border-primary overflow-hidden">
                 <div onClick={() => toggleStudio(studio.id)} className="p-5 bg-black/60 flex items-center justify-between cursor-pointer hover:bg-black/40 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-black italic text-primary border border-primary/20">{studio.name.charAt(0)}</div>
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-xs font-black italic text-primary border border-primary/20">{studio.name.charAt(0)}</div>
                     <h4 className="text-sm font-black uppercase italic tracking-widest">{studio.name}</h4>
                   </div>
                   <div className="flex items-center gap-6">
-                    <span className="text-[10px] font-black opacity-30 uppercase tracking-widest">{studioGames.length} Modules</span>
+                    <span className="text-xs font-black opacity-30 uppercase tracking-widest">{studioGames.length} Games</span>
                     {isCollapsed ? <ChevronDown className="w-5 h-5 opacity-20" /> : <ChevronUp className="w-5 h-5 opacity-20" />}
                   </div>
                 </div>
@@ -272,8 +272,8 @@ export const ProfileView = () => {
                           <Icon className="w-5 h-5 text-primary opacity-40 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-center mb-1">
-                              <span className="text-[9px] font-black uppercase italic tracking-tighter opacity-70 truncate pr-2">{game.name}</span>
-                              <span className="text-[10px] font-black italic" style={{ color: getAccuracyColor(mastery) }}>{mastery}%</span>
+                              <span className="text-xs h-display opacity-70 truncate pr-2">{game.name}</span>
+                              <span className="text-xs font-black italic" style={{ color: getAccuracyColor(mastery) }}>{mastery}%</span>
                             </div>
                             <Progress value={mastery} className="h-0.5" />
                           </div>

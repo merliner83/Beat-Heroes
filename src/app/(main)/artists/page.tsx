@@ -8,6 +8,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { ARTIST_GENRES, ARTIST_ROLES, PublicProfile } from '@/lib/game/types';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { PageHeader } from '@/components/ds';
 
 export default function ArtistsPage() {
   const db = useFirestore();
@@ -38,15 +39,12 @@ export default function ArtistsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-gradient">Artists</h1>
-        <p className="text-white/50 mt-2">Producer, Rapper:innen, Sänger:innen und Musiker:innen der Musikschulen. Finde deine nächste Kollabo.</p>
-      </div>
+      <PageHeader title="Artists" subtitle="Producer, Rapper:innen, Sänger:innen und Musiker:innen der Musikschulen. Finde deine nächste Kollabo." />
 
       <div className="space-y-3">
         <div className="flex flex-col md:flex-row gap-2">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/60" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Name, Genre, Stil …" className="pl-9" />
           </div>
           <select value={genre} onChange={(e) => setGenre(e.target.value)} className="h-10 rounded-md bg-white/5 border border-white/15 px-3 text-sm" aria-label="Genre">
@@ -71,7 +69,7 @@ export default function ArtistsPage() {
             );
           })}
           <button onClick={() => setCollabOnly(!collabOnly)}
-            className={cn('px-3 h-8 rounded-full text-sm font-bold border transition-colors flex items-center gap-1', collabOnly ? 'bg-[#00E676] border-[#00E676] text-black' : 'border-white/15 text-white/60 hover:text-white')}>
+            className={cn('px-3 h-8 rounded-full text-sm font-bold border transition-colors flex items-center gap-1', collabOnly ? 'bg-success border-success text-black' : 'border-white/15 text-white/60 hover:text-white')}>
             <Handshake className="w-4 h-4" /> Offen für Kollabos
           </button>
         </div>
@@ -80,7 +78,7 @@ export default function ArtistsPage() {
       {isLoading ? (
         <div className="h-64 flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>
       ) : list.length === 0 ? (
-        <p className="text-white/40 py-10">
+        <p className="text-white/60 py-10">
           {(profiles ?? []).length === 0 ? 'Noch keine freigegebenen Profile. Gestalte deins unter «Ich».' : 'Niemand passt zu diesen Filtern.'}
         </p>
       ) : (
@@ -93,14 +91,14 @@ export default function ArtistsPage() {
               </div>
               <div className="min-w-0 flex-1 space-y-2">
                 <div>
-                  <h2 className="font-black uppercase italic tracking-tighter text-lg leading-tight truncate group-hover:text-primary transition-colors">{p.artistName}</h2>
-                  {p.schoolName && <p className="text-xs text-white/40 truncate">{p.schoolName}</p>}
+                  <h2 className="h-display text-lg leading-tight truncate group-hover:text-primary transition-colors">{p.artistName}</h2>
+                  {p.schoolName && <p className="text-xs text-white/60 truncate">{p.schoolName}</p>}
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  {p.roles.slice(0, 3).map((r) => <span key={r} className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[11px] font-bold">{r}</span>)}
-                  {p.genres.slice(0, 2).map((g) => <span key={g} className="px-2 py-0.5 rounded-full bg-white/10 text-white/60 text-[11px] font-bold">{g}</span>)}
+                  {p.roles.slice(0, 3).map((r) => <span key={r} className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-bold">{r}</span>)}
+                  {p.genres.slice(0, 2).map((g) => <span key={g} className="px-2 py-0.5 rounded-full bg-white/10 text-white/60 text-xs font-bold">{g}</span>)}
                 </div>
-                {p.openForCollab && <p className="text-xs text-[#00E676] flex items-center gap-1"><Handshake className="w-3.5 h-3.5" /> Offen für Kollabos</p>}
+                {p.openForCollab && <p className="text-xs text-success flex items-center gap-1"><Handshake className="w-3.5 h-3.5" /> Offen für Kollabos</p>}
               </div>
             </Link>
           ))}

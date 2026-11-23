@@ -14,11 +14,11 @@ function LessonLink({ lesson, passed, locked }: { lesson: Article; passed: boole
     <Link href={locked ? '#' : `/learn/article/${lesson.id}`} className={cn('block group/l', locked && 'cursor-not-allowed opacity-50')}>
       <div className={cn(
         'p-4 rounded-xl border transition-all flex items-center justify-between gap-3',
-        passed ? 'bg-[#00E676]/10 border-[#00E676]/30' : 'bg-black/40 border-white/5 hover:border-primary/30',
+        passed ? 'bg-success/10 border-success/30' : 'bg-black/40 border-white/5 hover:border-primary/30',
       )}>
         <div className="flex items-center gap-3 min-w-0">
-          {passed && <CheckCircle2 className="w-4 h-4 text-[#00E676] shrink-0" />}
-          <span className={cn('text-sm font-bold truncate', passed ? 'text-[#00E676]' : 'group-hover/l:text-primary')}>{lesson.title}</span>
+          {passed && <CheckCircle2 className="w-4 h-4 text-success shrink-0" />}
+          <span className={cn('text-sm font-bold truncate', passed ? 'text-success' : 'group-hover/l:text-primary')}>{lesson.title}</span>
         </div>
         {locked ? <Lock className="w-3 h-3 text-white/20 shrink-0" /> : <ChevronRight className="w-4 h-4 text-white/20 shrink-0" />}
       </div>
@@ -39,12 +39,12 @@ export function CourseView({ courseId }: { courseId: string }) {
   const byOrder = (a: { order?: number }, b: { order?: number }) => (a.order ?? 0) - (b.order ?? 0);
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-300">
       <div className="space-y-4">
         <Link href="/learn" className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white"><ArrowLeft className="w-4 h-4" /> Alle Kurse</Link>
         <div className="relative overflow-hidden p-6 md:p-10 rounded-[2rem] border border-white/10 bg-black">
           <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full blur-[110px] opacity-30" style={{ backgroundColor: course.color }} />
-          <h1 className="relative text-3xl md:text-5xl font-black uppercase italic tracking-tighter">{course.title}</h1>
+          <h1 className="relative text-3xl md:text-5xl h-display">{course.title}</h1>
           {course.description && <p className="relative text-white/60 mt-3 max-w-2xl">{course.description}</p>}
           {stats.total > 0 && <p className="relative text-sm text-white/50 mt-4">{stats.done} von {stats.total} Lektionen bestanden</p>}
         </div>
@@ -67,8 +67,8 @@ export function CourseView({ courseId }: { courseId: string }) {
                 <div className="flex items-center gap-4 w-full pr-3">
                   <div className={cn('p-2 rounded-xl bg-white/5', ch.colorClass)}><Icon className="w-5 h-5" /></div>
                   <div className="flex-1 min-w-0 text-left">
-                    <h2 className="text-lg md:text-2xl font-black uppercase italic tracking-tighter truncate">{ch.title}</h2>
-                    <p className="text-xs text-white/40 font-normal">
+                    <h2 className="text-lg md:text-2xl h-display truncate">{ch.title}</h2>
+                    <p className="text-xs text-white/60 font-normal">
                       {empty ? 'Lektionen folgen bald' : `${chLessons.length} Lektionen${apps.length ? ` · ${apps.length} Übung` : ''}`}
                     </p>
                   </div>
@@ -90,7 +90,7 @@ export function CourseView({ courseId }: { courseId: string }) {
                       return (
                         <Link key={app.id} href={`/session/${app.id}`} className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/30 flex items-center gap-3">
                           <AppIcon className="w-6 h-6 shrink-0" style={{ color: APP_COLORS[app.type] ?? '#fff' }} />
-                          <span className="font-black uppercase italic tracking-tighter text-sm">{app.name}</span>
+                          <span className="h-display text-sm">{app.name}</span>
                         </Link>
                       );
                     })}
@@ -108,7 +108,7 @@ export function CourseView({ courseId }: { courseId: string }) {
                   if (scLessons.length === 0) return null;
                   return (
                     <div key={sc.id} className="space-y-2">
-                      <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50">{sc.title}</h3>
+                      <h3 className="text-base font-bold text-white/90">{sc.title}</h3>
                       <div className="grid gap-2 md:grid-cols-2">
                         {scLessons.map((l) => <LessonLink key={l.id} lesson={l} passed={data.passed(l.id)} locked={!hasAccess(data.role, l.minRole)} />)}
                       </div>

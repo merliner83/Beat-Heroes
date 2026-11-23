@@ -116,30 +116,30 @@ export const RhythmTrainerView: React.FC<RhythmTrainerViewProps> = ({ game, leve
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-4 font-body overflow-hidden select-none">
       <header className="flex justify-between items-center h-20 px-6 bg-black/40 backdrop-blur-xl border-b border-white/5 rounded-t-3xl">
-        <div className="flex items-center gap-4"><Link href="/learn"><ArrowLeft className="w-6 h-6 text-white/40 hover:text-white transition-all hover:scale-110" /></Link>
-          <div className="flex flex-col"><h1 className="text-xl font-black uppercase italic tracking-tighter text-gradient leading-none">RHYTHM MASTER</h1><p className="text-[10px] opacity-30 uppercase font-black tracking-[0.2em] mt-1">MIDI Lab Interface</p></div>
+        <div className="flex items-center gap-4"><Link href="/learn"><ArrowLeft className="w-6 h-6 text-white/60 hover:text-white transition-all hover:scale-110" /></Link>
+          <div className="flex flex-col"><h1 className="text-xl h-display text-gradient leading-none">RHYTHM MASTER</h1><p className="text-xs opacity-30 uppercase font-black tracking-wider mt-1">Rhythmus nachklopfen</p></div>
         </div>
       </header>
       <main className="flex-1 flex flex-col items-center p-6 relative overflow-y-auto">
-        <div className="w-full max-w-5xl space-y-12 animate-in zoom-in-95 duration-500">
-          <div className="text-center"><h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter mb-6 text-gradient h-20 flex items-center justify-center">{status === 'COUNT_IN' ? countIn : status === 'RESULTS' ? 'FINISHED' : 'RHYTHM MASTER'}</h2>
-            <div className="flex gap-1 justify-center max-w-2xl mx-auto mb-10">{Array.from({ length: 16 }).map((_, i) => (<div key={i} className={cn("h-10 flex-1 rounded-md border transition-all", (playhead === i && status === 'PLAYING') ? "border-[#00E676] bg-[#00E676]/20 scale-y-110" : (selectedPattern?.steps.some(s => s % 16 === i)) ? "border-primary/40 bg-primary/20" : "border-white/5 bg-white/5")} />))}</div>
+        <div className="w-full max-w-5xl space-y-12 animate-in zoom-in-95 duration-300">
+          <div className="text-center"><h2 className="text-4xl md:text-7xl h-display mb-6 text-gradient h-20 flex items-center justify-center">{status === 'COUNT_IN' ? countIn : status === 'RESULTS' ? 'FINISHED' : 'RHYTHM MASTER'}</h2>
+            <div className="flex gap-1 justify-center max-w-2xl mx-auto mb-10">{Array.from({ length: 16 }).map((_, i) => (<div key={i} className={cn("h-10 flex-1 rounded-md border transition-all", (playhead === i && status === 'PLAYING') ? "border-success bg-success/20 scale-y-110" : (selectedPattern?.steps.some(s => s % 16 === i)) ? "border-primary/40 bg-primary/20" : "border-white/5 bg-white/5")} />))}</div>
           </div>
           <div className="flex items-center justify-center gap-12">
-             <Button onClick={() => (status === 'PLAYING' || status === 'COUNT_IN') ? stopPlayback() : startSession('explore')} className={cn("w-20 h-20 rounded-2xl border bg-black/40", (status === 'PLAYING' || status === 'COUNT_IN') && mode === 'explore' ? "text-primary border-primary" : "text-white/40")}>{(status === 'PLAYING' || status === 'COUNT_IN') && mode === 'explore' ? <Square className="w-6 h-6 fill-primary" /> : <Play className="w-6 h-6 fill-white" />}</Button>
-             <Button onPointerDown={(e) => { e.preventDefault(); handleTap(); }} className={cn("w-44 h-44 rounded-[3rem] border-4 transition-all duration-75 bg-black/40", Date.now() - lastHitTime < 150 ? "border-[#00E676] bg-[#00E676] scale-105" : "border-white/10")}><Target className={cn("w-12 h-12", Date.now() - lastHitTime < 150 ? "text-black" : "text-white/20")} /></Button>
-             <Button onClick={() => startSession('quiz')} disabled={status === 'COUNT_IN' || (status === 'PLAYING' && mode === 'quiz')} className={cn("w-20 h-20 rounded-2xl border bg-black/40", (status === 'PLAYING' || status === 'COUNT_IN') && mode === 'quiz' ? "text-primary border-primary" : "text-white/40")}><Brain className="w-6 h-6" /></Button>
+             <Button onClick={() => (status === 'PLAYING' || status === 'COUNT_IN') ? stopPlayback() : startSession('explore')} className={cn("w-20 h-20 rounded-2xl border bg-black/40", (status === 'PLAYING' || status === 'COUNT_IN') && mode === 'explore' ? "text-primary border-primary" : "text-white/60")}>{(status === 'PLAYING' || status === 'COUNT_IN') && mode === 'explore' ? <Square className="w-6 h-6 fill-primary" /> : <Play className="w-6 h-6 fill-white" />}</Button>
+             <Button onPointerDown={(e) => { e.preventDefault(); handleTap(); }} className={cn("w-44 h-44 rounded-[3rem] border-4 transition-all duration-75 bg-black/40", Date.now() - lastHitTime < 150 ? "border-success bg-success scale-105" : "border-white/10")}><Target className={cn("w-12 h-12", Date.now() - lastHitTime < 150 ? "text-black" : "text-white/20")} /></Button>
+             <Button onClick={() => startSession('quiz')} disabled={status === 'COUNT_IN' || (status === 'PLAYING' && mode === 'quiz')} className={cn("w-20 h-20 rounded-2xl border bg-black/40", (status === 'PLAYING' || status === 'COUNT_IN') && mode === 'quiz' ? "text-primary border-primary" : "text-white/60")}><Brain className="w-6 h-6" /></Button>
           </div>
           {status === 'RESULTS' && (
             <div className="text-center space-y-12 bg-black/90 p-10 rounded-[3rem] border border-white/10 shadow-2xl max-w-lg mx-auto">
-              <Trophy className="w-20 h-20 text-[#FFEA00] mx-auto" />
+              <Trophy className="w-20 h-20 text-credit mx-auto" />
               <h2 className="text-5xl font-black italic text-gradient">{finalScore}%</h2>
-              <div className="flex gap-4"><Button onClick={() => startSession('quiz')} variant="outline" className="flex-1 h-16 rounded-xl font-black italic">Retry</Button><Button onClick={() => setStatus('IDLE')} className="flex-1 h-16 bg-white text-black rounded-xl font-black italic">Done</Button></div>
+              <div className="flex gap-4"><Button onClick={() => startSession('quiz')} variant="outline" className="flex-1 h-16 rounded-xl font-black italic">Nochmals</Button><Button onClick={() => setStatus('IDLE')} className="flex-1 h-16 bg-white text-black rounded-xl font-black italic">Fertig</Button></div>
             </div>
           )}
         </div>
       </main>
-      <footer className="p-8 shrink-0 flex justify-center opacity-20"><div className="flex items-center gap-4"><Volume2 className="w-5 h-5" /><span className="text-[10px] font-black uppercase tracking-[0.5em]">Sample-Accurate Sync Engine</span></div></footer>
+      <footer className="p-8 shrink-0 flex justify-center opacity-20"><div className="flex items-center gap-4"><Volume2 className="w-5 h-5" /><span className="text-xs font-semibold uppercase tracking-wider">Klopf im Takt mit</span></div></footer>
     </div>
   );
 };

@@ -127,7 +127,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
       setCountIn(null);
       setIsPlaying(true); 
       await audioEngine.startBackingTrack(game.backingTrackUrl || '', actualStartTime);
-    } catch (e) { toast({ variant: "destructive", title: "Audio Error" }); } finally { setIsLoadingAudio(false); }
+    } catch (e) { toast({ variant: "destructive", title: "Audio-Fehler" }); } finally { setIsLoadingAudio(false); }
   };
 
   useEffect(() => {
@@ -171,7 +171,7 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
     <div className="flex flex-col h-screen bg-[#050505] text-white p-3 max-w-6xl mx-auto overflow-hidden">
       <header className="flex justify-between items-center mb-2 px-4 h-12 relative z-[60]">
         <div className="flex items-center gap-4"><Link href={`/studio/${game.studioId}`}><ArrowLeft className="w-6 h-6 text-white/50 hover:text-white" /></Link>
-          <div className="flex flex-col"><h1 className="text-xs font-black uppercase italic tracking-tighter leading-none">BEAT HERO</h1><p className="text-[9px] uppercase font-black opacity-30 tracking-widest">{game.name}</p></div>
+          <div className="flex flex-col"><h1 className="text-xs h-display leading-none">BEAT HERO</h1><p className="text-xs uppercase font-black opacity-30 tracking-widest">{game.name}</p></div>
         </div>
         <div className="bg-black/60 backdrop-blur-xl px-5 py-2 rounded-full border border-white/10 flex items-center gap-2.5 h-10">
           <Percent className="w-4 h-4" style={{ color: accColor }} /><p className="text-lg md:text-3xl font-black italic leading-none transition-colors" style={{ color: accColor }}>{score.accuracy}</p>
@@ -187,14 +187,14 @@ export const GameView: React.FC<GameViewProps> = ({ game, level, sounds, pattern
         </div>
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-[70] backdrop-blur-sm">
-            <div className="text-center"><Sparkles className="w-16 h-16 text-[#993DEB] mx-auto mb-6 animate-pulse-neon" /><h2 className="text-2xl md:text-5xl font-black mb-10 uppercase italic tracking-tighter text-gradient">BEAT HERO</h2><Button onClick={startLevel} disabled={isLoadingAudio || !isAudioReady} className="w-56 md:w-80 h-16 md:h-24 text-base md:text-3xl font-black uppercase italic bg-white text-black rounded-3xl transition-all shadow-xl">{!isAudioReady ? "Loading..." : "Initiate Pulse"}</Button></div>
+            <div className="text-center"><Sparkles className="w-16 h-16 text-[#993DEB] mx-auto mb-6 animate-pulse-neon" /><h2 className="text-2xl md:text-5xl font-black mb-10 uppercase italic text-gradient">BEAT HERO</h2><Button onClick={startLevel} disabled={isLoadingAudio || !isAudioReady} className="w-56 md:w-80 h-16 md:h-24 text-base md:text-3xl font-bold bg-white text-black rounded-3xl transition-all shadow-xl">{!isAudioReady ? "Lädt …" : "Los geht's"}</Button></div>
           </div>
         )}
-        {countIn !== null && <div className="absolute inset-0 flex items-center justify-center z-[70] pointer-events-none"><div className="text-[10rem] font-black italic text-[#FFEA00] animate-in zoom-in-50">{countIn}</div></div>}
+        {countIn !== null && <div className="absolute inset-0 flex items-center justify-center z-[70] pointer-events-none"><div className="text-[10rem] font-black italic text-credit animate-in zoom-in-50">{countIn}</div></div>}
         {isFinished && (
           <div className="absolute inset-0 bg-black/98 flex items-center justify-center p-8 z-[80] backdrop-blur-2xl">
-            <div className="text-center space-y-8"><Trophy className={cn("w-20 h-20 mx-auto", score.accuracy >= PASS_THRESHOLD ? "text-[#FFEA00]" : "text-white/10")} /><h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">{score.accuracy >= PASS_THRESHOLD ? "Gold Mastered" : "Desynced"}</h2><p className="font-black text-3xl italic" style={{ color: getAccuracyColor(score.accuracy) }}>{score.accuracy}% Sync</p>
-              <div className="flex gap-6 pt-12"><Button onClick={startLevel} variant="outline" className="flex-1 h-16 rounded-2xl uppercase font-black italic">Retry</Button><Link href={`/studio/${game.studioId}`} className="flex-1"><Button className="w-full h-16 bg-white text-black font-black uppercase italic rounded-2xl">Return</Button></Link></div>
+            <div className="text-center space-y-8"><Trophy className={cn("w-20 h-20 mx-auto", score.accuracy >= PASS_THRESHOLD ? "text-credit" : "text-white/10")} /><h2 className="text-4xl md:text-6xl h-display">{score.accuracy >= PASS_THRESHOLD ? "Geschafft!" : "Fast!"}</h2><p className="font-black text-3xl italic" style={{ color: getAccuracyColor(score.accuracy) }}>{score.accuracy}% Treffer</p>
+              <div className="flex gap-6 pt-12"><Button onClick={startLevel} variant="outline" className="flex-1 h-16 rounded-2xl uppercase font-black italic">Nochmals</Button><Link href={`/studio/${game.studioId}`} className="flex-1"><Button className="w-full h-16 bg-white text-black font-bold rounded-2xl">Zurück</Button></Link></div>
             </div>
           </div>
         )}

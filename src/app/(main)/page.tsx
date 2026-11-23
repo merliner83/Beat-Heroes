@@ -16,10 +16,10 @@ function QuickLink({ href, title, text, icon: Icon, color }: { href: string; tit
     <Link href={href} className="group p-6 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/30 transition-colors flex items-center gap-4">
       <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center shrink-0"><Icon className="w-6 h-6" style={{ color }} /></div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-black uppercase italic tracking-tighter text-xl">{title}</h3>
+        <h3 className="h-display text-xl">{title}</h3>
         <p className="text-sm text-white/50">{text}</p>
       </div>
-      <ArrowRight className="w-5 h-5 text-white/30 group-hover:text-white group-hover:translate-x-1 transition-all" />
+      <ArrowRight className="w-5 h-5 text-white/50 group-hover:text-white group-hover:translate-x-1 transition-all" />
     </Link>
   );
 }
@@ -38,10 +38,10 @@ function Dashboard() {
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-300">
       <section className="relative p-8 md:p-10 rounded-[2rem] bg-gradient-to-br from-primary/15 via-black to-black border border-white/5 overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] -z-10" />
-        <h1 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-gradient mb-3">
+        <h1 className="text-3xl md:text-5xl h-display text-gradient mb-3">
           {signedIn ? `Hey ${name.split(' ')[0]}` : 'Willkommen bei Beat Heroes'}
         </h1>
         <p className="text-white/60 max-w-2xl">
@@ -56,7 +56,7 @@ function Dashboard() {
           <div className="flex items-center gap-4">
             <Sparkles className="w-8 h-8 text-primary" />
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Für dich geteilt</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary">Für dich geteilt</p>
               <h2 className="text-xl font-black">{invited.title}</h2>
             </div>
           </div>

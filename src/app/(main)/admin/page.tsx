@@ -26,7 +26,7 @@ function slugify(name: string) {
 function Section({ icon: Icon, title, children }: { icon: React.ComponentType<{ className?: string }>; title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-4">
-      <div className="flex items-center gap-3"><Icon className="w-5 h-5 text-primary" /><h2 className="text-xs font-black uppercase tracking-[0.4em] text-white/60">{title}</h2></div>
+      <div className="flex items-center gap-3"><Icon className="w-5 h-5 text-primary" /><h2 className="text-base font-bold text-white/90">{title}</h2></div>
       {children}
     </section>
   );
@@ -59,10 +59,10 @@ function SchoolsSection({ schools }: { schools: School[] | null }) {
         {schools?.map((s) => (
           <div key={s.id} className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
             <p className="font-bold">{s.name}</p>
-            <p className="text-xs text-white/40">{s.id}</p>
+            <p className="text-xs text-white/60">{s.id}</p>
           </div>
         ))}
-        {schools?.length === 0 && <p className="text-sm text-white/40">Noch keine Schulen.</p>}
+        {schools?.length === 0 && <p className="text-sm text-white/60">Noch keine Schulen.</p>}
       </div>
     </Section>
   );
@@ -86,13 +86,13 @@ function PeopleSection({ schools }: { schools: School[] | null }) {
 
   return (
     <Section icon={Users} title="Personen">
-      <p className="text-sm text-white/40">Lehrpersonen hier Rolle und Schule geben. Schüler:innen treten selbst per Klassencode bei.</p>
+      <p className="text-sm text-white/60">Lehrpersonen hier Rolle und Schule geben. Schüler:innen treten selbst per Klassencode bei.</p>
       <div className="space-y-2">
         {users?.map((u) => (
           <div key={u.id} className="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex flex-col md:flex-row md:items-center gap-3">
             <div className="flex-1 min-w-0">
               <p className="font-bold truncate">{u.displayName || 'Ohne Namen'}</p>
-              <p className="text-xs text-white/40 truncate">{u.email}</p>
+              <p className="text-xs text-white/60 truncate">{u.email}</p>
             </div>
             <Select value={normalizeRole(u.role)} onValueChange={(v) => update(u.id, { role: v as UserRole })}>
               <SelectTrigger className="md:w-44"><SelectValue /></SelectTrigger>
@@ -174,12 +174,12 @@ function ToolsSection() {
     setBusy('sync');
     const cats = [
       { id: 'intro', title: 'Einführung', iconName: 'BookOpen', colorClass: 'text-primary', order: 10 },
-      { id: 'daws', title: 'DAWs', iconName: 'Cpu', colorClass: 'text-[#00E676]', order: 20 },
-      { id: 'composing', title: 'Composing', iconName: 'Music', colorClass: 'text-[#FFEA00]', order: 30 },
+      { id: 'daws', title: 'DAWs', iconName: 'Cpu', colorClass: 'text-success', order: 20 },
+      { id: 'composing', title: 'Composing', iconName: 'Music', colorClass: 'text-credit', order: 30 },
       { id: 'recording', title: 'Recording', iconName: 'Mic2', colorClass: 'text-[#FF3D00]', order: 40 },
-      { id: 'effects', title: 'Effekte', iconName: 'Wand2', colorClass: 'text-[#3838FA]', order: 50 },
+      { id: 'effects', title: 'Effekte', iconName: 'Wand2', colorClass: 'text-violet', order: 50 },
       { id: 'djing', title: 'DJing', iconName: 'Disc', colorClass: 'text-primary', order: 60 },
-      { id: 'social', title: 'Media & Release', iconName: 'Share2', colorClass: 'text-[#00FFFF]', order: 70 },
+      { id: 'social', title: 'Media & Release', iconName: 'Share2', colorClass: 'text-info', order: 70 },
       { id: 'rights', title: 'Rechte', iconName: 'Scale', colorClass: 'text-[#EB3D99]', order: 80 },
     ];
     try {
@@ -222,7 +222,7 @@ export default function AdminPage() {
     <div className="space-y-12 max-w-5xl">
       <div className="flex items-center gap-4">
         <ShieldCheck className="w-10 h-10 text-primary" />
-        <h1 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter">Admin</h1>
+        <h1 className="text-3xl md:text-5xl h-display">Admin</h1>
       </div>
       <SchoolsSection schools={schools} />
       <PeopleSection schools={schools} />
@@ -241,13 +241,13 @@ export default function AdminPage() {
             (chapterOrder.get(a.chapterId ?? a.categoryId) ?? 0) - (chapterOrder.get(b.chapterId ?? b.categoryId) ?? 0) || (a.order ?? 0) - (b.order ?? 0));
           return (
             <div key={c.id} className="space-y-2">
-              <h3 className="font-black uppercase italic tracking-tighter">{c.title} <span className="text-white/40 text-sm normal-case not-italic font-normal">({lessons.length})</span></h3>
-              {lessons.length === 0 && <p className="text-sm text-white/40">Noch keine Lektionen.</p>}
+              <h3 className="h-display">{c.title} <span className="text-white/60 text-sm normal-case not-italic font-normal">({lessons.length})</span></h3>
+              {lessons.length === 0 && <p className="text-sm text-white/60">Noch keine Lektionen.</p>}
               <div className="grid gap-2 md:grid-cols-2">
                 {sorted.map((a) => (
                   <Link key={a.id} href={`/admin/articles/${a.id}`} className="p-3 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.06]">
-                    <p className="font-bold">{a.title}{a.minRole ? <span className="ml-2 text-xs text-[#FF9100]">Entwurf</span> : null}</p>
-                    <p className="text-xs text-white/40">{chapterTitle.get(a.chapterId ?? a.categoryId) ?? a.categoryId}</p>
+                    <p className="font-bold">{a.title}{a.minRole ? <span className="ml-2 text-xs text-warning">Entwurf</span> : null}</p>
+                    <p className="text-xs text-white/60">{chapterTitle.get(a.chapterId ?? a.categoryId) ?? a.categoryId}</p>
                   </Link>
                 ))}
               </div>

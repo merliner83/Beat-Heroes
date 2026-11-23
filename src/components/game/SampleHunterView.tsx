@@ -93,7 +93,7 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
       setCountIn(null); setIsPlaying(true);
       await audioEngine.startBackingTrack(game.backingTrackUrl || '', start);
       spawnNextNote();
-    } catch (e) { toast({ variant: "destructive", title: "Sync Failed" }); } finally { setIsLoadingAudio(false); }
+    } catch (e) { toast({ variant: "destructive", title: "Laden fehlgeschlagen" }); } finally { setIsLoadingAudio(false); }
   };
 
   useEffect(() => {
@@ -123,8 +123,8 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
   return (
     <div className="flex flex-col h-screen bg-[#050505] text-white p-2 overflow-hidden select-none relative touch-none">
       <header className="flex justify-between items-center h-14 bg-black/60 backdrop-blur-xl border-b border-white/5 rounded-t-[2.5rem]">
-        <div className="flex items-center gap-4"><Link href={`/studio/${game.studioId}`}><ArrowLeft className="w-5 h-5 text-white/40 hover:text-white" /></Link>
-          <div className="flex flex-col"><h1 className="text-[10px] font-black uppercase italic text-primary leading-none">VINYL HUNTER</h1><p className="text-[7px] opacity-30 uppercase font-black">{game.name}</p></div>
+        <div className="flex items-center gap-4"><Link href={`/studio/${game.studioId}`}><ArrowLeft className="w-5 h-5 text-white/60 hover:text-white" /></Link>
+          <div className="flex flex-col"><h1 className="text-xs font-black uppercase italic text-primary leading-none">VINYL HUNTER</h1><p className="text-xs opacity-30 uppercase font-black">{game.name}</p></div>
         </div>
         <div className="bg-black/80 px-5 py-2 rounded-full border border-white/10 flex items-center gap-2 h-10"><Percent className="w-4 h-4" style={{ color: accColor }} /><p className="text-xl font-black italic" style={{ color: accColor }}>{score.accuracy}</p></div>
       </header>
@@ -150,14 +150,14 @@ export const SampleHunterView: React.FC<SampleHunterViewProps> = ({ game, level,
         {projectiles.map(p => <div key={p.id} className="absolute z-40 text-white drop-shadow-xl" style={{ left: `${p.x}%`, top: `${p.y}%`, transform: `translate(-50%, -50%) rotate(${p.rotation}deg)` }}><Disc className="w-12 h-12" /></div>)}
         {!isPlaying && !isFinished && countIn === null && (
           <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[100] backdrop-blur-3xl">
-            <Card className="p-12 bg-black/50 border-none gemini-border text-center max-w-sm"><LayoutGrid className="w-12 h-12 text-primary mx-auto mb-8 animate-pulse" /><h2 className="text-3xl font-black mb-3 italic">VINYL HUNTER</h2><p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 mb-6">Capture the Samples</p><Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-18 bg-white text-black font-black uppercase italic rounded-2xl shadow-xl">{isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Catch"}</Button></Card>
+            <Card className="p-12 bg-black/50 border-none gemini-border text-center max-w-sm"><LayoutGrid className="w-12 h-12 text-primary mx-auto mb-8 animate-pulse" /><h2 className="text-3xl font-black mb-3 italic">VINYL HUNTER</h2><p className="text-xs uppercase font-bold opacity-30 mb-6">Fang die Samples</p><Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-18 bg-white text-black font-bold rounded-2xl shadow-xl">{isLoadingAudio ? <Loader2 className="animate-spin" /> : "Los geht's"}</Button></Card>
           </div>
         )}
-        {countIn !== null && <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none"><div className="text-[12rem] font-black italic text-[#FFEA00] drop-shadow-2xl animate-pulse">{countIn}</div></div>}
+        {countIn !== null && <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none"><div className="text-[12rem] font-black italic text-credit drop-shadow-2xl animate-pulse">{countIn}</div></div>}
         {isFinished && (
           <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[110] p-6 backdrop-blur-3xl">
-            <div className="text-center space-y-10"><Trophy className={cn("w-24 h-24 mx-auto", score.accuracy >= PASS_THRESHOLD ? "text-[#FFEA00]" : "text-white/10")} /><h2 className="text-5xl font-black uppercase italic">{score.accuracy >= PASS_THRESHOLD ? "Gold Mastered" : "Desynced"}</h2><p className="text-4xl font-black italic" style={{ color: getAccuracyColor(score.accuracy) }}>{score.accuracy}% Sync</p>
-              <div className="flex gap-4 pt-4"><Button onClick={startLevel} variant="outline" className="flex-1 h-16 rounded-[1.5rem]">Retry</Button><Link href={`/studio/${game.studioId}`} className="flex-1"><Button className="w-full h-16 bg-white text-black rounded-[1.5rem]">Return</Button></Link></div>
+            <div className="text-center space-y-10"><Trophy className={cn("w-24 h-24 mx-auto", score.accuracy >= PASS_THRESHOLD ? "text-credit" : "text-white/10")} /><h2 className="text-5xl font-black uppercase italic">{score.accuracy >= PASS_THRESHOLD ? "Geschafft!" : "Fast!"}</h2><p className="text-4xl font-black italic" style={{ color: getAccuracyColor(score.accuracy) }}>{score.accuracy}% Treffer</p>
+              <div className="flex gap-4 pt-4"><Button onClick={startLevel} variant="outline" className="flex-1 h-16 rounded-[1.5rem]">Nochmals</Button><Link href={`/studio/${game.studioId}`} className="flex-1"><Button className="w-full h-16 bg-white text-black rounded-[1.5rem]">Zurück</Button></Link></div>
             </div>
           </div>
         )}

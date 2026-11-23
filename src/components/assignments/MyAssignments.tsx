@@ -78,8 +78,8 @@ function useMySubmissions(assignmentIds: string[]) {
 
 function StatusBadge({ submission }: { submission: Submission | null | undefined }) {
   if (!submission) return <Badge variant="outline" className="border-white/20 text-white/60"><Clock className="w-3 h-3 mr-1" /> Offen</Badge>;
-  if (submission.status === 'approved') return <Badge className="bg-[#00E676] text-black hover:bg-[#00E676]"><CheckCircle2 className="w-3 h-3 mr-1" /> Erledigt</Badge>;
-  if (submission.status === 'changes_requested') return <Badge className="bg-[#FF9100] text-black hover:bg-[#FF9100]"><MessageSquareWarning className="w-3 h-3 mr-1" /> Überarbeiten</Badge>;
+  if (submission.status === 'approved') return <Badge className="bg-success text-black hover:bg-success"><CheckCircle2 className="w-3 h-3 mr-1" /> Erledigt</Badge>;
+  if (submission.status === 'changes_requested') return <Badge className="bg-warning text-black hover:bg-warning"><MessageSquareWarning className="w-3 h-3 mr-1" /> Überarbeiten</Badge>;
   return <Badge className="bg-primary/80 hover:bg-primary/80"><Send className="w-3 h-3 mr-1" /> Eingereicht</Badge>;
 }
 
@@ -134,11 +134,11 @@ export function MyAssignments() {
     <section>
       <div className="flex items-center gap-3 mb-4">
         <ClipboardList className="w-5 h-5 text-primary" />
-        <h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/60">Meine Aufgaben</h3>
+        <h3 className="text-base font-bold text-white/90">Meine Aufgaben</h3>
       </div>
 
       {assignments.length === 0 ? (
-        <p className="text-sm text-white/40 p-6 rounded-2xl bg-white/5 border border-white/5">
+        <p className="text-sm text-white/60 p-6 rounded-2xl bg-white/5 border border-white/5">
           Noch keine Aufgaben. Sobald deine Lehrperson dir etwas zuweist, erscheint es hier.
         </p>
       ) : (
@@ -152,7 +152,7 @@ export function MyAssignments() {
               <div key={a.id} className={cn('p-5 rounded-2xl border bg-white/[0.03] flex flex-col gap-3', isDone ? 'border-white/5 opacity-60' : 'border-white/10')}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">
                       {KIND_LABEL[a.kind]}{a.refLabel ? ` · ${a.refLabel}` : ''}
                     </p>
                     <h4 className="font-black text-lg leading-tight">{a.title}</h4>
@@ -161,15 +161,15 @@ export function MyAssignments() {
                 </div>
                 {a.description && <p className="text-sm text-white/60 whitespace-pre-line">{a.description}</p>}
                 {s?.status === 'changes_requested' && s.feedback && (
-                  <p className="text-sm text-[#FF9100] bg-[#FF9100]/10 rounded-xl p-3 whitespace-pre-line">{s.feedback}</p>
+                  <p className="text-sm text-warning bg-warning/10 rounded-xl p-3 whitespace-pre-line">{s.feedback}</p>
                 )}
                 {s?.status === 'approved' && s.feedback && (
-                  <p className="text-sm text-[#00E676] bg-[#00E676]/10 rounded-xl p-3 whitespace-pre-line">{s.feedback}</p>
+                  <p className="text-sm text-success bg-success/10 rounded-xl p-3 whitespace-pre-line">{s.feedback}</p>
                 )}
                 <div className="flex items-center justify-between gap-3 mt-auto pt-1">
                   <div className="flex items-center gap-3 text-xs text-white/50">
                     {due && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> bis {due}</span>}
-                    {a.credits > 0 && <span className="flex items-center gap-1"><Zap className="w-3.5 h-3.5 text-[#FFEA00]" fill="currentColor" /> {a.credits} SC</span>}
+                    {a.credits > 0 && <span className="flex items-center gap-1"><Zap className="w-3.5 h-3.5 text-credit" fill="currentColor" /> {a.credits} SC</span>}
                   </div>
                   {!isDone && (
                     <div className="flex gap-2">
