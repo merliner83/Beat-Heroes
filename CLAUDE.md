@@ -8,8 +8,11 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 - Ursprünglich in Firebase Studio entstanden (wird am 22.03.2027 abgeschaltet).
   Code liegt jetzt lokal in `~/App-Projekte/Beat-Heroes` und auf GitHub
   `merliner83/Beat-Heroes`.
-- Aktiver Entwicklungs-Branch: `learn-2.0` (ist vor `main`). Arbeit in
-  Feature-Branches, PRs nach `learn-2.0`.
+- Branches: Arbeit in Feature-Branches → PR nach `learn-2.0` (Entwicklung)
+  → `learn-2.0` per Fast-Forward nach `main`. **`main` = was live läuft.**
+- Live-Deploy aus lokalem Code von `main`:
+  `firebase deploy --only firestore,storage,apphosting --project beat-heroes-ch`
+  (kein GitHub-Autodeploy). Gemergte Feature-Branches werden gelöscht.
 - Dev-Server: `npm run dev` → http://localhost:9002
 
 ## Firebase
