@@ -3,7 +3,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { adminDb } from '@/lib/server/firebase-admin';
-import { PublicProfile } from '@/lib/game/types';
+import { PublicProfile, schoolsOf, toEmbed } from '@/lib/game/types';
+import { loadSchools } from '@/lib/server/schools';
+import { fetchPreviews } from '@/lib/server/oembed';
 import { ProfileShowcase } from '@/components/profile/ProfileShowcase';
 
 // Öffentliches Profil, serverseitig gerendert (Link-Vorschauen, Suchmaschinen).
@@ -26,13 +28,15 @@ async function loadProfile(handle: string): Promise<PublicProfile | null> {
     handle: data.handle ?? handle,
     bio: data.bio ?? '',
     avatarUrl: data.avatarUrl ?? null,
+    bannerUrl: data.bannerUrl ?? null,
+    accentColor: data.accentColor ?? null,
+    featuredUrl: data.featuredUrl ?? null,
     roles: data.roles ?? [],
     genres: data.genres ?? [],
     embeds: data.embeds ?? [],
     links: data.links ?? [],
     openForCollab: !!data.openForCollab,
-    schoolId: data.schoolId ?? null,
-    schoolName: data.schoolName ?? null,
+    schoolIds: schoolsOf(data),
   };
 }
 
@@ -48,7 +52,7 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
       title: profile.artistName,
       description,
       type: 'profile',
-      images: profile.avatarUrl ? [{ url: profile.avatarUrl }] : undefined,
+      images: profile.bannerUrl || profile.avatarUrl ? [{ url: (profile.bannerUrl || profile.avatarUrl)! }] : undefined,
     },
   };
 }
@@ -57,11 +61,17 @@ export default async function ArtistPage({ params }: { params: Promise<{ handle:
   const { handle } = await params;
   const profile = await loadProfile(handle);
   if (!profile) notFound();
+  const valid = profile.embeds.filter((u) => toEmbed(u));
+  const featured = valid.find((u) => u === profile.featuredUrl) ?? valid[0];
+  const [schools, previews] = await Promise.all([
+    loadSchools(profile.schoolIds ?? []),
+    fetchPreviews(valid.filter((u) => u !== featured)),
+  ]);
 
   return (
     <div className="space-y-6 max-w-5xl">
       <Link href="/artists" className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white"><ArrowLeft className="w-4 h-4" /> Alle Artists</Link>
-      <ProfileShowcase profile={profile} schoolName={profile.schoolName} />
+      <ProfileShowcase profile={profile} schools={schools} previews={previews} />
     </div>
   );
 }

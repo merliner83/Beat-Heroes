@@ -4,7 +4,7 @@
 import React, { useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit, where } from 'firebase/firestore';
-import { Studio, Game, Level, LevelProgress, getAccuracyColor, Standing, LearnCategory, Article, ArticleProgress } from '@/lib/game/types';
+import { Studio, Game, Level, LevelProgress, getAccuracyColor, Standing, LearnCategory, Article, ArticleProgress, schoolsOf } from '@/lib/game/types';
 import { Progress } from '@/components/ui/progress';
 import { 
   Zap, 
@@ -42,10 +42,11 @@ export const ProfileView = () => {
   const [collapsedStudios, setCollapsedStudios] = React.useState<Record<string, boolean>>({});
 
   // Rangliste pro Schule (standings wird nur vom Server geschrieben).
-  const schoolId = profile?.schoolId ?? null;
+  // Bei mehreren Schulen zählt die Hauptschule (erste in schoolIds).
+  const schoolId = schoolsOf(profile)[0] ?? null;
   const leaderboardQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return query(collection(db, 'standings'), where('schoolId', '==', schoolId), orderBy('streetCred', 'desc'), limit(100));
+    if (!db || !user || !schoolId) return null;
+    return query(collection(db, 'standings'), where('schoolIds', 'array-contains', schoolId), orderBy('streetCred', 'desc'), limit(100));
   }, [db, user, schoolId]);
   const { data: leaderboard } = useCollection<Standing>(leaderboardQuery);
 

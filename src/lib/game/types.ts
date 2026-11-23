@@ -123,16 +123,27 @@ export interface UserProfile {
   photoURL?: string;
   /** Geschützt: nur Server/Super-Admin. */
   role?: UserRole;
+  /** Alle Schulen der Person (mehrere möglich). Geschützt. */
+  schoolIds?: string[];
+  /** Hauptschule (= schoolIds[0]); altes Einzelfeld, bleibt synchron. */
   schoolId?: string | null;
   classIds?: string[];
   streetCred?: number;
+}
+
+/** Schulen eines Dokuments; Rückfall auf das alte Einzelfeld schoolId. */
+export function schoolsOf(d: { schoolIds?: string[] | null; schoolId?: string | null } | null | undefined): string[] {
+  if (!d) return [];
+  if (Array.isArray(d.schoolIds)) return d.schoolIds;
+  return d.schoolId ? [d.schoolId] : [];
 }
 
 export interface Standing {
   id: string;
   uid: string;
   displayName: string;
-  schoolId: string | null;
+  schoolIds?: string[];
+  schoolId?: string | null;
   classIds?: string[];
   streetCred: number;
 }
@@ -210,10 +221,17 @@ export function getRankInfo(streetCred: number) {
 
 // --- Schulen, Klassen, Zuweisungen (docs/architecture.md) ---
 
+/** Schule mit öffentlichem Profil (/schools/{id}). */
 export interface School {
   id: string;
   name: string;
   slug?: string;
+  logoUrl?: string | null;
+  bannerUrl?: string | null;
+  description?: string;
+  website?: string;
+  location?: string;
+  accentColor?: string | null;
 }
 
 export interface SchoolClass {
@@ -320,6 +338,7 @@ export interface Achievement {
   pathTitle: string;
   official?: boolean;
   displayName?: string;
+  schoolIds?: string[];
   schoolId?: string | null;
   classIds?: string[];
   achievedAt?: any;
@@ -359,14 +378,34 @@ export interface ProfileContent {
   embeds: string[];
   links: ProfileLink[];
   openForCollab?: boolean;
+  /** Breites Titelbild oben auf dem Profil */
+  bannerUrl?: string | null;
+  /** Akzentfarbe (#rrggbb, aus ACCENT_COLORS) */
+  accentColor?: string | null;
+  /** Hervorgehobener Track (einer der embeds), oben als Player */
+  featuredUrl?: string | null;
 }
+
+export const ACCENT_COLORS = [
+  { name: 'Pink', hex: '#ff3399' },
+  { name: 'Violett', hex: '#8b5cf6' },
+  { name: 'Blau', hex: '#3b82f6' },
+  { name: 'Türkis', hex: '#14b8a6' },
+  { name: 'Grün', hex: '#22c55e' },
+  { name: 'Gold', hex: '#f59e0b' },
+  { name: 'Orange', hex: '#f97316' },
+  { name: 'Rot', hex: '#ef4444' },
+] as const;
+
+export const DEFAULT_ACCENT = '#ff3399';
 
 export type ProfileDraftStatus = 'draft' | 'submitted' | 'changes_requested' | 'approved';
 
 export interface ProfileDraft extends ProfileContent {
   id: string;
   uid: string;
-  schoolId: string | null;
+  schoolIds?: string[];
+  schoolId?: string | null;
   status: ProfileDraftStatus;
   teacherNote?: string;
   updatedAt?: any;
@@ -376,7 +415,8 @@ export interface ProfileDraft extends ProfileContent {
 export interface PublicProfile extends ProfileContent {
   id: string;
   uid: string;
-  schoolId: string | null;
+  schoolIds?: string[];
+  schoolId?: string | null;
   schoolName?: string | null;
   approvedAt?: any;
   approvedBy?: string;
@@ -390,6 +430,15 @@ export function toHandle(name: string): string {
 }
 
 /** Wandelt eine Spotify-/SoundCloud-/YouTube-URL in eine Embed-URL um. */
+/** Vorschau eines Tracks/Videos (oEmbed: Titel, Bild). */
+export interface MediaPreview {
+  url: string;
+  kind: 'spotify' | 'soundcloud' | 'youtube';
+  title: string | null;
+  author: string | null;
+  thumbnail: string | null;
+}
+
 export function toEmbed(url: string): { src: string; kind: 'spotify' | 'soundcloud' | 'youtube'; height: number } | null {
   try {
     const u = new URL(url);

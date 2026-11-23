@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
-import { Camera, CheckCircle2, Clock, ExternalLink, Eye, Loader2, MessageSquareWarning, Plus, Send, Trash2, UserRound } from 'lucide-react';
-import { useDoc, useFirebaseApp, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { collection, doc, getDoc, query, serverTimestamp, setDoc } from 'firebase/firestore';
+import { Camera, CheckCircle2, Clock, ExternalLink, Eye, ImagePlus, Loader2, MessageSquareWarning, Plus, Send, Star, Trash2, UserRound } from 'lucide-react';
+import { useCollection, useDoc, useFirebaseApp, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import {
-  ARTIST_GENRES, ARTIST_ROLES, HANDLE_PATTERN, ProfileContent, ProfileDraft, PublicProfile, toEmbed, toHandle,
+  ACCENT_COLORS, ARTIST_GENRES, ARTIST_ROLES, DEFAULT_ACCENT, HANDLE_PATTERN, ProfileContent, ProfileDraft, PublicProfile, School,
+  schoolsOf, toEmbed, toHandle,
 } from '@/lib/game/types';
+import { uploadImage } from '@/lib/upload';
+import { SchoolBadge } from '@/components/schools/SchoolBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,7 +20,10 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { ProfileShowcase } from './ProfileShowcase';
 
-const EMPTY: ProfileContent = { artistName: '', handle: '', bio: '', avatarUrl: null, roles: [], genres: [], embeds: [], links: [], openForCollab: false };
+const EMPTY: ProfileContent = {
+  artistName: '', handle: '', bio: '', avatarUrl: null, bannerUrl: null, accentColor: null, featuredUrl: null,
+  roles: [], genres: [], embeds: [], links: [], openForCollab: false,
+};
 
 function Chips({ options, value, onChange }: { options: readonly string[]; value: string[]; onChange: (v: string[]) => void }) {
   return (
@@ -62,6 +67,13 @@ export function ProfileEditor() {
   const { user, profile } = useUser();
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
+  const bannerRef = useRef<HTMLInputElement>(null);
+  const mySchoolIds = schoolsOf(profile);
+  const schoolsQ = useMemoFirebase(() => (db ? query(collection(db, 'schools')) : null), [db]);
+  const { data: allSchools } = useCollection<School>(schoolsQ);
+  const mySchools = useMemo(() => mySchoolIds.map((id) => allSchools?.find((s) => s.id === id)).filter((s): s is School => !!s),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allSchools, mySchoolIds.join()]);
 
   const draftRef = useMemoFirebase(() => (db && user ? doc(db, 'profileDrafts', user.uid) : null), [db, user]);
   const publicRef = useMemoFirebase(() => (db && user ? doc(db, 'profiles', user.uid) : null), [db, user]);
@@ -112,26 +124,21 @@ export function ProfileEditor() {
     setNewLink({ label: '', url: '' });
   };
 
-  const uploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const upload = async (kind: 'avatar' | 'banner', e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file || !app) return;
-    if (!file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) {
-      toast({ variant: 'destructive', title: 'Bild zu gross', description: 'Maximal 5 MB, nur Bilder.' });
-      return;
-    }
     setBusy(true);
     try {
-      const r = ref(getStorage(app), `profiles/${user.uid}/avatar-${Date.now()}`);
-      await uploadBytes(r, file, { contentType: file.type });
-      set('avatarUrl', await getDownloadURL(r));
+      const url = await uploadImage(app, `profiles/${user.uid}/${kind}-${Date.now()}`, file, 5);
+      set(kind === 'avatar' ? 'avatarUrl' : 'bannerUrl', url);
     } catch (err) {
-      console.warn(err);
-      toast({ variant: 'destructive', title: 'Upload fehlgeschlagen' });
+      toast({ variant: 'destructive', title: 'Upload fehlgeschlagen', description: err instanceof Error ? err.message : 'Maximal 5 MB, nur Bilder.' });
     } finally {
       setBusy(false);
-      if (fileRef.current) fileRef.current.value = '';
     }
   };
+  const accent = form.accentColor || DEFAULT_ACCENT;
 
   const save = async (submit: boolean) => {
     if (!db) return;
@@ -148,12 +155,16 @@ export function ProfileEditor() {
       }
       const data: Record<string, unknown> = {
         uid: user.uid,
-        schoolId: profile?.schoolId ?? null,
+        schoolIds: mySchoolIds,
+        schoolId: mySchoolIds[0] ?? null,
         status: submit ? 'submitted' : 'draft',
         artistName: form.artistName.trim().slice(0, 60),
         handle: form.handle,
         bio: (form.bio ?? '').slice(0, 1500),
         avatarUrl: form.avatarUrl ?? null,
+        bannerUrl: form.bannerUrl ?? null,
+        accentColor: form.accentColor ?? null,
+        featuredUrl: form.featuredUrl && form.embeds.includes(form.featuredUrl) ? form.featuredUrl : null,
         roles: form.roles,
         genres: form.genres,
         embeds: form.embeds,
@@ -184,20 +195,51 @@ export function ProfileEditor() {
       </div>
 
       <StatusLine draft={draft} />
-      {!profile?.schoolId && (
+      {mySchoolIds.length === 0 ? (
         <p className="text-sm text-warning">Tritt zuerst auf der Startseite einer Klasse bei, damit deine Lehrperson dein Profil freigeben kann.</p>
+      ) : (
+        <div className="space-y-2">
+          <p className="text-xs text-white/60">Deine Musikschulen (erscheinen mit Logo auf deinem Profil)</p>
+          <div className="flex flex-wrap gap-2">{mySchools.map((s) => <SchoolBadge key={s.id} school={s} compact />)}</div>
+        </div>
       )}
+
+      <div className="space-y-2">
+        <p className="text-xs text-white/60">Titelbild</p>
+        <button type="button" onClick={() => bannerRef.current?.click()}
+          className="relative w-full h-28 md:h-36 rounded-2xl overflow-hidden border border-white/10 group"
+          style={form.bannerUrl ? undefined : { background: `radial-gradient(120% 140% at 85% 0%, ${accent}cc 0%, ${accent}33 40%, #000 75%)` }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {form.bannerUrl && <img src={form.bannerUrl} alt="" className="w-full h-full object-cover" />}
+          <span className="absolute inset-0 flex items-center justify-center gap-2 text-sm font-medium bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+            <ImagePlus className="w-5 h-5" /> {form.bannerUrl ? 'Titelbild ändern' : 'Titelbild hochladen (breit, max. 5 MB)'}
+          </span>
+        </button>
+        <input ref={bannerRef} type="file" accept="image/*" className="hidden" onChange={(e) => upload('banner', e)} />
+        {form.bannerUrl && <button type="button" onClick={() => set('bannerUrl', null)} className="text-xs text-white/60 hover:text-white">Titelbild entfernen</button>}
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-xs text-white/60">Akzentfarbe</p>
+        <div className="flex flex-wrap gap-2">
+          {ACCENT_COLORS.map((c) => (
+            <button key={c.hex} type="button" title={c.name} aria-label={c.name} onClick={() => set('accentColor', c.hex)}
+              className={cn('w-9 h-9 rounded-full border-2 transition-transform', accent === c.hex ? 'border-white scale-110' : 'border-transparent')}
+              style={{ background: c.hex }} />
+          ))}
+        </div>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-[160px_1fr]">
         <div className="flex flex-col items-center gap-3">
           <button type="button" onClick={() => fileRef.current?.click()} className="relative w-36 h-36 rounded-full overflow-hidden border-4 border-white/10 bg-white/5 group">
             {form.avatarUrl
               // eslint-disable-next-line @next/next/no-img-element
-              ? <img src={form.avatarUrl} alt="Profilbild" className="w-full h-full object-cover" />
+              ? <img src={form.avatarUrl} referrerPolicy="no-referrer" alt="Profilbild" className="w-full h-full object-cover" />
               : <span className="text-5xl font-black italic text-gradient">{(form.artistName || '?').charAt(0).toUpperCase()}</span>}
             <span className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><Camera className="w-7 h-7" /></span>
           </button>
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={uploadAvatar} />
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => upload('avatar', e)} />
           {form.avatarUrl && <button type="button" onClick={() => set('avatarUrl', null)} className="text-xs text-white/60 hover:text-white">Bild entfernen</button>}
         </div>
 
@@ -226,13 +268,21 @@ export function ProfileEditor() {
       <label className="flex items-center gap-3 text-sm"><Switch checked={!!form.openForCollab} onCheckedChange={(v) => set('openForCollab', v)} /> Offen für Kollabos</label>
 
       <div className="space-y-2">
-        <p className="text-xs text-white/50">Tracks & Videos (Spotify, SoundCloud, YouTube)</p>
-        {form.embeds.map((url) => (
-          <div key={url} className="flex items-center gap-2 text-sm bg-white/5 rounded-lg px-3 py-2">
-            <span className="flex-1 truncate">{url}</span>
-            <button type="button" onClick={() => set('embeds', form.embeds.filter((x) => x !== url))}><Trash2 className="w-4 h-4 text-white/60 hover:text-destructive" /></button>
-          </div>
-        ))}
+        <p className="text-xs text-white/60">Tracks & Videos (Spotify, SoundCloud, YouTube) – mit dem Stern wählst du deinen Featured Track für ganz oben.</p>
+        {form.embeds.map((url, i) => {
+          const featured = form.featuredUrl ? form.featuredUrl === url : i === 0;
+          return (
+            <div key={url} className="flex items-center gap-2 text-sm bg-white/5 rounded-lg px-3 py-2">
+              <button type="button" title="Als Featured Track oben zeigen" aria-pressed={featured} onClick={() => set('featuredUrl', url)}>
+                <Star className={cn('w-4 h-4', featured ? 'fill-current' : 'text-white/40 hover:text-white')} style={featured ? { color: accent } : undefined} />
+              </button>
+              <span className="flex-1 truncate">{url}</span>
+              <button type="button" onClick={() => setForm((f) => ({ ...f, embeds: f.embeds.filter((x) => x !== url), featuredUrl: f.featuredUrl === url ? null : f.featuredUrl }))}>
+                <Trash2 className="w-4 h-4 text-white/60 hover:text-destructive" />
+              </button>
+            </div>
+          );
+        })}
         <div className="flex gap-2">
           <Input value={newEmbed} onChange={(e) => setNewEmbed(e.target.value)} placeholder="https://open.spotify.com/track/…" onKeyDown={(e) => e.key === 'Enter' && addEmbed()} />
           <Button type="button" variant="outline" onClick={addEmbed} disabled={!newEmbed.trim()}><Plus className="w-4 h-4" /></Button>
@@ -263,7 +313,7 @@ export function ProfileEditor() {
       <Dialog open={preview} onOpenChange={setPreview}>
         <DialogContent className="bg-[#050505] border-white/10 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Vorschau</DialogTitle></DialogHeader>
-          <ProfileShowcase profile={form} />
+          <ProfileShowcase profile={form} schools={mySchools} />
         </DialogContent>
       </Dialog>
     </section>

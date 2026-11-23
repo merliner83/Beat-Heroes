@@ -3,9 +3,13 @@
 import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { collection, doc, getDocs, query, setDoc, serverTimestamp } from 'firebase/firestore';
-import { Loader2, ShieldCheck, School as SchoolIcon, Users, BookOpen, Wrench, Download, Upload, RefreshCw } from 'lucide-react';
+import { ChevronDown, Loader2, ShieldCheck, School as SchoolIcon, Users, BookOpen, Wrench, Download, Upload, RefreshCw } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { Article, Course, School, UserProfile, UserRole, isSuperAdmin, normalizeRole } from '@/lib/game/types';
+import { Article, Course, School, UserProfile, UserRole, isSuperAdmin, normalizeRole, schoolsOf } from '@/lib/game/types';
+import { apiPost } from '@/lib/api';
+import { Chip } from '@/components/ds';
+import { SchoolEditor } from '@/components/schools/SchoolEditor';
+import { SchoolLogo } from '@/components/schools/SchoolBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -36,6 +40,7 @@ function SchoolsSection({ schools }: { schools: School[] | null }) {
   const db = useFirestore();
   const { toast } = useToast();
   const [name, setName] = useState('');
+  const [open, setOpen] = useState<string | null>(null);
 
   const create = async () => {
     const slug = slugify(name);
@@ -55,11 +60,18 @@ function SchoolsSection({ schools }: { schools: School[] | null }) {
         <Input placeholder="Name der Musikschule" value={name} onChange={(e) => setName(e.target.value)} />
         <Button onClick={create} disabled={!slugify(name)}>Anlegen</Button>
       </div>
-      <div className="grid gap-2 md:grid-cols-2">
+      <div className="space-y-2">
         {schools?.map((s) => (
-          <div key={s.id} className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
-            <p className="font-bold">{s.name}</p>
-            <p className="text-xs text-white/60">{s.id}</p>
+          <div key={s.id} className="rounded-xl bg-white/[0.03] border border-white/10">
+            <button type="button" onClick={() => setOpen(open === s.id ? null : s.id)} className="w-full p-4 flex items-center gap-3 text-left">
+              <SchoolLogo school={s} size={40} />
+              <div className="flex-1 min-w-0">
+                <p className="font-bold">{s.name}</p>
+                <p className="text-xs text-white/60">/schools/{s.id}</p>
+              </div>
+              <ChevronDown className={`w-5 h-5 text-white/60 transition-transform ${open === s.id ? 'rotate-180' : ''}`} />
+            </button>
+            {open === s.id && <div className="px-4 pb-4"><SchoolEditor school={s} /></div>}
           </div>
         ))}
         {schools?.length === 0 && <p className="text-sm text-white/60">Noch keine Schulen.</p>}
@@ -70,6 +82,7 @@ function SchoolsSection({ schools }: { schools: School[] | null }) {
 
 function PeopleSection({ schools }: { schools: School[] | null }) {
   const db = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
   const usersQuery = useMemoFirebase(() => (db ? query(collection(db, 'users')) : null), [db]);
   const { data: users } = useCollection<UserProfile>(usersQuery);
@@ -84,9 +97,16 @@ function PeopleSection({ schools }: { schools: School[] | null }) {
     }
   };
 
+  const setSchools = async (uid: string, schoolIds: string[]) => {
+    if (!user) return;
+    const res = await apiPost(user, '/api/admin/memberships', { uid, schoolIds });
+    if (res.ok) toast({ title: 'Schulen gespeichert' });
+    else toast({ variant: 'destructive', title: 'Speichern fehlgeschlagen', description: res.error });
+  };
+
   return (
     <Section icon={Users} title="Personen">
-      <p className="text-sm text-white/60">Lehrpersonen hier Rolle und Schule geben. Schüler:innen treten selbst per Klassencode bei.</p>
+      <p className="text-sm text-white/60">Lehrpersonen hier Rolle und Schulen geben (mehrere möglich). Schüler:innen treten selbst per Klassencode bei; weitere Schulen kommen mit weiteren Klassencodes dazu.</p>
       <div className="space-y-2">
         {users?.map((u) => (
           <div key={u.id} className="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex flex-col md:flex-row md:items-center gap-3">
@@ -100,13 +120,18 @@ function PeopleSection({ schools }: { schools: School[] | null }) {
                 {(Object.keys(ROLE_LABEL) as UserRole[]).map((r) => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={u.schoolId ?? 'none'} onValueChange={(v) => update(u.id, { schoolId: v === 'none' ? null : v })}>
-              <SelectTrigger className="md:w-56"><SelectValue placeholder="Schule" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Keine Schule</SelectItem>
-                {schools?.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <div className="flex flex-wrap gap-1.5 md:w-72">
+              {schools?.map((s) => {
+                const mine = schoolsOf(u);
+                const on = mine.includes(s.id);
+                return (
+                  <Chip key={s.id} active={on} className="h-7 text-xs"
+                    onClick={() => setSchools(u.id, on ? mine.filter((x) => x !== s.id) : [...mine, s.id])}>
+                    {s.name.replace(/^Musikschule\s+/i, '')}
+                  </Chip>
+                );
+              })}
+            </div>
           </div>
         ))}
       </div>

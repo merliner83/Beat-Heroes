@@ -58,8 +58,8 @@ export function ProfileReviews({ schoolId }: { schoolId: string }) {
   const db = useFirestore();
   const { profile } = useUser();
   const [open, setOpen] = useState<ProfileDraft | null>(null);
-  const schoolQ = useMemoFirebase(() => (db ? query(collection(db, 'profileDrafts'), where('schoolId', '==', schoolId), where('status', '==', 'submitted')) : null), [db, schoolId]);
-  const noSchoolQ = useMemoFirebase(() => (db && isSuperAdmin(profile?.role) ? query(collection(db, 'profileDrafts'), where('schoolId', '==', null), where('status', '==', 'submitted')) : null), [db, profile?.role]);
+  const schoolQ = useMemoFirebase(() => (db ? query(collection(db, 'profileDrafts'), where('schoolIds', 'array-contains', schoolId), where('status', '==', 'submitted')) : null), [db, schoolId]);
+  const noSchoolQ = useMemoFirebase(() => (db && isSuperAdmin(profile?.role) ? query(collection(db, 'profileDrafts'), where('schoolIds', '==', []), where('status', '==', 'submitted')) : null), [db, profile?.role]);
   const { data: fromSchool } = useCollection<ProfileDraft>(schoolQ);
   const { data: withoutSchool } = useCollection<ProfileDraft>(noSchoolQ);
   const drafts = [...(fromSchool ?? []), ...(withoutSchool ?? [])];
@@ -78,7 +78,7 @@ export function ProfileReviews({ schoolId }: { schoolId: string }) {
             </div>
             <div className="min-w-0">
               <p className="font-bold truncate">{d.artistName}</p>
-              <p className="text-xs text-white/60 truncate">/artists/{d.handle}{d.schoolId ? '' : ' · ohne Schule'}</p>
+              <p className="text-xs text-white/60 truncate">/artists/{d.handle}{d.schoolIds?.length ? '' : ' · ohne Schule'}</p>
             </div>
           </button>
         ))}

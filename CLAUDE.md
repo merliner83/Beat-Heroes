@@ -106,24 +106,22 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 - Service Worker: Seiten network-first, sonst kommen Deploys nicht an.
 
 ## Offene Punkte
-1. Phase 0 erledigt (23.11.2026): Auth aktiv, Live-Domain autorisiert,
-   Nutzer ist superAdmin, Credits live verifiziert. Noch keine Schulen angelegt
-   (Namen der zwei Musikschulen fehlen).
-   → Schulen angelegt: `musikschule-bantiger` (Musikschule Bantiger),
-   `musikschule-oberemmental` (Musikschule Oberemmental). Nutzer unterrichtet
-   an beiden; als superAdmin ohne schoolId wählt er die Schule in `/teacher`. App-Name überall auf «Beat Heroes»
-   vereinheitlichen (heute «BeatHero»); technisch `beat-heroes`.
+Stand 24.11.2026. Phasen 0–2 sind live (Auth, Rollen, Schulen
+`musikschule-bantiger` und `musikschule-oberemmental`, Klassen, Zuweisungen,
+Kurse mit Lernpfaden, Lektions-Editor, Profile mit Freigabe, Games-Seite).
+Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
+1. 4 MV-Entwürfe (minRole teacher, `scripts/seed-mv-drafts.mjs`) warten auf
+   Durchsicht durch den Nutzer.
 2. ESLint einrichten, dann `ignoreDuringBuilds` entfernen.
-3. Phase 1 (Branch `feat/phase1-structure`): erledigt sind Routen mit
-   Navigation (`src/app/(main)/`), Name «Beat Heroes», Schulen (Admin),
-   Klassen mit Beitrittscode, Zuweisungen + Abgaben + Freigabe (`/teacher`).
-   Learn als Kurse (Producing, MV) mit Lernpfaden (Talentförderung) ist
-   umgesetzt, siehe `docs/architecture.md`. Lektions-Editor im Admin
-   (`/admin/articles/[id]`, `new?course=…&chapter=…`) mit Live-Vorschau,
-   Bild-Upload, Übungen, YouTube und Quiz. 4 MV-Entwürfe (minRole teacher,
-   `scripts/seed-mv-drafts.mjs`) warten auf Durchsicht durch den Nutzer.
-4. Phase 2 umgesetzt: Profil-Editor (`/me`), Freigabe (`/teacher`),
-   Artists-Übersicht und öffentliche Seite `/artists/[handle]`. Games-Seite
-   zeigt alle Games (3 Spieltypen × Studios + Lern-Games). Hinweis: Games mit
-   `studioId` `std-nintu` haben kein Studio-Dokument (Altlast, ausgeblendet).
+3. Altlast: Games mit `studioId` `std-nintu` haben kein Studio-Dokument
+   (ausgeblendet).
+4. Vom Nutzer gewählt (24.11.2026), alles gewünscht, eins nach dem anderen:
+   - ✅ Schul-Profile + Mehrfach-Schulen + schönere Artist-Profile (Branch
+     `feat/schul-profile`, siehe `docs/architecture.md` → Organisation/Profil).
+     Logos = Mitgliedschaften (Admin → Personen, Chips pro Schule). Logos und
+     Texte der zwei Schulen muss der Nutzer noch im Admin hochladen.
+   - Artikel einfacher (Baustein-Editor, Vorlagen).
+   - MV ausbauen (Tonleitern, Akkordfolgen, Notenschrift).
+   - Alte Games aufs Design-System / RhythmGrid.
+   - Offen: Handy-Feedback zu den MV-Übungen (Mitklopfen-Latenz).
 5. Phase 3: Beat-Börse, Kollabos, Challenges.
