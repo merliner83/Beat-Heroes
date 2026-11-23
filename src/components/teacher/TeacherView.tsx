@@ -2,10 +2,10 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { addDoc, collection, doc, getDocs, query, serverTimestamp, setDoc, Timestamp, where, deleteDoc, limit } from 'firebase/firestore';
-import { Loader2, Plus, Users, ClipboardList, Copy, CheckCircle2, MessageSquareWarning, ChevronDown, ChevronUp, Trash2, ExternalLink } from 'lucide-react';
+import { Award, Loader2, Plus, Users, ClipboardList, Copy, CheckCircle2, MessageSquareWarning, ChevronDown, ChevronUp, Trash2, ExternalLink } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import {
-  Article, Assignment, AssignmentKind, Game, LearnApp, Level, School, SchoolClass, Submission, UserProfile, isSuperAdmin,
+  Achievement, Article, Assignment, AssignmentKind, Game, LearnApp, Level, School, SchoolClass, Submission, UserProfile, isSuperAdmin,
 } from '@/lib/game/types';
 import { apiPost } from '@/lib/api';
 import { formatDue } from '@/components/assignments/MyAssignments';
@@ -321,6 +321,15 @@ function ClassDetail({ schoolClass }: { schoolClass: SchoolClass }) {
     where('schoolId', '==', schoolClass.schoolId), where('classId', '==', schoolClass.id)) : null), [db, schoolClass.schoolId, schoolClass.id]);
   const { data: assignments } = useCollection<Assignment>(assignmentsQuery);
 
+  const achievementsQuery = useMemoFirebase(() => (db ? query(collection(db, 'achievements'),
+    where('schoolId', '==', schoolClass.schoolId), where('classIds', 'array-contains', schoolClass.id)) : null), [db, schoolClass.schoolId, schoolClass.id]);
+  const { data: achievements } = useCollection<Achievement>(achievementsQuery);
+  const achievementsByUid = useMemo(() => {
+    const m = new Map<string, Achievement[]>();
+    (achievements ?? []).forEach((a) => m.set(a.uid, [...(m.get(a.uid) ?? []), a]));
+    return m;
+  }, [achievements]);
+
   const sortedAssignments = useMemo(() => [...(assignments ?? [])].sort((a, b) =>
     (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0)), [assignments]);
   const studentList = useMemo(() => [...(students ?? [])].sort((a, b) =>
@@ -356,9 +365,16 @@ function ClassDetail({ schoolClass }: { schoolClass: SchoolClass }) {
         {studentList.length === 0 && <p className="text-sm text-white/40">Noch niemand beigetreten. Gib den Beitrittscode weiter; die Schüler:innen geben ihn nach dem Login auf der Startseite ein.</p>}
         <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
           {studentList.map((s) => (
-            <div key={s.id} className="p-3 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-2">
-              <span className="truncate">{s.displayName || 'Ohne Namen'}</span>
-              <span className="text-xs text-white/40 shrink-0">{(s.streetCred ?? 0).toLocaleString('de-CH')} SC</span>
+            <div key={s.id} className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate">{s.displayName || 'Ohne Namen'}</span>
+                <span className="text-xs text-white/40 shrink-0">{(s.streetCred ?? 0).toLocaleString('de-CH')} SC</span>
+              </div>
+              {(achievementsByUid.get(s.id) ?? []).map((a) => (
+                <p key={a.id} className={cn('text-xs flex items-center gap-1', a.official ? 'text-[#FFEA00]' : 'text-[#00E676]')}>
+                  <Award className="w-3.5 h-3.5 shrink-0" /> {a.pathTitle}
+                </p>
+              ))}
             </div>
           ))}
         </div>

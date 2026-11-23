@@ -45,9 +45,12 @@ async function resolveTarget(uid: string, body: Body) {
       const quiz = await db.doc(`learnQuizzes/${refId}`).get();
       correctAnswers = (quiz.data()?.questions ?? []).map((q: { correctOption?: number }) => q.correctOption);
     }
-    if (!correctAnswers || correctAnswers.length === 0) throw new HttpError(404, 'Quiz not found');
-    const correct = correctAnswers.filter((c, i) => answers[i] === c).length;
-    const score = Math.round((correct / correctAnswers.length) * 100);
+    // Lektion ohne Quiz: «gelesen» zählt als abgeschlossen (100).
+    let score = 100;
+    if (correctAnswers && correctAnswers.length > 0) {
+      const correct = correctAnswers.filter((c, i) => answers[i] === c).length;
+      score = Math.round((correct / correctAnswers.length) * 100);
+    }
     return {
       score,
       maxPoints: article.data()?.maxPoints ?? DEFAULT_MAX.article,

@@ -78,6 +78,9 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 - Öffentliche Profiländerungen gibt eine Lehrperson frei (Entwurf → Freigabe).
 - Zuweisungssystem: Lehrpersonen (auch der Nutzer) weisen Aufgaben zu.
 - Mobile: zuerst PWA, später Capacitor mit gehosteter App.
+- Lektionen frei wählbar; Lernpfade als Vorlagen (z.B. Talentförderung,
+  die der Nutzer in der Schweiz offiziell anerkennen lassen kann).
+- Lektionen erstellt nur der Nutzer (superAdmin), keine Lehrpersonen-Inhalte.
 - Name: «Beat Heroes» (ohne Bindestrich) für Menschen, `beat-heroes` technisch.
 - Google-Login per Popup (Redirect scheitert ausserhalb der authDomain).
 - Service Worker: Seiten network-first, sonst kommen Deploys nicht an.
@@ -94,7 +97,8 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 3. Phase 1 (Branch `feat/phase1-structure`): erledigt sind Routen mit
    Navigation (`src/app/(main)/`), Name «Beat Heroes», Schulen (Admin),
    Klassen mit Beitrittscode, Zuweisungen + Abgaben + Freigabe (`/teacher`).
-   Offen: Learn als Kurse/Lektionen/Blöcke (Producing, MV), Domain
-   beat-heroes.com (DNS bei Infomaniak umstellen, siehe unten).
+   Learn als Kurse (Producing, MV) mit Lernpfaden (Talentförderung) ist
+   umgesetzt, siehe `docs/architecture.md`. Offen: MV-Lektionen schreiben,
+   Lektions-Editor im Admin (heute nur Titel editierbar).
 4. Phase 2: Profil-Entwurf + Freigabe + öffentliche Seite `/@handle`.
 5. Phase 3: Beat-Börse, Kollabos, Challenges.

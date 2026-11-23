@@ -151,15 +151,25 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // --- Lernpfad-Abschlüsse (nur Server schreibt, /api/paths/claim) ---
+    match /achievements/{achievementId} {
+      allow read: if signedIn() && (
+        resource.data.uid == request.auth.uid
+        || isStaffOfSchool(resource.data.schoolId)
+      );
+      allow write: if false;
+    }
+
     // --- Lerninhalte (CMS) ---
     match /{contentCol}/{docId} {
       allow read: if contentCol in [
         'studios', 'tracks', 'games', 'learnApps', 'levels', 'patterns',
-        'learnCategories', 'learnSubCats', 'articles'
+        'learnCategories', 'learnSubCats', 'articles', 'courses', 'learningPaths'
       ];
       allow write: if isSuperAdmin() && contentCol in [
         'studios', 'tracks', 'games', 'learnApps', 'levels', 'patterns',
-        'learnCategories', 'learnSubCats', 'articles', 'learnQuizzes'
+        'learnCategories', 'learnSubCats', 'articles', 'learnQuizzes',
+        'courses', 'learningPaths'
       ];
     }
 

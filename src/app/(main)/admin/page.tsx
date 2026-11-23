@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { PathsEditor } from '@/components/admin/PathsEditor';
 
 const ROLE_LABEL: Record<UserRole, string> = {
   student: 'Schüler:in',
@@ -223,6 +224,7 @@ export default function AdminPage() {
       </div>
       <SchoolsSection schools={schools} />
       <PeopleSection schools={schools} />
+      <PathsEditor />
       <Section icon={BookOpen} title="Lerninhalte">
         <div className="grid gap-2 md:grid-cols-2">
           {articles?.map((a) => (

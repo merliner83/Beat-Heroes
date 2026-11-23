@@ -103,9 +103,31 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
 
 ### Lerninhalte (CMS, schreibt nur superAdmin)
 `studios`, `games`, `levels/{id}/sounds`, `patterns`, `tracks`, `learnApps`,
-`learnCategories`, `learnSubCats`, `articles`, `learnQuizzes`.
-Geplanter Umbau (Phase 1): Kurse → Lektionen → Blöcke (Text, Video, Quiz,
-Minigame), damit „Producing“ und „MV“ dieselbe Struktur nutzen.
+`learnCategories`, `learnSubCats`, `articles`, `learnQuizzes`, `learnQuizKeys`,
+`courses`, `learningPaths`.
+
+### Kurse (umgesetzt 23.11.2026)
+- `courses/{courseId}` – `title`, `subtitle`, `description`, `color`,
+  `iconName`, `order`, `chapters[]` (`id`, `title`, `description`, `order`,
+  `iconName`, `colorClass`, `appIds[]`). Heute: `producing` (Kapitel = alte
+  `learnCategories`-IDs) und `mv` (8 Kapitel, noch ohne Lektionen).
+- Lektionen = `articles` mit `courseId` und `chapterId`; Unterthemen weiter
+  über `subCategoryId` → `learnSubCats`. Lektionen sind frei wählbar.
+- Inhalt einer Lektion (`content`, Absätze durch Leerzeile getrennt):
+  `# Titel`, `## Untertitel`, `### Label`, `**fett**`, `---`, `GAP: 20`,
+  `IMAGE: url`, `VIDEO: url`, `PHASE: Titel | Text | lektionId`,
+  `GAME: learnAppId | Beschriftung` (eingebettete Übung), plus
+  `youtubeUrls[]`. Quiz in `learnQuizzes/{id}` (Lösungen `learnQuizKeys`).
+- Bestanden: `articleProgress.completed` und `quizScore >= 80`; Lektionen
+  ohne Quiz über «Als gelesen markieren» (Score 100). Setup-Skript:
+  `scripts/setup-courses.mjs`.
+
+### Lernpfade (z.B. Talentförderung)
+- `learningPaths/{id}` – `title`, `description`, `requiredLessonIds[]`,
+  `minScore`, `official`, `credits`, `order`, `published`. Pflege im Admin.
+- `achievements/{uid}_{pathId}` – nur Server (`POST /api/paths/claim`) prüft
+  alle Pflicht-Lektionen und schreibt den Abschluss (offizieller Nachweis);
+  Lehrpersonen sehen Abschlüsse in der Klassenansicht.
 
 ## Routen (Ziel)
 

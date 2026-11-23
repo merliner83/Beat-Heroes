@@ -166,6 +166,9 @@ export interface LearnQuiz {
 
 export interface Article {
   id: string;
+  /** Kurs und Kapitel (Kapitel-ID = frühere learnCategories-ID) */
+  courseId?: string;
+  chapterId?: string;
   categoryId: string;
   subCategoryId?: string;
   title: string;
@@ -261,4 +264,65 @@ export function assignmentHref(a: Pick<Assignment, 'kind' | 'refId'>): string | 
   if (a.kind === 'article') return `/learn/article/${a.refId}`;
   if (a.kind === 'level' || a.kind === 'learnApp') return `/session/${a.refId}`;
   return null;
+}
+
+// --- Kurse und Lernpfade ---
+
+export interface CourseChapter {
+  id: string;
+  title: string;
+  description?: string;
+  order: number;
+  iconName?: string;
+  colorClass?: string;
+  /** Lern-Apps (learnApps-IDs), die zu diesem Kapitel gehören */
+  appIds?: string[];
+}
+
+export interface Course {
+  id: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  order: number;
+  color: string;
+  iconName?: string;
+  chapters: CourseChapter[];
+  minRole?: UserRole | LegacyRole;
+}
+
+/**
+ * Vorlage aus Pflicht-Lektionen, z.B. für die Talentförderung. Abschluss
+ * prüft und vermerkt der Server (achievements).
+ */
+export interface LearningPath {
+  id: string;
+  title: string;
+  description?: string;
+  requiredLessonIds: string[];
+  /** Mindest-Quizscore pro Lektion (Lektionen ohne Quiz: gelesen genügt) */
+  minScore: number;
+  /** Offiziell anerkannt (z.B. Talentförderung) */
+  official?: boolean;
+  credits?: number;
+  color?: string;
+  order: number;
+  published?: boolean;
+}
+
+export interface Achievement {
+  id: string;
+  uid: string;
+  pathId: string;
+  pathTitle: string;
+  official?: boolean;
+  displayName?: string;
+  schoolId?: string | null;
+  classIds?: string[];
+  achievedAt?: any;
+}
+
+/** Gilt eine Lektion als bestanden? */
+export function isLessonPassed(progress: ArticleProgress | undefined, minScore = 80): boolean {
+  return !!progress?.completed && (progress.quizScore ?? 0) >= minScore;
 }
