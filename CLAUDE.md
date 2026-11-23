@@ -85,7 +85,10 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 ## Offene Punkte
 1. Phase 0 erledigt (23.11.2026): Auth aktiv, Live-Domain autorisiert,
    Nutzer ist superAdmin, Credits live verifiziert. Noch keine Schulen angelegt
-   (Namen der zwei Musikschulen fehlen). App-Name überall auf «Beat Heroes»
+   (Namen der zwei Musikschulen fehlen).
+   → Schulen angelegt: `musikschule-bantiger` (Musikschule Bantiger),
+   `musikschule-oberemmental` (Musikschule Oberemmental). Nutzer unterrichtet
+   an beiden; als superAdmin ohne schoolId wählt er die Schule in `/teacher`. App-Name überall auf «Beat Heroes»
    vereinheitlichen (heute «BeatHero»); technisch `beat-heroes`.
 2. ESLint einrichten, dann `ignoreDuringBuilds` entfernen.
 3. Phase 1 (Branch `feat/phase1-structure`): erledigt sind Routen mit
