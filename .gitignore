@@ -51,3 +51,4 @@ metadata.json
 skills-lock.json
 .firebase/
 /.next-preview/
+/.next-build/

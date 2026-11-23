@@ -6,12 +6,12 @@ import { Toaster } from '@/components/ui/toaster';
 import { PWARegistration } from '@/components/PWARegistration';
 
 export const metadata: Metadata = {
-  title: 'BeatHero | Rhythm Music Producer',
-  description: 'A rhythm-based music learning game for kids learning music production.',
+  title: 'Beat Heroes',
+  description: 'Producing und Musikverstehen spielerisch lernen – für Musikschulen.',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'BeatHero',
+    title: 'Beat Heroes',
   },
   formatDetection: {
     telephone: false,
@@ -32,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="de-CH">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

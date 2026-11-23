@@ -166,6 +166,9 @@ export interface LearnQuiz {
 
 export interface Article {
   id: string;
+  /** Kurs und Kapitel (Kapitel-ID = frühere learnCategories-ID) */
+  courseId?: string;
+  chapterId?: string;
   categoryId: string;
   subCategoryId?: string;
   title: string;
@@ -200,4 +203,209 @@ export function getRankInfo(streetCred: number) {
   if (streetCred >= 5000) return { name: "STUDIO PRO", color: "#3838FA", icon: "🎧" };
   if (streetCred >= 1000) return { name: "RISING STAR", color: "#FFEA00", icon: "🔥" };
   return { name: "BEDROOM PRODUCER", color: "#00E676", icon: "🎹" };
+}
+
+// --- Schulen, Klassen, Zuweisungen (docs/architecture.md) ---
+
+export interface School {
+  id: string;
+  name: string;
+  slug?: string;
+}
+
+export interface SchoolClass {
+  id: string;
+  schoolId: string;
+  name: string;
+  teacherIds: string[];
+  joinCode: string;
+  createdAt?: any;
+}
+
+export type AssignmentKind = 'task' | 'level' | 'learnApp' | 'article';
+
+export interface Assignment {
+  id: string;
+  schoolId: string;
+  classId: string;
+  /** 'class' = ganze Klasse, 'students' = nur studentIds */
+  audience: 'class' | 'students';
+  studentIds: string[];
+  createdBy: string;
+  title: string;
+  description?: string;
+  kind: AssignmentKind;
+  /** levelId, learnAppId oder articleId je nach kind */
+  refId?: string | null;
+  refLabel?: string | null;
+  dueAt?: any;
+  credits: number;
+  createdAt?: any;
+}
+
+export type SubmissionStatus = 'submitted' | 'approved' | 'changes_requested';
+
+export interface Submission {
+  id: string;
+  uid: string;
+  displayName?: string;
+  status: SubmissionStatus;
+  text?: string;
+  link?: string;
+  feedback?: string;
+  submittedAt?: any;
+  reviewedAt?: any;
+  credits?: number;
+}
+
+/** Link zum Inhalt einer Zuweisung (oder null bei freien Aufgaben). */
+export function assignmentHref(a: Pick<Assignment, 'kind' | 'refId'>): string | null {
+  if (!a.refId) return null;
+  if (a.kind === 'article') return `/learn/article/${a.refId}`;
+  if (a.kind === 'level' || a.kind === 'learnApp') return `/session/${a.refId}`;
+  return null;
+}
+
+// --- Kurse und Lernpfade ---
+
+export interface CourseChapter {
+  id: string;
+  title: string;
+  description?: string;
+  order: number;
+  iconName?: string;
+  colorClass?: string;
+  /** Lern-Apps (learnApps-IDs), die zu diesem Kapitel gehören */
+  appIds?: string[];
+}
+
+export interface Course {
+  id: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  order: number;
+  color: string;
+  iconName?: string;
+  chapters: CourseChapter[];
+  minRole?: UserRole | LegacyRole;
+}
+
+/**
+ * Vorlage aus Pflicht-Lektionen, z.B. für die Talentförderung. Abschluss
+ * prüft und vermerkt der Server (achievements).
+ */
+export interface LearningPath {
+  id: string;
+  title: string;
+  description?: string;
+  requiredLessonIds: string[];
+  /** Mindest-Quizscore pro Lektion (Lektionen ohne Quiz: gelesen genügt) */
+  minScore: number;
+  /** Offiziell anerkannt (z.B. Talentförderung) */
+  official?: boolean;
+  credits?: number;
+  color?: string;
+  order: number;
+  published?: boolean;
+}
+
+export interface Achievement {
+  id: string;
+  uid: string;
+  pathId: string;
+  pathTitle: string;
+  official?: boolean;
+  displayName?: string;
+  schoolId?: string | null;
+  classIds?: string[];
+  achievedAt?: any;
+}
+
+/** Gilt eine Lektion als bestanden? */
+export function isLessonPassed(progress: ArticleProgress | undefined, minScore = 80): boolean {
+  return !!progress?.completed && (progress.quizScore ?? 0) >= minScore;
+}
+
+// --- Profile (Entwurf → Freigabe → öffentlich) ---
+
+export const ARTIST_ROLES = [
+  'Producer', 'Beatmaker', 'Rapper:in', 'Sänger:in', 'Songwriter:in', 'DJ',
+  'Gitarre', 'Bass', 'Keys', 'Drums', 'Andere Instrumente',
+] as const;
+
+export const ARTIST_GENRES = [
+  'Hip-Hop', 'Trap', 'Boom Bap', 'Drill', 'R&B', 'Pop', 'Afrobeats', 'Lo-Fi',
+  'Electronic', 'House', 'Rock', 'Jazz', 'Andere',
+] as const;
+
+export interface ProfileLink {
+  label: string;
+  url: string;
+}
+
+/** Felder, die Schüler:innen im Entwurf selbst bearbeiten. */
+export interface ProfileContent {
+  artistName: string;
+  handle: string;
+  bio?: string;
+  avatarUrl?: string | null;
+  roles: string[];
+  genres: string[];
+  /** Spotify-, SoundCloud- oder YouTube-URLs */
+  embeds: string[];
+  links: ProfileLink[];
+  openForCollab?: boolean;
+}
+
+export type ProfileDraftStatus = 'draft' | 'submitted' | 'changes_requested' | 'approved';
+
+export interface ProfileDraft extends ProfileContent {
+  id: string;
+  uid: string;
+  schoolId: string | null;
+  status: ProfileDraftStatus;
+  teacherNote?: string;
+  updatedAt?: any;
+  submittedAt?: any;
+}
+
+export interface PublicProfile extends ProfileContent {
+  id: string;
+  uid: string;
+  schoolId: string | null;
+  schoolName?: string | null;
+  approvedAt?: any;
+  approvedBy?: string;
+}
+
+export const HANDLE_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,28}[a-z0-9])$/;
+
+export function toHandle(name: string): string {
+  return name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30);
+}
+
+/** Wandelt eine Spotify-/SoundCloud-/YouTube-URL in eine Embed-URL um. */
+export function toEmbed(url: string): { src: string; kind: 'spotify' | 'soundcloud' | 'youtube'; height: number } | null {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\.|^m\./, '');
+    if (host === 'open.spotify.com') {
+      const m = u.pathname.match(/^\/(?:intl-[a-z-]+\/)?(track|album|playlist|artist|episode|show)\/([A-Za-z0-9]+)/);
+      if (!m) return null;
+      return { src: `https://open.spotify.com/embed/${m[1]}/${m[2]}`, kind: 'spotify', height: m[1] === 'track' || m[1] === 'episode' ? 152 : 352 };
+    }
+    if (host === 'soundcloud.com' || host === 'on.soundcloud.com') {
+      return { src: `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23ff3399&auto_play=false&visual=false`, kind: 'soundcloud', height: 166 };
+    }
+    if (host === 'youtube.com' || host === 'youtu.be' || host === 'music.youtube.com') {
+      const id = host === 'youtu.be' ? u.pathname.slice(1, 12) : (u.searchParams.get('v') ?? u.pathname.match(/\/(?:embed|shorts)\/([A-Za-z0-9_-]{11})/)?.[1]);
+      if (!id || !/^[A-Za-z0-9_-]{11}$/.test(id)) return null;
+      return { src: `https://www.youtube-nocookie.com/embed/${id}`, kind: 'youtube', height: 0 };
+    }
+  } catch {
+    return null;
+  }
+  return null;
 }

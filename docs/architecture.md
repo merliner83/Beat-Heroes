@@ -70,25 +70,35 @@ Credits vergibt `POST /api/credits`: prüft das ID-Token, liest `maxPoints`
 aus dem Inhalt, zählt nur die Verbesserung gegenüber dem Bestwert und
 bewertet Quizzes selbst (der Browser schickt nur die Antworten).
 
-### Profil mit Freigabe (Phase 2)
-- `profileDrafts/{uid}` – Entwurf, nur Besitzer:in schreibt; Lehrperson liest.
-  `status`: `draft` | `submitted` | `changes_requested`, `teacherNote`
+### Profil mit Freigabe (umgesetzt 23.11.2026)
+- `profileDrafts/{uid}` – Entwurf, nur Besitzer:in schreibt (Regeln prüfen
+  Felder, Längen, Handle-Format, `schoolId` = eigene Schule); Lehrpersonen der
+  Schule lesen. `status`: `draft` | `submitted` | `changes_requested` |
+  `approved`, `teacherNote` (nur Server).
 - `profiles/{uid}` – freigegebene, öffentliche Version; schreibt nur
-  Lehrperson/Server bei Freigabe. `handle`, `bio`, `avatarUrl`, `links[]`,
-  `embeds[]` (Spotify/SoundCloud/YouTube-URLs), `featuredBeatIds[]`,
-  `approvedBy`, `approvedAt`
-- `handles/{handle}` – `uid`, sorgt für eindeutige Profil-URLs `/@handle`
+  `POST /api/profiles/review`. Felder: `artistName`, `handle`, `bio`,
+  `avatarUrl`, `roles[]`, `genres[]`, `embeds[]` (Spotify/SoundCloud/YouTube),
+  `links[]`, `openForCollab`, `schoolName`, `approvedBy`, `approvedAt`.
+- `handles/{handle}` – `uid`; eindeutige Profil-URL `/artists/{handle}`.
+- Profilbilder in Storage `profiles/{uid}/…` (öffentlich lesbar, max. 5 MB).
+- Seiten: Editor unter `/me`, Freigabe unter `/teacher`, Übersicht
+  `/artists` (Suche, Rollen, Genre, Schule, «offen für Kollabos»),
+  öffentliche Seite `/artists/[handle]` serverseitig gerendert (OG-Tags).
 
-### Zuweisungen (Phase 1)
-- `assignments/{id}` – `schoolId`, `classId?`, `studentIds[]`, `createdBy`,
+### Zuweisungen (umgesetzt 23.11.2026)
+- `assignments/{id}` – `schoolId`, `classId`, `audience` (`class` | `students`),
+  `studentIds[]`, `createdBy`, `refLabel`,
   `title`, `description`, `kind` (`lesson`, `game`, `learnApp`, `task`,
   `beat`), `refId?`, `dueAt?`, `credits`, `createdAt`
 - `assignments/{id}/submissions/{uid}` – `status` (`open`, `submitted`,
   `approved`, `changes_requested`), `text?`, `fileUrl?`, `beatId?`,
   `feedback?`, `reviewedBy?`
-  Bei automatisch prüfbaren Aufgaben (Lektion, Game) setzt der Server
-  `approved`, sobald der Fortschritt erreicht ist; sonst die Lehrperson.
-  Bei `approved` vergibt der Server die Credits.
+  Schüler:innen reichen ein (Text/Link), die Lehrperson gibt über
+  `POST /api/assignments/review` frei; dabei bucht der Server einmalig die
+  Credits der Aufgabe (`creditedAt`). Inhalte (Lektion, Game, Lern-App)
+  bringen ihre eigenen Credits zusätzlich über `/api/credits`.
+- Klassenbeitritt: `POST /api/classes/join` mit `joinCode` setzt `schoolId`
+  und `classIds` serverseitig.
 
 ### Beats und Kollabos (Phase 3)
 - `beats/{id}` – `ownerId`, `schoolId`, `title`, `audioPath`, `bpm`, `key`,
@@ -99,19 +109,42 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
 
 ### Lerninhalte (CMS, schreibt nur superAdmin)
 `studios`, `games`, `levels/{id}/sounds`, `patterns`, `tracks`, `learnApps`,
-`learnCategories`, `learnSubCats`, `articles`, `learnQuizzes`.
-Geplanter Umbau (Phase 1): Kurse → Lektionen → Blöcke (Text, Video, Quiz,
-Minigame), damit „Producing“ und „MV“ dieselbe Struktur nutzen.
+`learnCategories`, `learnSubCats`, `articles`, `learnQuizzes`, `learnQuizKeys`,
+`courses`, `learningPaths`.
+
+### Kurse (umgesetzt 23.11.2026)
+- `courses/{courseId}` – `title`, `subtitle`, `description`, `color`,
+  `iconName`, `order`, `chapters[]` (`id`, `title`, `description`, `order`,
+  `iconName`, `colorClass`, `appIds[]`). Heute: `producing` (Kapitel = alte
+  `learnCategories`-IDs) und `mv` (8 Kapitel, noch ohne Lektionen).
+- Lektionen = `articles` mit `courseId` und `chapterId`; Unterthemen weiter
+  über `subCategoryId` → `learnSubCats`. Lektionen sind frei wählbar.
+- Inhalt einer Lektion (`content`, Absätze durch Leerzeile getrennt):
+  `# Titel`, `## Untertitel`, `### Label`, `**fett**`, `---`, `GAP: 20`,
+  `IMAGE: url`, `VIDEO: url`, `PHASE: Titel | Text | lektionId`,
+  `GAME: learnAppId | Beschriftung` (eingebettete Übung), plus
+  `youtubeUrls[]`. Quiz in `learnQuizzes/{id}` (Lösungen `learnQuizKeys`).
+- Bestanden: `articleProgress.completed` und `quizScore >= 80`; Lektionen
+  ohne Quiz über «Als gelesen markieren» (Score 100). Setup-Skript:
+  `scripts/setup-courses.mjs`.
+
+### Lernpfade (z.B. Talentförderung)
+- `learningPaths/{id}` – `title`, `description`, `requiredLessonIds[]`,
+  `minScore`, `official`, `credits`, `order`, `published`. Pflege im Admin.
+- `achievements/{uid}_{pathId}` – nur Server (`POST /api/paths/claim`) prüft
+  alle Pflicht-Lektionen und schreibt den Abschluss (offizieller Nachweis);
+  Lehrpersonen sehen Abschlüsse in der Klassenansicht.
 
 ## Routen (Ziel)
 
 | Route              | Inhalt                                       |
 |--------------------|----------------------------------------------|
 | `/`                | Dashboard: Credits, Aufgaben, Neues          |
-| `/learn/[kurs]`    | Producing, MV – Lektionen mit Minigames      |
-| `/games`           | Arcade                                       |
+| `/learn`           | Lernen (heute Knowledge Base + Lern-Apps; Ziel: Kurse Producing, MV) |
+| `/games`           | alle Games (Typ, Studio, Suche), Levels direkt startbar |
+| `/artists`         | Artist-Profile mit Suche/Filter              |
 | `/beats`           | Beat-Börse, Challenges                       |
-| `/me/edit`         | Profil-Entwurf bearbeiten                    |
-| `/@[handle]`       | öffentliches Profil (serverseitig gerendert) |
+| `/me`              | Profil-Editor + Statistik                    |
+| `/artists/[handle]`| öffentliches Profil (serverseitig gerendert) |
 | `/teacher`         | Klassen, Zuweisungen, Freigaben              |
 | `/admin`           | CMS                                          |

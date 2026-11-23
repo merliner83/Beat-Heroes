@@ -3,9 +3,9 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'BeatHero | Rhythm Music Producer',
-    short_name: 'BeatHero',
-    description: 'A rhythm-based music learning game for kids learning music production.',
+    name: 'Beat Heroes',
+    short_name: 'Beat Heroes',
+    description: 'Producing und Musikverstehen spielerisch lernen – für Musikschulen.',
     start_url: '/',
     display: 'standalone',
     background_color: '#050505',

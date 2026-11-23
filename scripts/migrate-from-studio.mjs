@@ -12,7 +12,8 @@
  *
  * - Nutzer:innen werden NICHT kopiert (neues Auth-Projekt, neue UIDs).
  * - minRole: free → entfernt, pro/producer → teacher, admin → superAdmin.
- * - Quiz-Lösungen (correctOption) wandern nach learnQuizKeys/{id}.
+ * - Quiz-Lösungen (correctOption) wandern nach learnQuizKeys/{id}; Quizzes,
+ *   die im Artikel (Feld quiz) stecken, werden nach learnQuizzes ausgelagert.
  */
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
@@ -54,11 +55,18 @@ function transform(col, data) {
     else delete out.minRole;
   }
   let quizKey = null;
+  let embeddedQuiz = null;
+  // Quizfragen, die direkt im Artikel stecken, nach learnQuizzes auslagern.
+  if (col === 'articles' && 'quiz' in out) {
+    const qs = out.quiz?.questions ?? [];
+    if (qs.length) embeddedQuiz = { articleId: null, questions: qs };
+    delete out.quiz;
+  }
   if (col === 'learnQuizzes' && Array.isArray(out.questions)) {
     quizKey = { answers: out.questions.map((q) => q.correctOption ?? null) };
     out.questions = out.questions.map(({ correctOption, ...q }) => q);
   }
-  return { out, quizKey };
+  return { out, quizKey, embeddedQuiz };
 }
 
 let batch = dst.batch();
@@ -79,9 +87,17 @@ async function put(ref, data) {
 async function copyCollection(srcCol, dstCol, name) {
   const snap = await srcCol.get();
   for (const doc of snap.docs) {
-    const { out, quizKey } = transform(name, doc.data());
+    const { out, quizKey, embeddedQuiz } = transform(name, doc.data());
     await put(dstCol.doc(doc.id), out);
     if (quizKey) await put(dst.collection('learnQuizKeys').doc(doc.id), quizKey);
+    if (embeddedQuiz) {
+      const qs = embeddedQuiz.questions;
+      await put(dst.collection('learnQuizzes').doc(doc.id), {
+        articleId: doc.id,
+        questions: qs.map(({ correctOption, ...q }) => q),
+      });
+      await put(dst.collection('learnQuizKeys').doc(doc.id), { answers: qs.map((q) => q.correctOption ?? null) });
+    }
     for (const sub of SUBCOLLECTIONS[name] ?? []) {
       await copyCollection(doc.ref.collection(sub), dstCol.doc(doc.id).collection(sub), sub);
     }

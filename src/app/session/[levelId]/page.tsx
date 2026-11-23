@@ -64,7 +64,7 @@ export default function GameSessionPage() {
         <p className="text-sm opacity-50 mb-8 max-w-xs font-medium uppercase tracking-widest">
           {activeModule?.minRole?.toUpperCase()} Authorization Required
         </p>
-        <Link href="/">
+        <Link href="/games">
           <Button className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Back to Hub</Button>
         </Link>
       </div>
@@ -91,7 +91,7 @@ export default function GameSessionPage() {
         <AlertCircle className="w-16 h-16 text-destructive mb-6" />
         <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2">Sync Error</h2>
         <p className="text-sm opacity-50 mb-8 max-w-xs">Module not found in this studio session.</p>
-        <Link href="/">
+        <Link href="/games">
           <Button className="bg-white text-black font-black uppercase italic">Back to Hub</Button>
         </Link>
       </div>

@@ -64,7 +64,9 @@ service cloud.firestore {
         || isSuperAdmin()
         || isStaffOfSchool(resource.data.get('schoolId', null))
       );
-      allow list: if isSuperAdmin();
+      // Lehrpersonen listen Schüler:innen ihrer Schule (Abfrage muss nach
+      // schoolId filtern).
+      allow list: if isSuperAdmin() || isStaffOfSchool(resource.data.schoolId);
 
       allow create: if signedIn() && request.auth.uid == userId
         && request.resource.data.keys().hasOnly(selfEditableKeys())
@@ -83,6 +85,49 @@ service cloud.firestore {
           && signedIn() && (request.auth.uid == userId || isSuperAdmin()
             || isStaffOfSchool(get(/databases/$(database)/documents/users/$(userId)).data.get('schoolId', null)));
         allow write: if false;
+      }
+    }
+
+    // --- Zuweisungen ---
+    // audience 'class': ganze Klasse (classId); 'students': nur studentIds.
+    function myClassIds() {
+      return hasProfile() ? me().get('classIds', []) : [];
+    }
+
+    match /assignments/{assignmentId} {
+      allow read: if isStaffOfSchool(resource.data.schoolId)
+        || (signedIn() && resource.data.audience == 'class' && resource.data.classId in myClassIds())
+        || (signedIn() && request.auth.uid in resource.data.studentIds);
+      allow create: if isStaffOfSchool(request.resource.data.schoolId)
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isStaffOfSchool(resource.data.schoolId)
+        && request.resource.data.schoolId == resource.data.schoolId;
+      allow delete: if isStaffOfSchool(resource.data.schoolId);
+
+      function assignment() {
+        return get(/databases/$(database)/documents/assignments/$(assignmentId)).data;
+      }
+
+      function canSeeAssignment() {
+        return (assignment().audience == 'class' && assignment().classId in myClassIds())
+          || request.auth.uid in assignment().studentIds;
+      }
+
+      // Abgabe pro Person (Dokument-ID = uid). Schüler:innen dürfen nur
+      // einreichen; freigeben und Credits vergeben tut /api/assignments/review.
+      match /submissions/{userId} {
+        allow read: if signedIn() && (request.auth.uid == userId
+          || isStaffOfSchool(assignment().schoolId));
+        allow create: if signedIn() && request.auth.uid == userId && canSeeAssignment()
+          && request.resource.data.keys().hasOnly(['uid', 'status', 'text', 'link', 'submittedAt', 'displayName'])
+          && request.resource.data.uid == userId
+          && request.resource.data.status == 'submitted';
+        allow update: if signedIn() && request.auth.uid == userId && canSeeAssignment()
+          && resource.data.status in ['submitted', 'changes_requested']
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['status', 'text', 'link', 'submittedAt', 'displayName'])
+          && request.resource.data.status == 'submitted';
+        allow delete: if false;
       }
     }
 
@@ -106,15 +151,65 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // --- Profile: Entwurf (Schüler:in) → Freigabe (Server) → öffentlich ---
+    function profileFields() {
+      return ['uid', 'schoolId', 'status', 'artistName', 'handle', 'bio', 'avatarUrl',
+        'roles', 'genres', 'embeds', 'links', 'openForCollab', 'updatedAt', 'submittedAt'];
+    }
+
+    function validProfileDraft(d) {
+      return d.uid == request.auth.uid
+        && d.schoolId == mySchool()
+        && d.status in ['draft', 'submitted']
+        && d.artistName is string && d.artistName.size() <= 60
+        && d.handle is string && d.handle.matches('^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$')
+        && d.get('bio', '').size() <= 1500
+        && d.roles.size() <= 12 && d.genres.size() <= 13
+        && d.embeds.size() <= 8 && d.links.size() <= 8;
+    }
+
+    match /profileDrafts/{userId} {
+      allow read: if signedIn() && (request.auth.uid == userId
+        || isStaffOfSchool(resource.data.schoolId));
+      allow create: if signedIn() && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(profileFields())
+        && validProfileDraft(request.resource.data);
+      allow update: if signedIn() && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(profileFields())
+        && validProfileDraft(request.resource.data);
+      allow delete: if false;
+    }
+
+    // Öffentliche Profile und Handles schreibt nur /api/profiles/review.
+    match /profiles/{userId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /handles/{handle} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // --- Lernpfad-Abschlüsse (nur Server schreibt, /api/paths/claim) ---
+    match /achievements/{achievementId} {
+      allow read: if signedIn() && (
+        resource.data.uid == request.auth.uid
+        || isStaffOfSchool(resource.data.schoolId)
+      );
+      allow write: if false;
+    }
+
     // --- Lerninhalte (CMS) ---
     match /{contentCol}/{docId} {
       allow read: if contentCol in [
         'studios', 'tracks', 'games', 'learnApps', 'levels', 'patterns',
-        'learnCategories', 'learnSubCats', 'articles'
+        'learnCategories', 'learnSubCats', 'articles', 'courses', 'learningPaths'
       ];
       allow write: if isSuperAdmin() && contentCol in [
         'studios', 'tracks', 'games', 'learnApps', 'levels', 'patterns',
-        'learnCategories', 'learnSubCats', 'articles', 'learnQuizzes'
+        'learnCategories', 'learnSubCats', 'articles', 'learnQuizzes',
+        'courses', 'learningPaths'
       ];
     }
 

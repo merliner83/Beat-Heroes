@@ -33,6 +33,12 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 - Claude-Vorschau: `.claude/launch.json` startet einen zweiten Dev-Server auf
   Port 9003 mit eigenem Build-Ordner `.next-preview`.
 
+## Domain
+- `beat-heroes.com` + `www` bei Infomaniak; am Backend `beat-heroes`
+  angemeldet (23.11.2026). DNS: A → 35.219.200.100 (statt .10), neue
+  TXT `fah-claim=016-…`, CNAME `_acme-challenge_…` (Werte via App-Hosting-API
+  `…/backends/beat-heroes/domains/<domain>`). Für Login autorisiert.
+
 ## Serverseitige Teile (relevant für Hosting und Mobile)
 - `src/app/api/proxy-audio/route.ts`: Audio-Proxy gegen CORS, abgesichert per
   Host-Allowlist (eigener Bucket, actions.google.com, plus `AUDIO_PROXY_ALLOWED_HOSTS`).
@@ -72,6 +78,9 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 - Öffentliche Profiländerungen gibt eine Lehrperson frei (Entwurf → Freigabe).
 - Zuweisungssystem: Lehrpersonen (auch der Nutzer) weisen Aufgaben zu.
 - Mobile: zuerst PWA, später Capacitor mit gehosteter App.
+- Lektionen frei wählbar; Lernpfade als Vorlagen (z.B. Talentförderung,
+  die der Nutzer in der Schweiz offiziell anerkennen lassen kann).
+- Lektionen erstellt nur der Nutzer (superAdmin), keine Lehrpersonen-Inhalte.
 - Name: «Beat Heroes» (ohne Bindestrich) für Menschen, `beat-heroes` technisch.
 - Google-Login per Popup (Redirect scheitert ausserhalb der authDomain).
 - Service Worker: Seiten network-first, sonst kommen Deploys nicht an.
@@ -79,10 +88,22 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 ## Offene Punkte
 1. Phase 0 erledigt (23.11.2026): Auth aktiv, Live-Domain autorisiert,
    Nutzer ist superAdmin, Credits live verifiziert. Noch keine Schulen angelegt
-   (Namen der zwei Musikschulen fehlen). App-Name überall auf «Beat Heroes»
+   (Namen der zwei Musikschulen fehlen).
+   → Schulen angelegt: `musikschule-bantiger` (Musikschule Bantiger),
+   `musikschule-oberemmental` (Musikschule Oberemmental). Nutzer unterrichtet
+   an beiden; als superAdmin ohne schoolId wählt er die Schule in `/teacher`. App-Name überall auf «Beat Heroes»
    vereinheitlichen (heute «BeatHero»); technisch `beat-heroes`.
 2. ESLint einrichten, dann `ignoreDuringBuilds` entfernen.
-3. Phase 1: echte Routen, Schulen/Klassen, Zuweisungen, Games-Bereich,
-   Learn als Kurse/Lektionen/Blöcke (Producing, MV).
-4. Phase 2: Profil-Entwurf + Freigabe + öffentliche Seite `/@handle`.
+3. Phase 1 (Branch `feat/phase1-structure`): erledigt sind Routen mit
+   Navigation (`src/app/(main)/`), Name «Beat Heroes», Schulen (Admin),
+   Klassen mit Beitrittscode, Zuweisungen + Abgaben + Freigabe (`/teacher`).
+   Learn als Kurse (Producing, MV) mit Lernpfaden (Talentförderung) ist
+   umgesetzt, siehe `docs/architecture.md`. Lektions-Editor im Admin
+   (`/admin/articles/[id]`, `new?course=…&chapter=…`) mit Live-Vorschau,
+   Bild-Upload, Übungen, YouTube und Quiz. 4 MV-Entwürfe (minRole teacher,
+   `scripts/seed-mv-drafts.mjs`) warten auf Durchsicht durch den Nutzer.
+4. Phase 2 umgesetzt: Profil-Editor (`/me`), Freigabe (`/teacher`),
+   Artists-Übersicht und öffentliche Seite `/artists/[handle]`. Games-Seite
+   zeigt alle Games (3 Spieltypen × Studios + Lern-Games). Hinweis: Games mit
+   `studioId` `std-nintu` haben kein Studio-Dokument (Altlast, ausgeblendet).
 5. Phase 3: Beat-Börse, Kollabos, Challenges.
