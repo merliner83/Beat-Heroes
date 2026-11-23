@@ -36,6 +36,14 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
 - Claude-Vorschau: `.claude/launch.json` startet einen zweiten Dev-Server auf
   Port 9003 mit eigenem Build-Ordner `.next-preview`.
 
+## MV-Übungen (23.11.2026)
+- 14 Rhythmus-Übungen (Puls, Backbeat, House, Boom Bap, Trap, Dembow, One Drop,
+  Son-/Rumba-Clave, Bossa Nova, Swing, Walzer, Ländler, Marsch) und 3
+  Klaviatur-Übungen (Notennamen, Intervalle, Dur/Moll). Details:
+  `docs/architecture.md` → MV-Übungen. MV-Kapitel «Grooves der Welt» neu.
+- Nächste Ideen: Tonleitern bauen, Akkord-Progressions, Notenschrift,
+  alte Games (Beat Hero usw.) auf RhythmGrid/Design umstellen.
+
 ## Design-System (23.11.2026)
 - Bausteine in `src/components/ds.tsx` (PageHeader, SectionTitle, Panel,
   Chip, Tag, EmptyState, Loading). Farben als Tailwind-Tokens: `brand`,

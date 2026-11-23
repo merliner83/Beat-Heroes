@@ -69,7 +69,7 @@ export function CourseView({ courseId }: { courseId: string }) {
                   <div className="flex-1 min-w-0 text-left">
                     <h2 className="text-lg md:text-2xl h-display truncate">{ch.title}</h2>
                     <p className="text-xs text-white/60 font-normal">
-                      {empty ? 'Lektionen folgen bald' : `${chLessons.length} Lektionen${apps.length ? ` · ${apps.length} Übung` : ''}`}
+                      {empty ? 'Lektionen folgen bald' : `${chLessons.length ? `${chLessons.length} Lektion${chLessons.length === 1 ? '' : 'en'}` : ''}${chLessons.length && apps.length ? ' · ' : ''}${apps.length ? `${apps.length} Übung${apps.length === 1 ? '' : 'en'}` : ''}`}
                     </p>
                   </div>
                   {percent > 0 && <span className="text-xs font-black" style={{ color: getAccuracyColor(percent) }}>{percent}%</span>}
