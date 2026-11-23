@@ -70,14 +70,20 @@ Credits vergibt `POST /api/credits`: prüft das ID-Token, liest `maxPoints`
 aus dem Inhalt, zählt nur die Verbesserung gegenüber dem Bestwert und
 bewertet Quizzes selbst (der Browser schickt nur die Antworten).
 
-### Profil mit Freigabe (Phase 2)
-- `profileDrafts/{uid}` – Entwurf, nur Besitzer:in schreibt; Lehrperson liest.
-  `status`: `draft` | `submitted` | `changes_requested`, `teacherNote`
+### Profil mit Freigabe (umgesetzt 23.11.2026)
+- `profileDrafts/{uid}` – Entwurf, nur Besitzer:in schreibt (Regeln prüfen
+  Felder, Längen, Handle-Format, `schoolId` = eigene Schule); Lehrpersonen der
+  Schule lesen. `status`: `draft` | `submitted` | `changes_requested` |
+  `approved`, `teacherNote` (nur Server).
 - `profiles/{uid}` – freigegebene, öffentliche Version; schreibt nur
-  Lehrperson/Server bei Freigabe. `handle`, `bio`, `avatarUrl`, `links[]`,
-  `embeds[]` (Spotify/SoundCloud/YouTube-URLs), `featuredBeatIds[]`,
-  `approvedBy`, `approvedAt`
-- `handles/{handle}` – `uid`, sorgt für eindeutige Profil-URLs `/@handle`
+  `POST /api/profiles/review`. Felder: `artistName`, `handle`, `bio`,
+  `avatarUrl`, `roles[]`, `genres[]`, `embeds[]` (Spotify/SoundCloud/YouTube),
+  `links[]`, `openForCollab`, `schoolName`, `approvedBy`, `approvedAt`.
+- `handles/{handle}` – `uid`; eindeutige Profil-URL `/artists/{handle}`.
+- Profilbilder in Storage `profiles/{uid}/…` (öffentlich lesbar, max. 5 MB).
+- Seiten: Editor unter `/me`, Freigabe unter `/teacher`, Übersicht
+  `/artists` (Suche, Rollen, Genre, Schule, «offen für Kollabos»),
+  öffentliche Seite `/artists/[handle]` serverseitig gerendert (OG-Tags).
 
 ### Zuweisungen (umgesetzt 23.11.2026)
 - `assignments/{id}` – `schoolId`, `classId`, `audience` (`class` | `students`),
@@ -135,9 +141,10 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
 |--------------------|----------------------------------------------|
 | `/`                | Dashboard: Credits, Aufgaben, Neues          |
 | `/learn`           | Lernen (heute Knowledge Base + Lern-Apps; Ziel: Kurse Producing, MV) |
-| `/games`           | Arcade                                       |
+| `/games`           | alle Games (Typ, Studio, Suche), Levels direkt startbar |
+| `/artists`         | Artist-Profile mit Suche/Filter              |
 | `/beats`           | Beat-Börse, Challenges                       |
-| `/me/edit`         | Profil-Entwurf bearbeiten                    |
-| `/@[handle]`       | öffentliches Profil (serverseitig gerendert) |
+| `/me`              | Profil-Editor + Statistik                    |
+| `/artists/[handle]`| öffentliches Profil (serverseitig gerendert) |
 | `/teacher`         | Klassen, Zuweisungen, Freigaben              |
 | `/admin`           | CMS                                          |

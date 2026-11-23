@@ -19,7 +19,7 @@ service firebase.storage {
     // Alles ausser /users/ gilt als Lerninhalt.
     match /{folder}/{allPaths=**} {
       allow read: if folder != 'users';
-      allow write: if folder != 'users' && isSuperAdmin()
+      allow write: if !(folder in ['users', 'profiles']) && isSuperAdmin()
         && request.resource.size < 50 * 1024 * 1024;
     }
 
@@ -28,7 +28,15 @@ service firebase.storage {
       allow write: if isSuperAdmin() && request.resource.size < 50 * 1024 * 1024;
     }
 
-    // Eigene Uploads der Schüler:innen (Beats, Avatare) – Phase 2/3.
+    // Profilbilder: öffentlich lesbar (Profilseite), schreiben nur die Person.
+    match /profiles/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if signedIn() && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Eigene Uploads der Schüler:innen (Beats) – Phase 3.
     // Lesen/Schreiben vorerst nur durch die Person selbst.
     match /users/{userId}/{allPaths=**} {
       allow read: if signedIn() && request.auth.uid == userId;

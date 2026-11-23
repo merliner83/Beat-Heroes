@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, GraduationCap, Gamepad2, User, ClipboardList, ShieldCheck, Zap, LogIn, LogOut } from 'lucide-react';
+import { Home, GraduationCap, Gamepad2, Mic2, User, ClipboardList, ShieldCheck, Zap, LogIn, LogOut } from 'lucide-react';
 import { useUser, useAuth } from '@/firebase';
 import { initiateGoogleSignIn, initiateEmailSignIn, initiateEmailSignUp, initiateSignOut } from '@/firebase/non-blocking-login';
 import { isStaff, isSuperAdmin } from '@/lib/game/types';
@@ -20,6 +20,7 @@ const NAV: NavItem[] = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/learn', label: 'Lernen', icon: GraduationCap },
   { href: '/games', label: 'Games', icon: Gamepad2 },
+  { href: '/artists', label: 'Artists', icon: Mic2 },
   { href: '/me', label: 'Ich', icon: User },
   { href: '/teacher', label: 'Lehrperson', icon: ClipboardList, show: 'staff' },
   { href: '/admin', label: 'Admin', icon: ShieldCheck, show: 'superAdmin' },

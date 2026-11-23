@@ -9,6 +9,7 @@ import {
 } from '@/lib/game/types';
 import { apiPost } from '@/lib/api';
 import { formatDue } from '@/components/assignments/MyAssignments';
+import { ProfileReviews } from './ProfileReviews';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -445,7 +446,8 @@ export function TeacherView() {
           ))}
         </div>
       </aside>
-      <div>
+      <div className="space-y-8">
+        <ProfileReviews schoolId={schoolId} />
         {current ? <ClassDetail key={current.id} schoolClass={current} /> : (
           <p className="text-white/50 py-10">Lege links deine erste Klasse an. Du bekommst einen Beitrittscode für die Schüler:innen.</p>
         )}

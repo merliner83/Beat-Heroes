@@ -100,5 +100,8 @@ keine `#`-Kommentare in Befehlen, die der Nutzer kopiert.
    Learn als Kurse (Producing, MV) mit Lernpfaden (Talentförderung) ist
    umgesetzt, siehe `docs/architecture.md`. Offen: MV-Lektionen schreiben,
    Lektions-Editor im Admin (heute nur Titel editierbar).
-4. Phase 2: Profil-Entwurf + Freigabe + öffentliche Seite `/@handle`.
+4. Phase 2 umgesetzt: Profil-Editor (`/me`), Freigabe (`/teacher`),
+   Artists-Übersicht und öffentliche Seite `/artists/[handle]`. Games-Seite
+   zeigt alle Games (3 Spieltypen × Studios + Lern-Games). Hinweis: Games mit
+   `studioId` `std-nintu` haben kein Studio-Dokument (Altlast, ausgeblendet).
 5. Phase 3: Beat-Börse, Kollabos, Challenges.

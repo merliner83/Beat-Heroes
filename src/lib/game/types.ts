@@ -326,3 +326,86 @@ export interface Achievement {
 export function isLessonPassed(progress: ArticleProgress | undefined, minScore = 80): boolean {
   return !!progress?.completed && (progress.quizScore ?? 0) >= minScore;
 }
+
+// --- Profile (Entwurf → Freigabe → öffentlich) ---
+
+export const ARTIST_ROLES = [
+  'Producer', 'Beatmaker', 'Rapper:in', 'Sänger:in', 'Songwriter:in', 'DJ',
+  'Gitarre', 'Bass', 'Keys', 'Drums', 'Andere Instrumente',
+] as const;
+
+export const ARTIST_GENRES = [
+  'Hip-Hop', 'Trap', 'Boom Bap', 'Drill', 'R&B', 'Pop', 'Afrobeats', 'Lo-Fi',
+  'Electronic', 'House', 'Rock', 'Jazz', 'Andere',
+] as const;
+
+export interface ProfileLink {
+  label: string;
+  url: string;
+}
+
+/** Felder, die Schüler:innen im Entwurf selbst bearbeiten. */
+export interface ProfileContent {
+  artistName: string;
+  handle: string;
+  bio?: string;
+  avatarUrl?: string | null;
+  roles: string[];
+  genres: string[];
+  /** Spotify-, SoundCloud- oder YouTube-URLs */
+  embeds: string[];
+  links: ProfileLink[];
+  openForCollab?: boolean;
+}
+
+export type ProfileDraftStatus = 'draft' | 'submitted' | 'changes_requested' | 'approved';
+
+export interface ProfileDraft extends ProfileContent {
+  id: string;
+  uid: string;
+  schoolId: string | null;
+  status: ProfileDraftStatus;
+  teacherNote?: string;
+  updatedAt?: any;
+  submittedAt?: any;
+}
+
+export interface PublicProfile extends ProfileContent {
+  id: string;
+  uid: string;
+  schoolId: string | null;
+  schoolName?: string | null;
+  approvedAt?: any;
+  approvedBy?: string;
+}
+
+export const HANDLE_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,28}[a-z0-9])$/;
+
+export function toHandle(name: string): string {
+  return name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30);
+}
+
+/** Wandelt eine Spotify-/SoundCloud-/YouTube-URL in eine Embed-URL um. */
+export function toEmbed(url: string): { src: string; kind: 'spotify' | 'soundcloud' | 'youtube'; height: number } | null {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\.|^m\./, '');
+    if (host === 'open.spotify.com') {
+      const m = u.pathname.match(/^\/(?:intl-[a-z-]+\/)?(track|album|playlist|artist|episode|show)\/([A-Za-z0-9]+)/);
+      if (!m) return null;
+      return { src: `https://open.spotify.com/embed/${m[1]}/${m[2]}`, kind: 'spotify', height: m[1] === 'track' || m[1] === 'episode' ? 152 : 352 };
+    }
+    if (host === 'soundcloud.com' || host === 'on.soundcloud.com') {
+      return { src: `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23ff3399&auto_play=false&visual=false`, kind: 'soundcloud', height: 166 };
+    }
+    if (host === 'youtube.com' || host === 'youtu.be' || host === 'music.youtube.com') {
+      const id = host === 'youtu.be' ? u.pathname.slice(1, 12) : (u.searchParams.get('v') ?? u.pathname.match(/\/(?:embed|shorts)\/([A-Za-z0-9_-]{11})/)?.[1]);
+      if (!id || !/^[A-Za-z0-9_-]{11}$/.test(id)) return null;
+      return { src: `https://www.youtube-nocookie.com/embed/${id}`, kind: 'youtube', height: 0 };
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
