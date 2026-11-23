@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { collection, query } from 'firebase/firestore';
-import { Headphones, LayoutGrid, Loader2, Music, Search, Target, Disc3, ExternalLink } from 'lucide-react';
+import { Headphones, LayoutGrid, Loader2, Music, Search, Target, Disc3, ExternalLink, Drum, Piano } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { Game, GameType, LearnApp, Level, LevelProgress, Studio, getAccuracyColor, hasAccess } from '@/lib/game/types';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,8 @@ const GAME_INFO: Record<GameType, { title: string; text: string; color: string; 
 const LEARN_GAME_INFO: Record<string, { text: string; color: string; icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }> }> = {
   'ear-training': { text: 'Trainiere dein Gehör für Frequenzen und EQ.', color: '#00E676', icon: Headphones },
   'rhythm-trainer': { text: 'Klopf Rhythmus-Patterns exakt nach.', color: '#FFEA00', icon: Target },
+  'mv-rhythm': { text: 'Groove hören, mitklopfen und nachbauen.', color: '#FF3399', icon: Drum },
+  'mv-keys': { text: 'Töne und Akkorde auf der Klaviatur.', color: '#00E676', icon: Piano },
 };
 
 const TYPE_ORDER: GameType[] = ['rhythm-producer', 'sample-hunter', 'sample-catcher'];
@@ -66,13 +68,15 @@ export default function GamesPage() {
   const learnGames = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!(filter === 'all' || filter === 'learn') || studioFilter !== 'all') return [];
-    return (apps ?? []).filter((a) => hasAccess(profile?.role, a.minRole)).filter((a) => !q || a.name.toLowerCase().includes(q));
+    return (apps ?? []).filter((a) => hasAccess(profile?.role, a.minRole))
+      .filter((a) => !q || `${a.name} ${a.description ?? ''}`.toLowerCase().includes(q))
+      .sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name, 'de'));
   }, [apps, filter, studioFilter, search, profile?.role]);
 
   const chips: { id: Filter; label: string }[] = [
     { id: 'all', label: 'Alle' },
     ...TYPE_ORDER.map((t) => ({ id: t as Filter, label: GAME_INFO[t].title })),
-    { id: 'learn', label: 'Lern-Games' },
+    { id: 'learn', label: 'Lern-Games & MV' },
   ];
 
   return (
@@ -129,11 +133,11 @@ export default function GamesPage() {
                 <div className="flex items-center gap-3">
                   <Icon className="w-7 h-7" style={{ color: info.color }} />
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-white/60">Lern-Game</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-white/60">{app.type.startsWith('mv-') ? 'MV-Übung' : 'Lern-Game'}</p>
                     <h3 className="h-display text-lg">{app.name}</h3>
                   </div>
                 </div>
-                <p className="text-sm text-white/50">{info.text}</p>
+                <p className="text-sm text-white/60">{app.description || info.text}</p>
               </Link>
             );
           })}

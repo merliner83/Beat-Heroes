@@ -57,7 +57,10 @@ export interface Game {
 export interface LearnApp {
   id: string;
   name: string;
-  type: 'ear-training' | 'rhythm-trainer';
+  /** mv-rhythm / mv-keys: Übungen aus src/lib/mv (exerciseId) */
+  type: 'ear-training' | 'rhythm-trainer' | 'mv-rhythm' | 'mv-keys';
+  exerciseId?: string;
+  description?: string;
   minRole?: UserRole | LegacyRole;
   maxPoints?: number;
 }

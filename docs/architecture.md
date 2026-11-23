@@ -128,6 +128,19 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
   ohne Quiz über «Als gelesen markieren» (Score 100). Setup-Skript:
   `scripts/setup-courses.mjs`.
 
+### MV-Übungen (umgesetzt 23.11.2026)
+- Code in `src/lib/mv/` (Synth mit Web Audio, Taktgeber `usePatternPlayer`,
+  Pattern-Bibliothek `patterns.ts` mit Stil-Steckbriefen) und
+  `src/components/mv/` (RhythmGrid, PianoKeyboard, Übungen, Seite).
+- Jede Übung ist ein `learnApps`-Dokument `learn-mv-<id>` mit `type`
+  `mv-rhythm` | `mv-keys`, `exerciseId`, `description`, `maxPoints` (150).
+  Läuft unter `/session/learn-mv-<id>`, einbettbar mit `GAME:` und als
+  Zuweisung (kind `learnApp`); Credits über `/api/credits` (bester Score).
+- Rhythmus-Modi: Hören & Sehen, Mitklopfen (Timing-Auswertung), Nachbauen.
+  Klaviatur: Notennamen, Intervalle (Merksongs), Dur/Moll.
+- Neue Patterns: in `PATTERNS` ergänzen und in
+  `scripts/setup-mv-exercises.mjs` eintragen (legt App + Kapitel an).
+
 ### Lernpfade (z.B. Talentförderung)
 - `learningPaths/{id}` – `title`, `description`, `requiredLessonIds[]`,
   `minScore`, `official`, `credits`, `order`, `published`. Pflege im Admin.

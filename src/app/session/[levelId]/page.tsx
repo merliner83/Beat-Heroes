@@ -11,6 +11,7 @@ import { SampleHunterView } from '@/components/game/SampleHunterView';
 import { DiskDashView } from '@/components/game/DiskDashView';
 import { EarTrainingView } from '@/components/game/EarTrainingView';
 import { RhythmTrainerView } from '@/components/game/RhythmTrainerView';
+import { MvExercisePage } from '@/components/mv/MvExercisePage';
 import { Loader2, AlertCircle, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -69,6 +70,10 @@ export default function GameSessionPage() {
         </Link>
       </div>
     );
+  }
+
+  if (isLearnApp && learnApp && (learnApp.type === 'mv-rhythm' || learnApp.type === 'mv-keys')) {
+    return <MvExercisePage app={learnApp} />;
   }
 
   if (isLearnApp && learnApp) {
