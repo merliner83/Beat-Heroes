@@ -10,7 +10,7 @@
     --card-foreground: 280 10% 98%;
     --popover: 280 15% 6%;
     --popover-foreground: 280 10% 98%;
-    --primary: 340 82% 52%;
+    --primary: 330 100% 60%;
     --primary-foreground: 0 0% 100%;
     --secondary: 15 100% 50%;
     --secondary-foreground: 0 0% 100%;
@@ -22,8 +22,16 @@
     --destructive-foreground: 0 0% 98%;
     --border: 280 15% 15%;
     --input: 280 15% 15%;
-    --ring: 340 82% 52%;
+    --ring: 330 100% 60%;
     --radius: 1rem;
+
+    /* Beat-Heroes-Farben (RGB für Tailwind mit Transparenz) */
+    --brand: 255 51 153;    /* #FF3399 Pink */
+    --success: 0 230 118;   /* #00E676 Grün */
+    --warning: 255 145 0;   /* #FF9100 Orange */
+    --credit: 255 234 0;    /* #FFEA00 Gelb (Credits) */
+    --info: 0 255 255;      /* #00FFFF Cyan */
+    --violet: 56 56 250;    /* #3838FA Blau-Violett */
   }
 }
 
@@ -34,6 +42,25 @@
   body {
     @apply bg-background text-foreground font-body antialiased;
     background-image: radial-gradient(circle at 50% 50%, hsla(340, 82%, 52%, 0.05) 0%, transparent 80%);
+  }
+}
+
+/* --- Typografie ---
+ * Plakativ (fett, kursiv, gross) nur für Seitentitel und grosse Überschriften.
+ * Fliesstext, Buttons und Labels bleiben normal lesbar, mind. 12px.
+ */
+@layer components {
+  .h-display {
+    @apply font-black uppercase italic tracking-tighter leading-[0.95];
+  }
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-wider text-white/60;
+  }
+  .panel {
+    @apply rounded-2xl border border-white/10 bg-white/[0.03];
+  }
+  .panel-hover {
+    @apply transition-colors hover:border-white/25 hover:bg-white/[0.05];
   }
 }
 

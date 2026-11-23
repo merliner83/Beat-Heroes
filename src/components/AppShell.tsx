@@ -40,27 +40,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => { if (user && !user.isAnonymous) setEmailOpen(false); }, [user]);
 
-  const items = NAV.filter((item) =>
-    !item.show || (item.show === 'staff' ? isStaff(profile?.role) : isSuperAdmin(profile?.role)),
-  );
+  const allowed = (item: NavItem) =>
+    !item.show || (item.show === 'staff' ? isStaff(profile?.role) : isSuperAdmin(profile?.role));
+  // Hauptpunkte (Handy unten, max. 5) und Zusatzpunkte für Lehrpersonen/Admins
+  const mainItems = NAV.filter((i) => !i.show);
+  const extraItems = NAV.filter((i) => i.show && allowed(i));
   const signedIn = !!user && !user.isAnonymous;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col">
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 px-4 md:px-6 h-16 md:h-20">
-          <Link href="/" className="text-2xl md:text-4xl font-black uppercase italic text-gradient tracking-tighter shrink-0">
+          <Link href="/" className="h-display text-2xl md:text-3xl text-gradient shrink-0">
             Beat Heroes
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1 bg-white/5 rounded-full p-1">
-            {items.map(({ href, label, icon: Icon }) => (
+          <nav className="hidden md:flex items-center gap-1 bg-white/5 rounded-full p-1" aria-label="Hauptnavigation">
+            {[...mainItems, ...extraItems].map(({ href, label, icon: Icon, show }) => (
               <Link
                 key={href}
                 href={href}
+                aria-current={isActive(pathname, href) ? 'page' : undefined}
                 className={cn(
-                  'flex items-center gap-2 rounded-full px-4 h-10 text-sm font-black uppercase italic tracking-tighter transition-colors',
-                  isActive(pathname, href) ? 'bg-primary text-white' : 'text-white/60 hover:text-white',
+                  'items-center gap-2 rounded-full px-3 lg:px-4 h-10 text-sm font-semibold transition-colors',
+                  show ? 'hidden xl:flex' : 'flex',
+                  isActive(pathname, href) ? 'bg-brand text-white' : 'text-white/70 hover:text-white',
                 )}
               >
                 <Icon className="w-4 h-4" /> {label}
@@ -70,9 +74,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center gap-3">
             {signedIn && (
-              <Link href="/me" className="gemini-border px-3 py-1.5 bg-black/80 flex items-center gap-2 hover:bg-black transition-colors">
-                <Zap className="w-4 h-4 text-[#FFEA00]" fill="currentColor" />
-                <span className="font-black italic text-sm">{(profile?.streetCred || 0).toLocaleString('de-CH')} SC</span>
+              <Link href="/me" title="Deine Credits" className="px-3 h-9 rounded-full border border-credit/30 bg-credit/10 flex items-center gap-1.5 hover:bg-credit/20 transition-colors">
+                <Zap className="w-4 h-4 text-credit" fill="currentColor" />
+                <span className="font-bold text-sm tabular-nums">{(profile?.streetCred || 0).toLocaleString('de-CH')}</span>
               </Link>
             )}
             <DropdownMenu>
@@ -80,7 +84,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Button variant="ghost" className="h-10 w-10 rounded-full p-0 border border-white/10" aria-label="Konto">
                   <Avatar className="h-full w-full">
                     <AvatarImage src={user?.photoURL || undefined} />
-                    <AvatarFallback className="bg-primary/20 text-primary font-black uppercase italic">
+                    <AvatarFallback className="bg-brand/20 text-brand font-bold">
                       {user?.displayName?.charAt(0) || '?'}
                     </AvatarFallback>
                   </Avatar>
@@ -88,15 +92,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-black/90 border-white/10 text-white backdrop-blur-xl">
                 {signedIn ? (
-                  <DropdownMenuItem onClick={() => auth && initiateSignOut(auth)} className="cursor-pointer text-destructive font-bold">
-                    <LogOut className="mr-2 h-4 w-4" /> Abmelden
-                  </DropdownMenuItem>
+                  <>
+                    {(profile?.displayName || user?.displayName) && (
+                      <div className="px-2 py-1.5 text-sm text-white/60 truncate max-w-56">{profile?.displayName || user?.displayName}</div>
+                    )}
+                    {extraItems.map(({ href, label, icon: Icon }) => (
+                      <DropdownMenuItem key={href} asChild className="cursor-pointer">
+                        <Link href={href}><Icon className="mr-2 h-4 w-4" /> {label}</Link>
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuItem onClick={() => auth && initiateSignOut(auth)} className="cursor-pointer text-destructive">
+                      <LogOut className="mr-2 h-4 w-4" /> Abmelden
+                    </DropdownMenuItem>
+                  </>
                 ) : (
                   <>
-                    <DropdownMenuItem onClick={() => auth && initiateGoogleSignIn(auth)} className="cursor-pointer font-bold">
+                    <DropdownMenuItem onClick={() => auth && initiateGoogleSignIn(auth)} className="cursor-pointer">
                       <LogIn className="mr-2 h-4 w-4" /> Mit Google anmelden
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setEmailOpen(true)} className="cursor-pointer font-bold">
+                    <DropdownMenuItem onClick={() => setEmailOpen(true)} className="cursor-pointer">
                       <LogIn className="mr-2 h-4 w-4" /> Mit E-Mail anmelden
                     </DropdownMenuItem>
                   </>
@@ -109,14 +123,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <main className="flex-1 w-full max-w-7xl mx-auto py-6 md:py-10 px-4 md:px-6 pb-28 md:pb-10">{children}</main>
 
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-black/90 backdrop-blur-xl border-t border-white/10 flex justify-around pb-[env(safe-area-inset-bottom)]">
-        {items.map(({ href, label, icon: Icon }) => (
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-black/90 backdrop-blur-xl border-t border-white/10 flex justify-around pb-[env(safe-area-inset-bottom)]" aria-label="Hauptnavigation">
+        {mainItems.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
+            aria-current={isActive(pathname, href) ? 'page' : undefined}
             className={cn(
-              'flex flex-col items-center gap-1 py-2.5 px-2 text-[10px] font-black uppercase tracking-tight',
-              isActive(pathname, href) ? 'text-primary' : 'text-white/50',
+              'flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium',
+              isActive(pathname, href) ? 'text-brand' : 'text-white/60',
             )}
           >
             <Icon className="w-5 h-5" /> {label}

@@ -177,7 +177,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
       setCountIn(null);
       setIsPlaying(true);
       await audioEngine.startBackingTrack(game.backingTrackUrl || '', actualStartTime);
-    } catch (e) { toast({ variant: "destructive", title: "Sync Failed" }); } finally { setIsLoadingAudio(false); }
+    } catch (e) { toast({ variant: "destructive", title: "Laden fehlgeschlagen" }); } finally { setIsLoadingAudio(false); }
   };
 
   useEffect(() => {
@@ -195,10 +195,10 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
     <div className="flex flex-col h-screen bg-[#050505] text-white p-4 overflow-hidden select-none relative touch-none">
       <header className="flex justify-between items-center mb-1 px-6 h-14 shrink-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/5 rounded-t-[2.5rem]">
         <div className="flex items-center gap-4">
-          <Link href={`/studio/${game.studioId}`}><ArrowLeft className="w-5 h-5 text-white/40 hover:text-white transition-all hover:scale-110" /></Link>
+          <Link href={`/studio/${game.studioId}`}><ArrowLeft className="w-5 h-5 text-white/60 hover:text-white transition-all hover:scale-110" /></Link>
           <div>
-            <h1 className="text-xs font-black uppercase italic tracking-tighter text-primary">SAMPLE CATCHER</h1>
-            <p className="text-[8px] opacity-30 uppercase font-black tracking-widest">{game.name}</p>
+            <h1 className="text-xs h-display text-primary">SAMPLE CATCHER</h1>
+            <p className="text-xs opacity-30 uppercase font-black tracking-widest">{game.name}</p>
           </div>
         </div>
         <div className="bg-black/80 px-5 py-2 rounded-full border border-white/10 flex items-center gap-2 h-10 shadow-2xl">
@@ -211,7 +211,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
         {isPlaying && currentPatternName && (
           <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
             <div className="bg-primary/20 backdrop-blur-md border border-primary/30 px-4 py-1.5 rounded-full">
-              <span className="text-[10px] font-black uppercase italic tracking-widest text-primary animate-pulse">GROOVE: {currentPatternName}</span>
+              <span className="text-xs font-black uppercase italic tracking-widest text-primary animate-pulse">GROOVE: {currentPatternName}</span>
             </div>
           </div>
         )}
@@ -222,7 +222,7 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
           const isMiss = feedback?.type === 'miss';
           return (
             <div key={t.id} onPointerDown={(e) => { e.preventDefault(); onTargetClick(t.id); }} className="absolute w-32 h-32 md:w-40 md:h-40 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center transition-all duration-300 cursor-pointer group touch-none" style={{ left: `${t.x}%`, top: `${t.y}%` }}>
-              <div className={cn("absolute inset-0 rounded-full border-2 transition-all duration-200", isActive ? "scale-125 border-4" : "opacity-20 scale-100", isHit && isActive ? "opacity-100 border-[#00E676]" : "", isMiss && isActive ? "opacity-100 border-[#FF3D00]" : "")} style={{ borderColor: (!isHit && !isMiss) ? t.color : undefined, boxShadow: isActive ? `0 0 60px ${isHit ? '#00E676' : isMiss ? '#FF3D00' : t.color}` : 'none' }} />
+              <div className={cn("absolute inset-0 rounded-full border-2 transition-all duration-200", isActive ? "scale-125 border-4" : "opacity-20 scale-100", isHit && isActive ? "opacity-100 border-success" : "", isMiss && isActive ? "opacity-100 border-[#FF3D00]" : "")} style={{ borderColor: (!isHit && !isMiss) ? t.color : undefined, boxShadow: isActive ? `0 0 60px ${isHit ? '#00E676' : isMiss ? '#FF3D00' : t.color}` : 'none' }} />
               <Circle className={cn("w-10 h-10 transition-all", isActive ? "scale-150" : "opacity-10 animate-pulse")} style={{ color: isActive ? (isHit ? '#00E676' : isMiss ? '#FF3D00' : t.color) : t.color }} />
             </div>
           );
@@ -245,30 +245,30 @@ export const DiskDashView: React.FC<DiskDashViewProps> = ({ game, level, sounds 
           <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[100] backdrop-blur-3xl">
             <div className="text-center space-y-10 max-w-sm px-6">
               <div className="w-28 h-28 bg-primary/20 rounded-full flex items-center justify-center mx-auto animate-pulse border border-primary/30 shadow-[0_0_50px_rgba(255,51,153,0.3)]"><Sparkles className="w-14 h-14 text-primary" /></div>
-              <div><h2 className="text-4xl font-black uppercase italic tracking-tighter mb-2">SAMPLE CATCHER</h2><p className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-30 leading-relaxed">Catch incoming samples<br/>Follow the rhythmic patterns</p></div>
-              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-20 bg-white text-black font-black uppercase italic rounded-[2rem] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.1)]">{isLoadingAudio ? <Loader2 className="animate-spin" /> : "Initiate Catch"}</Button>
+              <div><h2 className="text-4xl h-display mb-2">SAMPLE CATCHER</h2><p className="text-xs uppercase font-bold tracking-wider opacity-30 leading-relaxed">Fang die Samples<br/>Folge den Rhythmus-Patterns</p></div>
+              <Button onClick={startLevel} disabled={isLoadingAudio} className="w-full h-20 bg-white text-black font-bold rounded-[2rem] hover:scale-105 active:scale-95 transition-all shadow-[0_20px_60px_rgba(255,255,255,0.1)]">{isLoadingAudio ? <Loader2 className="animate-spin" /> : "Los geht's"}</Button>
             </div>
           </div>
         )}
         {countIn !== null && (
           <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
-            <div className="text-[15rem] font-black italic text-[#FFEA00] drop-shadow-[0_0_80px_rgba(255,234,0,0.6)] animate-in zoom-in-50 duration-200">{countIn}</div>
+            <div className="text-[15rem] font-black italic text-credit drop-shadow-[0_0_80px_rgba(255,234,0,0.6)] animate-in zoom-in-50 duration-200">{countIn}</div>
           </div>
         )}
         {isFinished && (
           <div className="absolute inset-0 bg-black/98 flex items-center justify-center z-[110] p-6 backdrop-blur-3xl">
             <div className="text-center space-y-12 max-sm">
               <div className="relative inline-block">
-                <Trophy className={cn("w-28 h-28 mx-auto", score.accuracy >= PASS_THRESHOLD ? "text-[#FFEA00] drop-shadow-[0_0_50px_rgba(255,234,0,0.5)]" : "text-white/10")} />
-                {score.accuracy >= PASS_THRESHOLD && <Sparkles className="absolute -top-4 -right-4 w-10 h-10 text-[#FFEA00] animate-pulse" />}
+                <Trophy className={cn("w-28 h-28 mx-auto", score.accuracy >= PASS_THRESHOLD ? "text-credit drop-shadow-[0_0_50px_rgba(255,234,0,0.5)]" : "text-white/10")} />
+                {score.accuracy >= PASS_THRESHOLD && <Sparkles className="absolute -top-4 -right-4 w-10 h-10 text-credit animate-pulse" />}
               </div>
               <div>
-                <h2 className="text-5xl font-black uppercase italic tracking-tighter mb-2">{score.accuracy >= PASS_THRESHOLD ? "Gold Mastered" : "Desynced"}</h2>
-                <p className="text-4xl font-black italic transition-colors duration-500" style={{ color: getAccuracyColor(score.accuracy) }}>{score.accuracy}% Sync</p>
+                <h2 className="text-5xl h-display mb-2">{score.accuracy >= PASS_THRESHOLD ? "Geschafft!" : "Fast!"}</h2>
+                <p className="text-4xl font-black italic transition-colors duration-500" style={{ color: getAccuracyColor(score.accuracy) }}>{score.accuracy}% Treffer</p>
               </div>
               <div className="flex gap-4 pt-4">
-                <Button onClick={startLevel} variant="outline" className="flex-1 h-18 uppercase font-black italic rounded-[1.5rem] border-white/10 hover:bg-white/5 transition-all">Retry</Button>
-                <Link href={`/studio/${game.studioId}`} className="flex-1"><Button className="w-full h-18 bg-white text-black font-black uppercase italic rounded-[1.5rem]">Return</Button></Link>
+                <Button onClick={startLevel} variant="outline" className="flex-1 h-18 uppercase font-black italic rounded-[1.5rem] border-white/10 hover:bg-white/5 transition-all">Nochmals</Button>
+                <Link href={`/studio/${game.studioId}`} className="flex-1"><Button className="w-full h-18 bg-white text-black font-bold rounded-[1.5rem]">Zurück</Button></Link>
               </div>
             </div>
           </div>

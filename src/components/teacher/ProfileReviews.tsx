@@ -40,10 +40,10 @@ function ReviewDialog({ draft, onClose }: { draft: ProfileDraft; onClose: () => 
           <p className="text-xs text-white/50">Prüfe Texte, Bild und verlinkte Tracks (Inhalt, Urheberrecht, Persönlichkeitsschutz).</p>
           <Textarea placeholder="Notiz an die Schülerin / den Schüler (bei «Überarbeiten» nötig)" value={note} onChange={(e) => setNote(e.target.value)} rows={3} />
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 border-[#FF9100]/50 text-[#FF9100]" disabled={busy || !note.trim()} onClick={() => review('changes_requested')}>
+            <Button variant="outline" className="flex-1 border-warning/50 text-warning" disabled={busy || !note.trim()} onClick={() => review('changes_requested')}>
               <MessageSquareWarning className="w-4 h-4 mr-1" /> Überarbeiten
             </Button>
-            <Button className="flex-1 bg-[#00E676] text-black hover:bg-[#00E676]/90" disabled={busy} onClick={() => review('approve')}>
+            <Button className="flex-1 bg-success text-black hover:bg-success/90" disabled={busy} onClick={() => review('approve')}>
               <CheckCircle2 className="w-4 h-4 mr-1" /> Freigeben
             </Button>
           </div>
@@ -68,7 +68,7 @@ export function ProfileReviews({ schoolId }: { schoolId: string }) {
 
   return (
     <section className="space-y-3 p-5 rounded-2xl border border-primary/30 bg-primary/5">
-      <div className="flex items-center gap-2"><UserRound className="w-5 h-5 text-primary" /><h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/70">Profil-Freigaben ({drafts.length})</h3></div>
+      <div className="flex items-center gap-2"><UserRound className="w-5 h-5 text-primary" /><h3 className="text-base font-bold text-white/90">Profil-Freigaben ({drafts.length})</h3></div>
       <div className="grid gap-2 md:grid-cols-2">
         {drafts.map((d) => (
           <button key={d.id} onClick={() => setOpen(d)} className="p-3 rounded-xl bg-black/40 border border-white/10 hover:border-primary/50 text-left flex items-center gap-3">
@@ -78,7 +78,7 @@ export function ProfileReviews({ schoolId }: { schoolId: string }) {
             </div>
             <div className="min-w-0">
               <p className="font-bold truncate">{d.artistName}</p>
-              <p className="text-xs text-white/40 truncate">/artists/{d.handle}{d.schoolId ? '' : ' · ohne Schule'}</p>
+              <p className="text-xs text-white/60 truncate">/artists/{d.handle}{d.schoolId ? '' : ' · ohne Schule'}</p>
             </div>
           </button>
         ))}

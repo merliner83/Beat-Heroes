@@ -84,7 +84,7 @@ function PathForm({ initial, onClose }: { initial: Draft; onClose: () => void })
         <div className="max-h-72 overflow-y-auto space-y-4 p-3 rounded-xl bg-white/[0.03] border border-white/10">
           {groups.map((g) => (
             <div key={g.key} className="space-y-1.5">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-white/40">{g.label}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-white/60">{g.label}</p>
               {g.lessons.map((l) => (
                 <label key={l.id} className="flex items-center gap-2 text-sm">
                   <Checkbox checked={draft.requiredLessonIds.includes(l.id)} onCheckedChange={(c) => toggle(l.id, !!c)} />
@@ -115,22 +115,22 @@ export function PathsEditor() {
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3"><Route className="w-5 h-5 text-primary" /><h2 className="text-xs font-black uppercase tracking-[0.4em] text-white/60">Lernpfade</h2></div>
+        <div className="flex items-center gap-3"><Route className="w-5 h-5 text-primary" /><h2 className="text-base font-bold text-white/90">Lernpfade</h2></div>
         <Button size="sm" onClick={() => setEditing({ ...EMPTY })}><Plus className="w-4 h-4 mr-1" /> Lernpfad</Button>
       </div>
-      <p className="text-sm text-white/40">Vorlagen aus Pflicht-Lektionen, z.B. für die Talentförderung. Der Abschluss wird serverseitig geprüft und vermerkt.</p>
+      <p className="text-sm text-white/60">Vorlagen aus Pflicht-Lektionen, z.B. für die Talentförderung. Der Abschluss wird serverseitig geprüft und vermerkt.</p>
       <div className="grid gap-2 md:grid-cols-2">
         {[...(paths ?? [])].sort((a, b) => a.order - b.order).map((p) => (
           <div key={p.id} className="p-4 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
-            {p.official ? <Award className="w-5 h-5 text-[#FFEA00] shrink-0" /> : <Route className="w-5 h-5 text-white/40 shrink-0" />}
+            {p.official ? <Award className="w-5 h-5 text-credit shrink-0" /> : <Route className="w-5 h-5 text-white/60 shrink-0" />}
             <button className="flex-1 min-w-0 text-left" onClick={() => setEditing({ ...p })}>
               <p className="font-bold truncate">{p.title}</p>
-              <p className="text-xs text-white/40">{p.requiredLessonIds.length} Lektionen · ab {p.minScore}%{p.published === false ? ' · versteckt' : ''}</p>
+              <p className="text-xs text-white/60">{p.requiredLessonIds.length} Lektionen · ab {p.minScore}%{p.published === false ? ' · versteckt' : ''}</p>
             </button>
             <Button size="icon" variant="ghost" className="text-destructive" onClick={() => remove(p)}><Trash2 className="w-4 h-4" /></Button>
           </div>
         ))}
-        {paths?.length === 0 && <p className="text-sm text-white/40">Noch keine Lernpfade.</p>}
+        {paths?.length === 0 && <p className="text-sm text-white/60">Noch keine Lernpfade.</p>}
       </div>
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent className="bg-[#0a0a0a] border-white/10 text-white max-h-[90vh] overflow-y-auto">

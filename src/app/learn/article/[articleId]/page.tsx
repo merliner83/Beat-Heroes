@@ -29,7 +29,7 @@ export default function ArticlePage() {
     return (
       <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white gap-4">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 italic">Decrypting Data...</p>
+        <p className="text-xs font-semibold uppercase tracking-wider opacity-40 italic">Lektion wird geladen …</p>
       </div>
     );
   }
@@ -38,12 +38,12 @@ export default function ArticlePage() {
     return (
       <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white p-6 text-center">
         <Lock className="w-16 h-16 text-primary mb-6" />
-        <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2 text-gradient">Access Denied</h2>
+        <h2 className="text-3xl h-display mb-2 text-gradient">Kein Zugriff</h2>
         <p className="text-sm opacity-50 mb-8 max-w-xs font-medium uppercase tracking-widest">
-          {article?.minRole?.toUpperCase()} Authorization Required
+          Nur für Lehrpersonen freigegeben
         </p>
         <Link href="/learn">
-          <Button className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Back to Hub</Button>
+          <Button className="bg-white text-black font-bold rounded-full px-12 h-14">Zurück</Button>
         </Link>
       </div>
     );
@@ -53,10 +53,10 @@ export default function ArticlePage() {
     return (
       <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white p-6 text-center">
         <AlertCircle className="w-16 h-16 text-destructive mb-6" />
-        <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2 text-gradient">Data Corrupted</h2>
-        <p className="text-sm opacity-50 mb-8 max-w-xs font-medium">This article does not exist in the Knowledge Base.</p>
+        <h2 className="text-3xl h-display mb-2 text-gradient">Lektion nicht gefunden</h2>
+        <p className="text-sm opacity-50 mb-8 max-w-xs font-medium">Diese Lektion gibt es nicht (mehr).</p>
         <Link href="/learn">
-          <Button className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Back to Lab</Button>
+          <Button className="bg-white text-black font-bold rounded-full px-12 h-14">Zum Lernbereich</Button>
         </Link>
       </div>
     );

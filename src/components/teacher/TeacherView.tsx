@@ -177,7 +177,7 @@ function CreateAssignment({ schoolClass, students, onDone }: { schoolClass: Scho
       </Select>
       {audience === 'students' && (
         <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 rounded-xl bg-white/[0.03]">
-          {students.length === 0 && <p className="text-sm text-white/40 col-span-2">Noch niemand in der Klasse.</p>}
+          {students.length === 0 && <p className="text-sm text-white/60 col-span-2">Noch niemand in der Klasse.</p>}
           {students.map((s) => (
             <label key={s.id} className="flex items-center gap-2 text-sm">
               <Checkbox checked={picked.includes(s.id)} onCheckedChange={(c) => setPicked((p) => (c ? [...p, s.id] : p.filter((x) => x !== s.id)))} />
@@ -230,10 +230,10 @@ function ReviewDialog({ assignment, submission, onClose }: { assignment: Assignm
           )}
           <Textarea placeholder="Feedback an die Schülerin / den Schüler" value={feedback} onChange={(e) => setFeedback(e.target.value)} rows={4} />
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 border-[#FF9100]/50 text-[#FF9100]" disabled={busy} onClick={() => review('changes_requested')}>
+            <Button variant="outline" className="flex-1 border-warning/50 text-warning" disabled={busy} onClick={() => review('changes_requested')}>
               <MessageSquareWarning className="w-4 h-4 mr-1" /> Überarbeiten
             </Button>
-            <Button className="flex-1 bg-[#00E676] text-black hover:bg-[#00E676]/90" disabled={busy} onClick={() => review('approved')}>
+            <Button className="flex-1 bg-success text-black hover:bg-success/90" disabled={busy} onClick={() => review('approved')}>
               <CheckCircle2 className="w-4 h-4 mr-1" /> Freigeben{assignment.credits ? ` (+${assignment.credits})` : ''}
             </Button>
           </div>
@@ -271,26 +271,26 @@ function AssignmentRow({ assignment, students }: { assignment: Assignment; stude
       <button onClick={() => setOpen((o) => !o)} className="w-full p-4 flex items-center gap-3 text-left">
         <div className="flex-1 min-w-0">
           <p className="font-bold truncate">{assignment.title}</p>
-          <p className="text-xs text-white/40 truncate">
+          <p className="text-xs text-white/60 truncate">
             {assignment.refLabel ?? 'Freie Aufgabe'}{due ? ` · bis ${due}` : ''} · {assignment.audience === 'class' ? 'ganze Klasse' : `${assignment.studentIds.length} Person(en)`}
           </p>
         </div>
         {pending > 0 && <Badge className="bg-primary hover:bg-primary">{pending} neu</Badge>}
         <span className="text-xs text-white/50 shrink-0">{approved}/{targets.length} ✓</span>
-        {open ? <ChevronUp className="w-4 h-4 text-white/40" /> : <ChevronDown className="w-4 h-4 text-white/40" />}
+        {open ? <ChevronUp className="w-4 h-4 text-white/60" /> : <ChevronDown className="w-4 h-4 text-white/60" />}
       </button>
       {open && (
         <div className="px-4 pb-4 space-y-2">
           {assignment.description && <p className="text-sm text-white/60 whitespace-pre-line">{assignment.description}</p>}
-          {targets.length === 0 && <p className="text-sm text-white/40">Noch niemand in der Klasse.</p>}
+          {targets.length === 0 && <p className="text-sm text-white/60">Noch niemand in der Klasse.</p>}
           {targets.map((s) => {
             const sub = subById.get(s.id);
             return (
               <div key={s.id} className="flex items-center gap-3 text-sm py-1.5 border-t border-white/5">
                 <span className="flex-1 truncate">{s.displayName || 'Ohne Namen'}</span>
-                {!sub && <span className="text-white/30">offen</span>}
-                {sub?.status === 'approved' && <span className="text-[#00E676]">freigegeben</span>}
-                {sub?.status === 'changes_requested' && <span className="text-[#FF9100]">überarbeiten</span>}
+                {!sub && <span className="text-white/50">offen</span>}
+                {sub?.status === 'approved' && <span className="text-success">freigegeben</span>}
+                {sub?.status === 'changes_requested' && <span className="text-warning">überarbeiten</span>}
                 {sub && <Button size="sm" variant={sub.status === 'submitted' ? 'default' : 'outline'} onClick={() => setReviewing(sub)}>
                   {sub.status === 'submitted' ? 'Prüfen' : 'Ansehen'}
                 </Button>}
@@ -344,35 +344,35 @@ function ClassDetail({ schoolClass }: { schoolClass: SchoolClass }) {
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter">{schoolClass.name}</h2>
+        <h2 className="text-2xl md:text-3xl h-display">{schoolClass.name}</h2>
         <button onClick={copyCode} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10">
           <span className="text-xs text-white/50">Beitrittscode</span>
-          <span className="font-black tracking-[0.3em]">{schoolClass.joinCode}</span>
+          <span className="font-black tracking-wider">{schoolClass.joinCode}</span>
           <Copy className="w-4 h-4 text-white/50" />
         </button>
       </div>
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2"><ClipboardList className="w-5 h-5 text-primary" /><h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/60">Aufgaben</h3></div>
+          <div className="flex items-center gap-2"><ClipboardList className="w-5 h-5 text-primary" /><h3 className="text-base font-bold text-white/90">Aufgaben</h3></div>
           <Button size="sm" onClick={() => setCreating(true)}><Plus className="w-4 h-4 mr-1" /> Neue Aufgabe</Button>
         </div>
-        {sortedAssignments.length === 0 && <p className="text-sm text-white/40">Noch keine Aufgaben zugewiesen.</p>}
+        {sortedAssignments.length === 0 && <p className="text-sm text-white/60">Noch keine Aufgaben zugewiesen.</p>}
         {sortedAssignments.map((a) => <AssignmentRow key={a.id} assignment={a} students={studentList} />)}
       </section>
 
       <section className="space-y-3">
-        <div className="flex items-center gap-2"><Users className="w-5 h-5 text-primary" /><h3 className="text-xs font-black uppercase tracking-[0.4em] text-white/60">Schüler:innen ({studentList.length})</h3></div>
-        {studentList.length === 0 && <p className="text-sm text-white/40">Noch niemand beigetreten. Gib den Beitrittscode weiter; die Schüler:innen geben ihn nach dem Login auf der Startseite ein.</p>}
+        <div className="flex items-center gap-2"><Users className="w-5 h-5 text-primary" /><h3 className="text-base font-bold text-white/90">Schüler:innen ({studentList.length})</h3></div>
+        {studentList.length === 0 && <p className="text-sm text-white/60">Noch niemand beigetreten. Gib den Beitrittscode weiter; die Schüler:innen geben ihn nach dem Login auf der Startseite ein.</p>}
         <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
           {studentList.map((s) => (
             <div key={s.id} className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate">{s.displayName || 'Ohne Namen'}</span>
-                <span className="text-xs text-white/40 shrink-0">{(s.streetCred ?? 0).toLocaleString('de-CH')} SC</span>
+                <span className="text-xs text-white/60 shrink-0">{(s.streetCred ?? 0).toLocaleString('de-CH')} SC</span>
               </div>
               {(achievementsByUid.get(s.id) ?? []).map((a) => (
-                <p key={a.id} className={cn('text-xs flex items-center gap-1', a.official ? 'text-[#FFEA00]' : 'text-[#00E676]')}>
+                <p key={a.id} className={cn('text-xs flex items-center gap-1', a.official ? 'text-credit' : 'text-success')}>
                   <Award className="w-3.5 h-3.5 shrink-0" /> {a.pathTitle}
                 </p>
               ))}
@@ -417,7 +417,7 @@ export function TeacherView() {
   if (!schoolId) {
     return (
       <div className="max-w-xl space-y-3 py-10">
-        <h1 className="text-3xl font-black uppercase italic tracking-tighter">Lehrperson</h1>
+        <h1 className="text-3xl h-display">Lehrperson</h1>
         <p className="text-white/60">
           {superAdmin ? 'Lege zuerst im Admin-Bereich eine Schule an.' : 'Dir ist noch keine Schule zugewiesen. Bitte melde dich bei der Administration.'}
         </p>
@@ -428,7 +428,7 @@ export function TeacherView() {
   return (
     <div className="grid gap-8 md:grid-cols-[280px_1fr]">
       <aside className="space-y-4">
-        <h1 className="text-3xl font-black uppercase italic tracking-tighter">Klassen</h1>
+        <h1 className="text-3xl h-display">Klassen</h1>
         {superAdmin && !profile?.schoolId && schools && (
           <Select value={schoolId} onValueChange={(v) => { setPickedSchool(v); setSelected(null); }}>
             <SelectTrigger><SelectValue /></SelectTrigger>

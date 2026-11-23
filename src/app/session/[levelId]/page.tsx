@@ -50,8 +50,8 @@ export default function GameSessionPage() {
   if (isUserLoading || (isLearnApp && isLoadingLearnApp)) {
     return (
       <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white gap-4">
-        <Loader2 className="w-10 h-10 animate-spin text-[#FFEA00]" />
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Connecting to Rack...</p>
+        <Loader2 className="w-10 h-10 animate-spin text-credit" />
+        <p className="text-xs font-semibold uppercase tracking-wider opacity-40">Wird geladen …</p>
       </div>
     );
   }
@@ -60,12 +60,12 @@ export default function GameSessionPage() {
     return (
       <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white p-6 text-center">
         <Lock className="w-16 h-16 text-primary mb-6" />
-        <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2 text-gradient">Access Denied</h2>
+        <h2 className="text-3xl h-display mb-2 text-gradient">Kein Zugriff</h2>
         <p className="text-sm opacity-50 mb-8 max-w-xs font-medium uppercase tracking-widest">
-          {activeModule?.minRole?.toUpperCase()} Authorization Required
+          Nur für Lehrpersonen freigegeben
         </p>
         <Link href="/games">
-          <Button className="bg-white text-black font-black uppercase italic rounded-full px-12 h-14">Back to Hub</Button>
+          <Button className="bg-white text-black font-bold rounded-full px-12 h-14">Zurück</Button>
         </Link>
       </div>
     );
@@ -89,10 +89,10 @@ export default function GameSessionPage() {
     return (
       <div className="h-screen bg-[#050505] flex flex-col items-center justify-center text-white p-6 text-center">
         <AlertCircle className="w-16 h-16 text-destructive mb-6" />
-        <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-2">Sync Error</h2>
-        <p className="text-sm opacity-50 mb-8 max-w-xs">Module not found in this studio session.</p>
+        <h2 className="text-3xl h-display mb-2">Nicht gefunden</h2>
+        <p className="text-sm opacity-50 mb-8 max-w-xs">Dieses Level gibt es nicht (mehr).</p>
         <Link href="/games">
-          <Button className="bg-white text-black font-black uppercase italic">Back to Hub</Button>
+          <Button className="bg-white text-black font-bold">Zurück</Button>
         </Link>
       </div>
     );

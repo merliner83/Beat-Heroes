@@ -194,7 +194,7 @@ export function LessonEditor({ lessonId, defaults }: { lessonId: string | null; 
         </div>
       </div>
 
-      <h1 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter">{lessonId ? 'Lektion bearbeiten' : 'Neue Lektion'}</h1>
+      <h1 className="text-3xl md:text-4xl h-display">{lessonId ? 'Lektion bearbeiten' : 'Neue Lektion'}</h1>
 
       <section className="grid gap-4 md:grid-cols-2">
         <label className="space-y-1 text-xs text-white/50 md:col-span-2">Titel<Input value={form.title} onChange={(e) => set('title', e.target.value)} /></label>
@@ -220,7 +220,7 @@ export function LessonEditor({ lessonId, defaults }: { lessonId: string | null; 
           <label className="space-y-1 text-xs text-white/50">Credits (max.)<Input type="number" min={0} value={form.maxPoints} onChange={(e) => set('maxPoints', Number(e.target.value))} /></label>
         </div>
         <label className="flex items-center gap-2 text-sm md:col-span-2">
-          <input type="checkbox" checked={form.hidden} onChange={(e) => set('hidden', e.target.checked)} className="w-4 h-4 accent-[#FF3399]" />
+          <input type="checkbox" checked={form.hidden} onChange={(e) => set('hidden', e.target.checked)} className="w-4 h-4 accent-brand" />
           Entwurf – nur für Lehrpersonen sichtbar
         </label>
       </section>
@@ -245,10 +245,10 @@ export function LessonEditor({ lessonId, defaults }: { lessonId: string | null; 
             className={cn('font-mono text-sm leading-relaxed', preview && 'hidden md:block')}
             placeholder={'# Titel\n\nText mit **fetten** Wörtern.\n\n## Zwischentitel\n\nAbsätze durch eine Leerzeile trennen.'} />
           <div className={cn('rounded-xl border border-white/10 bg-black p-6 max-h-[44rem] overflow-y-auto', !preview && 'hidden md:block')}>
-            {form.content.trim() ? <LessonContent content={form.content} /> : <p className="text-white/30 text-sm">Vorschau erscheint hier.</p>}
+            {form.content.trim() ? <LessonContent content={form.content} /> : <p className="text-white/50 text-sm">Vorschau erscheint hier.</p>}
           </div>
         </div>
-        <p className="text-xs text-white/40">
+        <p className="text-xs text-white/60">
           Format: <code>#</code> Titel, <code>##</code> Zwischentitel, <code>###</code> Label, <code>**fett**</code>, <code>---</code> Trenner,
           <code> IMAGE: url</code>, <code>VIDEO: url</code>, <code>GAME: id | Text</code>, <code>PHASE: Titel | Text | lektionId</code>.
         </p>
@@ -259,7 +259,7 @@ export function LessonEditor({ lessonId, defaults }: { lessonId: string | null; 
         {form.youtubeUrls.map((u) => (
           <div key={u} className="flex items-center gap-2 text-sm bg-white/5 rounded-lg px-3 py-2">
             <span className="flex-1 truncate">{u}</span>
-            <button onClick={() => set('youtubeUrls', form.youtubeUrls.filter((x) => x !== u))}><Trash2 className="w-4 h-4 text-white/40 hover:text-destructive" /></button>
+            <button onClick={() => set('youtubeUrls', form.youtubeUrls.filter((x) => x !== u))}><Trash2 className="w-4 h-4 text-white/60 hover:text-destructive" /></button>
           </div>
         ))}
         <div className="flex gap-2">
@@ -281,13 +281,13 @@ export function LessonEditor({ lessonId, defaults }: { lessonId: string | null; 
             </div>
             <div className="grid gap-2 md:grid-cols-2">
               {q.options.map((o, oi) => (
-                <label key={oi} className={cn('flex items-center gap-2 rounded-lg px-2 py-1 border', q.correctOption === oi ? 'border-[#00E676]/60 bg-[#00E676]/10' : 'border-transparent')}>
-                  <input type="radio" name={`correct-${i}`} checked={q.correctOption === oi} onChange={() => updateQuestion(i, { ...q, correctOption: oi })} className="accent-[#00E676]" title="Richtige Antwort" />
+                <label key={oi} className={cn('flex items-center gap-2 rounded-lg px-2 py-1 border', q.correctOption === oi ? 'border-success/60 bg-success/10' : 'border-transparent')}>
+                  <input type="radio" name={`correct-${i}`} checked={q.correctOption === oi} onChange={() => updateQuestion(i, { ...q, correctOption: oi })} className="accent-success" title="Richtige Antwort" />
                   <Input value={o} onChange={(e) => updateQuestion(i, { ...q, options: q.options.map((x, j) => (j === oi ? e.target.value : x)) })} placeholder={`Antwort ${oi + 1}`} />
                 </label>
               ))}
             </div>
-            <p className="text-xs text-white/40">Grün markiert = richtige Antwort. Leere Antworten werden weggelassen.</p>
+            <p className="text-xs text-white/60">Grün markiert = richtige Antwort. Leere Antworten werden weggelassen.</p>
           </div>
         ))}
       </section>

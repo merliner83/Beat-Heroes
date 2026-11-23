@@ -41,7 +41,7 @@ export function JoinClassCard() {
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           placeholder="z.B. K7Q2XM"
-          className="uppercase tracking-[0.3em] font-black"
+          className="uppercase tracking-wider font-black"
           maxLength={10}
           onKeyDown={(e) => e.key === 'Enter' && code.length >= 4 && join()}
         />
