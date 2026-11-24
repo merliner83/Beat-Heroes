@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, ArrowRight, Download, Drum, ExternalLink, Rocket, Gamepad2, Layers, Lightbulb, ListChecks, Mic, Music, Pin, Play, Scissors, Sliders, Sparkles, Youtube, ListMusic, BookOpen, Headphones, Disc3, Timer, Waves, Speaker, LayoutPanelTop, Pencil, ZoomIn, Wrench, Gauge, Laptop, Cable } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Download, Drum, ExternalLink, Rocket, Gamepad2, Layers, Lightbulb, ListChecks, Mic, Music, Pin, Play, Scissors, Sliders, Sparkles, Youtube, ListMusic, BookOpen, Headphones, Disc3, Timer, Waves, Speaker, LayoutPanelTop, Pencil, ZoomIn, Wrench, Gauge, Laptop, Cable, Ruler, Home, Repeat, Crosshair } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -31,6 +31,9 @@ const PHASE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   // Equipment
   'COMPUTER UND DAW': Laptop, KOPFHÖRER: Headphones, 'AUDIO-INTERFACE': Cable, MIKROFONE: Mic, 'STUDIO-MONITORE': Speaker,
   'AKUSTIK UND ZUBEHÖR': Waves, 'UND FÜRS DJING?': Disc3,
+  // Recording
+  SIGNALFLUSS: Cable, PEGEL: Gauge, ABSTAND: Ruler, RAUM: Home, TAKES: Repeat, MIKROFON: Mic, POSITION: Crosshair,
+  EINSTELLUNGEN: Sliders, 'IM MIX': Sliders, 'WEG 1': Cable, 'WEG 2': Speaker, 'MIT 1 BIS 4 MIKROFONEN': Mic, 'DAS VOLLE SETUP': Drum,
 };
 
 /** «2. AUFNAHME & EDITING» → «2. Aufnahme & Editing» (Versalien lesen sich schwer). */
