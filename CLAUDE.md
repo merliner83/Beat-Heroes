@@ -110,8 +110,9 @@ Stand 24.11.2026. Phasen 0–2 sind live (Auth, Rollen, Schulen
 `musikschule-bantiger` und `musikschule-oberemmental`, Klassen, Zuweisungen,
 Kurse mit Lernpfaden, Lektions-Editor, Profile mit Freigabe, Games-Seite).
 Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
-1. 4 MV-Entwürfe (minRole teacher, `scripts/seed-mv-drafts.mjs`) warten auf
-   Durchsicht durch den Nutzer.
+1. MV hat 4 freigeschaltete Lektionen (Puls/Takt/BPM, Notenwerte, Offbeats/
+   Swing, Klaviatur; 24.11.2026). Weitere Kapitel (Tonleitern, Akkorde, Melodie,
+   Form) haben noch keine Lektionen.
 2. ESLint einrichten, dann `ignoreDuringBuilds` entfernen.
 3. Altlast: Games mit `studioId` `std-nintu` haben kein Studio-Dokument
    (ausgeblendet).
@@ -129,8 +130,8 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      Willkommen ✓, Producing ✓, Sampling ✓, Cubase ✓ (4 Lektionen nach
      GarageBand-Vorbild, Screenshots fehlen noch), DJing ✓ (Einführung +
      4 Kapitel-Lektionen), Equipment ✓ (4 Ausbaustufen, Hinweis auf
-     StudioSounds Bern zum Monitore-Probehören), dann
-     MV-Entwürfe, Recording, Ableton/Logic, Effekte, Rechte, Social.
+     StudioSounds Bern zum Monitore-Probehören), MV ✓ (4 Lektionen
+     freigeschaltet), dann Recording, Ableton/Logic, Effekte, Rechte, Social.
      Weiterführende Videos klein als `INSPIRATION:`, nicht gross.
    - DAWs: nur 10 von 16 Lektionen haben Inhalt (Ableton leer); leere Lektionen geben beim
      «Als gelesen markieren» trotzdem Credits → ausblenden. Doppelte
