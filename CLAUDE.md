@@ -131,7 +131,8 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      GarageBand-Vorbild, Screenshots fehlen noch), DJing ✓ (Einführung +
      4 Kapitel-Lektionen), Equipment ✓ (4 Ausbaustufen, Hinweis auf
      StudioSounds Bern zum Monitore-Probehören), MV ✓ (4 Lektionen
-     freigeschaltet), dann Recording, Ableton/Logic, Effekte, Rechte, Social.
+     freigeschaltet), Recording ✓ (Basics als Kernlektion + 6 Instrumente
+     kompakt), dann Ableton/Logic, Effekte, Rechte, Social.
      Weiterführende Videos klein als `INSPIRATION:`, nicht gross.
    - DAWs: nur 10 von 16 Lektionen haben Inhalt (Ableton leer); leere Lektionen geben beim
      «Als gelesen markieren» trotzdem Credits → ausblenden. Doppelte
