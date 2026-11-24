@@ -145,7 +145,7 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
   `VIDEO: url`, `YOUTUBE: url | Titel | Text` (Tutorial-Karte),
   `INSPIRATION: url | Titel | Text` (kleine Video-Karte, weiterführend),
   Zeilen mit `- ` (Aufzählung, eingerückt = Unterpunkt), `((optional))`
-  (klein, grau),
+  (klein, grau), `[Text](https://…)` (Link im Text, neuer Tab),
   `DOWNLOAD: url | Beschriftung` (Link-Knopf),
   `TIP: tipp|merke|achtung|aufgabe | Titel` (+ Textzeilen darunter),
   `PHASE: Titel | Text | lektionId`, `GAME: learnAppId | Beschriftung`
