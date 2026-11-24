@@ -132,13 +132,14 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      4 Kapitel-Lektionen), Equipment ✓ (4 Ausbaustufen, Hinweis auf
      StudioSounds Bern zum Monitore-Probehören), MV ✓ (4 Lektionen
      freigeschaltet), Recording ✓ (Basics als Kernlektion + 6 Instrumente
-     kompakt), Ableton ✓ (4 Lektionen), dann Logic (3 leer), Effekte, Rechte, Social.
+     kompakt), Ableton ✓ (4 Lektionen), Logic ✓ (4 Lektionen, Shortcuts um
+     Fenster/Transport ergänzt) + GarageBand Mastering ✓, dann Effekte,
+     Rechte, Social.
      Weiterführende Videos klein als `INSPIRATION:`, nicht gross.
-   - DAWs: 12 von 16 Lektionen haben Inhalt (leer: GarageBand Mastering,
-     Logic Basics/Vocal/Master); leere Lektionen geben beim
-     «Als gelesen markieren» trotzdem Credits → ausblenden. Doppelte
-     Shortcuts-Lektionen im Kapitel `daw` löschen. Kapitel haben noch
-     keine Beschriebe.
+   - DAWs: alle 16 Lektionen haben Inhalt. Leere Lektionen (anderswo) geben
+     beim «Als gelesen markieren» trotzdem Credits → ausblenden. Doppelte
+     Shortcuts-Lektionen im Kapitel `daw` (z.B. `art-logic-shortcuts`)
+     löschen. Kapitel haben noch keine Beschriebe.
    - MV ausbauen (Tonleitern, Akkordfolgen, Notenschrift).
    - Alte Games aufs Design-System / RhythmGrid.
    - Offen: Handy-Feedback zu den MV-Übungen (Mitklopfen-Latenz).
