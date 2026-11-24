@@ -9,6 +9,7 @@
  *   IMAGE: url | Bildunterschrift
  *   VIDEO: url
  *   YOUTUBE: url | Titel | Beschreibung      (Tutorial-Karte)
+ *   INSPIRATION: url | Titel | Beschreibung  (kleine Video-Karte, weiterführend)
  *   GAME: learnAppId | Beschriftung          (Übung)
  *   DOWNLOAD: url | Beschriftung             (Link-Knopf, z.B. Gratis-Plugin)
  *   [[Begriff]] im Text                      (hervorgehobener Fachbegriff)
@@ -25,7 +26,7 @@ export type Block =
   | { id: string; type: 'gap'; size: number }
   | { id: string; type: 'image'; url: string; caption: string }
   | { id: string; type: 'video'; url: string }
-  | { id: string; type: 'youtube'; url: string; title: string; description: string }
+  | { id: string; type: 'youtube'; url: string; title: string; description: string; small?: boolean }
   | { id: string; type: 'game'; appId: string; label: string }
   | { id: string; type: 'download'; url: string; label: string }
   | { id: string; type: 'tip'; kind: TipKind; title: string; text: string }
@@ -70,6 +71,7 @@ function lineBlock(line: string): Block | null {
   if (t.startsWith('GAP:')) return { id, type: 'gap', size: parseInt(t.slice(4).trim()) || 20 };
   if (t.startsWith('IMAGE:')) { const [url, caption = ''] = parts(t.slice(6)); return { id, type: 'image', url, caption }; }
   if (t.startsWith('VIDEO:')) return { id, type: 'video', url: t.slice(6).trim() };
+  if (t.startsWith('INSPIRATION:')) { const [url, title = '', description = ''] = parts(t.slice(12)); return { id, type: 'youtube', url, title, description, small: true }; }
   if (t.startsWith('YOUTUBE:')) { const [url, title = '', description = ''] = parts(t.slice(8)); return { id, type: 'youtube', url, title, description }; }
   if (t.startsWith('DOWNLOAD:')) { const [url, label = ''] = parts(t.slice(9)); return { id, type: 'download', url, label }; }
   if (t.startsWith('GAME:')) { const [appId, label = ''] = parts(t.slice(5)); return { id, type: 'game', appId, label }; }
@@ -121,7 +123,7 @@ export function serializeBlock(b: Block): string {
     case 'gap': return `GAP: ${b.size}`;
     case 'image': return `IMAGE: ${b.url.trim()}${b.caption.trim() ? ` | ${clean(b.caption)}` : ''}`;
     case 'video': return `VIDEO: ${b.url.trim()}`;
-    case 'youtube': return `YOUTUBE: ${b.url.trim()}${b.title.trim() || b.description.trim() ? ` | ${clean(b.title)}` : ''}${b.description.trim() ? ` | ${clean(b.description)}` : ''}`;
+    case 'youtube': return `${b.small ? 'INSPIRATION' : 'YOUTUBE'}: ${b.url.trim()}${b.title.trim() || b.description.trim() ? ` | ${clean(b.title)}` : ''}${b.description.trim() ? ` | ${clean(b.description)}` : ''}`;
     case 'download': return `DOWNLOAD: ${b.url.trim()}${b.label.trim() ? ` | ${clean(b.label)}` : ''}`;
     case 'game': return `GAME: ${b.appId} | ${clean(b.label)}`;
     case 'tip': return `TIP: ${b.kind} | ${clean(b.title)}${b.text.trim() ? `\n${b.text.replace(/\n{2,}/g, '\n').trim()}` : ''}`;

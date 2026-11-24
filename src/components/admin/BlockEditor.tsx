@@ -156,6 +156,10 @@ function BlockFields({ block, update, apps, folder }: {
             {block.url && !id && <p className="text-xs text-warning">Link nicht erkannt</p>}
             <Input value={block.title} onChange={(e) => set({ title: e.target.value })} placeholder="Titel der Karte" />
             <Input value={block.description} onChange={(e) => set({ description: e.target.value })} placeholder="Worauf sollen sie achten? (optional)" />
+            <label className="flex items-center gap-2 text-sm text-white/75">
+              <input type="checkbox" checked={!!block.small} onChange={(e) => set({ small: e.target.checked })} className="w-4 h-4 accent-[hsl(var(--primary))]" />
+              Klein als «Inspiration» zeigen (weiterführend, nicht Kern der Lektion)
+            </label>
           </div>
         </div>
       );
