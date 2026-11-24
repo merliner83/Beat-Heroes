@@ -151,6 +151,12 @@
   background: linear-gradient(90deg, #FF3399, #FF3D00, #FF9100);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  /* Kursive Buchstaben ragen über den Kasten hinaus; ohne Polster schneidet
+     background-clip den letzten Buchstaben ab (z.B. das «S» im Logo). */
+  padding-right: 0.15em;
+  margin-right: -0.15em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .animate-pulse-neon {

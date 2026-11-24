@@ -129,6 +129,8 @@ export interface UserProfile {
   schoolId?: string | null;
   classIds?: string[];
   streetCred?: number;
+  /** Wahl in Wahlkapiteln: Kapitel-ID → Unterthema-ID (z.B. daws → sc-gb). Selbst änderbar. */
+  choices?: Record<string, string>;
 }
 
 /** Schulen eines Dokuments; Rückfall auf das alte Einzelfeld schoolId. */
@@ -298,6 +300,12 @@ export interface CourseChapter {
   colorClass?: string;
   /** Lern-Apps (learnApps-IDs), die zu diesem Kapitel gehören */
   appIds?: string[];
+  /**
+   * Wahlkapitel: Die Unterthemen sind Alternativen (z.B. ein DAW pro
+   * Unterthema). Man wählt eines, sieht nur dessen Lektionen, und im ganzen
+   * Kapitel gibt es höchstens so viele Credits wie im grössten Unterthema.
+   */
+  choice?: { label: string };
 }
 
 export interface Course {

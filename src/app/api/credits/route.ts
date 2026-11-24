@@ -27,6 +27,42 @@ type Body = {
   answers?: (number | null)[];
 };
 
+/**
+ * Wahlkapitel (z.B. DAWs): Die Unterthemen sind Alternativen. Im ganzen
+ * Kapitel gibt es höchstens so viele Credits wie im grössten Unterthema –
+ * wer das DAW wechselt, sammelt also nicht doppelt. Gibt die noch holbaren
+ * Credits zurück, oder undefined für normale Kapitel.
+ */
+async function choiceChapterRemaining(
+  userRef: DocumentReference,
+  article: { courseId?: string; chapterId?: string; categoryId?: string; subCategoryId?: string },
+): Promise<number | undefined> {
+  const chapterId = article.chapterId ?? article.categoryId;
+  if (!chapterId || !article.subCategoryId) return undefined;
+  const db = adminDb();
+  const course = await db.doc(`courses/${article.courseId ?? 'producing'}`).get();
+  const chapter = (course.data()?.chapters ?? []).find((c: { id: string }) => c.id === chapterId);
+  if (!chapter?.choice) return undefined;
+
+  const subCats = await db.collection('learnSubCats').where('categoryId', '==', chapterId).get();
+  const optionIds = new Set(subCats.docs.map((d) => d.id));
+  const all = await db.collection('articles').get();
+  const lessons = all.docs
+    .map((d) => ({ id: d.id, ...(d.data() as { chapterId?: string; categoryId?: string; subCategoryId?: string; maxPoints?: number }) }))
+    .filter((a) => (a.chapterId ?? a.categoryId) === chapterId && a.subCategoryId && optionIds.has(a.subCategoryId));
+
+  const perOption = new Map<string, number>();
+  for (const l of lessons) perOption.set(l.subCategoryId!, (perOption.get(l.subCategoryId!) ?? 0) + (l.maxPoints ?? DEFAULT_MAX.article));
+  const cap = Math.max(0, ...perOption.values());
+
+  const progress = lessons.length ? await db.getAll(...lessons.map((l) => userRef.collection('articleProgress').doc(l.id))) : [];
+  const earned = progress.reduce((sum, snap, i) => {
+    const score = snap.exists ? Number(snap.get('quizScore') ?? 0) : 0;
+    return sum + Math.round((score / 100) * (lessons[i].maxPoints ?? DEFAULT_MAX.article));
+  }, 0);
+  return Math.max(0, cap - earned);
+}
+
 async function resolveTarget(uid: string, body: Body) {
   const db = adminDb();
   const { kind, refId } = body;
@@ -54,6 +90,7 @@ async function resolveTarget(uid: string, body: Body) {
     return {
       score,
       maxPoints: article.data()?.maxPoints ?? DEFAULT_MAX.article,
+      creditCap: await choiceChapterRemaining(userRef, article.data() ?? {}),
       progressRef: userRef.collection('articleProgress').doc(refId),
       field: 'quizScore',
       progressData: { articleId: refId, completed: true },
@@ -123,7 +160,8 @@ export async function POST(request: NextRequest) {
         return { awarded: 0, score: target.score, best: oldScore };
       }
 
-      const awarded = Math.round(((target.score - oldScore) / 100) * target.maxPoints);
+      const cap = 'creditCap' in target && target.creditCap !== undefined ? target.creditCap : Infinity;
+      const awarded = Math.min(cap, Math.round(((target.score - oldScore) / 100) * target.maxPoints));
       const user = userSnap.data() ?? {};
 
       tx.set(

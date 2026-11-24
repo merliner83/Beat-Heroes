@@ -52,6 +52,9 @@ await as('t1', 'Lehrperson A: eingereichte Profile A', (fs) => getDocs(query(col
 await as('t2', 'Lehrperson C: eingereichte Profile A', (fs) => getDocs(query(collection(fs, 'profileDrafts'), where('schoolIds', 'array-contains', A))), false);
 await as('t1', 'Lehrperson A: Abschlüsse A', (fs) => getDocs(query(collection(fs, 'achievements'), where('schoolIds', 'array-contains', A))), true);
 await as('s1', 'Schüler:in: eigene Abschlüsse', (fs) => getDocs(query(collection(fs, 'achievements'), where('uid', '==', 's1'))), true);
+await as('s1', 'Schüler:in wählt eigenes DAW', (fs) => updateDoc(doc(fs, 'users/s1'), { 'choices.daws': 'sc-gb' }), true);
+await as('s1', 'Schüler:in setzt choices als Text', (fs) => updateDoc(doc(fs, 'users/s1'), { choices: 'x' }), false);
+await as('s2', 'Schüler:in setzt DAW einer anderen Person', (fs) => updateDoc(doc(fs, 'users/s1'), { 'choices.daws': 'sc-ab' }), false);
 await as('s1', 'Schüler:in setzt eigene schoolIds', (fs) => updateDoc(doc(fs, 'users/s1'), { schoolIds: [A, B, C] }), false);
 await as('s1', 'Entwurf mit korrekten schoolIds', (fs) => setDoc(doc(fs, 'profileDrafts/s1'), {
   uid: 's1', schoolIds: [B, A], status: 'draft', artistName: 'X', handle: 'xyz', bio: '', roles: [], genres: [],
