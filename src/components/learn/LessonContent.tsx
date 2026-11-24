@@ -33,6 +33,9 @@ const PHASE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   'AKUSTIK UND ZUBEHÖR': Waves, 'UND FÜRS DJING?': Disc3,
   // Recording
   SIGNALFLUSS: Cable, PEGEL: Gauge, ABSTAND: Ruler, RAUM: Home, TAKES: Repeat, MIKROFON: Mic, POSITION: Crosshair,
+  // Logic / GarageBand
+  FENSTER: LayoutPanelTop, 'LIVE LOOPS': Grid3x3, 'DEESSER 2': Mic, CHROMAGLOW: Flame, 'ADAPTIVE LIMITER': Gauge,
+  'SCHNELLER START': Rocket,
   // Ableton
   'ZWEI ANSICHTEN': LayoutPanelTop, 'CLIPS BEARBEITEN': Pencil, RASTER: Grid3x3, 'EQ EIGHT': Sliders, 'AUTO SHIFT': Mic,
   'DE-ESSING': Mic, SATURATOR: Flame, 'GLUE COMPRESSOR': Gauge, LIMITER: Gauge,
