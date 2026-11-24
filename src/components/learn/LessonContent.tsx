@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, ArrowRight, Download, Drum, ExternalLink, Rocket, Gamepad2, Layers, Lightbulb, ListChecks, Mic, Music, Pin, Play, Scissors, Sliders, Sparkles, Youtube, ListMusic, BookOpen, Headphones, Disc3, Timer, Waves, Speaker, LayoutPanelTop, Pencil, ZoomIn, Wrench, Gauge, Laptop, Cable, Ruler, Home, Repeat, Crosshair } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Download, Drum, ExternalLink, Rocket, Gamepad2, Layers, Lightbulb, ListChecks, Mic, Music, Pin, Play, Scissors, Sliders, Sparkles, Youtube, ListMusic, BookOpen, Headphones, Disc3, Timer, Waves, Speaker, LayoutPanelTop, Pencil, ZoomIn, Wrench, Gauge, Laptop, Cable, Ruler, Home, Repeat, Crosshair, Grid3x3, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -33,6 +33,9 @@ const PHASE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   'AKUSTIK UND ZUBEHÖR': Waves, 'UND FÜRS DJING?': Disc3,
   // Recording
   SIGNALFLUSS: Cable, PEGEL: Gauge, ABSTAND: Ruler, RAUM: Home, TAKES: Repeat, MIKROFON: Mic, POSITION: Crosshair,
+  // Ableton
+  'ZWEI ANSICHTEN': LayoutPanelTop, 'CLIPS BEARBEITEN': Pencil, RASTER: Grid3x3, 'EQ EIGHT': Sliders, 'AUTO SHIFT': Mic,
+  'DE-ESSING': Mic, SATURATOR: Flame, 'GLUE COMPRESSOR': Gauge, LIMITER: Gauge,
   EINSTELLUNGEN: Sliders, 'IM MIX': Sliders, 'WEG 1': Cable, 'WEG 2': Speaker, 'MIT 1 BIS 4 MIKROFONEN': Mic, 'DAS VOLLE SETUP': Drum,
 };
 
