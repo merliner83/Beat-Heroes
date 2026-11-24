@@ -126,10 +126,11 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      statt Credits in Lektionen, «Weitermachen», «Weiter», DAW-Wahl
      (Wahlkapitel, Credits pro Kapitel auf ein DAW begrenzt).
    - Lektionen inhaltlich durchgehen («neu gedacht», siehe Memory):
-     Willkommen ✓, Producing ✓, Sampling-Entwurf wartet auf OK (liegt im
-     Scratchpad, nicht im Repo), dann DJing, Equipment, MV-Entwürfe,
-     Recording, DAWs, Effekte, Rechte, Social.
-   - DAWs: nur 6 von 16 Lektionen haben Inhalt; leere Lektionen geben beim
+     Willkommen ✓, Producing ✓, Sampling ✓, Cubase ✓ (4 Lektionen nach
+     GarageBand-Vorbild, Screenshots fehlen noch), dann DJing, Equipment,
+     MV-Entwürfe, Recording, Ableton/Logic, Effekte, Rechte, Social.
+     Weiterführende Videos klein als `INSPIRATION:`, nicht gross.
+   - DAWs: nur 10 von 16 Lektionen haben Inhalt (Ableton leer); leere Lektionen geben beim
      «Als gelesen markieren» trotzdem Credits → ausblenden. Doppelte
      Shortcuts-Lektionen im Kapitel `daw` löschen. Kapitel haben noch
      keine Beschriebe.
