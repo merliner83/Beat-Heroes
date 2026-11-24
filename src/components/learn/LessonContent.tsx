@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, ArrowRight, Download, Drum, ExternalLink, Rocket, Gamepad2, Layers, Lightbulb, ListChecks, Mic, Music, Pin, Play, Scissors, Sliders, Sparkles, Youtube, ListMusic, BookOpen, Headphones, Disc3, Timer, Waves, Speaker, LayoutPanelTop, Pencil, ZoomIn, Wrench, Gauge } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Download, Drum, ExternalLink, Rocket, Gamepad2, Layers, Lightbulb, ListChecks, Mic, Music, Pin, Play, Scissors, Sliders, Sparkles, Youtube, ListMusic, BookOpen, Headphones, Disc3, Timer, Waves, Speaker, LayoutPanelTop, Pencil, ZoomIn, Wrench, Gauge, Laptop, Cable } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -28,6 +28,9 @@ const PHASE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   GATE: Gauge, 'NOISE GATE': Gauge, 'PITCH CORRECT': Mic, 'PITCH CORRECTION': Mic, DEESSER: Mic, 'DE-ESSER': Mic,
   'HALL UND DELAY': Waves, 'REVERB': Waves, 'DELAY': Waves, MAXIMIZER: Gauge, 'LAUTHEIT MESSEN': Gauge,
   EXPORTIEREN: Download, 'WAS IST MASTERING?': Sliders,
+  // Equipment
+  'COMPUTER UND DAW': Laptop, KOPFHÖRER: Headphones, 'AUDIO-INTERFACE': Cable, MIKROFONE: Mic, 'STUDIO-MONITORE': Speaker,
+  'AKUSTIK UND ZUBEHÖR': Waves, 'UND FÜRS DJING?': Disc3,
 };
 
 /** «2. AUFNAHME & EDITING» → «2. Aufnahme & Editing» (Versalien lesen sich schwer). */
@@ -146,8 +149,10 @@ function YouTubeCard({ url, title, description }: { url: string; title?: string;
 
 export function LessonContent({ content }: { content: string }) {
   const parseInlineFormatting = (text: string) => {
-    const parts = text.split(/(\*\*.*?\*\*|\[\[.*?\]\]|\(\(.*?\)\))/g);
+    const parts = text.split(/(\*\*.*?\*\*|\[\[.*?\]\]|\(\(.*?\)\)|\[[^\]]+\]\(https?:\/\/[^)\s]+\))/g);
     return parts.map((part, i) => {
+      const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)$/);
+      if (link) return <a key={i} href={link[2]} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-4 decoration-primary/50 hover:decoration-primary">{link[1]}</a>;
       if (part.startsWith('((') && part.endsWith('))')) return <span key={i} className="text-sm font-normal text-white/60">({part.slice(2, -2)})</span>;
       if (part.startsWith('**') && part.endsWith('**')) return <strong key={i} className="font-black text-white">{part.slice(2, -2)}</strong>;
       if (part.startsWith('[[') && part.endsWith(']]')) return <strong key={i} className="font-bold text-primary">{part.slice(2, -2)}</strong>;
