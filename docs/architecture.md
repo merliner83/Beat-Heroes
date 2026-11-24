@@ -140,10 +140,17 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
 - Lektionen = `articles` mit `courseId` und `chapterId`; Unterthemen weiter
   über `subCategoryId` → `learnSubCats`. Lektionen sind frei wählbar.
 - Inhalt einer Lektion (`content`, Absätze durch Leerzeile getrennt):
-  `# Titel`, `## Untertitel`, `### Label`, `**fett**`, `---`, `GAP: 20`,
-  `IMAGE: url`, `VIDEO: url`, `PHASE: Titel | Text | lektionId`,
-  `GAME: learnAppId | Beschriftung` (eingebettete Übung), plus
-  `youtubeUrls[]`. Quiz in `learnQuizzes/{id}` (Lösungen `learnQuizKeys`).
+  `# Titel`, `## Untertitel`, `### Label`, `**fett**`, `[[Begriff]]`
+  (hervorgehoben), `---`, `GAP: 20`, `IMAGE: url | Unterschrift`,
+  `VIDEO: url`, `YOUTUBE: url | Titel | Text` (Tutorial-Karte),
+  `DOWNLOAD: url | Beschriftung` (Link-Knopf),
+  `TIP: tipp|merke|achtung|aufgabe | Titel` (+ Textzeilen darunter),
+  `PHASE: Titel | Text | lektionId`, `GAME: learnAppId | Beschriftung`
+  (eingebettete Übung), plus `youtubeUrls[]`.
+- Baustein-Editor (24.11.2026): `src/lib/learn/blocks.ts` wandelt Text ↔
+  Bausteine (alle 53 Lektionen ohne Inhaltsverlust geprüft), UI in
+  `src/components/admin/BlockEditor.tsx` mit Vorlagen (Standard-Lektion,
+  Video-Tutorial, Theorie kurz); Text-Modus bleibt als Umschalter. Quiz in `learnQuizzes/{id}` (Lösungen `learnQuizKeys`).
 - Bestanden: `articleProgress.completed` und `quizScore >= 80`; Lektionen
   ohne Quiz über «Als gelesen markieren» (Score 100). Setup-Skript:
   `scripts/setup-courses.mjs`.
