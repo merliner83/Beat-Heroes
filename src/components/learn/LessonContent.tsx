@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, ArrowRight, Download, Drum, ExternalLink, Rocket, Gamepad2, Layers, Lightbulb, ListChecks, Mic, Music, Pin, Play, Scissors, Sliders, Sparkles, Youtube } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Download, Drum, ExternalLink, Rocket, Gamepad2, Layers, Lightbulb, ListChecks, Mic, Music, Pin, Play, Scissors, Sliders, Sparkles, Youtube, ListMusic, BookOpen, Headphones, Disc3, Timer, Waves, Speaker, LayoutPanelTop, Pencil, ZoomIn, Wrench, Gauge } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -16,6 +16,18 @@ import { Button } from '@/components/ui/button';
 const PHASE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   COMPOSING: Music, KOMPOSITION: Music, RECORDING: Mic, AUFNAHME: Mic, EDITING: Scissors, ARRANGEMENT: Layers,
   SOUNDDESIGN: Sparkles, 'SOUND DESIGN': Sparkles, IDEE: Sparkles, KLANG: Sparkles, BEAT: Drum, DRUMS: Drum, GROOVE: Drum, RELEASE: Rocket, MIXING: Sliders, MASTERING: Sliders, 'MIXING / MASTERING': Sliders, 'MIXING/MASTERING': Sliders,
+  // DJing
+  AUSWÄHLEN: ListMusic, GRUNDLAGEN: BookOpen, EQUIPMENT: Headphones, MIXEN: Sliders, SCRATCHEN: Disc3, 'DAS DECK': Disc3,
+  'DER MIXER': Sliders, BEATMATCHING: Drum, 'DER RICHTIGE MOMENT': Timer, 'BASS TAUSCHEN': Waves, CONTROLLER: Gamepad2,
+  STANDALONE: Disc3, 'CLUB-SETUP': Speaker, PLATTENSPIELER: Disc3, 'FÜR FORTGESCHRITTENE': Sparkles,
+  'BABY SCRATCH': Disc3, FORWARD: Disc3, CHIRP: Disc3, TRANSFORMER: Disc3,
+  // DAWs
+  BENUTZEROBERFLÄCHE: LayoutPanelTop, SPURTYPEN: Layers, SPUREN: Layers, EDITOR: Pencil, ÜBERSICHT: ListMusic,
+  TRANSPORT: Play, 'NAVIGATION & ZOOM': ZoomIn, NAVIGATION: ZoomIn, WERKZEUGE: Wrench, BEARBEITEN: Scissors,
+  'SPUREN, PROJEKT & TRANSPORT': Layers, 'VOCAL-CHAIN ÜBERSICHT': Mic, EQ: Sliders, 'CHANNEL EQ': Sliders, COMPRESSOR: Gauge,
+  GATE: Gauge, 'NOISE GATE': Gauge, 'PITCH CORRECT': Mic, 'PITCH CORRECTION': Mic, DEESSER: Mic, 'DE-ESSER': Mic,
+  'HALL UND DELAY': Waves, 'REVERB': Waves, 'DELAY': Waves, MAXIMIZER: Gauge, 'LAUTHEIT MESSEN': Gauge,
+  EXPORTIEREN: Download, 'WAS IST MASTERING?': Sliders,
 };
 
 /** «2. AUFNAHME & EDITING» → «2. Aufnahme & Editing» (Versalien lesen sich schwer). */
@@ -26,7 +38,7 @@ function phaseTitle(title: string) {
 
 /** Icon zur Phase: «2. AUFNAHME» → Mic (Nummer und Zusatz nach «:» zählen nicht). */
 function phaseIcon(title: string) {
-  const key = title.split(':')[0].replace(/^\s*\d+\.\s*/, '').trim().toUpperCase();
+  const key = title.split(':')[0].replace(/\(\(.*?\)\)/g, '').replace(/^\s*\d+\.\s*/, '').trim().toUpperCase();
   return PHASE_ICONS[key] ?? PHASE_ICONS[key.split(/\s*[/&]\s*/)[0]] ?? Play;
 }
 

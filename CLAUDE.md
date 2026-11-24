@@ -127,7 +127,9 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      (Wahlkapitel, Credits pro Kapitel auf ein DAW begrenzt).
    - Lektionen inhaltlich durchgehen («neu gedacht», siehe Memory):
      Willkommen ✓, Producing ✓, Sampling ✓, Cubase ✓ (4 Lektionen nach
-     GarageBand-Vorbild, Screenshots fehlen noch), dann DJing, Equipment,
+     GarageBand-Vorbild, Screenshots fehlen noch), DJing ✓ (Einführung +
+     4 Kapitel-Lektionen), dann Equipment (überschneidet sich mit
+     DJing › Equipment),
      MV-Entwürfe, Recording, Ableton/Logic, Effekte, Rechte, Social.
      Weiterführende Videos klein als `INSPIRATION:`, nicht gross.
    - DAWs: nur 10 von 16 Lektionen haben Inhalt (Ableton leer); leere Lektionen geben beim
