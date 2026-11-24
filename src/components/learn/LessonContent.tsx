@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
  * Darstellung des Lektionstexts. Format (Absätze durch Leerzeile getrennt):
  * # Titel, ## Untertitel, ### Label (oder SUB:), **fett**, ---, GAP: 20,
  * IMAGE: url | Bildunterschrift, VIDEO: url, GAME: learnAppId | Beschriftung,
- * YOUTUBE: url | Titel | Beschreibung, TIP: art | Titel (+ Textzeilen),
+ * YOUTUBE: url | Titel | Beschreibung, INSPIRATION: (gleich, kleine Karte), TIP: art | Titel (+ Textzeilen),
  * PHASE: Titel | Text | lektionId. Baustein-Editor: src/lib/learn/blocks.ts
  */
 const PHASE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -66,6 +66,36 @@ const TIP_STYLE = {
   aufgabe: { icon: ListChecks, label: 'Aufgabe', cls: 'border-success/40 bg-success/10', tone: 'text-success' },
 } as const;
 
+/** Kleine Video-Karte für weiterführende Inspiration; Klick öffnet den Player darunter. */
+function InspirationCard({ url, title, description }: { url: string; title?: string; description?: string }) {
+  const [playing, setPlaying] = useState(false);
+  const embed = getYouTubeEmbedUrl(url);
+  const id = embed?.split('/embed/')[1];
+  if (!embed || !id) return null;
+  return (
+    <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
+      <button type="button" onClick={() => setPlaying(!playing)} aria-expanded={playing} className="group w-full flex items-center gap-3 p-2 pr-4 text-left hover:bg-white/[0.04]">
+        <span className="relative w-28 md:w-32 aspect-video rounded-lg overflow-hidden bg-black shrink-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={`https://i.ytimg.com/vi/${id}/mqdefault.jpg`} alt="" className="w-full h-full object-cover opacity-80 group-hover:opacity-100" loading="lazy" />
+          <span className="absolute inset-0 flex items-center justify-center"><span className="w-8 h-8 rounded-full bg-black/70 flex items-center justify-center"><Play className="w-4 h-4 fill-white text-white ml-0.5" /></span></span>
+        </span>
+        <span className="min-w-0">
+          <span className="block text-xs font-semibold uppercase tracking-wider text-white/60">Inspiration</span>
+          {title && <span className="block font-bold leading-snug">{title}</span>}
+          {description && <span className="block text-sm text-white/70 mt-0.5 line-clamp-2">{description}</span>}
+        </span>
+      </button>
+      {playing && (
+        <div className="aspect-video bg-black">
+          <iframe src={`${embed.replace('youtube.com', 'youtube-nocookie.com')}?autoplay=1`} title={title || 'YouTube'} className="w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Tutorial-Karte: Vorschaubild + Titel, Klick startet das Video. */
 function YouTubeCard({ url, title, description }: { url: string; title?: string; description?: string }) {
   const [playing, setPlaying] = useState(false);
@@ -104,8 +134,9 @@ function YouTubeCard({ url, title, description }: { url: string; title?: string;
 
 export function LessonContent({ content }: { content: string }) {
   const parseInlineFormatting = (text: string) => {
-    const parts = text.split(/(\*\*.*?\*\*|\[\[.*?\]\])/g);
+    const parts = text.split(/(\*\*.*?\*\*|\[\[.*?\]\]|\(\(.*?\)\))/g);
     return parts.map((part, i) => {
+      if (part.startsWith('((') && part.endsWith('))')) return <span key={i} className="text-sm font-normal text-white/60">({part.slice(2, -2)})</span>;
       if (part.startsWith('**') && part.endsWith('**')) return <strong key={i} className="font-black text-white">{part.slice(2, -2)}</strong>;
       if (part.startsWith('[[') && part.endsWith(']]')) return <strong key={i} className="font-bold text-primary">{part.slice(2, -2)}</strong>;
       return part;
@@ -134,6 +165,10 @@ export function LessonContent({ content }: { content: string }) {
         </a>
       );
     }
+    if (trimmed.startsWith('INSPIRATION:')) {
+      const [url, title, description] = trimmed.replace('INSPIRATION:', '').split('|').map((p) => p.trim());
+      return <InspirationCard key={idx} url={url} title={title} description={description} />;
+    }
     if (trimmed.startsWith('YOUTUBE:')) {
       const [url, title, description] = trimmed.replace('YOUTUBE:', '').split('|').map((p) => p.trim());
       return <YouTubeCard key={idx} url={url} title={title} description={description} />;
@@ -154,6 +189,16 @@ export function LessonContent({ content }: { content: string }) {
       return <h2 key={idx} id={headingId(text)} className="scroll-mt-24 text-2xl md:text-3xl font-bold tracking-tight text-white mt-14 mb-5 leading-tight">{parseInlineFormatting(text)}</h2>;
     }
     if (trimmed.startsWith('#')) return <h2 key={idx} className="text-3xl md:text-4xl font-bold tracking-tight text-white mt-14 mb-6 leading-tight">{parseInlineFormatting(trimmed.replace(/^#\s*/, ''))}</h2>;
+    const bullet = line.match(/^(\s*)[-•]\s+(.*)$/);
+    if (bullet) {
+      const nested = bullet[1].length >= 2;
+      return (
+        <div key={idx} className={cn('flex gap-3 text-[17px] md:text-lg text-white/85 leading-relaxed mb-1.5', nested && 'pl-6 text-base md:text-[17px]')}>
+          <span className={cn('mt-[0.7em] shrink-0 rounded-full', nested ? 'w-1 h-1 bg-white/50' : 'w-1.5 h-1.5 bg-primary')} />
+          <span className="min-w-0">{parseInlineFormatting(bullet[2])}</span>
+        </div>
+      );
+    }
     return <p key={idx} className="text-[17px] md:text-lg text-white/85 leading-relaxed font-normal mb-5 selection:bg-primary/30 whitespace-pre-line">{parseInlineFormatting(line)}</p>;
   };
 
@@ -183,7 +228,7 @@ export function LessonContent({ content }: { content: string }) {
         const Icon = phaseIcon(title);
         return (
           <section key={bIdx} className="mb-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 md:p-7">
-            <div className="flex items-center gap-4 mb-5"><div className="w-11 h-11 shrink-0 rounded-xl bg-primary/15 flex items-center justify-center"><Icon className="w-5 h-5 text-primary" /></div><h3 className="text-lg md:text-xl font-bold text-white leading-tight">{phaseTitle(title)}</h3></div>
+            <div className="flex items-center gap-4 mb-5"><div className="w-11 h-11 shrink-0 rounded-xl bg-primary/15 flex items-center justify-center"><Icon className="w-5 h-5 text-primary" /></div><h3 className="text-lg md:text-xl font-bold text-white leading-tight">{parseInlineFormatting(phaseTitle(title))}</h3></div>
             <div className="[&_p]:mb-3 [&_p:last-child]:mb-0">{desc.split('\n').map((l, lIdx) => renderLine(l, bIdx * 100 + lIdx))}</div>
             {linkedId && <Link href={`/learn/article/${linkedId}`}><Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 rounded-full px-6 font-semibold text-sm h-10 mt-4">Mehr dazu <ArrowRight className="ml-2 w-4 h-4" /></Button></Link>}
           </section>
