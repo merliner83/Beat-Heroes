@@ -143,10 +143,14 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
   `# Titel`, `## Untertitel`, `### Label`, `**fett**`, `[[Begriff]]`
   (hervorgehoben), `---`, `GAP: 20`, `IMAGE: url | Unterschrift`,
   `VIDEO: url`, `YOUTUBE: url | Titel | Text` (Tutorial-Karte),
+  `INSPIRATION: url | Titel | Text` (kleine Video-Karte, weiterführend),
+  Zeilen mit `- ` (Aufzählung, eingerückt = Unterpunkt), `((optional))`
+  (klein, grau),
   `DOWNLOAD: url | Beschriftung` (Link-Knopf),
   `TIP: tipp|merke|achtung|aufgabe | Titel` (+ Textzeilen darunter),
   `PHASE: Titel | Text | lektionId`, `GAME: learnAppId | Beschriftung`
-  (eingebettete Übung), plus `youtubeUrls[]`.
+  (eingebettete Übung), plus `youtubeUrls[]`. Zu einer `PHASE`-Karte
+  gehören alle Folgezeilen bis zur nächsten Leerzeile.
 - Baustein-Editor (24.11.2026): `src/lib/learn/blocks.ts` wandelt Text ↔
   Bausteine (alle 53 Lektionen ohne Inhaltsverlust geprüft), UI in
   `src/components/admin/BlockEditor.tsx` mit Vorlagen (Standard-Lektion,
