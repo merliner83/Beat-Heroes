@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { adminDb } from '@/lib/server/firebase-admin';
 import { HttpError, requireUid } from '@/lib/server/credits';
+import { schoolsOf, syncSchoolIds } from '@/lib/server/schools';
 
 /**
- * Tritt mit einem Beitrittscode einer Klasse bei. Setzt schoolId und
+ * Tritt mit einem Beitrittscode einer Klasse bei. Ergänzt schoolIds und
  * classIds serverseitig, weil Schüler:innen diese Felder nicht selbst
  * schreiben dürfen.
  */
@@ -24,28 +25,32 @@ export async function POST(request: NextRequest) {
     const result = await db.runTransaction(async (tx) => {
       const userRef = db.doc(`users/${uid}`);
       const user = (await tx.get(userRef)).data() ?? {};
-      if (user.schoolId && user.schoolId !== schoolId) {
-        throw new HttpError(409, 'Du gehörst bereits zu einer anderen Schule');
-      }
       const classIds: string[] = user.classIds ?? [];
-      if (classIds.includes(classDoc.id)) return { alreadyMember: true };
+      if (classIds.includes(classDoc.id)) return { alreadyMember: true, newSchool: false };
 
-      tx.set(userRef, { schoolId, classIds: FieldValue.arrayUnion(classDoc.id) }, { merge: true });
+      // Eine Person kann mehreren Schulen angehören.
+      const schools = schoolsOf(user);
+      const newSchool = !schools.includes(schoolId);
+      const schoolIds = newSchool ? [...schools, schoolId] : schools;
+      tx.set(userRef, { schoolIds, schoolId: schoolIds[0], classIds: FieldValue.arrayUnion(classDoc.id) }, { merge: true });
       tx.set(
         db.doc(`standings/${uid}`),
         {
           uid,
           displayName: user.displayName ?? 'Producer',
-          schoolId,
+          schoolIds,
+          schoolId: schoolIds[0],
           classIds: FieldValue.arrayUnion(classDoc.id),
           streetCred: user.streetCred ?? 0,
         },
         { merge: true },
       );
-      return { alreadyMember: false };
+      return { alreadyMember: false, newSchool, schoolIds };
     });
+    // Profil, Entwurf und Abschlüsse kennen die neue Schule auch.
+    if (result.newSchool && result.schoolIds) await syncSchoolIds(uid, result.schoolIds);
 
-    return NextResponse.json({ ...result, classId: classDoc.id, className: classDoc.get('name'), schoolId });
+    return NextResponse.json({ alreadyMember: result.alreadyMember, classId: classDoc.id, className: classDoc.get('name'), schoolId });
   } catch (err) {
     if (err instanceof HttpError) return NextResponse.json({ error: err.message }, { status: err.status });
     console.error('classes/join: unexpected error', err);

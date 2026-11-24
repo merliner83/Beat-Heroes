@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
+import { isStaffOf } from '@/lib/server/schools';
 import { adminDb } from '@/lib/server/firebase-admin';
-import { HttpError, requireUid, bookCredits, STAFF_ROLES } from '@/lib/server/credits';
+import { HttpError, requireUid, bookCredits } from '@/lib/server/credits';
 
 /**
  * Lehrperson gibt eine Abgabe frei oder verlangt Änderungen. Bei der ersten
@@ -39,8 +40,7 @@ export async function POST(request: NextRequest) {
 
       const assignment = assignmentSnap.data()!;
       const reviewer = reviewerSnap.data() ?? {};
-      const allowed = reviewer.role === 'superAdmin'
-        || (STAFF_ROLES.includes(reviewer.role) && reviewer.schoolId === assignment.schoolId);
+      const allowed = isStaffOf(reviewer, [assignment.schoolId]);
       if (!allowed) throw new HttpError(403, 'Not allowed');
 
       const submission = submissionSnap.data()!;

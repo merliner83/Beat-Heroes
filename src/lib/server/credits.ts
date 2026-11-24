@@ -2,6 +2,7 @@ import 'server-only';
 import { FieldValue, Transaction, DocumentData } from 'firebase-admin/firestore';
 import { NextRequest } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/server/firebase-admin';
+import { schoolsOf } from '@/lib/game/types';
 
 export class HttpError extends Error {
   constructor(public status: number, message: string) {
@@ -42,6 +43,7 @@ export function bookCredits(
     {
       uid,
       displayName: user.displayName ?? 'Producer',
+      schoolIds: schoolsOf(user),
       schoolId: user.schoolId ?? null,
       classIds: user.classIds ?? [],
       streetCred: FieldValue.increment(amount),
@@ -51,6 +53,7 @@ export function bookCredits(
   );
   tx.create(db.collection('creditEvents').doc(), {
     uid,
+    schoolIds: schoolsOf(user),
     schoolId: user.schoolId ?? null,
     amount,
     reason: entry.reason,

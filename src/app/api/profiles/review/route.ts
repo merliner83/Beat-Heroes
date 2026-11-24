@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { adminDb } from '@/lib/server/firebase-admin';
-import { HttpError, requireUid, STAFF_ROLES } from '@/lib/server/credits';
+import { HttpError, requireUid } from '@/lib/server/credits';
+import { isStaffOf, schoolsOf } from '@/lib/server/schools';
 
 const HANDLE = /^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/;
-const CONTENT_FIELDS = ['artistName', 'handle', 'bio', 'avatarUrl', 'roles', 'genres', 'embeds', 'links', 'openForCollab'] as const;
+const CONTENT_FIELDS = [
+  'artistName', 'handle', 'bio', 'avatarUrl', 'bannerUrl', 'accentColor', 'featuredUrl',
+  'roles', 'genres', 'embeds', 'links', 'openForCollab',
+] as const;
 
 /**
  * Lehrperson gibt einen Profil-Entwurf frei (→ profiles/{uid} öffentlich)
@@ -29,8 +33,8 @@ export async function POST(request: NextRequest) {
       if (!draftSnap.exists) throw new HttpError(404, 'Kein Entwurf vorhanden');
       const draft = draftSnap.data()!;
       const reviewer = reviewerSnap.data() ?? {};
-      const allowed = reviewer.role === 'superAdmin'
-        || (STAFF_ROLES.includes(reviewer.role) && reviewer.schoolId && reviewer.schoolId === draft.schoolId);
+      const draftSchools = schoolsOf(draft);
+      const allowed = isStaffOf(reviewer, draftSchools);
       if (!allowed) throw new HttpError(403, 'Not allowed');
 
       if (action === 'changes_requested') {
@@ -45,11 +49,6 @@ export async function POST(request: NextRequest) {
       if (handleSnap.exists && handleSnap.get('uid') !== uid) {
         throw new HttpError(409, `Der Link /artists/${handle} ist schon vergeben`);
       }
-      let schoolName: string | null = null;
-      if (draft.schoolId) {
-        const school = await tx.get(db.doc(`schools/${draft.schoolId}`));
-        schoolName = school.get('name') ?? null;
-      }
 
       const oldHandle = profileSnap.exists ? profileSnap.get('handle') : null;
       if (oldHandle && oldHandle !== handle) tx.delete(db.doc(`handles/${oldHandle}`));
@@ -59,8 +58,9 @@ export async function POST(request: NextRequest) {
       tx.set(profileRef, {
         ...content,
         uid,
-        schoolId: draft.schoolId ?? null,
-        schoolName,
+        // Schulen (Logos) zeigt die Seite live aus schools/{id} an.
+        schoolIds: draftSchools,
+        schoolId: draftSchools[0] ?? null,
         searchName: String(draft.artistName ?? '').toLowerCase(),
         approvedBy: reviewerUid,
         approvedAt: FieldValue.serverTimestamp(),

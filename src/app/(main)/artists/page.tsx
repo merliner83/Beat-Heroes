@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { collection, query } from 'firebase/firestore';
 import { Handshake, Loader2, Search } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { ARTIST_GENRES, ARTIST_ROLES, PublicProfile } from '@/lib/game/types';
+import { ARTIST_GENRES, ARTIST_ROLES, DEFAULT_ACCENT, PublicProfile, School, schoolsOf } from '@/lib/game/types';
+import { SchoolBadge, SchoolLogo } from '@/components/schools/SchoolBadge';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/ds';
@@ -14,6 +15,9 @@ export default function ArtistsPage() {
   const db = useFirestore();
   const profilesQ = useMemoFirebase(() => (db ? query(collection(db, 'profiles')) : null), [db]);
   const { data: profiles, isLoading } = useCollection<PublicProfile>(profilesQ);
+  const schoolsQ = useMemoFirebase(() => (db ? query(collection(db, 'schools')) : null), [db]);
+  const { data: allSchools } = useCollection<School>(schoolsQ);
+  const schoolById = useMemo(() => new Map((allSchools ?? []).map((s) => [s.id, s])), [allSchools]);
   const [search, setSearch] = useState('');
   const [roles, setRoles] = useState<string[]>([]);
   const [genre, setGenre] = useState('all');
@@ -22,9 +26,9 @@ export default function ArtistsPage() {
 
   const schools = useMemo(() => {
     const m = new Map<string, string>();
-    (profiles ?? []).forEach((p) => p.schoolId && m.set(p.schoolId, p.schoolName ?? p.schoolId));
+    (profiles ?? []).forEach((p) => schoolsOf(p).forEach((id) => m.set(id, schoolById.get(id)?.name ?? id)));
     return [...m.entries()].sort((a, b) => a[1].localeCompare(b[1], 'de'));
-  }, [profiles]);
+  }, [profiles, schoolById]);
 
   const list = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -32,7 +36,7 @@ export default function ArtistsPage() {
       .filter((p) => !q || `${p.artistName} ${p.bio ?? ''} ${p.roles.join(' ')} ${p.genres.join(' ')}`.toLowerCase().includes(q))
       .filter((p) => roles.length === 0 || roles.some((r) => p.roles.includes(r)))
       .filter((p) => genre === 'all' || p.genres.includes(genre))
-      .filter((p) => school === 'all' || p.schoolId === school)
+      .filter((p) => school === 'all' || schoolsOf(p).includes(school))
       .filter((p) => !collabOnly || p.openForCollab)
       .sort((a, b) => a.artistName.localeCompare(b.artistName, 'de'));
   }, [profiles, search, roles, genre, school, collabOnly]);
@@ -40,6 +44,14 @@ export default function ArtistsPage() {
   return (
     <div className="space-y-8">
       <PageHeader title="Artists" subtitle="Producer, Rapper:innen, Sänger:innen und Musiker:innen der Musikschulen. Finde deine nächste Kollabo." />
+
+      {(allSchools ?? []).length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {[...(allSchools ?? [])].sort((a, b) => a.name.localeCompare(b.name, 'de')).map((s) => (
+            <SchoolBadge key={s.id} school={s} />
+          ))}
+        </div>
+      )}
 
       <div className="space-y-3">
         <div className="flex flex-col md:flex-row gap-2">
@@ -83,25 +95,38 @@ export default function ArtistsPage() {
         </p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {list.map((p) => (
-            <Link key={p.id} href={`/artists/${p.handle}`} className="group p-5 rounded-2xl border border-white/10 bg-white/[0.03] hover:border-primary/50 transition-colors flex gap-4">
-              <div className="w-16 h-16 rounded-full overflow-hidden bg-white/10 shrink-0 flex items-center justify-center border-2 border-white/10">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {p.avatarUrl ? <img src={p.avatarUrl} alt={p.artistName} className="w-full h-full object-cover" /> : <span className="text-2xl font-black italic text-gradient">{p.artistName.charAt(0)}</span>}
-              </div>
-              <div className="min-w-0 flex-1 space-y-2">
-                <div>
-                  <h2 className="h-display text-lg leading-tight truncate group-hover:text-primary transition-colors">{p.artistName}</h2>
-                  {p.schoolName && <p className="text-xs text-white/60 truncate">{p.schoolName}</p>}
+          {list.map((p) => {
+            const accent = p.accentColor || DEFAULT_ACCENT;
+            const schools = schoolsOf(p).map((id) => schoolById.get(id)).filter((x): x is School => !!x);
+            return (
+              <Link key={p.id} href={`/artists/${p.handle}`} className="group rounded-2xl border border-white/10 bg-white/[0.03] hover:border-white/30 transition-colors overflow-hidden">
+                <div className="h-20 relative" style={p.bannerUrl ? undefined : { background: `radial-gradient(120% 160% at 90% 0%, ${accent}aa 0%, ${accent}22 45%, transparent 80%)` }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {p.bannerUrl && <img src={p.bannerUrl} alt="" className="w-full h-full object-cover opacity-80" />}
+                  {schools.length > 0 && (
+                    <div className="absolute top-2 right-2 flex gap-1">{schools.map((s) => <SchoolLogo key={s.id} school={s} size={28} className="rounded-lg" />)}</div>
+                  )}
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  {p.roles.slice(0, 3).map((r) => <span key={r} className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-bold">{r}</span>)}
-                  {p.genres.slice(0, 2).map((g) => <span key={g} className="px-2 py-0.5 rounded-full bg-white/10 text-white/60 text-xs font-bold">{g}</span>)}
+                <div className="px-5 pb-5 -mt-8 flex gap-4">
+                  <div className="w-16 h-16 rounded-full overflow-hidden bg-neutral-900 shrink-0 flex items-center justify-center border-2" style={{ borderColor: accent }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {p.avatarUrl ? <img src={p.avatarUrl} referrerPolicy="no-referrer" alt={p.artistName} className="w-full h-full object-cover" /> : <span className="text-2xl font-black italic" style={{ color: accent }}>{p.artistName.charAt(0)}</span>}
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-2 pt-9">
+                    <div>
+                      <h2 className="h-display text-lg leading-tight truncate">{p.artistName}</h2>
+                      {schools.length > 0 && <p className="text-xs text-white/60 truncate">{schools.map((s) => s.name).join(' · ')}</p>}
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {p.roles.slice(0, 3).map((r) => <span key={r} className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ background: `${accent}33`, color: accent }}>{r}</span>)}
+                      {p.genres.slice(0, 2).map((g) => <span key={g} className="px-2 py-0.5 rounded-full bg-white/10 text-white/60 text-xs font-bold">{g}</span>)}
+                    </div>
+                    {p.openForCollab && <p className="text-xs text-success flex items-center gap-1"><Handshake className="w-3.5 h-3.5" /> Offen für Kollabos</p>}
+                  </div>
                 </div>
-                {p.openForCollab && <p className="text-xs text-success flex items-center gap-1"><Handshake className="w-3.5 h-3.5" /> Offen für Kollabos</p>}
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

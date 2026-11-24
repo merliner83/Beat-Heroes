@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { addDoc, collection, doc, getDocs, query, serverTimestamp, setDoc, Timestamp, where, deleteDoc, limit } from 'firebase/firestore';
 import { Award, Loader2, Plus, Users, ClipboardList, Copy, CheckCircle2, MessageSquareWarning, ChevronDown, ChevronUp, Trash2, ExternalLink } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import {
-  Achievement, Article, Assignment, AssignmentKind, Game, LearnApp, Level, School, SchoolClass, Submission, UserProfile, isSuperAdmin,
+  Achievement, Article, Assignment, AssignmentKind, Game, LearnApp, Level, School, SchoolClass, Submission, UserProfile, isSuperAdmin, schoolsOf,
 } from '@/lib/game/types';
 import { apiPost } from '@/lib/api';
 import { formatDue } from '@/components/assignments/MyAssignments';
@@ -314,22 +314,26 @@ function ClassDetail({ schoolClass }: { schoolClass: SchoolClass }) {
   const { toast } = useToast();
   const [creating, setCreating] = useState(false);
 
+  // Personen können mehreren Schulen angehören: nach Schule abfragen (Regeln),
+  // Klasse im Browser filtern (Firestore erlaubt nur ein array-contains).
   const studentsQuery = useMemoFirebase(() => (db ? query(collection(db, 'users'),
-    where('schoolId', '==', schoolClass.schoolId), where('classIds', 'array-contains', schoolClass.id)) : null), [db, schoolClass.schoolId, schoolClass.id]);
-  const { data: students } = useCollection<UserProfile>(studentsQuery);
+    where('schoolIds', 'array-contains', schoolClass.schoolId)) : null), [db, schoolClass.schoolId]);
+  const { data: schoolPeople } = useCollection<UserProfile>(studentsQuery);
+  const students = useMemo(() => (schoolPeople ?? []).filter((u) => u.classIds?.includes(schoolClass.id)), [schoolPeople, schoolClass.id]);
 
   const assignmentsQuery = useMemoFirebase(() => (db ? query(collection(db, 'assignments'),
     where('schoolId', '==', schoolClass.schoolId), where('classId', '==', schoolClass.id)) : null), [db, schoolClass.schoolId, schoolClass.id]);
   const { data: assignments } = useCollection<Assignment>(assignmentsQuery);
 
   const achievementsQuery = useMemoFirebase(() => (db ? query(collection(db, 'achievements'),
-    where('schoolId', '==', schoolClass.schoolId), where('classIds', 'array-contains', schoolClass.id)) : null), [db, schoolClass.schoolId, schoolClass.id]);
+    where('schoolIds', 'array-contains', schoolClass.schoolId)) : null), [db, schoolClass.schoolId]);
   const { data: achievements } = useCollection<Achievement>(achievementsQuery);
   const achievementsByUid = useMemo(() => {
     const m = new Map<string, Achievement[]>();
-    (achievements ?? []).forEach((a) => m.set(a.uid, [...(m.get(a.uid) ?? []), a]));
+    (achievements ?? []).filter((a) => a.classIds?.includes(schoolClass.id))
+      .forEach((a) => m.set(a.uid, [...(m.get(a.uid) ?? []), a]));
     return m;
-  }, [achievements]);
+  }, [achievements, schoolClass.id]);
 
   const sortedAssignments = useMemo(() => [...(assignments ?? [])].sort((a, b) =>
     (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0)), [assignments]);
@@ -398,13 +402,18 @@ export function TeacherView() {
   const { profile, isUserLoading } = useUser();
   const superAdmin = isSuperAdmin(profile?.role);
   const [pickedSchool, setPickedSchool] = useState<string | null>(null);
-  const schoolId = profile?.schoolId ?? pickedSchool;
 
-  const schoolsQuery = useMemoFirebase(() => (db && superAdmin ? query(collection(db, 'schools')) : null), [db, superAdmin]);
-  const { data: schools } = useCollection<School>(schoolsQuery);
-  useEffect(() => {
-    if (!profile?.schoolId && !pickedSchool && schools?.length) setPickedSchool(schools[0].id);
-  }, [profile?.schoolId, pickedSchool, schools]);
+  // Super-Admins sehen alle Schulen, Lehrpersonen ihre (eine oder mehrere).
+  const schoolsQuery = useMemoFirebase(() => (db ? query(collection(db, 'schools')) : null), [db]);
+  const { data: allSchools } = useCollection<School>(schoolsQuery);
+  const mySchoolIds = schoolsOf(profile);
+  const schools = useMemo(() => [...(allSchools ?? [])]
+    .filter((s) => superAdmin || mySchoolIds.includes(s.id))
+    .sort((a, b) => a.name.localeCompare(b.name, 'de')),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [allSchools, superAdmin, mySchoolIds.join()]);
+  const schoolId = (pickedSchool && schools.some((s) => s.id === pickedSchool) ? pickedSchool : null)
+    ?? (mySchoolIds.find((id) => schools.some((s) => s.id === id)) ?? schools[0]?.id ?? null);
 
   const classesQuery = useMemoFirebase(() => (db && schoolId ? query(collection(db, 'classes'), where('schoolId', '==', schoolId)) : null), [db, schoolId]);
   const { data: classes, isLoading } = useCollection<SchoolClass>(classesQuery);
@@ -429,7 +438,7 @@ export function TeacherView() {
     <div className="grid gap-8 md:grid-cols-[280px_1fr]">
       <aside className="space-y-4">
         <h1 className="text-3xl h-display">Klassen</h1>
-        {superAdmin && !profile?.schoolId && schools && (
+        {schools.length > 1 && (
           <Select value={schoolId} onValueChange={(v) => { setPickedSchool(v); setSelected(null); }}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>{schools.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>

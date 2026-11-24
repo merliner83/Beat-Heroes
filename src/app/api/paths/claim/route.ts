@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
+import { schoolsOf } from '@/lib/game/types';
 import { adminDb } from '@/lib/server/firebase-admin';
 import { HttpError, requireUid, bookCredits } from '@/lib/server/credits';
 
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
         pathTitle: path.title ?? pathId,
         official: !!path.official,
         displayName: user.displayName ?? 'Producer',
+        schoolIds: schoolsOf(user),
         schoolId: user.schoolId ?? null,
         classIds: user.classIds ?? [],
         achievedAt: FieldValue.serverTimestamp(),

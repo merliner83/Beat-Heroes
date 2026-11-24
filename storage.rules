@@ -36,6 +36,16 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
+    // Logos und Titelbilder der Schulprofile: auch Schul-Admins der Schule.
+    match /schools/{schoolId}/{fileName} {
+      allow write: if signedIn()
+        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.get('role', 'student') == 'schoolAdmin'
+        && schoolId in firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.get('schoolIds', [])
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
     // Eigene Uploads der Schüler:innen (Beats) – Phase 3.
     // Lesen/Schreiben vorerst nur durch die Person selbst.
     match /users/{userId}/{allPaths=**} {

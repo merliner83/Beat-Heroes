@@ -23,8 +23,14 @@ service cloud.firestore {
       return hasProfile() ? me().get('role', 'student') : 'student';
     }
 
-    function mySchool() {
-      return hasProfile() ? me().get('schoolId', null) : null;
+    // Schulen eines Dokuments: schoolIds[] (neu, mehrere Schulen möglich),
+    // Rückfall auf das alte Einzelfeld schoolId.
+    function schoolsOf(d) {
+      return d.get('schoolIds', d.get('schoolId', null) == null ? [] : [d.get('schoolId', null)]);
+    }
+
+    function mySchools() {
+      return hasProfile() ? schoolsOf(me()) : [];
     }
 
     function isSuperAdmin() {
@@ -36,7 +42,17 @@ service cloud.firestore {
     }
 
     function isStaffOfSchool(schoolId) {
-      return isSuperAdmin() || (isStaff() && schoolId != null && mySchool() == schoolId);
+      return isSuperAdmin() || (isStaff() && schoolId != null && schoolId in mySchools());
+    }
+
+    // Gemeinsame Schule mit einer Liste (z.B. schoolIds einer Person).
+    // Abfragen müssen nach schoolIds array-contains <eigene Schule> filtern.
+    function sharesSchool(ids) {
+      return ids.hasAny(mySchools());
+    }
+
+    function isStaffOfAny(ids) {
+      return isSuperAdmin() || (isStaff() && sharesSchool(ids));
     }
 
     // Felder, die Nutzer:innen im eigenen Dokument selbst setzen dürfen.
@@ -45,14 +61,20 @@ service cloud.firestore {
     }
 
     // --- Organisation ---
+    // Schulprofile sind öffentlich (Seite /schools/{id}). Schul-Admins
+    // pflegen das Profil ihrer Schule, anlegen/löschen nur Super-Admins.
     match /schools/{schoolId} {
-      allow read: if signedIn();
-      allow write: if isSuperAdmin();
+      allow read: if true;
+      allow create, delete: if isSuperAdmin();
+      allow update: if isSuperAdmin()
+        || (signedIn() && myRole() == 'schoolAdmin' && schoolId in mySchools()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['name', 'logoUrl', 'bannerUrl', 'description', 'website', 'location', 'accentColor', 'updatedAt']));
     }
 
     match /classes/{classId} {
       allow read: if isStaffOfSchool(resource.data.schoolId)
-                  || (signedIn() && resource.data.schoolId == mySchool());
+                  || (signedIn() && resource.data.schoolId in mySchools());
       allow create: if isStaffOfSchool(request.resource.data.schoolId);
       allow update, delete: if isStaffOfSchool(resource.data.schoolId);
     }
@@ -62,11 +84,11 @@ service cloud.firestore {
       allow get: if signedIn() && (
         request.auth.uid == userId
         || isSuperAdmin()
-        || isStaffOfSchool(resource.data.get('schoolId', null))
+        || isStaffOfAny(schoolsOf(resource.data))
       );
-      // Lehrpersonen listen Schüler:innen ihrer Schule (Abfrage muss nach
-      // schoolId filtern).
-      allow list: if isSuperAdmin() || isStaffOfSchool(resource.data.schoolId);
+      // Lehrpersonen listen Schüler:innen ihrer Schulen (Abfrage muss nach
+      // schoolIds array-contains filtern).
+      allow list: if isStaffOfAny(resource.data.schoolIds);
 
       allow create: if signedIn() && request.auth.uid == userId
         && request.resource.data.keys().hasOnly(selfEditableKeys())
@@ -83,7 +105,7 @@ service cloud.firestore {
       match /{progressCol}/{docId} {
         allow read: if progressCol in ['progress', 'patternProgress', 'articleProgress']
           && signedIn() && (request.auth.uid == userId || isSuperAdmin()
-            || isStaffOfSchool(get(/databases/$(database)/documents/users/$(userId)).data.get('schoolId', null)));
+            || isStaffOfAny(schoolsOf(get(/databases/$(database)/documents/users/$(userId)).data)));
         allow write: if false;
       }
     }
@@ -134,11 +156,11 @@ service cloud.firestore {
     // --- Credits ---
     match /standings/{userId} {
       // Rangliste: lesbar innerhalb derselben Schule (Abfragen müssen nach
-      // schoolId filtern), eigener Eintrag immer.
+      // schoolIds array-contains filtern), eigener Eintrag immer.
       allow read: if signedIn() && (
         request.auth.uid == userId
         || isSuperAdmin()
-        || resource.data.schoolId == mySchool()
+        || sharesSchool(resource.data.schoolIds)
       );
       allow write: if false;
     }
@@ -146,31 +168,35 @@ service cloud.firestore {
     match /creditEvents/{eventId} {
       allow read: if signedIn() && (
         resource.data.uid == request.auth.uid
-        || isStaffOfSchool(resource.data.get('schoolId', null))
+        || isStaffOfAny(resource.data.schoolIds)
       );
       allow write: if false;
     }
 
     // --- Profile: Entwurf (Schüler:in) → Freigabe (Server) → öffentlich ---
     function profileFields() {
-      return ['uid', 'schoolId', 'status', 'artistName', 'handle', 'bio', 'avatarUrl',
+      return ['uid', 'schoolId', 'schoolIds', 'status', 'artistName', 'handle', 'bio', 'avatarUrl',
+        'bannerUrl', 'accentColor', 'featuredUrl',
         'roles', 'genres', 'embeds', 'links', 'openForCollab', 'updatedAt', 'submittedAt'];
     }
 
     function validProfileDraft(d) {
       return d.uid == request.auth.uid
-        && d.schoolId == mySchool()
+        && d.get('schoolIds', []) == mySchools()
         && d.status in ['draft', 'submitted']
         && d.artistName is string && d.artistName.size() <= 60
         && d.handle is string && d.handle.matches('^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$')
         && d.get('bio', '').size() <= 1500
         && d.roles.size() <= 12 && d.genres.size() <= 13
-        && d.embeds.size() <= 8 && d.links.size() <= 8;
+        && d.embeds.size() <= 8 && d.links.size() <= 8
+        && (d.get('accentColor', null) == null
+            || (d.accentColor is string && d.accentColor.matches('^#[0-9a-fA-F]{6}$')))
+        && (d.get('featuredUrl', null) == null || d.featuredUrl in d.embeds);
     }
 
     match /profileDrafts/{userId} {
       allow read: if signedIn() && (request.auth.uid == userId
-        || isStaffOfSchool(resource.data.schoolId));
+        || isStaffOfAny(resource.data.schoolIds));
       allow create: if signedIn() && request.auth.uid == userId
         && request.resource.data.keys().hasOnly(profileFields())
         && validProfileDraft(request.resource.data);
@@ -195,7 +221,7 @@ service cloud.firestore {
     match /achievements/{achievementId} {
       allow read: if signedIn() && (
         resource.data.uid == request.auth.uid
-        || isStaffOfSchool(resource.data.schoolId)
+        || isStaffOfAny(resource.data.schoolIds)
       );
       allow write: if false;
     }

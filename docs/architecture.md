@@ -1,6 +1,6 @@
 # Beat-Heroes – Architektur
 
-Stand: 22.11.2026. Lebendes Dokument; bei Änderungen am Datenmodell nachführen.
+Stand: 24.11.2026. Lebendes Dokument; bei Änderungen am Datenmodell nachführen.
 
 ## Plattform
 
@@ -51,19 +51,34 @@ kein Token-Refresh nötig; die Regeln kosten dafür einen Lesezugriff.
 ## Datenmodell
 
 ### Organisation
-- `schools/{schoolId}` – `name`, `slug`
+- `schools/{schoolId}` – öffentliches Schulprofil: `name`, `slug`, `logoUrl`,
+  `bannerUrl`, `description`, `website`, `location`, `accentColor`. Öffentlich
+  lesbar (Seite `/schools/{id}` mit allen Artists der Schule); pflegen im
+  Admin (Super-Admin) bzw. Schul-Admin der Schule. Bilder in Storage
+  `schools/{id}/…`.
 - `classes/{classId}` – `schoolId`, `name`, `teacherIds[]`, `joinCode`
 - `users/{uid}` (privat) – `uid`, `email`, `displayName`, `photoURL`,
-  geschützt: `role`, `schoolId`, `classIds[]`, `streetCred`
+  geschützt: `role`, `schoolIds[]`, `schoolId` (= `schoolIds[0]`, Altfeld),
+  `classIds[]`, `streetCred`
+- **Mehrere Schulen (24.11.2026):** Eine Person kann mehreren Schulen
+  angehören (`schoolIds[]`). Klassencode einer anderen Schule ergänzt sie,
+  Super-Admins setzen sie im Admin (`POST /api/admin/memberships`). Der Server
+  überträgt `schoolIds` auf `standings`, `profiles`, `profileDrafts`,
+  `achievements` (`src/lib/server/schools.ts`). Regeln: `isStaffOfAny`/
+  `sharesSchool` mit `hasAny`; Abfragen filtern `schoolIds array-contains`.
+  Firestore erlaubt nur ein `array-contains` pro Abfrage, darum filtert
+  `/teacher` die Klasse im Browser. Regeltest:
+  `firebase emulators:exec --only firestore --project demo-beat-heroes "node scripts/test-rules.mjs"`.
+  Migration Altdaten: `scripts/migrate-school-ids.mjs`.
 
 ### Fortschritt und Credits (nur Server schreibt)
 - `users/{uid}/progress/{levelId|learnAppId}` – `accuracy`, `completedAt`
 - `users/{uid}/patternProgress/{patternId}`
 - `users/{uid}/articleProgress/{articleId}` – `completed`, `quizScore`
-- `creditEvents/{id}` – Logbuch: `uid`, `schoolId`, `amount`, `reason`
+- `creditEvents/{id}` – Logbuch: `uid`, `schoolIds`, `amount`, `reason`
   (`level`, `learnApp`, `pattern`, `article`, `assignment`, `teacher`),
   `refId`, `createdAt`, `awardedBy`
-- `standings/{uid}` – Ranglisten-Eintrag: `displayName`, `schoolId`,
+- `standings/{uid}` – Ranglisten-Eintrag: `displayName`, `schoolIds`,
   `classIds[]`, `streetCred` (für Schulmitglieder lesbar, ohne E-Mail)
 
 Credits vergibt `POST /api/credits`: prüft das ID-Token, liest `maxPoints`
@@ -72,13 +87,18 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
 
 ### Profil mit Freigabe (umgesetzt 23.11.2026)
 - `profileDrafts/{uid}` – Entwurf, nur Besitzer:in schreibt (Regeln prüfen
-  Felder, Längen, Handle-Format, `schoolId` = eigene Schule); Lehrpersonen der
-  Schule lesen. `status`: `draft` | `submitted` | `changes_requested` |
+  Felder, Längen, Handle-Format, Farbe, `schoolIds` = eigene Schulen);
+  Lehrpersonen einer der Schulen lesen und geben frei. `status`: `draft` | `submitted` | `changes_requested` |
   `approved`, `teacherNote` (nur Server).
 - `profiles/{uid}` – freigegebene, öffentliche Version; schreibt nur
   `POST /api/profiles/review`. Felder: `artistName`, `handle`, `bio`,
-  `avatarUrl`, `roles[]`, `genres[]`, `embeds[]` (Spotify/SoundCloud/YouTube),
-  `links[]`, `openForCollab`, `schoolName`, `approvedBy`, `approvedAt`.
+  `avatarUrl`, `bannerUrl`, `accentColor` (#rrggbb aus `ACCENT_COLORS`),
+  `featuredUrl` (einer der `embeds`, oben als Player), `roles[]`, `genres[]`,
+  `embeds[]` (Spotify/SoundCloud/YouTube), `links[]`, `openForCollab`,
+  `schoolIds` (Logos werden live aus `schools` geladen), `approvedBy`,
+  `approvedAt`. Weitere Tracks erscheinen als Karten mit Bild + Titel über
+  oEmbed (`/api/oembed`, `src/lib/server/oembed.ts`, 1 Tag Cache); Klick
+  startet den Player.
 - `handles/{handle}` – `uid`; eindeutige Profil-URL `/artists/{handle}`.
 - Profilbilder in Storage `profiles/{uid}/…` (öffentlich lesbar, max. 5 MB).
 - Seiten: Editor unter `/me`, Freigabe unter `/teacher`, Übersicht
@@ -159,5 +179,6 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
 | `/beats`           | Beat-Börse, Challenges                       |
 | `/me`              | Profil-Editor + Statistik                    |
 | `/artists/[handle]`| öffentliches Profil (serverseitig gerendert) |
+| `/schools/[id]`    | öffentliches Schulprofil mit Artists         |
 | `/teacher`         | Klassen, Zuweisungen, Freigaben              |
 | `/admin`           | CMS                                          |
