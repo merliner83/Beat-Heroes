@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, ArrowRight, Download, ExternalLink, Gamepad2, Layers, Lightbulb, ListChecks, Mic, Music, Pin, Play, Scissors, Sliders, Sparkles, Youtube } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Download, Drum, ExternalLink, Rocket, Gamepad2, Layers, Lightbulb, ListChecks, Mic, Music, Pin, Play, Scissors, Sliders, Sparkles, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -13,7 +13,16 @@ import { Button } from '@/components/ui/button';
  * YOUTUBE: url | Titel | Beschreibung, TIP: art | Titel (+ Textzeilen),
  * PHASE: Titel | Text | lektionId. Baustein-Editor: src/lib/learn/blocks.ts
  */
-const PHASE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = { 'COMPOSING': Music, 'RECORDING': Mic, 'EDITING': Scissors, 'ARRANGEMENT': Layers, 'SOUNDDESIGN': Sparkles, 'MIXING / MASTERING': Sliders };
+const PHASE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  COMPOSING: Music, KOMPOSITION: Music, RECORDING: Mic, AUFNAHME: Mic, EDITING: Scissors, ARRANGEMENT: Layers,
+  SOUNDDESIGN: Sparkles, 'SOUND DESIGN': Sparkles, IDEE: Sparkles, KLANG: Sparkles, BEAT: Drum, DRUMS: Drum, GROOVE: Drum, RELEASE: Rocket, MIXING: Sliders, MASTERING: Sliders, 'MIXING / MASTERING': Sliders, 'MIXING/MASTERING': Sliders,
+};
+
+/** Icon zur Phase: «2. AUFNAHME» → Mic (Nummer und Zusatz nach «:» zählen nicht). */
+function phaseIcon(title: string) {
+  const key = title.split(':')[0].replace(/^\s*\d+\.\s*/, '').trim().toUpperCase();
+  return PHASE_ICONS[key] ?? PHASE_ICONS[key.split(/\s*[/&]\s*/)[0]] ?? Play;
+}
 
 export function getYouTubeEmbedUrl(url: string) {
   const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
@@ -138,12 +147,12 @@ export function LessonContent({ content }: { content: string }) {
       if (trimmed.startsWith('PHASE:')) {
         const parts = trimmed.replace('PHASE:', '').split('|');
         const title = parts[0]?.trim() || '', desc = parts[1]?.trim() || '', linkedId = parts[2]?.trim();
-        const Icon = PHASE_ICONS[title.split(':')[0].trim()] || Play;
+        const Icon = phaseIcon(title);
         return (
           <section key={bIdx} className="mb-14 border-t border-white/10 pt-8">
             <div className="flex items-center gap-5 mb-8"><div className="w-14 h-14 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10"><Icon className="w-7 h-7 text-primary" /></div><h4 className="text-xl md:text-2xl h-display text-white leading-none">{title}</h4></div>
             <div className="mb-2">{desc.split('\n').map((l, lIdx) => renderLine(l, bIdx * 100 + lIdx))}</div>
-            {linkedId && <Link href={`/learn/article/${linkedId}`}><Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 rounded-full px-8 italic font-black uppercase text-xs h-12 mt-6 tracking-widest">Learn More <ArrowRight className="ml-2 w-4 h-4" /></Button></Link>}
+            {linkedId && <Link href={`/learn/article/${linkedId}`}><Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 rounded-full px-8 italic font-black uppercase text-xs h-12 mt-6 tracking-widest">Mehr dazu <ArrowRight className="ml-2 w-4 h-4" /></Button></Link>}
           </section>
         );
       }
