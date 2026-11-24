@@ -18,10 +18,40 @@ const PHASE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   SOUNDDESIGN: Sparkles, 'SOUND DESIGN': Sparkles, IDEE: Sparkles, KLANG: Sparkles, BEAT: Drum, DRUMS: Drum, GROOVE: Drum, RELEASE: Rocket, MIXING: Sliders, MASTERING: Sliders, 'MIXING / MASTERING': Sliders, 'MIXING/MASTERING': Sliders,
 };
 
+/** «2. AUFNAHME & EDITING» → «2. Aufnahme & Editing» (Versalien lesen sich schwer). */
+function phaseTitle(title: string) {
+  if (title !== title.toUpperCase()) return title;
+  return title.toLowerCase().replace(/(^|[\s/&(-])(\p{L})/gu, (_, a, b) => a + b.toUpperCase());
+}
+
 /** Icon zur Phase: «2. AUFNAHME» → Mic (Nummer und Zusatz nach «:» zählen nicht). */
 function phaseIcon(title: string) {
   const key = title.split(':')[0].replace(/^\s*\d+\.\s*/, '').trim().toUpperCase();
   return PHASE_ICONS[key] ?? PHASE_ICONS[key.split(/\s*[/&]\s*/)[0]] ?? Play;
+}
+
+/** ID für Sprungmarken aus einem Zwischentitel («Hör zuerst» → «hoer-zuerst»). */
+export function headingId(text: string) {
+  return 'abschnitt-' + text.replace(/\*\*|\[\[|\]\]/g, '').toLowerCase()
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+/**
+ * Gliederung einer Lektion: erster «# Titel» wird zum Seitentitel (und aus
+ * dem Text entfernt), «## Zwischentitel» ergeben das Inhaltsverzeichnis.
+ */
+export function lessonOutline(content: string) {
+  const text = content ?? '';
+  const m = text.match(/^\s*#(?!#)\s*(.+)\n?/);
+  const title = m ? m[1].replace(/\*\*/g, '').trim() : null;
+  const body = m ? text.slice(m[0].length) : text;
+  const sections = body.split('\n').map((l) => l.trim())
+    .filter((l) => /^##(?!#)/.test(l))
+    .map((l) => l.replace(/^##\s*/, '').replace(/\*\*|\[\[|\]\]/g, ''))
+    .map((t) => ({ id: headingId(t), text: t }));
+  const words = body.replace(/^[A-Z]+:.*$/gm, '').split(/\s+/).filter(Boolean).length;
+  return { title, body, sections, minutes: Math.max(1, Math.round(words / 180)) };
 }
 
 export function getYouTubeEmbedUrl(url: string) {
@@ -119,9 +149,12 @@ export function LessonContent({ content }: { content: string }) {
       );
     }
     if (trimmed.startsWith('###') || trimmed.startsWith('SUB:')) return <div key={idx} className="mb-4 mt-2"><span className="text-xs font-semibold uppercase tracking-wider text-primary italic leading-none">{parseInlineFormatting(trimmed.replace(/^###\s*|^SUB:\s*/, ''))}</span></div>;
-    if (trimmed.startsWith('##')) return <h4 key={idx} className="text-xl md:text-2xl font-bold tracking-tight text-white/95 mb-6 mt-4 leading-tight">{parseInlineFormatting(trimmed.replace(/^##\s*/, ''))}</h4>;
-    if (trimmed.startsWith('#')) return <h3 key={idx} className="text-2xl md:text-4xl font-bold tracking-tight text-white mb-8 border-b border-white/10 pb-4 mt-6 leading-none">{parseInlineFormatting(trimmed.replace(/^#\s*/, ''))}</h3>;
-    return <p key={idx} className="text-base md:text-lg text-white/80 leading-relaxed font-normal mb-6 selection:bg-primary/30 whitespace-pre-line">{parseInlineFormatting(line)}</p>;
+    if (trimmed.startsWith('##')) {
+      const text = trimmed.replace(/^##\s*/, '');
+      return <h2 key={idx} id={headingId(text)} className="scroll-mt-24 text-2xl md:text-3xl font-bold tracking-tight text-white mt-14 mb-5 leading-tight">{parseInlineFormatting(text)}</h2>;
+    }
+    if (trimmed.startsWith('#')) return <h2 key={idx} className="text-3xl md:text-4xl font-bold tracking-tight text-white mt-14 mb-6 leading-tight">{parseInlineFormatting(trimmed.replace(/^#\s*/, ''))}</h2>;
+    return <p key={idx} className="text-[17px] md:text-lg text-white/85 leading-relaxed font-normal mb-5 selection:bg-primary/30 whitespace-pre-line">{parseInlineFormatting(line)}</p>;
   };
 
   const renderContent = (content: string) => {
@@ -149,10 +182,10 @@ export function LessonContent({ content }: { content: string }) {
         const title = parts[0]?.trim() || '', desc = parts[1]?.trim() || '', linkedId = parts[2]?.trim();
         const Icon = phaseIcon(title);
         return (
-          <section key={bIdx} className="mb-14 border-t border-white/10 pt-8">
-            <div className="flex items-center gap-5 mb-8"><div className="w-14 h-14 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10"><Icon className="w-7 h-7 text-primary" /></div><h4 className="text-xl md:text-2xl h-display text-white leading-none">{title}</h4></div>
-            <div className="mb-2">{desc.split('\n').map((l, lIdx) => renderLine(l, bIdx * 100 + lIdx))}</div>
-            {linkedId && <Link href={`/learn/article/${linkedId}`}><Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 rounded-full px-8 italic font-black uppercase text-xs h-12 mt-6 tracking-widest">Mehr dazu <ArrowRight className="ml-2 w-4 h-4" /></Button></Link>}
+          <section key={bIdx} className="mb-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5 md:p-7">
+            <div className="flex items-center gap-4 mb-5"><div className="w-11 h-11 shrink-0 rounded-xl bg-primary/15 flex items-center justify-center"><Icon className="w-5 h-5 text-primary" /></div><h3 className="text-lg md:text-xl font-bold text-white leading-tight">{phaseTitle(title)}</h3></div>
+            <div className="[&_p]:mb-3 [&_p:last-child]:mb-0">{desc.split('\n').map((l, lIdx) => renderLine(l, bIdx * 100 + lIdx))}</div>
+            {linkedId && <Link href={`/learn/article/${linkedId}`}><Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 rounded-full px-6 font-semibold text-sm h-10 mt-4">Mehr dazu <ArrowRight className="ml-2 w-4 h-4" /></Button></Link>}
           </section>
         );
       }

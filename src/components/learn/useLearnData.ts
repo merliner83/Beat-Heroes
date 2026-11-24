@@ -35,8 +35,40 @@ export function useLearnData() {
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     const progressById = new Map((progress ?? []).map((p) => [p.articleId ?? p.id, p]));
     const passed = (lessonId: string, minScore = 80) => isLessonPassed(progressById.get(lessonId), minScore);
-    // Entwürfe (minRole teacher) sehen Schüler:innen gar nicht.
-    const lessonsOf = (courseId: string) => (articles ?? []).filter((a) => (a.courseId ?? 'producing') === courseId && hasAccess(role, a.minRole));
+    const byOrder = (a: { order?: number }, b: { order?: number }) => (a.order ?? 0) - (b.order ?? 0);
+    /**
+     * Wahlkapitel (z.B. DAWs): Optionen = Unterthemen. Ohne eigene Wahl gilt
+     * das erste Unterthema, damit Zählung und «Weitermachen» stimmen.
+     */
+    const choiceOf = (courseId: string, chapterId: string) => {
+      const chapter = (courses ?? []).find((c) => c.id === courseId)?.chapters.find((ch) => ch.id === chapterId);
+      if (!chapter?.choice) return null;
+      const options = (subCats ?? []).filter((s) => s.categoryId === chapterId).sort(byOrder);
+      const mine = profile?.choices?.[chapterId];
+      const selected = options.find((o) => o.id === mine) ?? options[0];
+      return { label: chapter.choice.label, options, selected, chosen: !!mine && selected?.id === mine };
+    };
+    // Entwürfe (minRole teacher) sehen Schüler:innen gar nicht; in Wahlkapiteln
+    // nur die Lektionen der gewählten Option.
+    const lessonsOf = (courseId: string) => (articles ?? []).filter((a) => {
+      if ((a.courseId ?? 'producing') !== courseId || !hasAccess(role, a.minRole)) return false;
+      const choice = choiceOf(courseId, a.chapterId ?? a.categoryId ?? '');
+      return !choice?.selected || !a.subCategoryId || a.subCategoryId === choice.selected.id;
+    });
+    /** Lektionen eines Kapitels in Kursreihenfolge: direkte Lektionen, dann Unterthemen. */
+    const chapterLessons = (courseId: string, chapterId: string) => {
+      const chLessons = lessonsOf(courseId).filter((l) => (l.chapterId ?? l.categoryId) === chapterId);
+      const scs = (subCats ?? []).filter((s) => s.categoryId === chapterId).sort(byOrder);
+      return [
+        ...chLessons.filter((l) => !l.subCategoryId || !scs.some((s) => s.id === l.subCategoryId)).sort(byOrder),
+        ...scs.flatMap((sc) => chLessons.filter((l) => l.subCategoryId === sc.id).sort(byOrder)),
+      ];
+    };
+    /** Alle Lektionen eines Kurses in der Reihenfolge der Kursseite. */
+    const orderedLessonsOf = (courseId: string) => {
+      const course = visibleCourses.find((c) => c.id === courseId);
+      return course ? [...course.chapters].sort(byOrder).flatMap((ch) => chapterLessons(courseId, ch.id)) : [];
+    };
     const courseStats = (courseId: string) => {
       const lessons = lessonsOf(courseId);
       const done = lessons.filter((l) => passed(l.id)).length;
@@ -58,8 +90,11 @@ export function useLearnData() {
       progressById,
       passed,
       lessonsOf,
+      chapterLessons,
+      choiceOf,
+      orderedLessonsOf,
       courseStats,
       role,
     };
-  }, [courses, loadingCourses, articles, subCats, apps, paths, progress, achievements, profile?.role]);
+  }, [courses, loadingCourses, articles, subCats, apps, paths, progress, achievements, profile?.role, profile?.choices]);
 }

@@ -56,8 +56,13 @@ service cloud.firestore {
     }
 
     // Felder, die Nutzer:innen im eigenen Dokument selbst setzen dürfen.
+    // Wahl in Wahlkapiteln (z.B. eigenes DAW): kleine Map Kapitel → Unterthema.
+    function validChoices(d) {
+      return !('choices' in d) || (d.choices is map && d.choices.size() <= 20);
+    }
+
     function selfEditableKeys() {
-      return ['uid', 'email', 'displayName', 'photoURL', 'updatedAt'];
+      return ['uid', 'email', 'displayName', 'photoURL', 'updatedAt', 'choices'];
     }
 
     // --- Organisation ---
@@ -92,11 +97,13 @@ service cloud.firestore {
 
       allow create: if signedIn() && request.auth.uid == userId
         && request.resource.data.keys().hasOnly(selfEditableKeys())
-        && request.resource.data.uid == userId;
+        && request.resource.data.uid == userId
+        && validChoices(request.resource.data);
 
       allow update: if signedIn() && (
         (request.auth.uid == userId
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(selfEditableKeys()))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(selfEditableKeys())
+          && validChoices(request.resource.data))
         || isSuperAdmin()
       );
       allow delete: if isSuperAdmin();

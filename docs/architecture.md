@@ -154,6 +154,20 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
 - Bestanden: `articleProgress.completed` und `quizScore >= 80`; Lektionen
   ohne Quiz über «Als gelesen markieren» (Score 100). Setup-Skript:
   `scripts/setup-courses.mjs`.
+- Wahlkapitel (24.11.2026): `chapters[].choice = { label }` (heute DAWs,
+  «Dein DAW»). Unterthemen sind Alternativen; die Wahl liegt in
+  `users/{uid}.choices.{chapterId} = subCatId` (selbst änderbar, Map).
+  Gezählt und angezeigt werden nur die Lektionen der Wahl (ohne Wahl: erstes
+  Unterthema). `/api/credits` gibt im ganzen Kapitel höchstens so viele
+  Credits wie im grössten Unterthema (kein Doppeln beim Wechsel).
+- Lektionsseite (24.11.2026, `ArticleView`): Kopf mit Kurs · Kapitel, Titel
+  aus der ersten `#`-Zeile, Lesezeit, Quiz-Anzahl, Fortschritt im Kapitel
+  (`TopicProgress`), Inhaltsverzeichnis ab 3 `##`, Leseleiste, am Ende
+  «Weiter» zur nächsten Lektion. Reihenfolge überall aus
+  `useLearnData().orderedLessonsOf/chapterLessons`. Credits werden in
+  Lektionen nicht angezeigt, nur Fortschritt (Neu / Am Lernen / Gemeistert).
+- Kursseite: «Weitermachen»-Karte (nächste offene Lektion mit Inhalt),
+  Kapitel mit Status-Kreis und Fortschrittsbalken.
 
 ### MV-Übungen (umgesetzt 23.11.2026)
 - Code in `src/lib/mv/` (Synth mit Web Audio, Taktgeber `usePatternPlayer`,
