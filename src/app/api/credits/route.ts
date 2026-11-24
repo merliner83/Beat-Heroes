@@ -74,6 +74,7 @@ async function resolveTarget(uid: string, body: Body) {
   if (kind === 'article') {
     const article = await db.doc(`articles/${refId}`).get();
     if (!article.exists) throw new HttpError(404, 'Article not found');
+    if (!String(article.data()?.content ?? '').trim()) throw new HttpError(400, 'Lektion hat noch keinen Inhalt');
     const answers = Array.isArray(body.answers) ? body.answers : [];
     const key = await db.doc(`learnQuizKeys/${refId}`).get();
     let correctAnswers: number[] | undefined = key.exists ? key.data()?.answers : undefined;

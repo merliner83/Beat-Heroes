@@ -48,10 +48,12 @@ export function useLearnData() {
       const selected = options.find((o) => o.id === mine) ?? options[0];
       return { label: chapter.choice.label, options, selected, chosen: !!mine && selected?.id === mine };
     };
-    // Entwürfe (minRole teacher) sehen Schüler:innen gar nicht; in Wahlkapiteln
+    // Entwürfe (minRole teacher) und leere Lektionen sehen Schüler:innen nicht; in Wahlkapiteln
     // nur die Lektionen der gewählten Option.
     const lessonsOf = (courseId: string) => (articles ?? []).filter((a) => {
       if ((a.courseId ?? 'producing') !== courseId || !hasAccess(role, a.minRole)) return false;
+      // Leere Lektionen (noch ohne Text) sieht nur der superAdmin.
+      if (!a.content?.trim() && role !== 'superAdmin') return false;
       const choice = choiceOf(courseId, a.chapterId ?? a.categoryId ?? '');
       return !choice?.selected || !a.subCategoryId || a.subCategoryId === choice.selected.id;
     });
