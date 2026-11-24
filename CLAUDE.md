@@ -136,10 +136,10 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      Fenster/Transport ergänzt) + GarageBand Mastering ✓, dann Effekte,
      Rechte, Social.
      Weiterführende Videos klein als `INSPIRATION:`, nicht gross.
-   - DAWs: alle 16 Lektionen haben Inhalt. Leere Lektionen (anderswo) geben
-     beim «Als gelesen markieren» trotzdem Credits → ausblenden. Doppelte
-     Shortcuts-Lektionen im Kapitel `daw` (z.B. `art-logic-shortcuts`)
-     löschen. Kapitel haben noch keine Beschriebe.
+   - DAWs: alle 16 Lektionen haben Inhalt. Leere Lektionen sieht nur der
+     superAdmin, sie geben keine Credits (PR #20). Doppelte Shortcuts im
+     Kapitel `daw` gelöscht (Backup `backups/…-duplikate`). Kapitel haben
+     noch keine Beschriebe.
    - MV ausbauen (Tonleitern, Akkordfolgen, Notenschrift).
    - Alte Games aufs Design-System / RhythmGrid.
    - Offen: Handy-Feedback zu den MV-Übungen (Mitklopfen-Latenz).
