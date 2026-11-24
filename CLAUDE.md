@@ -121,8 +121,18 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      Logos = Mitgliedschaften (Admin → Personen, Chips pro Schule). Logos und
      Texte der zwei Schulen muss der Nutzer noch im Admin hochladen.
    - ✅ Artikel einfacher: Baustein-Editor mit Vorlagen, Tipp-Box, YouTube-Karte,
-     Link-Knopf (24.11.2026). Als Nächstes: Lektionen inhaltlich mit dem
-     Nutzer durchgehen, eine nach der anderen (Claude bringt Ideen mit).
+     Link-Knopf (24.11.2026).
+   - ✅ Neue Lektions-/Kursseite (24.11.2026, PR #8): Fortschritt pro Thema
+     statt Credits in Lektionen, «Weitermachen», «Weiter», DAW-Wahl
+     (Wahlkapitel, Credits pro Kapitel auf ein DAW begrenzt).
+   - Lektionen inhaltlich durchgehen («neu gedacht», siehe Memory):
+     Willkommen ✓, Producing ✓, Sampling-Entwurf wartet auf OK (liegt im
+     Scratchpad, nicht im Repo), dann DJing, Equipment, MV-Entwürfe,
+     Recording, DAWs, Effekte, Rechte, Social.
+   - DAWs: nur 6 von 16 Lektionen haben Inhalt; leere Lektionen geben beim
+     «Als gelesen markieren» trotzdem Credits → ausblenden. Doppelte
+     Shortcuts-Lektionen im Kapitel `daw` löschen. Kapitel haben noch
+     keine Beschriebe.
    - MV ausbauen (Tonleitern, Akkordfolgen, Notenschrift).
    - Alte Games aufs Design-System / RhythmGrid.
    - Offen: Handy-Feedback zu den MV-Übungen (Mitklopfen-Latenz).
