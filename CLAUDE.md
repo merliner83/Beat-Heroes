@@ -120,7 +120,9 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      `feat/schul-profile`, siehe `docs/architecture.md` → Organisation/Profil).
      Logos = Mitgliedschaften (Admin → Personen, Chips pro Schule). Logos und
      Texte der zwei Schulen muss der Nutzer noch im Admin hochladen.
-   - Artikel einfacher (Baustein-Editor, Vorlagen).
+   - ✅ Artikel einfacher: Baustein-Editor mit Vorlagen, Tipp-Box, YouTube-Karte,
+     Link-Knopf (24.11.2026). Als Nächstes: Lektionen inhaltlich mit dem
+     Nutzer durchgehen, eine nach der anderen (Claude bringt Ideen mit).
    - MV ausbauen (Tonleitern, Akkordfolgen, Notenschrift).
    - Alte Games aufs Design-System / RhythmGrid.
    - Offen: Handy-Feedback zu den MV-Übungen (Mitklopfen-Latenz).
