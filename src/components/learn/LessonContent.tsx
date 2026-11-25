@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 /**
  * Darstellung des Lektionstexts. Format (Absätze durch Leerzeile getrennt):
  * # Titel, ## Untertitel, ### Label (oder SUB:), **fett**, ---, GAP: 20,
- * IMAGE: url | Bildunterschrift, VIDEO: url, GAME: learnAppId | Beschriftung,
+ * IMAGE: url | Bildunterschrift | klein, VIDEO: url, GAME: learnAppId | Beschriftung,
  * YOUTUBE: url | Titel | Beschreibung, INSPIRATION: (gleich, kleine Karte), TIP: art | Titel (+ Textzeilen),
  * PHASE: Titel | Text | lektionId, PLUGIN: lektionId | Name | Kurztext. Baustein-Editor: src/lib/learn/blocks.ts
  */
@@ -211,9 +211,9 @@ export function LessonContent({ content }: { content: string }) {
       return <YouTubeCard key={idx} url={url} title={title} description={description} />;
     }
     if (trimmed.startsWith('IMAGE:')) {
-      const [src, caption] = trimmed.replace('IMAGE:', '').split('|').map((p) => p.trim());
+      const [src, caption, size] = trimmed.replace('IMAGE:', '').split('|').map((p) => p.trim());
       return (
-        <figure key={idx} className="mb-8">
+        <figure key={idx} className={cn('mb-8', size === 'klein' && 'max-w-[260px] mx-auto')}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <div className="relative w-full rounded-3xl overflow-hidden border border-white/10 shadow-lg bg-white/5"><img src={src} alt={caption || ''} className="w-full h-auto block" /></div>
           {caption && <figcaption className="mt-2 text-sm text-white/60 text-center">{caption}</figcaption>}

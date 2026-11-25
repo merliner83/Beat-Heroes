@@ -140,9 +140,14 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      superAdmin, sie geben keine Credits (PR #20). Doppelte Shortcuts im
      Kapitel `daw` gelöscht (Backup `backups/…-duplikate`). Kapitel haben
      noch keine Beschriebe.
-   - Gratis-Plugins (25.11.2026): Unterthema `sc-free` bei Effekte, erste
-     Lektion Flayr Tune (Autotune-Ersatz), verlinkt aus allen 4 Vocal-Chains
-     per `PLUGIN:`-Karte. Weitere Plugins (z.B. MJUC, De-Esser) folgen.
+   - Gratis-Plugins (25./26.11.2026): Unterthema `sc-free` bei Effekte mit
+     Flayr Tune, TAL-Filter-2, Kilohearts Essentials, MJUC jr.; verlinkt per
+     `PLUGIN:`-Karte (Vocal-Chains, Kreative Effekte). Speedrum/Tonespace
+     bewusst nicht (Nutzer sucht Alternativen bzw. veraltet).
+   - Cubase Basics mit Screenshots aus dem Google Doc «Producer Guide» des
+     Nutzers (Urfassung vieler Lektionen, Bilder via HTML-Export). Keine
+     Screenshots von Dialogen, die sich oft ändern (z.B. Hub). Plugin-Fenster
+     als `IMAGE: url | Text | klein`.
    - MV ausbauen (Tonleitern, Akkordfolgen, Notenschrift).
    - Alte Games aufs Design-System / RhythmGrid.
    - Offen: Handy-Feedback zu den MV-Übungen (Mitklopfen-Latenz).
