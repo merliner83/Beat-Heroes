@@ -147,6 +147,9 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
   Zeilen mit `- ` (Aufzählung, eingerückt = Unterpunkt), `((optional))`
   (klein, grau), `[Text](https://…)` (Link im Text, neuer Tab),
   `DOWNLOAD: url | Beschriftung` (Link-Knopf),
+  `PLUGIN: lektionId | Name | Kurztext` (Verweis-Karte auf eine Lektion im
+  Unterthema «Gratis-Plugins» `sc-free` im Kapitel `effects`; als eigener
+  Absatz, nicht innerhalb einer `PHASE`),
   `TIP: tipp|merke|achtung|aufgabe | Titel` (+ Textzeilen darunter),
   `PHASE: Titel | Text | lektionId`, `GAME: learnAppId | Beschriftung`
   (eingebettete Übung), plus `youtubeUrls[]`. Zu einer `PHASE`-Karte

@@ -12,6 +12,7 @@
  *   INSPIRATION: url | Titel | Beschreibung  (kleine Video-Karte, weiterführend)
  *   GAME: learnAppId | Beschriftung          (Übung)
  *   DOWNLOAD: url | Beschriftung             (Link-Knopf, z.B. Gratis-Plugin)
+ *   PLUGIN: lektionId | Name | Kurztext      (Verweis auf eine Gratis-Plugin-Lektion)
  *   [[Begriff]] im Text                      (hervorgehobener Fachbegriff)
  *   TIP: art | Titel                         (Box; folgende Zeilen = Text)
  *   PHASE: Titel | Text | lektionId
@@ -29,6 +30,7 @@ export type Block =
   | { id: string; type: 'youtube'; url: string; title: string; description: string; small?: boolean }
   | { id: string; type: 'game'; appId: string; label: string }
   | { id: string; type: 'download'; url: string; label: string }
+  | { id: string; type: 'plugin'; lessonId: string; name: string; text: string }
   | { id: string; type: 'tip'; kind: TipKind; title: string; text: string }
   | { id: string; type: 'phase'; title: string; text: string; lessonId: string };
 
@@ -58,6 +60,7 @@ export function emptyBlock(type: BlockType): Block {
     case 'youtube': return { id, type, url: '', title: '', description: '' };
     case 'game': return { id, type, appId: '', label: '' };
     case 'download': return { id, type, url: '', label: '' };
+    case 'plugin': return { id, type, lessonId: '', name: '', text: '' };
     case 'tip': return { id, type, kind: 'tipp', title: '', text: '' };
     case 'phase': return { id, type, title: '', text: '', lessonId: '' };
   }
@@ -74,6 +77,7 @@ function lineBlock(line: string): Block | null {
   if (t.startsWith('INSPIRATION:')) { const [url, title = '', description = ''] = parts(t.slice(12)); return { id, type: 'youtube', url, title, description, small: true }; }
   if (t.startsWith('YOUTUBE:')) { const [url, title = '', description = ''] = parts(t.slice(8)); return { id, type: 'youtube', url, title, description }; }
   if (t.startsWith('DOWNLOAD:')) { const [url, label = ''] = parts(t.slice(9)); return { id, type: 'download', url, label }; }
+  if (t.startsWith('PLUGIN:')) { const [lessonId, name = '', text = ''] = parts(t.slice(7)); return { id, type: 'plugin', lessonId, name, text }; }
   if (t.startsWith('GAME:')) { const [appId, label = ''] = parts(t.slice(5)); return { id, type: 'game', appId, label }; }
   if (t.startsWith('###') || t.startsWith('SUB:')) return { id, type: 'heading', level: 3, text: t.replace(/^###\s*|^SUB:\s*/, '') };
   if (t.startsWith('##')) return { id, type: 'heading', level: 2, text: t.replace(/^##\s*/, '') };
@@ -125,6 +129,7 @@ export function serializeBlock(b: Block): string {
     case 'video': return `VIDEO: ${b.url.trim()}`;
     case 'youtube': return `${b.small ? 'INSPIRATION' : 'YOUTUBE'}: ${b.url.trim()}${b.title.trim() || b.description.trim() ? ` | ${clean(b.title)}` : ''}${b.description.trim() ? ` | ${clean(b.description)}` : ''}`;
     case 'download': return `DOWNLOAD: ${b.url.trim()}${b.label.trim() ? ` | ${clean(b.label)}` : ''}`;
+    case 'plugin': return `PLUGIN: ${b.lessonId.trim()} | ${clean(b.name)}${b.text.trim() ? ` | ${clean(b.text)}` : ''}`;
     case 'game': return `GAME: ${b.appId} | ${clean(b.label)}`;
     case 'tip': return `TIP: ${b.kind} | ${clean(b.title)}${b.text.trim() ? `\n${b.text.replace(/\n{2,}/g, '\n').trim()}` : ''}`;
     case 'phase': return `PHASE: ${clean(b.title)} | ${b.text.replace(/\|/g, '/').replace(/\n{2,}/g, '\n').trim()}${b.lessonId.trim() ? ` | ${b.lessonId.trim()}` : ''}`;
@@ -139,6 +144,7 @@ export function serializeBlocks(blocks: Block[]): string {
       if (b.type === 'heading') return b.text.trim();
       if (b.type === 'image' || b.type === 'video' || b.type === 'youtube' || b.type === 'download') return b.url.trim();
       if (b.type === 'game') return b.appId;
+      if (b.type === 'plugin') return b.lessonId.trim();
       if (b.type === 'tip') return b.title.trim() || b.text.trim();
       if (b.type === 'phase') return b.title.trim();
       return true;
