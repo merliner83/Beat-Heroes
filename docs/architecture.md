@@ -141,7 +141,7 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
   über `subCategoryId` → `learnSubCats`. Lektionen sind frei wählbar.
 - Inhalt einer Lektion (`content`, Absätze durch Leerzeile getrennt):
   `# Titel`, `## Untertitel`, `### Label`, `**fett**`, `[[Begriff]]`
-  (hervorgehoben), `---`, `GAP: 20`, `IMAGE: url | Unterschrift`,
+  (hervorgehoben), `---`, `GAP: 20`, `IMAGE: url | Unterschrift | klein`,
   `VIDEO: url`, `YOUTUBE: url | Titel | Text` (Tutorial-Karte),
   `INSPIRATION: url | Titel | Text` (kleine Video-Karte, weiterführend),
   Zeilen mit `- ` (Aufzählung, eingerückt = Unterpunkt), `((optional))`

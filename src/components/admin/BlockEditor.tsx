@@ -139,6 +139,10 @@ function BlockFields({ block, update, apps, folder }: {
             <Input value={block.caption} onChange={(e) => set({ caption: e.target.value })} placeholder="Bildunterschrift (optional)" />
             {block.url && <button type="button" onClick={() => fileRef.current?.click()} className="text-xs text-white/70 hover:text-white shrink-0 px-2">{busy ? '…' : 'Ersetzen'}</button>}
           </div>
+          <label className="flex items-center gap-2 text-sm text-white/70">
+            <input type="checkbox" checked={!!block.small} onChange={(e) => set({ small: e.target.checked })} className="w-4 h-4 accent-[hsl(var(--primary))]" />
+            Klein zeigen (z.B. für Plugin-Fenster)
+          </label>
         </div>
       );
     }

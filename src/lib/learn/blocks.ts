@@ -6,7 +6,7 @@
  *
  * Textformat (Absätze durch Leerzeile getrennt):
  *   # Titel · ## Zwischentitel · ### Label · **fett** · --- · GAP: 20
- *   IMAGE: url | Bildunterschrift
+ *   IMAGE: url | Bildunterschrift | klein   (klein = schmal, zentriert)
  *   VIDEO: url
  *   YOUTUBE: url | Titel | Beschreibung      (Tutorial-Karte)
  *   INSPIRATION: url | Titel | Beschreibung  (kleine Video-Karte, weiterführend)
@@ -25,7 +25,7 @@ export type Block =
   | { id: string; type: 'text'; text: string }
   | { id: string; type: 'divider' }
   | { id: string; type: 'gap'; size: number }
-  | { id: string; type: 'image'; url: string; caption: string }
+  | { id: string; type: 'image'; url: string; caption: string; small?: boolean }
   | { id: string; type: 'video'; url: string }
   | { id: string; type: 'youtube'; url: string; title: string; description: string; small?: boolean }
   | { id: string; type: 'game'; appId: string; label: string }
@@ -72,7 +72,7 @@ function lineBlock(line: string): Block | null {
   const id = newId();
   if (t === '---') return { id, type: 'divider' };
   if (t.startsWith('GAP:')) return { id, type: 'gap', size: parseInt(t.slice(4).trim()) || 20 };
-  if (t.startsWith('IMAGE:')) { const [url, caption = ''] = parts(t.slice(6)); return { id, type: 'image', url, caption }; }
+  if (t.startsWith('IMAGE:')) { const [url, caption = '', size = ''] = parts(t.slice(6)); return { id, type: 'image', url, caption, ...(size === 'klein' ? { small: true } : {}) }; }
   if (t.startsWith('VIDEO:')) return { id, type: 'video', url: t.slice(6).trim() };
   if (t.startsWith('INSPIRATION:')) { const [url, title = '', description = ''] = parts(t.slice(12)); return { id, type: 'youtube', url, title, description, small: true }; }
   if (t.startsWith('YOUTUBE:')) { const [url, title = '', description = ''] = parts(t.slice(8)); return { id, type: 'youtube', url, title, description }; }
@@ -125,7 +125,7 @@ export function serializeBlock(b: Block): string {
     case 'text': return b.text.replace(/\n{2,}/g, '\n').trim();
     case 'divider': return '---';
     case 'gap': return `GAP: ${b.size}`;
-    case 'image': return `IMAGE: ${b.url.trim()}${b.caption.trim() ? ` | ${clean(b.caption)}` : ''}`;
+    case 'image': return `IMAGE: ${b.url.trim()}${b.caption.trim() || b.small ? ` | ${clean(b.caption)}` : ''}${b.small ? ' | klein' : ''}`;
     case 'video': return `VIDEO: ${b.url.trim()}`;
     case 'youtube': return `${b.small ? 'INSPIRATION' : 'YOUTUBE'}: ${b.url.trim()}${b.title.trim() || b.description.trim() ? ` | ${clean(b.title)}` : ''}${b.description.trim() ? ` | ${clean(b.description)}` : ''}`;
     case 'download': return `DOWNLOAD: ${b.url.trim()}${b.label.trim() ? ` | ${clean(b.label)}` : ''}`;
