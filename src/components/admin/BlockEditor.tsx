@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from 'react';
 import {
-  AlignLeft, ArrowDown, Download, ArrowUp, Bold, Gamepad2, Heading, ImagePlus, Layers, Lightbulb, Loader2, Minus, MoveVertical, Plus, Trash2, Video, Youtube,
+  AlignLeft, ArrowDown, Download, ArrowUp, Bold, Gamepad2, Heading, ImagePlus, Layers, Lightbulb, Loader2, Minus, MoveVertical, Plug, Plus, Trash2, Video, Youtube,
 } from 'lucide-react';
 import { useFirebaseApp } from '@/firebase';
 import type { LearnApp } from '@/lib/game/types';
@@ -22,6 +22,7 @@ const TYPES: { type: BlockType; label: string; icon: React.ComponentType<{ class
   { type: 'tip', label: 'Tipp-Box', icon: Lightbulb },
   { type: 'game', label: 'Übung', icon: Gamepad2 },
   { type: 'download', label: 'Link-Knopf', icon: Download },
+  { type: 'plugin', label: 'Gratis-Plugin', icon: Plug },
   { type: 'divider', label: 'Trenner', icon: Minus },
   { type: 'video', label: 'Video (mp4)', icon: Video },
   { type: 'gap', label: 'Abstand', icon: MoveVertical },
@@ -169,6 +170,14 @@ function BlockFields({ block, update, apps, folder }: {
         <div className="flex flex-col md:flex-row gap-2">
           <Input value={block.url} onChange={(e) => set({ url: e.target.value })} placeholder="https://… (Download, Website, Plugin)" />
           <Input value={block.label} onChange={(e) => set({ label: e.target.value })} placeholder="Beschriftung, z.B. «MJUC gratis laden»" className="md:w-72" />
+        </div>
+      );
+    case 'plugin':
+      return (
+        <div className="flex flex-col md:flex-row gap-2">
+          <Input value={block.lessonId} onChange={(e) => set({ lessonId: e.target.value })} placeholder="Lektion-ID, z.B. art-plugin-flayr-tune" className="md:w-72" />
+          <Input value={block.name} onChange={(e) => set({ name: e.target.value })} placeholder="Name, z.B. Flayr Tune" className="md:w-48" />
+          <Input value={block.text} onChange={(e) => set({ text: e.target.value })} placeholder="Wofür? z.B. «Gratis-Ersatz für Auto-Tune»" />
         </div>
       );
     case 'game':

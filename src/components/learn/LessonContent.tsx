@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, ArrowRight, Download, Drum, ExternalLink, Rocket, Gamepad2, Layers, Lightbulb, ListChecks, Mic, Music, Pin, Play, Scissors, Sliders, Sparkles, Youtube, ListMusic, BookOpen, Headphones, Disc3, Timer, Waves, Speaker, LayoutPanelTop, Pencil, ZoomIn, Wrench, Gauge, Laptop, Cable, Ruler, Home, Repeat, Crosshair, Grid3x3, Flame } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Download, Drum, ExternalLink, Rocket, Gamepad2, Layers, Lightbulb, ListChecks, Mic, Music, Pin, Play, Scissors, Sliders, Sparkles, Youtube, ListMusic, BookOpen, Headphones, Disc3, Timer, Waves, Speaker, LayoutPanelTop, Pencil, Plug, ZoomIn, Wrench, Gauge, Laptop, Cable, Ruler, Home, Repeat, Crosshair, Grid3x3, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
  * # Titel, ## Untertitel, ### Label (oder SUB:), **fett**, ---, GAP: 20,
  * IMAGE: url | Bildunterschrift, VIDEO: url, GAME: learnAppId | Beschriftung,
  * YOUTUBE: url | Titel | Beschreibung, INSPIRATION: (gleich, kleine Karte), TIP: art | Titel (+ Textzeilen),
- * PHASE: Titel | Text | lektionId. Baustein-Editor: src/lib/learn/blocks.ts
+ * PHASE: Titel | Text | lektionId, PLUGIN: lektionId | Name | Kurztext. Baustein-Editor: src/lib/learn/blocks.ts
  */
 const PHASE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   COMPOSING: Music, KOMPOSITION: Music, RECORDING: Mic, AUFNAHME: Mic, EDITING: Scissors, ARRANGEMENT: Layers,
@@ -179,6 +179,17 @@ export function LessonContent({ content }: { content: string }) {
     if (trimmed.startsWith('GAME:')) {
       const [appId, label] = trimmed.replace('GAME:', '').split('|').map((p) => p.trim());
       return <Link key={idx} href={`/session/${appId}`} className="mb-8 flex items-center gap-4 p-5 rounded-2xl bg-white/5 border border-primary/30 hover:bg-white/10 transition-colors"><div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center shrink-0"><Gamepad2 className="w-6 h-6 text-primary" /></div><div className="flex-1"><p className="text-xs font-semibold uppercase tracking-wider text-primary">Übung</p><p className="font-black text-lg">{label || 'Minigame starten'}</p></div><Play className="w-5 h-5 text-white/60" /></Link>;
+    }
+    if (trimmed.startsWith('PLUGIN:')) {
+      const [lessonId, name, text] = trimmed.replace('PLUGIN:', '').split('|').map((p) => p.trim());
+      if (!lessonId) return null;
+      return (
+        <Link key={idx} href={`/learn/article/${lessonId}`} className="mb-8 flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/15 hover:border-primary hover:bg-white/10 transition-colors">
+          <div className="w-11 h-11 rounded-xl bg-primary/15 flex items-center justify-center shrink-0"><Plug className="w-5 h-5 text-primary" /></div>
+          <div className="flex-1 min-w-0"><p className="text-xs font-semibold uppercase tracking-wider text-primary">Gratis-Plugin</p><p className="font-bold leading-snug">{name || 'Zur Anleitung'}</p>{text && <p className="text-sm text-white/70">{text}</p>}</div>
+          <ArrowRight className="w-5 h-5 text-white/60 shrink-0" />
+        </Link>
+      );
     }
     if (trimmed.startsWith('DOWNLOAD:')) {
       const [url, label] = trimmed.replace('DOWNLOAD:', '').split('|').map((p) => p.trim());

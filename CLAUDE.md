@@ -140,6 +140,9 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      superAdmin, sie geben keine Credits (PR #20). Doppelte Shortcuts im
      Kapitel `daw` gelöscht (Backup `backups/…-duplikate`). Kapitel haben
      noch keine Beschriebe.
+   - Gratis-Plugins (25.11.2026): Unterthema `sc-free` bei Effekte, erste
+     Lektion Flayr Tune (Autotune-Ersatz), verlinkt aus allen 4 Vocal-Chains
+     per `PLUGIN:`-Karte. Weitere Plugins (z.B. MJUC, De-Esser) folgen.
    - MV ausbauen (Tonleitern, Akkordfolgen, Notenschrift).
    - Alte Games aufs Design-System / RhythmGrid.
    - Offen: Handy-Feedback zu den MV-Übungen (Mitklopfen-Latenz).
