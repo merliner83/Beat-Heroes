@@ -36,6 +36,8 @@ const APPS = [
   R('marsch', 'Marsch', 'Zweiertakt der Blasmusik: links – rechts.'),
   K('notennamen', 'Notennamen finden', 'Finde C, D, E … auf der Klaviatur.'),
   K('intervalle', 'Intervalle hören', 'Erkenne Sekunde, Terz, Quarte, Quinte und Oktave – mit Merksongs.'),
+  K('tonleiter-dur', 'Dur-Tonleitern bauen', 'Bau Dur-Tonleitern nach dem Bauplan Ganz – Ganz – Halb – Ganz – Ganz – Ganz – Halb.'),
+  K('tonleiter-moll', 'Moll-Tonleitern bauen', 'Bau Moll-Tonleitern nach dem Bauplan Ganz – Halb – Ganz – Ganz – Halb – Ganz – Ganz.'),
   K('dur-moll', 'Dur oder Moll?', 'Hör den Dreiklang und entscheide: hell oder dunkel?'),
 ];
 
@@ -46,6 +48,7 @@ const MAP = {
     'mv-grooves': ['learn-mv-boom-bap', 'learn-mv-trap', 'learn-mv-dembow', 'learn-mv-one-drop', 'learn-mv-son-clave', 'learn-mv-rumba-clave', 'learn-mv-bossa-nova', 'learn-mv-swing', 'learn-mv-walzer', 'learn-mv-laendler', 'learn-mv-marsch'],
     'mv-toene': ['learn-mv-notennamen'],
     'mv-intervalle': ['learn-mv-intervalle'],
+    'mv-tonleitern': ['learn-mv-tonleiter-dur', 'learn-mv-tonleiter-moll'],
     'mv-akkorde': ['learn-mv-dur-moll'],
     'mv-gehoer': ['learn-mv-intervalle', 'learn-mv-dur-moll'],
   },

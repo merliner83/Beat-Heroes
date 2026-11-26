@@ -196,7 +196,9 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
   (`LessonTest`), bestanden ab 70 %. Notennamen zählen nur ohne Hilfe.
   Die MV-Lektionen nennen oben im Kasten «So schliesst du diese Lektion ab»
   Prüfung(en) und Quiz (5 Fragen).
-  Klaviatur: Notennamen, Intervalle (Merksongs), Dur/Moll.
+  Klaviatur: Notennamen, Intervalle (Merksongs), Dur/Moll, Tonleiter bauen
+  (`tonleiter-dur`/`tonleiter-moll`, `MvScaleExercise`: Grundton gegeben,
+  7 Töne nach Bauplan tippen, Fehler werden korrigiert, 4 Tonleitern).
 - Neue Patterns: in `PATTERNS` ergänzen und in
   `scripts/setup-mv-exercises.mjs` eintragen (legt App + Kapitel an).
 

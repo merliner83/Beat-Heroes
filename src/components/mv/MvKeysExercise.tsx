@@ -10,10 +10,13 @@ import { Switch } from '@/components/ui/switch';
 import { Panel, Tag } from '@/components/ds';
 import { cn } from '@/lib/utils';
 import { KeyMark, PianoKeyboard, isBlack, noteName } from './PianoKeyboard';
+import { MvScaleExercise, ScaleExerciseId } from './MvScaleExercise';
 
-export type KeysExerciseId = 'notennamen' | 'intervalle' | 'dur-moll';
+export type KeysExerciseId = 'notennamen' | 'intervalle' | 'dur-moll' | ScaleExerciseId;
+type QuizExerciseId = Exclude<KeysExerciseId, ScaleExerciseId>;
+export const KEYS_EXERCISES: KeysExerciseId[] = ['notennamen', 'intervalle', 'dur-moll', 'tonleiter-dur', 'tonleiter-moll'];
 
-const ROUNDS: Record<KeysExerciseId, number> = { notennamen: 10, intervalle: 8, 'dur-moll': 8 };
+const ROUNDS: Record<QuizExerciseId, number> = { notennamen: 10, intervalle: 8, 'dur-moll': 8 };
 
 const INTERVALS = [
   { semis: 2, name: 'Grosse Sekunde', song: '«Alle meine Entchen» (die ersten zwei Töne)' },
@@ -24,7 +27,7 @@ const INTERVALS = [
   { semis: 12, name: 'Oktave', song: '«Somewhere over the Rainbow» (die ersten zwei Töne)' },
 ];
 
-const INFO: Record<KeysExerciseId, { title: string; text: string[]; tip: string }> = {
+const INFO: Record<QuizExerciseId, { title: string; text: string[]; tip: string }> = {
   notennamen: {
     title: 'Notennamen',
     text: ['Die weissen Tasten heissen C D E F G A H.', 'Das C liegt immer links neben den zwei schwarzen Tasten.', 'In englischen DAWs heisst das H «B».'],
@@ -49,7 +52,7 @@ type Question =
 
 const rand = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
 
-function makeQuestion(id: KeysExerciseId, prev?: Question): Question {
+function makeQuestion(id: QuizExerciseId, prev?: Question): Question {
   for (let tries = 0; tries < 10; tries++) {
     let q: Question;
     if (id === 'notennamen') {
@@ -85,7 +88,14 @@ async function playQuestion(q: Question) {
   }
 }
 
-export function MvKeysExercise({ exercise, appId, onResult }: { exercise: KeysExerciseId; appId?: string; onResult?: (score: number) => void }) {
+type ExerciseProps = { appId?: string; onResult?: (score: number) => void };
+
+export function MvKeysExercise({ exercise, ...rest }: ExerciseProps & { exercise: KeysExerciseId }) {
+  if (exercise === 'tonleiter-dur' || exercise === 'tonleiter-moll') return <MvScaleExercise exercise={exercise} {...rest} />;
+  return <KeysQuiz exercise={exercise} {...rest} />;
+}
+
+function KeysQuiz({ exercise, appId, onResult }: ExerciseProps & { exercise: QuizExerciseId }) {
   const { user } = useUser();
   const total = ROUNDS[exercise];
   const [round, setRound] = useState(0);
