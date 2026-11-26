@@ -133,8 +133,13 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      StudioSounds Bern zum Monitore-Probehören), MV ✓ (4 Lektionen
      freigeschaltet), Recording ✓ (Basics als Kernlektion + 6 Instrumente
      kompakt), Ableton ✓ (4 Lektionen), Logic ✓ (4 Lektionen, Shortcuts um
-     Fenster/Transport ergänzt) + GarageBand Mastering ✓, dann Effekte,
-     Rechte, Social.
+     Fenster/Transport ergänzt) + GarageBand Mastering ✓, Effekte ✓
+     (26.11.2026: Insert, Send, Kreativ Beats + Vocals, Gratis-Plugins;
+     Lektionen in den Unterthemen `sc-ins`/`sc-snd`/`sc-crt`/`sc-free`),
+     dann Composing/Arrangement/Sound Design/Editing (heute nur Bilder),
+     Rechte, Social. Weiteres Material im Doc: Monitoring (Recording),
+     Abtastrate/Bit-Tiefe, Gruppen-/Ordnerspuren, Social-Texte, Tool-Liste,
+     Produktionsvertrag.
      Weiterführende Videos klein als `INSPIRATION:`, nicht gross.
    - DAWs: alle 16 Lektionen haben Inhalt. Leere Lektionen sieht nur der
      superAdmin, sie geben keine Credits (PR #20). Doppelte Shortcuts im
