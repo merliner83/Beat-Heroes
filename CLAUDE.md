@@ -136,8 +136,9 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      Fenster/Transport ergänzt) + GarageBand Mastering ✓, Effekte ✓
      (26.11.2026: Insert, Send, Kreativ Beats + Vocals, Gratis-Plugins;
      Lektionen in den Unterthemen `sc-ins`/`sc-snd`/`sc-crt`/`sc-free`),
-     dann Composing/Arrangement/Sound Design/Editing (heute nur Bilder),
-     Rechte, Social. Weiteres Material im Doc: Monitoring (Recording),
+     Composing ✓ + Editing ✓ (26.11.2026: Songwriting, Arrangement, Sound
+     Design, Editing als Text statt Grafik; Editing-Kapitel jetzt order 45),
+     dann Rechte, Social (Social-Lektionen haben noch keine `maxPoints`). Weiteres Material im Doc: Monitoring (Recording),
      Abtastrate/Bit-Tiefe, Gruppen-/Ordnerspuren, Social-Texte, Tool-Liste,
      Produktionsvertrag.
      Weiterführende Videos klein als `INSPIRATION:`, nicht gross.
