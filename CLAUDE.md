@@ -158,6 +158,9 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      Nutzers (Urfassung vieler Lektionen, Bilder via HTML-Export). Keine
      Screenshots von Dialogen, die sich oft ändern (z.B. Hub). Plugin-Fenster
      als `IMAGE: url | Text | klein`.
+   - MV verfeinert (26.11.2026): Mitklopfen ist Prüfung in der Lektion (ab
+     70 %, `GAME: … | pruefung`), kein Nachbauen, reduzierte Patterns, neue
+     Übungen Achtel/Offbeat, Quizzes mit 5 Fragen.
    - MV ausbauen (Tonleitern, Akkordfolgen, Notenschrift).
    - Alte Games aufs Design-System / RhythmGrid.
    - Offen: Handy-Feedback zu den MV-Übungen (Mitklopfen-Latenz).

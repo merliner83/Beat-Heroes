@@ -19,6 +19,8 @@ const K = (id, name, description) => ({ id: `learn-mv-${id}`, type: 'mv-keys', e
 
 const APPS = [
   R('puls-viertel', 'Der Puls: Viertel', 'Spür den Puls und zähl mit – die Grundlage jedes Beats.'),
+  R('achtel', 'Achtel', 'Zwei Schläge pro Puls: «1 und 2 und …».'),
+  R('offbeat', 'Offbeat', 'Genau zwischen den Schlägen – auf dem «und».'),
   R('backbeat', 'Backbeat', 'Snare auf 2 und 4: der Groove von Rock und Pop.'),
   R('four-on-the-floor', 'Four on the Floor', 'House-Kick auf jedem Schlag und die Hi-Hat auf dem Offbeat.'),
   R('boom-bap', 'Boom Bap', 'Der klassische Hip-Hop-Beat aus New York – mit Swing.'),
@@ -40,7 +42,7 @@ const APPS = [
 // Kapitel-Zuordnung: courseId → chapterId → App-IDs (zusätzlich zu bestehenden)
 const MAP = {
   mv: {
-    'mv-rhythmus': ['learn-mv-puls-viertel', 'learn-mv-backbeat', 'learn-mv-four-on-the-floor'],
+    'mv-rhythmus': ['learn-mv-puls-viertel', 'learn-mv-achtel', 'learn-mv-offbeat', 'learn-mv-backbeat', 'learn-mv-four-on-the-floor'],
     'mv-grooves': ['learn-mv-boom-bap', 'learn-mv-trap', 'learn-mv-dembow', 'learn-mv-one-drop', 'learn-mv-son-clave', 'learn-mv-rumba-clave', 'learn-mv-bossa-nova', 'learn-mv-swing', 'learn-mv-walzer', 'learn-mv-laendler', 'learn-mv-marsch'],
     'mv-toene': ['learn-mv-notennamen'],
     'mv-intervalle': ['learn-mv-intervalle'],
@@ -54,7 +56,7 @@ const MAP = {
 
 const GROOVES_CHAPTER = {
   id: 'mv-grooves', title: 'Grooves der Welt', order: 15, iconName: 'Disc', colorClass: 'text-brand',
-  description: 'Von Boom Bap und Trap über Clave und Bossa Nova bis Walzer, Ländler und Marsch – hören, mitklopfen, nachbauen.',
+  description: 'Von Boom Bap und Trap über Clave und Bossa Nova bis Walzer, Ländler und Marsch – anhören und mitklopfen.',
   appIds: [],
 };
 
@@ -69,6 +71,7 @@ for (const [courseId, chapters] of Object.entries(MAP)) {
   if (!course) { console.log('Kurs fehlt:', courseId); continue; }
   let list = course.chapters ?? [];
   if (courseId === 'mv' && !list.some((c) => c.id === 'mv-grooves')) list = [...list, GROOVES_CHAPTER];
+  if (courseId === 'mv') list = list.map((ch) => (ch.id === 'mv-grooves' ? { ...ch, description: GROOVES_CHAPTER.description } : ch));
   list = list.map((ch) => chapters[ch.id] ? { ...ch, appIds: [...new Set([...(ch.appIds ?? []), ...chapters[ch.id]])] } : ch);
   console.log(write ? 'Kurs aktualisiert:' : 'würde Kurs aktualisieren:', courseId);
   if (write) await ref.set({ chapters: list }, { merge: true });

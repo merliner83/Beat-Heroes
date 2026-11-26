@@ -3,6 +3,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { schoolsOf } from '@/lib/game/types';
 import { adminDb } from '@/lib/server/firebase-admin';
 import { HttpError, requireUid, bookCredits } from '@/lib/server/credits';
+import { TEST_PASS_SCORE, lessonTestIds } from '@/lib/learn/tests';
 
 /**
  * Prüft, ob alle Pflicht-Lektionen eines Lernpfads bestanden sind, und
@@ -26,8 +27,17 @@ export async function POST(request: NextRequest) {
 
     const progressRefs = required.map((id) => db.doc(`users/${uid}/articleProgress/${id}`));
     const progress = await db.getAll(...progressRefs);
+    // Prüfungen in Lektionen (z.B. Mitklopfen) müssen ebenfalls bestanden sein.
+    const articles = await db.getAll(...required.map((id) => db.doc(`articles/${id}`)));
+    const testIds = [...new Set(articles.flatMap((a) => lessonTestIds(a.get('content'))))];
+    const appProgress = testIds.length ? await db.getAll(...testIds.map((id) => db.doc(`users/${uid}/progress/${id}`))) : [];
+    const appBest = new Map(appProgress.map((p, i) => [testIds[i], Number(p.get('accuracy') ?? 0)]));
     const missing = progress
-      .map((p, i) => ({ id: required[i], ok: p.exists && p.get('completed') === true && (p.get('quizScore') ?? 0) >= minScore }))
+      .map((p, i) => ({
+        id: required[i],
+        ok: p.exists && p.get('completed') === true && (p.get('quizScore') ?? 0) >= minScore
+          && lessonTestIds(articles[i].get('content')).every((t) => (appBest.get(t) ?? 0) >= TEST_PASS_SCORE),
+      }))
       .filter((x) => !x.ok)
       .map((x) => x.id);
     if (missing.length > 0) {

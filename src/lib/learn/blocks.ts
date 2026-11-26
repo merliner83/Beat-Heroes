@@ -11,6 +11,7 @@
  *   YOUTUBE: url | Titel | Beschreibung      (Tutorial-Karte)
  *   INSPIRATION: url | Titel | Beschreibung  (kleine Video-Karte, weiterführend)
  *   GAME: learnAppId | Beschriftung          (Übung)
+ *   GAME: learnAppId | Beschriftung | pruefung (Prüfung in der Lektion, zählt zum Bestehen)
  *   DOWNLOAD: url | Beschriftung             (Link-Knopf, z.B. Gratis-Plugin)
  *   PLUGIN: lektionId | Name | Kurztext      (Verweis auf eine Gratis-Plugin-Lektion)
  *   [[Begriff]] im Text                      (hervorgehobener Fachbegriff)
@@ -28,7 +29,7 @@ export type Block =
   | { id: string; type: 'image'; url: string; caption: string; small?: boolean }
   | { id: string; type: 'video'; url: string }
   | { id: string; type: 'youtube'; url: string; title: string; description: string; small?: boolean }
-  | { id: string; type: 'game'; appId: string; label: string }
+  | { id: string; type: 'game'; appId: string; label: string; test?: boolean }
   | { id: string; type: 'download'; url: string; label: string }
   | { id: string; type: 'plugin'; lessonId: string; name: string; text: string }
   | { id: string; type: 'tip'; kind: TipKind; title: string; text: string }
@@ -78,7 +79,7 @@ function lineBlock(line: string): Block | null {
   if (t.startsWith('YOUTUBE:')) { const [url, title = '', description = ''] = parts(t.slice(8)); return { id, type: 'youtube', url, title, description }; }
   if (t.startsWith('DOWNLOAD:')) { const [url, label = ''] = parts(t.slice(9)); return { id, type: 'download', url, label }; }
   if (t.startsWith('PLUGIN:')) { const [lessonId, name = '', text = ''] = parts(t.slice(7)); return { id, type: 'plugin', lessonId, name, text }; }
-  if (t.startsWith('GAME:')) { const [appId, label = ''] = parts(t.slice(5)); return { id, type: 'game', appId, label }; }
+  if (t.startsWith('GAME:')) { const [appId, label = '', flag = ''] = parts(t.slice(5)); return { id, type: 'game', appId, label, ...(flag === 'pruefung' ? { test: true } : {}) }; }
   if (t.startsWith('###') || t.startsWith('SUB:')) return { id, type: 'heading', level: 3, text: t.replace(/^###\s*|^SUB:\s*/, '') };
   if (t.startsWith('##')) return { id, type: 'heading', level: 2, text: t.replace(/^##\s*/, '') };
   if (t.startsWith('#')) return { id, type: 'heading', level: 1, text: t.replace(/^#\s*/, '') };
@@ -130,7 +131,7 @@ export function serializeBlock(b: Block): string {
     case 'youtube': return `${b.small ? 'INSPIRATION' : 'YOUTUBE'}: ${b.url.trim()}${b.title.trim() || b.description.trim() ? ` | ${clean(b.title)}` : ''}${b.description.trim() ? ` | ${clean(b.description)}` : ''}`;
     case 'download': return `DOWNLOAD: ${b.url.trim()}${b.label.trim() ? ` | ${clean(b.label)}` : ''}`;
     case 'plugin': return `PLUGIN: ${b.lessonId.trim()} | ${clean(b.name)}${b.text.trim() ? ` | ${clean(b.text)}` : ''}`;
-    case 'game': return `GAME: ${b.appId} | ${clean(b.label)}`;
+    case 'game': return `GAME: ${b.appId} | ${clean(b.label)}${b.test ? ' | pruefung' : ''}`;
     case 'tip': return `TIP: ${b.kind} | ${clean(b.title)}${b.text.trim() ? `\n${b.text.replace(/\n{2,}/g, '\n').trim()}` : ''}`;
     case 'phase': return `PHASE: ${clean(b.title)} | ${b.text.replace(/\|/g, '/').replace(/\n{2,}/g, '\n').trim()}${b.lessonId.trim() ? ` | ${b.lessonId.trim()}` : ''}`;
   }

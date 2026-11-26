@@ -37,7 +37,7 @@ export interface RhythmPattern {
   /** 50 = gerade, ~58–66 = swingend (nur bei stepsPerBeat 4 oder 2) */
   swing?: number;
   rows: PatternRow[];
-  /** Zeile zum Mitklopfen und Nachbauen */
+  /** Zeile zum Mitklopfen */
   target: string;
   info: StyleInfo;
 }
@@ -47,23 +47,37 @@ const two = (steps: number[], len = 16) => [...steps, ...steps.map((s) => s + le
 
 export const PATTERNS: RhythmPattern[] = [
   {
-    id: 'puls-viertel', title: 'Der Puls: Viertel', style: 'Grundlage', meter: '4/4', beatsPerBar: 4, stepsPerBeat: 4, bars: 1, bpm: 96,
+    id: 'puls-viertel', title: 'Der Puls: Viertel', style: 'Grundlage', meter: '4/4', beatsPerBar: 4, stepsPerBeat: 4, bars: 1, bpm: 92,
     rows: [
-      { id: 'kick', label: 'Kick', instrument: 'kick', steps: [0, 4, 8, 12], accents: [0] },
-      { id: 'hat', label: 'Hi-Hat', instrument: 'hat', steps: HATS_8 },
+      { id: 'kick', label: 'Viertel', instrument: 'kick', steps: [0, 4, 8, 12], accents: [0] },
     ],
     target: 'kick',
     info: { origin: 'Überall', tempo: '60–180 BPM', features: ['Vier gleichmässige Schläge pro Takt', 'Die 1 ist der stärkste Schlag', 'Der Puls läuft immer weiter – auch in Pausen'], tip: 'Nick mit dem Kopf und zähl laut «1 – 2 – 3 – 4».' },
   },
   {
+    id: 'achtel', title: 'Achtel', style: 'Grundlage', meter: '4/4', beatsPerBar: 4, stepsPerBeat: 4, bars: 1, bpm: 80,
+    rows: [
+      { id: 'hat', label: 'Achtel', instrument: 'hat', steps: HATS_8, accents: [0, 4, 8, 12] },
+    ],
+    target: 'hat',
+    info: { origin: 'Überall', tempo: '60–140 BPM', features: ['Acht gleichmässige Schläge pro Takt', 'Zwei Schläge pro Puls: «1 und 2 und …»', 'Typisch für Hi-Hats in Pop, Rock und Hip-Hop'], tip: 'Zähl laut «1 und 2 und 3 und 4 und» – jede Silbe ist ein Schlag.' },
+  },
+  {
+    id: 'offbeat', title: 'Offbeat', style: 'Grundlage', meter: '4/4', beatsPerBar: 4, stepsPerBeat: 4, bars: 1, bpm: 100,
+    rows: [
+      { id: 'openhat', label: 'Offbeat', instrument: 'openhat', steps: [2, 6, 10, 14] },
+    ],
+    target: 'openhat',
+    info: { origin: 'Überall', tempo: '80–130 BPM', features: ['Genau zwischen den Schlägen: auf dem «und»', 'Der Klick des Metronoms ist der Puls – du spielst dazwischen', 'Typisch für House-Hi-Hats und den Reggae-Skank'], tip: 'Nick auf den Klick und tipp, wenn dein Kopf oben ist.' },
+  },
+  {
     id: 'backbeat', title: 'Backbeat (Rock & Pop)', style: 'Rock / Pop', meter: '4/4', beatsPerBar: 4, stepsPerBeat: 4, bars: 1, bpm: 108,
     rows: [
-      { id: 'kick', label: 'Kick', instrument: 'kick', steps: [0, 8, 10] },
+      { id: 'kick', label: 'Kick', instrument: 'kick', steps: [0, 8] },
       { id: 'snare', label: 'Snare', instrument: 'snare', steps: [4, 12] },
-      { id: 'hat', label: 'Hi-Hat', instrument: 'hat', steps: HATS_8, accents: [0, 4, 8, 12] },
     ],
     target: 'snare',
-    info: { origin: 'USA, 1950er (Rock’n’Roll)', tempo: '90–140 BPM', features: ['Snare auf 2 und 4 – der «Backbeat»', 'Kick auf 1 und 3', 'Hi-Hat in Achteln'], tip: 'Klatsch auf 2 und 4 – genau so klatscht ein Konzertpublikum mit.' },
+    info: { origin: 'USA, 1950er (Rock’n’Roll)', tempo: '90–140 BPM', features: ['Snare auf 2 und 4 – der «Backbeat»', 'Kick auf 1 und 3', 'Im Song kommt meist eine Hi-Hat in Achteln dazu'], tip: 'Klatsch auf 2 und 4 – genau so klatscht ein Konzertpublikum mit.' },
   },
   {
     id: 'four-on-the-floor', title: 'Four on the Floor (House)', style: 'House / Disco', meter: '4/4', beatsPerBar: 4, stepsPerBeat: 4, bars: 1, bpm: 124,

@@ -6,6 +6,7 @@ import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebas
 import {
   Achievement, Article, ArticleProgress, Course, LearnApp, LearnSubCat, LearningPath, hasAccess, isLessonPassed,
 } from '@/lib/game/types';
+import { testsPassed } from '@/lib/learn/tests';
 
 /** Lädt Kurse, Lektionen, Fortschritt und Lernpfade für den Lernbereich. */
 export function useLearnData() {
@@ -18,6 +19,7 @@ export function useLearnData() {
   const appsQ = useMemoFirebase(() => (db ? query(collection(db, 'learnApps')) : null), [db]);
   const pathsQ = useMemoFirebase(() => (db ? query(collection(db, 'learningPaths')) : null), [db]);
   const progressQ = useMemoFirebase(() => (db && user ? query(collection(db, 'users', user.uid, 'articleProgress')) : null), [db, user]);
+  const appProgressQ = useMemoFirebase(() => (db && user ? query(collection(db, 'users', user.uid, 'progress')) : null), [db, user]);
   const achievementsQ = useMemoFirebase(() => (db && user ? query(collection(db, 'achievements'), where('uid', '==', user.uid)) : null), [db, user]);
 
   const { data: courses, isLoading: loadingCourses } = useCollection<Course>(coursesQ);
@@ -26,6 +28,7 @@ export function useLearnData() {
   const { data: apps } = useCollection<LearnApp>(appsQ);
   const { data: paths } = useCollection<LearningPath>(pathsQ);
   const { data: progress } = useCollection<ArticleProgress>(progressQ);
+  const { data: appProgress } = useCollection<{ id: string; accuracy?: number }>(appProgressQ);
   const { data: achievements } = useCollection<Achievement>(achievementsQ);
 
   return useMemo(() => {
@@ -34,7 +37,11 @@ export function useLearnData() {
       .filter((c) => hasAccess(role, c.minRole))
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     const progressById = new Map((progress ?? []).map((p) => [p.articleId ?? p.id, p]));
-    const passed = (lessonId: string, minScore = 80) => isLessonPassed(progressById.get(lessonId), minScore);
+    const appBest = new Map((appProgress ?? []).map((p) => [p.id, p.accuracy ?? 0]));
+    const contentById = new Map((articles ?? []).map((a) => [a.id, a.content]));
+    /** Quiz bestanden und alle Prüfungen (z.B. Mitklopfen) der Lektion erfüllt. */
+    const passed = (lessonId: string, minScore = 80) =>
+      isLessonPassed(progressById.get(lessonId), minScore) && testsPassed(contentById.get(lessonId), (id) => appBest.get(id));
     const byOrder = (a: { order?: number }, b: { order?: number }) => (a.order ?? 0) - (b.order ?? 0);
     /**
      * Wahlkapitel (z.B. DAWs): Optionen = Unterthemen. Ohne eigene Wahl gilt
@@ -91,6 +98,7 @@ export function useLearnData() {
       achievedPathIds,
       progressById,
       passed,
+      appBest,
       lessonsOf,
       chapterLessons,
       choiceOf,
@@ -98,5 +106,5 @@ export function useLearnData() {
       courseStats,
       role,
     };
-  }, [courses, loadingCourses, articles, subCats, apps, paths, progress, achievements, profile?.role, profile?.choices]);
+  }, [courses, loadingCourses, articles, subCats, apps, paths, progress, appProgress, achievements, profile?.role, profile?.choices]);
 }
