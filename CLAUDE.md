@@ -110,8 +110,8 @@ Stand 24.11.2026. Phasen 0–2 sind live (Auth, Rollen, Schulen
 `musikschule-bantiger` und `musikschule-oberemmental`, Klassen, Zuweisungen,
 Kurse mit Lernpfaden, Lektions-Editor, Profile mit Freigabe, Games-Seite).
 Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
-1. MV hat 4 freigeschaltete Lektionen (Puls/Takt/BPM, Notenwerte, Offbeats/
-   Swing, Klaviatur; 24.11.2026). Weitere Kapitel (Tonleitern, Akkorde, Melodie,
+1. MV hat 6 Lektionen (Puls/Takt/BPM, Notenwerte, Offbeats/Swing, Klaviatur,
+   Dur-Tonleiter, Moll/Tonart; 26.11.2026). Weitere Kapitel (Akkorde, Melodie,
    Form) haben noch keine Lektionen.
 2. ESLint einrichten, dann `ignoreDuringBuilds` entfernen.
 3. Altlast: Games mit `studioId` `std-nintu` haben kein Studio-Dokument
@@ -161,7 +161,9 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
    - MV verfeinert (26.11.2026): Mitklopfen ist Prüfung in der Lektion (ab
      70 %, `GAME: … | pruefung`), kein Nachbauen, reduzierte Patterns, neue
      Übungen Achtel/Offbeat, Quizzes mit 5 Fragen.
-   - MV ausbauen (Tonleitern, Akkordfolgen, Notenschrift).
+   - MV Tonleitern ✓ (26.11.2026): 2 Lektionen (Dur-Tonleiter, Moll + Tonart)
+     mit Prüfung «Tonleiter bauen».
+   - MV ausbauen (Akkordfolgen, Notenschrift).
    - Alte Games aufs Design-System / RhythmGrid.
    - Offen: Handy-Feedback zu den MV-Übungen (Mitklopfen-Latenz).
 5. Phase 3: Beat-Börse, Kollabos, Challenges.

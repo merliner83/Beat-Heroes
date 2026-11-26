@@ -8,7 +8,7 @@ import type { LearnApp } from '@/lib/game/types';
 import { getPattern } from '@/lib/mv/patterns';
 import { TEST_PASS_SCORE } from '@/lib/learn/tests';
 import { MvRhythmExercise } from '@/components/mv/MvRhythmExercise';
-import { KeysExerciseId, MvKeysExercise } from '@/components/mv/MvKeysExercise';
+import { KEYS_EXERCISES, KeysExerciseId, MvKeysExercise } from '@/components/mv/MvKeysExercise';
 import { cn } from '@/lib/utils';
 
 /**
@@ -28,7 +28,9 @@ export function LessonTest({ appId, label }: { appId: string; label?: string }) 
   const onResult = (score: number) => setLocal((b) => Math.max(b, score));
 
   // Rhythmus-Übungen liegen im Code; die ID folgt dem Schema learn-mv-<pattern>.
-  const pattern = app?.type === 'mv-keys' ? undefined : getPattern(app?.exerciseId ?? appId.replace(/^learn-mv-/, ''));
+  const exerciseId = app?.exerciseId ?? appId.replace(/^learn-mv-/, '');
+  const keysId = KEYS_EXERCISES.includes(exerciseId as KeysExerciseId) ? (exerciseId as KeysExerciseId) : undefined;
+  const pattern = keysId ? undefined : getPattern(exerciseId);
 
   return (
     <section id={`pruefung-${appId}`} className={cn('scroll-mt-20 mb-10 rounded-3xl border-2 p-5 md:p-7', passed ? 'border-success/50 bg-success/[0.05]' : 'border-brand/50 bg-brand/[0.05]')}>
@@ -44,10 +46,10 @@ export function LessonTest({ appId, label }: { appId: string; label?: string }) 
         </div>
         {best > 0 && <p className={cn('text-sm font-bold tabular-nums', passed ? 'text-success' : 'text-white/70')}>Bestwert {best} %</p>}
       </div>
-      {isLoading && !pattern && <p className="text-sm text-white/60">Lädt …</p>}
+      {isLoading && !pattern && !keysId && <p className="text-sm text-white/60">Lädt …</p>}
       {pattern && <MvRhythmExercise pattern={pattern} appId={appId} embedded onResult={onResult} />}
-      {app?.type === 'mv-keys' && app.exerciseId && <MvKeysExercise exercise={app.exerciseId as KeysExerciseId} appId={appId} onResult={onResult} />}
-      {!isLoading && !pattern && app?.type !== 'mv-keys' && <p className="text-sm text-white/60">Diese Übung gibt es nicht (mehr).</p>}
+      {keysId && <MvKeysExercise exercise={keysId} appId={appId} onResult={onResult} />}
+      {!isLoading && !pattern && !keysId && <p className="text-sm text-white/60">Diese Übung gibt es nicht (mehr).</p>}
     </section>
   );
 }
