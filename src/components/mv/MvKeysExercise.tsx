@@ -11,10 +11,11 @@ import { Panel, Tag } from '@/components/ds';
 import { cn } from '@/lib/utils';
 import { KeyMark, PianoKeyboard, isBlack, noteName } from './PianoKeyboard';
 import { MvScaleExercise, ScaleExerciseId } from './MvScaleExercise';
+import { ChordExerciseId, MvChordExercise } from './MvChordExercise';
 
-export type KeysExerciseId = 'notennamen' | 'intervalle' | 'dur-moll' | ScaleExerciseId;
-type QuizExerciseId = Exclude<KeysExerciseId, ScaleExerciseId>;
-export const KEYS_EXERCISES: KeysExerciseId[] = ['notennamen', 'intervalle', 'dur-moll', 'tonleiter-dur', 'tonleiter-moll'];
+export type KeysExerciseId = 'notennamen' | 'intervalle' | 'dur-moll' | ScaleExerciseId | ChordExerciseId;
+type QuizExerciseId = Exclude<KeysExerciseId, ScaleExerciseId | ChordExerciseId>;
+export const KEYS_EXERCISES: KeysExerciseId[] = ['notennamen', 'intervalle', 'dur-moll', 'tonleiter-dur', 'tonleiter-moll', 'akkord-bauen', 'stufen-akkorde'];
 
 const ROUNDS: Record<QuizExerciseId, number> = { notennamen: 10, intervalle: 8, 'dur-moll': 8 };
 
@@ -92,6 +93,7 @@ type ExerciseProps = { appId?: string; onResult?: (score: number) => void };
 
 export function MvKeysExercise({ exercise, ...rest }: ExerciseProps & { exercise: KeysExerciseId }) {
   if (exercise === 'tonleiter-dur' || exercise === 'tonleiter-moll') return <MvScaleExercise exercise={exercise} {...rest} />;
+  if (exercise === 'akkord-bauen' || exercise === 'stufen-akkorde') return <MvChordExercise exercise={exercise} {...rest} />;
   return <KeysQuiz exercise={exercise} {...rest} />;
 }
 
