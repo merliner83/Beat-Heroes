@@ -138,7 +138,11 @@ Superadmin ohne `schoolId` wählt die Schule in `/teacher`.
      Lektionen in den Unterthemen `sc-ins`/`sc-snd`/`sc-crt`/`sc-free`),
      Composing ✓ + Editing ✓ (26.11.2026: Songwriting, Arrangement, Sound
      Design, Editing als Text statt Grafik; Editing-Kapitel jetzt order 45),
-     dann Rechte, Social (Social-Lektionen haben noch keine `maxPoints`). Weiteres Material im Doc: Monitoring (Recording),
+     Rechte ✓ + Media & Release ✓ (26.11.2026: 3 Rechte-Lektionen inkl.
+     Samples/Beats/Covers und Split Sheet, Social mit Sicherheit für
+     Minderjährige, neue Release-Lektion; Fakten CH: SUISA einmalig CHF 200,
+     Swissperform gratis, kein Sampling-Freiraum, Schutz 70 Jahre).
+     Damit sind alle Producing-Kapitel einmal «neu gedacht». Weiteres Material im Doc: Monitoring (Recording),
      Abtastrate/Bit-Tiefe, Gruppen-/Ordnerspuren, Social-Texte, Tool-Liste,
      Produktionsvertrag.
      Weiterführende Videos klein als `INSPIRATION:`, nicht gross.
