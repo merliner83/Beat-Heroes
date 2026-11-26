@@ -193,6 +193,9 @@ function BlockFields({ block, update, apps, folder }: {
             {[...apps].sort((a, b) => a.name.localeCompare(b.name, 'de')).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
           <Input value={block.label} onChange={(e) => set({ label: e.target.value })} placeholder="Beschriftung, z.B. «Jetzt mitklopfen»" />
+          <label className="flex items-center gap-2 text-sm text-white/70 shrink-0">
+            <input type="checkbox" checked={!!block.test} onChange={(e) => set({ test: e.target.checked || undefined })} /> Prüfung
+          </label>
         </div>
       );
     case 'tip':

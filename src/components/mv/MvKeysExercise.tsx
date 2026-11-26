@@ -85,7 +85,7 @@ async function playQuestion(q: Question) {
   }
 }
 
-export function MvKeysExercise({ exercise, appId }: { exercise: KeysExerciseId; appId?: string }) {
+export function MvKeysExercise({ exercise, appId, onResult }: { exercise: KeysExerciseId; appId?: string; onResult?: (score: number) => void }) {
   const { user } = useUser();
   const total = ROUNDS[exercise];
   const [round, setRound] = useState(0);
@@ -108,6 +108,9 @@ export function MvKeysExercise({ exercise, appId }: { exercise: KeysExerciseId; 
     if (round >= total) {
       const score = Math.round((100 * correctCount) / total);
       setFinished({ score, awarded: null });
+      // Mit eingeblendeten Notennamen ist es Übung, keine Wertung.
+      if (exercise === 'notennamen' && showNames) return;
+      onResult?.(score);
       if (user && appId) {
         const res = await submitResult(user, { kind: 'learnApp', refId: appId, accuracy: score });
         setFinished({ score, awarded: res?.awarded ?? 0 });
@@ -219,7 +222,7 @@ export function MvKeysExercise({ exercise, appId }: { exercise: KeysExerciseId; 
           <CheckCircle2 className={cn('w-10 h-10', finished.score >= 80 ? 'text-success' : 'text-credit')} />
           <div className="flex-1 min-w-[10rem]">
             <p className="text-3xl font-black tabular-nums">{finished.score}%</p>
-            <p className="text-sm text-white/70">{correctCount} von {total} richtig</p>
+            <p className="text-sm text-white/70">{correctCount} von {total} richtig{exercise === 'notennamen' && showNames ? ' – mit Hilfe geübt, ohne Namen zählt es.' : ''}</p>
           </div>
           {finished.awarded != null && finished.awarded > 0 && <Tag tone="success"><Zap className="w-3 h-3" fill="currentColor" /> +{finished.awarded} Credits</Tag>}
           <Button variant="outline" onClick={begin}><RotateCcw className="w-4 h-4 mr-1" /> Nochmals</Button>

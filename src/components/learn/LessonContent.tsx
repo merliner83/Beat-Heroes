@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { AlertTriangle, ArrowRight, Download, Drum, ExternalLink, Rocket, Gamepad2, Layers, Lightbulb, ListChecks, Mic, Music, Pin, Play, Scissors, Sliders, Sparkles, Youtube, ListMusic, BookOpen, Headphones, Disc3, Timer, Waves, Speaker, LayoutPanelTop, Pencil, Plug, ZoomIn, Wrench, Gauge, Laptop, Cable, Ruler, Home, Repeat, Crosshair, Grid3x3, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { LessonTest } from './LessonTest';
 
 /**
  * Darstellung des Lektionstexts. Format (Absätze durch Leerzeile getrennt):
  * # Titel, ## Untertitel, ### Label (oder SUB:), **fett**, ---, GAP: 20,
- * IMAGE: url | Bildunterschrift | klein, VIDEO: url, GAME: learnAppId | Beschriftung,
+ * IMAGE: url | Bildunterschrift | klein, VIDEO: url, GAME: learnAppId | Beschriftung (| pruefung = Prüfung in der Lektion),
  * YOUTUBE: url | Titel | Beschreibung, INSPIRATION: (gleich, kleine Karte), TIP: art | Titel (+ Textzeilen),
  * PHASE: Titel | Text | lektionId, PLUGIN: lektionId | Name | Kurztext. Baustein-Editor: src/lib/learn/blocks.ts
  */
@@ -177,7 +178,8 @@ export function LessonContent({ content }: { content: string }) {
     if (trimmed === '---') return <div key={idx} className="h-px w-full bg-gradient-to-r from-transparent via-primary/30 to-transparent my-10" />;
     if (trimmed.startsWith('VIDEO:')) return <div key={idx} className="mb-8"><div className="relative aspect-[9/16] max-w-[280px] mx-auto bg-black rounded-[2rem] border-4 border-white/10 overflow-hidden shadow-2xl"><video src={trimmed.replace('VIDEO:', '').trim()} controls className="w-full h-full object-cover" playsInline /></div></div>;
     if (trimmed.startsWith('GAME:')) {
-      const [appId, label] = trimmed.replace('GAME:', '').split('|').map((p) => p.trim());
+      const [appId, label, flag] = trimmed.replace('GAME:', '').split('|').map((p) => p.trim());
+      if (flag === 'pruefung') return <LessonTest key={idx} appId={appId} label={label} />;
       return <Link key={idx} href={`/session/${appId}`} className="mb-8 flex items-center gap-4 p-5 rounded-2xl bg-white/5 border border-primary/30 hover:bg-white/10 transition-colors"><div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center shrink-0"><Gamepad2 className="w-6 h-6 text-primary" /></div><div className="flex-1"><p className="text-xs font-semibold uppercase tracking-wider text-primary">Übung</p><p className="font-black text-lg">{label || 'Minigame starten'}</p></div><Play className="w-5 h-5 text-white/60" /></Link>;
     }
     if (trimmed.startsWith('PLUGIN:')) {

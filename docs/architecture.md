@@ -152,13 +152,16 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
   Absatz, nicht innerhalb einer `PHASE`),
   `TIP: tipp|merke|achtung|aufgabe | Titel` (+ Textzeilen darunter),
   `PHASE: Titel | Text | lektionId`, `GAME: learnAppId | Beschriftung`
-  (eingebettete Übung), plus `youtubeUrls[]`. Zu einer `PHASE`-Karte
+  (Link-Karte zur Übung), `GAME: learnAppId | Beschriftung | pruefung`
+  (Prüfung direkt in der Lektion, siehe MV-Übungen), plus `youtubeUrls[]`. Zu einer `PHASE`-Karte
   gehören alle Folgezeilen bis zur nächsten Leerzeile.
 - Baustein-Editor (24.11.2026): `src/lib/learn/blocks.ts` wandelt Text ↔
   Bausteine (alle 53 Lektionen ohne Inhaltsverlust geprüft), UI in
   `src/components/admin/BlockEditor.tsx` mit Vorlagen (Standard-Lektion,
   Video-Tutorial, Theorie kurz); Text-Modus bleibt als Umschalter. Quiz in `learnQuizzes/{id}` (Lösungen `learnQuizKeys`).
-- Bestanden: `articleProgress.completed` und `quizScore >= 80`; Lektionen
+- Bestanden: `articleProgress.completed` und `quizScore >= 80`, dazu jede
+  Prüfung der Lektion mit Bestwert (`users/{uid}/progress/{appId}.accuracy`)
+  ab 70 % (`src/lib/learn/tests.ts`, gilt auch für `/api/paths/claim`); Lektionen
   ohne Quiz über «Als gelesen markieren» (Score 100). Setup-Skript:
   `scripts/setup-courses.mjs`.
 - Wahlkapitel (24.11.2026): `chapters[].choice = { label }` (heute DAWs,
@@ -184,7 +187,15 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
   `mv-rhythm` | `mv-keys`, `exerciseId`, `description`, `maxPoints` (150).
   Läuft unter `/session/learn-mv-<id>`, einbettbar mit `GAME:` und als
   Zuweisung (kind `learnApp`); Credits über `/api/credits` (bester Score).
-- Rhythmus-Modi: Hören & Sehen, Mitklopfen (Timing-Auswertung), Nachbauen.
+- Rhythmus-Modi (26.11.2026): «1. Anhören» und «2. Mitklopfen» (Timing-
+  Auswertung, Einzählen im Pad). Kein Nachbauen mehr. Gewertet wird nur im
+  Originaltempo. Lern-Übungen zeigen nur den Klang, um den es geht (Puls =
+  nur Viertel, Achtel, Offbeat, Backbeat = Kick + Snare); Grooves der Welt
+  bleiben voll instrumentiert.
+- Prüfung: `GAME: … | pruefung` bettet die Übung in die Lektion ein
+  (`LessonTest`), bestanden ab 70 %. Notennamen zählen nur ohne Hilfe.
+  Die MV-Lektionen nennen oben im Kasten «So schliesst du diese Lektion ab»
+  Prüfung(en) und Quiz (5 Fragen).
   Klaviatur: Notennamen, Intervalle (Merksongs), Dur/Moll.
 - Neue Patterns: in `PATTERNS` ergänzen und in
   `scripts/setup-mv-exercises.mjs` eintragen (legt App + Kapitel an).

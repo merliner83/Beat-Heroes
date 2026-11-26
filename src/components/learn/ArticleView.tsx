@@ -4,11 +4,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { doc } from 'firebase/firestore';
 import {
-  ArrowLeft, ArrowRight, BookCheck, CheckCircle2, Clock, HelpCircle, Pencil, RotateCcw, Share2,
+  ArrowLeft, ArrowRight, BookCheck, CheckCircle2, ClipboardCheck, Clock, HelpCircle, Pencil, RotateCcw, Share2,
 } from 'lucide-react';
 import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { Article, ArticleProgress, LearnQuiz, isLessonPassed, isSuperAdmin } from '@/lib/game/types';
 import { submitResult } from '@/lib/credits';
+import { TEST_PASS_SCORE, lessonTests } from '@/lib/learn/tests';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -41,13 +42,13 @@ function useNeighbours(article: Article) {
   return useMemo(() => {
     const courseId = article.courseId ?? 'producing';
     const course = data.courses.find((c) => c.id === courseId);
-    if (!course) return { course: undefined, chapter: undefined, next: undefined, chapterLessons: [] as Article[], passedOf: data.passed };
+    if (!course) return { course: undefined, chapter: undefined, next: undefined, chapterLessons: [] as Article[], passedOf: data.passed, appBest: data.appBest };
     const ordered = data.orderedLessonsOf(courseId);
     const i = ordered.findIndex((l) => l.id === article.id);
     const chapterId = article.chapterId ?? article.categoryId;
     const chapter = course.chapters.find((c) => c.id === chapterId);
     const chapterLessons = chapterId ? data.chapterLessons(courseId, chapterId) : [];
-    return { course, chapter, next: i >= 0 ? ordered[i + 1] : undefined, chapterLessons, passedOf: data.passed };
+    return { course, chapter, next: i >= 0 ? ordered[i + 1] : undefined, chapterLessons, passedOf: data.passed, appBest: data.appBest };
   }, [data, article]);
 }
 
@@ -59,7 +60,7 @@ export function ArticleView({ article }: { article: Article }) {
   const [quizScore, setQuizScore] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const reading = useReadingProgress();
-  const { course, chapter, next, chapterLessons, passedOf } = useNeighbours(article);
+  const { course, chapter, next, chapterLessons, passedOf, appBest } = useNeighbours(article);
 
   const quizRef = useMemoFirebase(() => (db ? doc(db, 'learnQuizzes', article.id) : null), [db, article.id]);
   const { data: quiz, isLoading: loadingQuiz } = useDoc<LearnQuiz>(quizRef);
@@ -69,7 +70,10 @@ export function ArticleView({ article }: { article: Article }) {
   const outline = useMemo(() => lessonOutline(article.content), [article.content]);
   const questions = quiz?.questions ?? [];
   const hasQuiz = questions.length > 0;
-  const passed = isLessonPassed(progress ?? undefined) || (quizScore ?? 0) >= 80;
+  const quizPassed = isLessonPassed(progress ?? undefined) || (quizScore ?? 0) >= 80;
+  const tests = useMemo(() => lessonTests(article.content), [article.content]);
+  const openTests = tests.filter((t) => (appBest.get(t.appId) ?? 0) < TEST_PASS_SCORE);
+  const passed = quizPassed && openTests.length === 0;
   const courseHref = `/learn/${article.courseId ?? 'producing'}`;
   const accent = course?.color ?? '#FF3399';
   const chapterIndex = chapterLessons.findIndex((l) => l.id === article.id);
@@ -99,14 +103,20 @@ export function ArticleView({ article }: { article: Article }) {
 
   const markRead = async () => {
     const result = await submit([]);
-    if (result) toast({ title: 'Lektion abgeschlossen', description: progressNote() });
+    if (result) toast(openTests.length
+      ? { title: 'Gelesen', description: `Jetzt noch die Prüfung: ${openTests.map((t) => t.label).join(', ')}` }
+      : { title: 'Lektion abgeschlossen', description: progressNote() });
   };
 
   const evaluate = async () => {
     const result = await submit(questions.map((_, i) => selected[i] ?? null));
     if (result) {
       setQuizScore(result.score);
-      if (result.score >= 80) toast({ title: 'Bestanden', description: progressNote() });
+      if (result.score >= 80) {
+        toast(openTests.length
+          ? { title: 'Quiz bestanden', description: `Jetzt noch die Prüfung: ${openTests.map((t) => t.label).join(', ')}` }
+          : { title: 'Bestanden', description: progressNote() });
+      }
     }
   };
 
@@ -144,6 +154,7 @@ export function ArticleView({ article }: { article: Article }) {
           <div className="relative mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/70">
             <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> ca. {outline.minutes} Min.</span>
             {hasQuiz && <span className="flex items-center gap-1.5"><HelpCircle className="w-4 h-4" /> Quiz mit {questions.length} {questions.length === 1 ? 'Frage' : 'Fragen'}</span>}
+            {tests.length > 0 && <span className="flex items-center gap-1.5"><ClipboardCheck className="w-4 h-4" /> {tests.length === 1 ? 'Prüfung' : `${tests.length} Prüfungen`} zum Mitmachen</span>}
             {passed && <span className="flex items-center gap-1.5 text-success"><CheckCircle2 className="w-4 h-4" /> Bestanden</span>}
           </div>
           {chapter && chapterIndex >= 0 && chapterLessons.length > 1 && (
@@ -219,7 +230,17 @@ export function ArticleView({ article }: { article: Article }) {
 
         {/* Abschluss */}
         <section className="mt-12 space-y-4">
-          {!hasQuiz && !loadingQuiz && !passed && (
+          {quizPassed && openTests.length > 0 && (
+            <div className="rounded-2xl border border-brand/40 bg-brand/[0.06] p-5">
+              <p className="font-bold flex items-center gap-2"><ClipboardCheck className="w-5 h-5 text-brand" /> Fast geschafft – noch offen:</p>
+              <ul className="mt-2 space-y-1">
+                {openTests.map((t) => (
+                  <li key={t.appId}><a href={`#pruefung-${t.appId}`} className="text-brand underline">Prüfung «{t.label}»</a> <span className="text-white/60">(ab {TEST_PASS_SCORE} %)</span></li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {!hasQuiz && !loadingQuiz && !quizPassed && (
             <Button onClick={markRead} disabled={busy} className="w-full h-14 rounded-2xl text-base font-bold"><BookCheck className="w-5 h-5 mr-2" /> Als gelesen markieren</Button>
           )}
           {passed && (
