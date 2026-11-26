@@ -198,7 +198,9 @@ bewertet Quizzes selbst (der Browser schickt nur die Antworten).
   Prüfung(en) und Quiz (5 Fragen).
   Klaviatur: Notennamen, Intervalle (Merksongs), Dur/Moll, Tonleiter bauen
   (`tonleiter-dur`/`tonleiter-moll`, `MvScaleExercise`: Grundton gegeben,
-  7 Töne nach Bauplan tippen, Fehler werden korrigiert, 4 Tonleitern).
+  7 Töne nach Bauplan tippen, Fehler werden korrigiert, 4 Tonleitern),
+  Akkorde (`akkord-bauen`: Terz + Quinte zum Grundton; `stufen-akkorde`:
+  Stufen I–vi in C-Dur; `MvChordExercise`).
 - Neue Patterns: in `PATTERNS` ergänzen und in
   `scripts/setup-mv-exercises.mjs` eintragen (legt App + Kapitel an).
 

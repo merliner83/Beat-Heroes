@@ -38,6 +38,8 @@ const APPS = [
   K('intervalle', 'Intervalle hören', 'Erkenne Sekunde, Terz, Quarte, Quinte und Oktave – mit Merksongs.'),
   K('tonleiter-dur', 'Dur-Tonleitern bauen', 'Bau Dur-Tonleitern nach dem Bauplan Ganz – Ganz – Halb – Ganz – Ganz – Ganz – Halb.'),
   K('tonleiter-moll', 'Moll-Tonleitern bauen', 'Bau Moll-Tonleitern nach dem Bauplan Ganz – Halb – Ganz – Ganz – Halb – Ganz – Ganz.'),
+  K('akkord-bauen', 'Akkorde bauen', 'Bau Dur- und Moll-Dreiklänge aus Grundton, Terz und Quinte.'),
+  K('stufen-akkorde', 'Stufen-Akkorde in C-Dur', 'Bau die Akkorde der Stufen I bis vi in C-Dur.'),
   K('dur-moll', 'Dur oder Moll?', 'Hör den Dreiklang und entscheide: hell oder dunkel?'),
 ];
 
@@ -49,7 +51,7 @@ const MAP = {
     'mv-toene': ['learn-mv-notennamen'],
     'mv-intervalle': ['learn-mv-intervalle'],
     'mv-tonleitern': ['learn-mv-tonleiter-dur', 'learn-mv-tonleiter-moll'],
-    'mv-akkorde': ['learn-mv-dur-moll'],
+    'mv-akkorde': ['learn-mv-akkord-bauen', 'learn-mv-stufen-akkorde', 'learn-mv-dur-moll'],
     'mv-gehoer': ['learn-mv-intervalle', 'learn-mv-dur-moll'],
   },
   producing: {
